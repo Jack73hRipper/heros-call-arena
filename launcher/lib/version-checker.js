@@ -49,36 +49,48 @@ function writeInstalled(data) {
   fs.writeFileSync(INSTALLED_JSON, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-/* ── Fetch remote manifest ── */
+/* ── Fetch remote manifest (follows redirects) ── */
 function fetchManifest() {
   return new Promise((resolve, reject) => {
     if (!manifestUrl) {
       return reject(new Error('No manifest URL configured'));
     }
 
-    const client = manifestUrl.startsWith('https') ? https : http;
+    function doGet(url, redirectsLeft) {
+      const client = url.startsWith('https') ? https : http;
 
-    const req = client.get(manifestUrl, { timeout: 10000 }, (res) => {
-      if (res.statusCode < 200 || res.statusCode >= 300) {
-        return reject(new Error(`HTTP ${res.statusCode} fetching manifest`));
-      }
-
-      let body = '';
-      res.on('data', (chunk) => { body += chunk; });
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(body));
-        } catch (e) {
-          reject(new Error('Invalid JSON in manifest'));
+      const req = client.get(url, { timeout: 10000 }, (res) => {
+        // Follow redirects (301, 302, 307, 308)
+        if ([301, 302, 307, 308].includes(res.statusCode) && res.headers.location) {
+          if (redirectsLeft <= 0) {
+            return reject(new Error('Too many redirects fetching manifest'));
+          }
+          return doGet(res.headers.location, redirectsLeft - 1);
         }
-      });
-    });
 
-    req.on('error', reject);
-    req.on('timeout', () => {
-      req.destroy();
-      reject(new Error('Manifest fetch timed out'));
-    });
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          return reject(new Error(`HTTP ${res.statusCode} fetching manifest`));
+        }
+
+        let body = '';
+        res.on('data', (chunk) => { body += chunk; });
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(body));
+          } catch (e) {
+            reject(new Error('Invalid JSON in manifest'));
+          }
+        });
+      });
+
+      req.on('error', reject);
+      req.on('timeout', () => {
+        req.destroy();
+        reject(new Error('Manifest fetch timed out'));
+      });
+    }
+
+    doGet(manifestUrl, 5);
   });
 }
 

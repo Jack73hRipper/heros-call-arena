@@ -100,6 +100,7 @@ ipcMain.handle('check-for-updates', async () => {
   logger.info('Checking for game updates…');
   const result = await versionChecker.checkForUpdates();
   logger.info(`Update check result: ${result.state}`);
+  if (result.error) logger.info(`Update check error: ${result.error}`);
   return result;
 });
 
