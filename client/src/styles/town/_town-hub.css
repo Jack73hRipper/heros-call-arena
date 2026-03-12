@@ -1,0 +1,690 @@
+/* ===== Phase 15 Chunk 3: Town Hub — Sidebar Navigation ===== */
+/* Replaced horizontal tab bar with Darkest-Dungeon-style       */
+/* sidebar navigation panel + framed content area.              */
+
+/* -----------------------------------------------
+   Main Layout — Sidebar + Content (horizontal)
+   ----------------------------------------------- */
+.town-hub {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;           /* horizontal: sidebar | content */
+  flex-direction: row;
+  gap: 1rem;
+  height: calc(100vh - 60px);
+  min-height: 0;
+  padding: 0.5rem;
+}
+
+/* -----------------------------------------------
+   Sidebar Panel
+   ----------------------------------------------- */
+.town-hub-sidebar {
+  width: 230px;
+  min-width: 230px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0.75rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-medium) transparent;
+}
+
+/* Sidebar header — town title + welcome */
+.town-sidebar-header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+.town-sidebar-title {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  color: var(--accent-ember);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 0 0 0.3rem;
+  /* Subtle torch-flicker glow */
+  text-shadow: 0 0 12px rgba(196, 151, 58, 0.3);
+}
+
+.town-welcome {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-family: var(--font-flavor);
+  font-style: italic;
+  display: block;
+}
+
+.town-welcome strong {
+  color: var(--accent-ember);
+  font-style: normal;
+}
+
+/* -----------------------------------------------
+   Sidebar Navigation Items
+   ----------------------------------------------- */
+.town-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.town-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-left: 3px solid transparent;
+  border-radius: 0 2px 2px 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  width: 100%;
+  position: relative;
+}
+
+.town-nav-icon {
+  font-size: 1.05rem;
+  width: 1.5rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.town-nav-label {
+  font-family: var(--font-heading);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.15s;
+  flex: 1;
+}
+
+.town-nav-count {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  background: var(--bg-deep);
+  padding: 0.1rem 0.35rem;
+  border-radius: 2px;
+  min-width: 1.4rem;
+  text-align: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+/* Hover state — subtle slide-in highlight */
+.town-nav-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+  border-left-color: var(--border-medium);
+}
+
+.town-nav-item:hover .town-nav-label {
+  color: var(--text-primary);
+}
+
+/* Active state — ember-highlighted left border + glow background */
+.town-nav-item--active {
+  background: linear-gradient(
+    90deg,
+    rgba(196, 151, 58, 0.08) 0%,
+    transparent 100%
+  );
+  border-left-color: var(--accent-ember);
+  border-color: var(--border-dark);
+  border-left-color: var(--accent-ember);
+}
+
+.town-nav-item--active .town-nav-label {
+  color: var(--accent-ember);
+  font-weight: 600;
+}
+
+.town-nav-item--active .town-nav-count {
+  background: rgba(196, 151, 58, 0.15);
+  color: var(--accent-ember);
+}
+
+/* Active indicator glow line */
+.town-nav-item--active::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  background: var(--accent-ember);
+  box-shadow: 0 0 8px rgba(196, 151, 58, 0.4);
+  border-radius: 0 2px 2px 0;
+}
+
+/* -----------------------------------------------
+   Sidebar Gold Display
+   ----------------------------------------------- */
+.town-sidebar-gold {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.4rem;
+}
+
+.town-gold-label {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.gold-display {
+  font-size: 1.1rem;
+  font-weight: bold;
+  font-family: var(--font-heading);
+  color: var(--accent-ember-bright);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(196, 151, 58, 0.15);
+}
+
+/* -----------------------------------------------
+   Sidebar Action Buttons
+   ----------------------------------------------- */
+.town-sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.25rem;
+}
+
+.selected-hero-name {
+  font-weight: normal;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  font-family: var(--font-flavor);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* -----------------------------------------------
+   Content Area
+   ----------------------------------------------- */
+.town-hub-content {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.25rem;
+  overflow: hidden;
+}
+
+.town-content-header {
+  flex-shrink: 0;
+  margin-bottom: 0.25rem;
+}
+
+.town-content-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-medium) transparent;
+}
+
+/* -----------------------------------------------
+   Shared Town Utilities (preserved)
+   ----------------------------------------------- */
+.town-loading {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 2rem;
+  font-family: var(--font-flavor);
+  font-style: italic;
+}
+
+.town-error {
+  color: #c05050;
+  background: rgba(139, 32, 32, 0.1);
+  padding: 0.5rem 0.75rem;
+  border-radius: 2px;
+  border: 1px solid var(--accent-crimson);
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  font-family: var(--font-flavor);
+}
+
+.town-placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+  font-family: var(--font-flavor);
+  text-align: center;
+  padding: 1.5rem;
+}
+
+/* -----------------------------------------------
+   Procedural dungeon badge (used in WaitingRoom)
+   ----------------------------------------------- */
+.procedural-dungeon-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin: 0.3rem 0;
+}
+.procedural-badge {
+  color: #b896e0;
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+}
+.procedural-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* -----------------------------------------------
+   Legacy button styles (used outside TownHub)
+   ----------------------------------------------- */
+.btn-enter-dungeon {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.2) 0%, rgba(45, 74, 26, 0.12) 100%);
+  color: #8cb860;
+  border: 1px solid var(--accent-sickly-green);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  box-shadow: 0 0 10px rgba(74, 122, 42, 0.08);
+}
+
+.btn-enter-dungeon:hover {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.3) 0%, rgba(45, 74, 26, 0.18) 100%);
+  border-color: #5a9a3a;
+  box-shadow: 0 0 18px rgba(74, 122, 42, 0.15);
+}
+
+.btn-enter-arena {
+  padding: 0.75rem 1rem;
+  background: linear-gradient(180deg, rgba(139, 32, 32, 0.15) 0%, rgba(107, 21, 21, 0.1) 100%);
+  color: #c07070;
+  border: 1px solid var(--accent-crimson);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.btn-enter-arena:hover {
+  background: linear-gradient(180deg, rgba(139, 32, 32, 0.25) 0%, rgba(107, 21, 21, 0.15) 100%);
+  border-color: var(--accent-crimson-bright);
+  box-shadow: 0 0 15px rgba(139, 32, 32, 0.15);
+}
+
+.btn-back-lobby {
+  padding: 0.75rem 1rem;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+
+.btn-back-lobby:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.btn-town {
+  padding: 0.5rem 1rem;
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.15) 0%, rgba(138, 106, 40, 0.1) 100%);
+  color: var(--accent-ember);
+  border: 1px solid var(--accent-ember-dim);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.btn-town:hover {
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.25) 0%, rgba(138, 106, 40, 0.15) 100%);
+  border-color: var(--accent-ember);
+  box-shadow: 0 0 15px rgba(196, 151, 58, 0.1);
+}
+
+/* -----------------------------------------------
+   Responsive: Sidebar collapses at <900px
+   Becomes a top bar with icon buttons.
+   ----------------------------------------------- */
+@media (max-width: 900px) {
+  .town-hub {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 60px);
+    gap: 0.5rem;
+  }
+
+  .town-hub-sidebar {
+    width: 100%;
+    min-width: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+    gap: 0.4rem;
+    overflow-y: visible;
+  }
+
+  /* Hide sidebar header text on small screens */
+  .town-sidebar-header {
+    display: none;
+  }
+
+  /* Separators collapse */
+  .town-hub-sidebar > .grim-separator {
+    display: none;
+  }
+
+  /* Nav collapses to horizontal icon buttons */
+  .town-sidebar-nav {
+    flex-direction: row;
+    gap: 0.25rem;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .town-nav-item {
+    padding: 0.4rem 0.6rem;
+    gap: 0.35rem;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 2px 2px 0 0;
+    justify-content: center;
+  }
+
+  .town-nav-item--active {
+    border-left-color: transparent;
+    border-bottom-color: var(--accent-ember);
+    background: linear-gradient(
+      180deg,
+      rgba(196, 151, 58, 0.08) 0%,
+      transparent 100%
+    );
+  }
+
+  .town-nav-item--active::before {
+    display: none;
+  }
+
+  .town-nav-label {
+    font-size: 0.72rem;
+  }
+
+  /* Gold moves inline */
+  .town-sidebar-gold {
+    gap: 0.4rem;
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--border-dark);
+    border-radius: 2px;
+    background: var(--bg-deep);
+  }
+
+  .gold-display {
+    font-size: 0.95rem;
+  }
+
+  /* Action buttons row */
+  .town-sidebar-actions {
+    flex-direction: row;
+    gap: 0.4rem;
+    margin-top: 0;
+    width: 100%;
+  }
+
+  .town-sidebar-actions .grim-btn {
+    flex: 1;
+  }
+
+  /* Content area fills remaining space */
+  .town-hub-content {
+    flex: 1 1 auto;
+    min-height: 400px;
+  }
+}
+
+/* ===== Town Hub: Browse Matches — Notice Board ===== */
+/* Restyled as a quest/notice board in the tavern.      */
+
+.town-browse-matches {
+  width: 100%;
+}
+
+.town-browse-matches h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  padding-bottom: 0.5rem;
+  position: relative;
+}
+
+/* Ornamental underline for notice board header */
+.town-browse-matches h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-ember) 0%,
+    var(--accent-ember-dim) 30%,
+    transparent 80%
+  );
+}
+
+.town-match-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Each match entry — pinned notice style with subtle rotation */
+.town-match-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 0.85rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  position: relative;
+  /* Layered depth */
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  /* Subtle inner gradient */
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.01) 0%,
+    transparent 60%
+  );
+}
+
+/* Slight rotation variance for pinned-notice feel */
+.town-match-item:nth-child(odd) {
+  transform: rotate(-0.15deg);
+}
+
+.town-match-item:nth-child(even) {
+  transform: rotate(0.2deg);
+}
+
+.town-match-item:nth-child(3n) {
+  transform: rotate(-0.3deg);
+}
+
+.town-match-item:hover {
+  border-color: var(--accent-ember-dim);
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 12px rgba(196, 151, 58, 0.06);
+  transform: rotate(0deg) translateY(-1px);
+}
+
+/* Pin accent — small decorative dot on the left */
+.town-match-item::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 40%;
+  background: var(--accent-ember-dim);
+  border-radius: 0 2px 2px 0;
+  opacity: 0.6;
+  transition: opacity 0.2s, height 0.2s;
+}
+
+.town-match-item:hover::before {
+  opacity: 1;
+  height: 60%;
+}
+
+.town-match-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.town-match-id {
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.town-match-players {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.town-match-map {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-family: var(--font-flavor);
+}
+
+.town-match-warning {
+  color: var(--accent-ember);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* Match type tag — wax-seal circular badge */
+.town-match-info .match-type-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.55rem;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Join button — crimson action */
+.btn-join-town {
+  padding: 0.4rem 1rem;
+  background: linear-gradient(180deg, rgba(139, 32, 32, 0.2) 0%, rgba(107, 21, 21, 0.12) 100%);
+  color: #c07070;
+  border: 1px solid var(--accent-crimson);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.btn-join-town:hover {
+  background: linear-gradient(180deg, rgba(139, 32, 32, 0.3) 0%, rgba(107, 21, 21, 0.18) 100%);
+  border-color: var(--accent-crimson-bright);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 14px rgba(139, 32, 32, 0.18);
+  color: #d08080;
+}
+
+.btn-join-town:active {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.btn-join-town:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-join-dungeon {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.2) 0%, rgba(45, 74, 26, 0.12) 100%);
+  color: #8cb860;
+  border-color: var(--accent-sickly-green);
+}
+
+.btn-join-dungeon:hover {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.3) 0%, rgba(45, 74, 26, 0.18) 100%);
+  border-color: #5a9a3a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 14px rgba(74, 122, 42, 0.18);
+  color: #a0d070;
+}
+
+.town-browse-hint {
+  margin-top: 0.75rem;
+  font-size: 0.82rem;
+  color: var(--accent-sickly-green);
+  font-style: italic;
+  font-family: var(--font-flavor);
+}

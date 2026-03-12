@@ -1,0 +1,42 @@
+{
+  "name": "Arena Classic",
+  "width": 15,
+  "height": 15,
+  "spawn_points": [
+    { "x": 1, "y": 1 },
+    { "x": 13, "y": 1 },
+    { "x": 1, "y": 13 },
+    { "x": 13, "y": 13 },
+    { "x": 7, "y": 1 },
+    { "x": 7, "y": 13 },
+    { "x": 1, "y": 7 },
+    { "x": 13, "y": 7 }
+  ],
+  "obstacles": [
+    { "x": 7, "y": 7, "type": "wall" },
+    { "x": 6, "y": 7, "type": "wall" },
+    { "x": 8, "y": 7, "type": "wall" },
+    { "x": 7, "y": 6, "type": "wall" },
+    { "x": 7, "y": 8, "type": "wall" },
+    { "x": 3, "y": 3, "type": "wall" },
+    { "x": 11, "y": 3, "type": "wall" },
+    { "x": 3, "y": 11, "type": "wall" },
+    { "x": 11, "y": 11, "type": "wall" }
+  ],
+  "spawn_zones": {
+    "a": { "x_min": 0, "y_min": 0, "x_max": 3, "y_max": 3 },
+    "b": { "x_min": 11, "y_min": 11, "x_max": 14, "y_max": 14 },
+    "c": { "x_min": 11, "y_min": 0, "x_max": 14, "y_max": 3 },
+    "d": { "x_min": 0, "y_min": 11, "x_max": 3, "y_max": 14 }
+  },
+  "ffa_points": [
+    { "x": 1, "y": 1 },
+    { "x": 13, "y": 13 },
+    { "x": 13, "y": 1 },
+    { "x": 1, "y": 13 },
+    { "x": 7, "y": 1 },
+    { "x": 7, "y": 13 },
+    { "x": 1, "y": 7 },
+    { "x": 13, "y": 7 }
+  ]
+}

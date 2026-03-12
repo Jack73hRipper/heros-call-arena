@@ -1,0 +1,9 @@
+[project]
+name = "arena-server"
+version = "0.1.0"
+description = "Turn-based multiplayer combat arena — Phase 1 backend"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"

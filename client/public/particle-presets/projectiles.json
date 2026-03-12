@@ -1,0 +1,1226 @@
+[
+  {
+    "name": "arrow-trail",
+    "version": 2,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "ranged"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 60,
+      "spawnShape": "point",
+      "angle": {
+        "min": 160,
+        "max": 200
+      },
+      "speed": {
+        "min": 8,
+        "max": 25
+      },
+      "gravity": {
+        "x": 0,
+        "y": 8
+      },
+      "friction": 0.03
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.12,
+        "max": 0.28
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 1.5,
+          "max": 3
+        },
+        "end": {
+          "min": 0.3,
+          "max": 0.8
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffcc"
+          },
+          {
+            "stop": 0.15,
+            "color": "#ddcc88"
+          },
+          {
+            "stop": 0.5,
+            "color": "#886644"
+          },
+          {
+            "stop": 1,
+            "color": "#332211"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.85,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "source-over"
+    }
+  },
+  {
+    "name": "holy-bolt-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "holy"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 60,
+      "spawnShape": "circle",
+      "spawnRadius": 2,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 5,
+        "max": 15
+      },
+      "gravity": {
+        "x": 0,
+        "y": -5
+      },
+      "friction": 0.05
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.15,
+        "max": 0.3
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 5
+        },
+        "end": {
+          "min": 0.5,
+          "max": 1.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffdd"
+          },
+          {
+            "stop": 0.12,
+            "color": "#ffee88"
+          },
+          {
+            "stop": 0.5,
+            "color": "#ddaa33"
+          },
+          {
+            "stop": 1,
+            "color": "#664400"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "dark-bolt-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "dark"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 60,
+      "spawnShape": "circle",
+      "spawnRadius": 3,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 6,
+        "max": 14
+      },
+      "gravity": {
+        "x": 0,
+        "y": -8
+      },
+      "friction": 0.04
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.15,
+        "max": 0.3
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 5.5
+        },
+        "end": {
+          "min": 0.5,
+          "max": 1.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ee88ff"
+          },
+          {
+            "stop": 0.12,
+            "color": "#8833cc"
+          },
+          {
+            "stop": 0.5,
+            "color": "#441166"
+          },
+          {
+            "stop": 1,
+            "color": "#110033"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.9,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "power-shot-trail",
+    "version": 2,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "ranged"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 75,
+      "spawnShape": "point",
+      "angle": {
+        "min": 155,
+        "max": 205
+      },
+      "speed": {
+        "min": 10,
+        "max": 30
+      },
+      "gravity": {
+        "x": 0,
+        "y": 6
+      },
+      "friction": 0.03
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.12,
+        "max": 0.25
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 2,
+          "max": 3.5
+        },
+        "end": {
+          "min": 0.3,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffaa"
+          },
+          {
+            "stop": 0.15,
+            "color": "#ffdd66"
+          },
+          {
+            "stop": 0.5,
+            "color": "#cc8833"
+          },
+          {
+            "stop": 1,
+            "color": "#442200"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "source-over"
+    }
+  },
+  {
+    "name": "crip-shot-trail",
+    "version": 2,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "ranged",
+      "ice"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 60,
+      "spawnShape": "point",
+      "angle": {
+        "min": 155,
+        "max": 205
+      },
+      "speed": {
+        "min": 8,
+        "max": 22
+      },
+      "gravity": {
+        "x": 0,
+        "y": 5
+      },
+      "friction": 0.03
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.12,
+        "max": 0.25
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 1.5,
+          "max": 3
+        },
+        "end": {
+          "min": 0.3,
+          "max": 0.8
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#eeffff"
+          },
+          {
+            "stop": 0.12,
+            "color": "#aaddff"
+          },
+          {
+            "stop": 0.5,
+            "color": "#4488cc"
+          },
+          {
+            "stop": 1,
+            "color": "#112244"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.95,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "rebuke-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "holy"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 80,
+      "spawnShape": "point",
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 4,
+        "max": 12
+      },
+      "gravity": {
+        "x": 0,
+        "y": -3
+      },
+      "friction": 0.05
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.12,
+        "max": 0.25
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 2.5,
+          "max": 4
+        },
+        "end": {
+          "min": 0.5,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffcc"
+          },
+          {
+            "stop": 0.12,
+            "color": "#ffee66"
+          },
+          {
+            "stop": 0.5,
+            "color": "#ddaa22"
+          },
+          {
+            "stop": 1,
+            "color": "#664400"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "exorcism-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "holy"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 75,
+      "spawnShape": "circle",
+      "spawnRadius": 3,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 6,
+        "max": 18
+      },
+      "gravity": {
+        "x": 0,
+        "y": -4
+      },
+      "friction": 0.05
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.15,
+        "max": 0.3
+      },
+      "shape": "star",
+      "size": {
+        "start": {
+          "min": 2.5,
+          "max": 5
+        },
+        "end": {
+          "min": 0,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffdd"
+          },
+          {
+            "stop": 0.1,
+            "color": "#ffffcc"
+          },
+          {
+            "stop": 0.4,
+            "color": "#ffcc44"
+          },
+          {
+            "stop": 1,
+            "color": "#884400"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "soul-reap-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "dark"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 80,
+      "spawnShape": "circle",
+      "spawnRadius": 2,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 5,
+        "max": 14
+      },
+      "gravity": {
+        "x": 0,
+        "y": -4
+      },
+      "friction": 0.04
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.15,
+        "max": 0.3
+      },
+      "shape": "line",
+      "size": {
+        "start": {
+          "min": 2.5,
+          "max": 5
+        },
+        "end": {
+          "min": 0.5,
+          "max": 1.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#dd88ff"
+          },
+          {
+            "stop": 0.15,
+            "color": "#aa55dd"
+          },
+          {
+            "stop": 0.5,
+            "color": "#662299"
+          },
+          {
+            "stop": 1,
+            "color": "#220044"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.9,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "wither-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "dark",
+      "curse"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 55,
+      "spawnShape": "circle",
+      "spawnRadius": 4,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 4,
+        "max": 10
+      },
+      "gravity": {
+        "x": 0,
+        "y": -6
+      },
+      "friction": 0.03
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.2,
+        "max": 0.4
+      },
+      "shape": "square",
+      "size": {
+        "start": {
+          "min": 2.5,
+          "max": 4.5
+        },
+        "end": {
+          "min": 0.5,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#cc88ee"
+          },
+          {
+            "stop": 0.12,
+            "color": "#773399"
+          },
+          {
+            "stop": 0.5,
+            "color": "#44225a"
+          },
+          {
+            "stop": 1,
+            "color": "#110011"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.85,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "venom-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "trail",
+      "dark",
+      "poison"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 60,
+      "spawnShape": "circle",
+      "spawnRadius": 3,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 5,
+        "max": 12
+      },
+      "gravity": {
+        "x": 0,
+        "y": 5
+      },
+      "friction": 0.04
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.15,
+        "max": 0.3
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 2.5,
+          "max": 5
+        },
+        "end": {
+          "min": 0.5,
+          "max": 1.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#88ff88"
+          },
+          {
+            "stop": 0.12,
+            "color": "#88cc22"
+          },
+          {
+            "stop": 0.5,
+            "color": "#336611"
+          },
+          {
+            "stop": 1,
+            "color": "#0a1100"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.9,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "arrow-head",
+    "version": 2,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "head",
+      "ranged"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 45,
+      "spawnShape": "point",
+      "angle": {
+        "min": -15,
+        "max": 15
+      },
+      "speed": {
+        "min": 1,
+        "max": 4
+      },
+      "gravity": {
+        "x": 0,
+        "y": 0
+      },
+      "friction": 0.08
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.04,
+        "max": 0.1
+      },
+      "shape": "diamond",
+      "size": {
+        "start": {
+          "min": 3.5,
+          "max": 5.5
+        },
+        "end": {
+          "min": 1.5,
+          "max": 2.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffcc"
+          },
+          {
+            "stop": 0.3,
+            "color": "#eedd99"
+          },
+          {
+            "stop": 1,
+            "color": "#aa8844"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.5,
+        "easing": "easeOutQuad"
+      },
+      "blendMode": "source-over"
+    }
+  },
+  {
+    "name": "power-shot-head",
+    "version": 2,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "head",
+      "ranged"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 50,
+      "spawnShape": "point",
+      "angle": {
+        "min": -18,
+        "max": 18
+      },
+      "speed": {
+        "min": 1,
+        "max": 5
+      },
+      "gravity": {
+        "x": 0,
+        "y": 0
+      },
+      "friction": 0.08
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.04,
+        "max": 0.1
+      },
+      "shape": "diamond",
+      "size": {
+        "start": {
+          "min": 4,
+          "max": 6.5
+        },
+        "end": {
+          "min": 1.5,
+          "max": 3
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffaa"
+          },
+          {
+            "stop": 0.25,
+            "color": "#ffdd44"
+          },
+          {
+            "stop": 1,
+            "color": "#cc8800"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.5,
+        "easing": "easeOutQuad"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "ice-arrow-head",
+    "version": 2,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "head",
+      "ranged",
+      "ice"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 45,
+      "spawnShape": "point",
+      "angle": {
+        "min": -15,
+        "max": 15
+      },
+      "speed": {
+        "min": 1,
+        "max": 4
+      },
+      "gravity": {
+        "x": 0,
+        "y": 0
+      },
+      "friction": 0.08
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.04,
+        "max": 0.1
+      },
+      "shape": "diamond",
+      "size": {
+        "start": {
+          "min": 3.5,
+          "max": 5.5
+        },
+        "end": {
+          "min": 1.5,
+          "max": 2.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#eeffff"
+          },
+          {
+            "stop": 0.25,
+            "color": "#bbddff"
+          },
+          {
+            "stop": 1,
+            "color": "#4488cc"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.4,
+        "easing": "easeOutQuad"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "holy-head",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "head",
+      "holy"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 80,
+      "spawnShape": "point",
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 2,
+        "max": 6
+      },
+      "gravity": {
+        "x": 0,
+        "y": 0
+      },
+      "friction": 0.06
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.07,
+        "max": 0.14
+      },
+      "shape": "star",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 5
+        },
+        "end": {
+          "min": 0.5,
+          "max": 1.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffdd"
+          },
+          {
+            "stop": 0.25,
+            "color": "#ffee77"
+          },
+          {
+            "stop": 1,
+            "color": "#ddaa22"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.4,
+        "easing": "easeOutQuad"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "dark-head",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "head",
+      "dark"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 70,
+      "spawnShape": "point",
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 2,
+        "max": 6
+      },
+      "gravity": {
+        "x": 0,
+        "y": 0
+      },
+      "friction": 0.05
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.08,
+        "max": 0.15
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 5
+        },
+        "end": {
+          "min": 1,
+          "max": 2
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ee99ff"
+          },
+          {
+            "stop": 0.2,
+            "color": "#9944cc"
+          },
+          {
+            "stop": 1,
+            "color": "#441166"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.3,
+        "easing": "easeOutQuad"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "venom-head",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "projectile",
+      "head",
+      "dark",
+      "poison"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "rate": 65,
+      "spawnShape": "point",
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 2,
+        "max": 6
+      },
+      "gravity": {
+        "x": 0,
+        "y": 0
+      },
+      "friction": 0.05
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.07,
+        "max": 0.13
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 4.5
+        },
+        "end": {
+          "min": 1,
+          "max": 2
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#bbffbb"
+          },
+          {
+            "stop": 0.2,
+            "color": "#44dd44"
+          },
+          {
+            "stop": 1,
+            "color": "#228822"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0.3,
+        "easing": "easeOutQuad"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "fireball-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": ["projectile", "trail", "fire", "mage"],
+    "emitter": {
+      "burstMode": false,
+      "rate": 80,
+      "spawnShape": "point",
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 8, "max": 25 },
+      "gravity": { "x": 0, "y": -12 },
+      "friction": 0.04
+    },
+    "particle": {
+      "lifetime": { "min": 0.12, "max": 0.35 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 5 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutCubic"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffee44" },
+          { "stop": 0.3, "color": "#ff8800" },
+          { "stop": 0.7, "color": "#cc3300" },
+          { "stop": 1, "color": "#441100" }
+        ]
+      },
+      "alpha": { "start": 0.9, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "fireball-head",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": ["projectile", "head", "fire", "mage"],
+    "emitter": {
+      "burstMode": false,
+      "rate": 70,
+      "spawnShape": "point",
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 2, "max": 6 },
+      "gravity": { "x": 0, "y": 0 },
+      "friction": 0.05
+    },
+    "particle": {
+      "lifetime": { "min": 0.06, "max": 0.12 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 4, "max": 6 },
+        "end": { "min": 2, "max": 3 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.3, "color": "#ffee44" },
+          { "stop": 1, "color": "#ff8800" }
+        ]
+      },
+      "alpha": { "start": 1, "end": 0.4, "easing": "easeOutQuad" },
+      "blendMode": "lighter"
+    }
+  }
+]

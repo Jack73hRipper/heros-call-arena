@@ -1,0 +1,41 @@
+{
+  "id": "boss_arena",
+  "name": "Boss Arena",
+  "version": 1,
+  "tags": ["boss", "enemy", "large"],
+  "width": 7,
+  "height": 7,
+  "difficulty": 10,
+  "frequency": 0.3,
+  "maxCount": 1,
+  "minCount": 1,
+  "sockets": {
+    "north": "corridor_3",
+    "south": "wall",
+    "east": "wall",
+    "west": "wall"
+  },
+  "tiles": [
+    ["W", "W", "W", "F", "W", "W", "W"],
+    ["W", "F", "F", "F", "F", "F", "W"],
+    ["W", "F", "W", "F", "W", "F", "W"],
+    ["W", "F", "F", "F", "F", "F", "W"],
+    ["W", "F", "W", "F", "W", "F", "W"],
+    ["W", "F", "F", "F", "F", "F", "W"],
+    ["W", "W", "W", "W", "W", "W", "W"]
+  ],
+  "variants": [],
+  "metadata": {
+    "description": "Large boss encounter room with pillars for cover",
+    "enemySpawns": [
+      { "localX": 3, "localY": 3, "enemyType": "undead_knight", "isBoss": true }
+    ],
+    "chestSlots": [
+      { "localX": 1, "localY": 5 },
+      { "localX": 5, "localY": 5 }
+    ],
+    "doorPositions": [
+      { "localX": 3, "localY": 0 }
+    ]
+  }
+}

@@ -1,0 +1,398 @@
+[
+  {
+    "name": "torch-flame",
+    "version": 1,
+    "duration": 3,
+    "loop": true,
+    "tags": [
+      "environment",
+      "fire",
+      "ambient"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 20,
+      "spawnShape": "line",
+      "spawnWidth": 6,
+      "angle": {
+        "min": 255,
+        "max": 285
+      },
+      "speed": {
+        "min": 15,
+        "max": 40
+      },
+      "gravity": {
+        "x": 0,
+        "y": -25
+      }
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.3,
+        "max": 0.7
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 5
+        },
+        "end": {
+          "min": 0,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.2,
+            "color": "#ffcc33"
+          },
+          {
+            "stop": 0.5,
+            "color": "#ff6600"
+          },
+          {
+            "stop": 0.8,
+            "color": "#cc2200"
+          },
+          {
+            "stop": 1,
+            "color": "#220000"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.8,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "dust-motes",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "environment",
+      "ambient"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 4,
+      "spawnShape": "rect",
+      "spawnWidth": 200,
+      "spawnHeight": 200,
+      "angle": {
+        "min": 240,
+        "max": 300
+      },
+      "speed": {
+        "min": 3,
+        "max": 10
+      },
+      "gravity": {
+        "x": 0,
+        "y": -2
+      },
+      "wind": {
+        "x": 5
+      }
+    },
+    "particle": {
+      "lifetime": {
+        "min": 2,
+        "max": 4
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 1,
+          "max": 2
+        },
+        "end": {
+          "min": 0.5,
+          "max": 1
+        },
+        "easing": "linear"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#aaaaaa"
+          },
+          {
+            "stop": 1,
+            "color": "#666666"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.3,
+        "end": 0,
+        "easing": "easeInOutQuad"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "level-up",
+    "version": 1,
+    "duration": 0.8,
+    "loop": false,
+    "tags": [
+      "ui",
+      "feedback",
+      "celebration"
+    ],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 40,
+      "spawnShape": "ring",
+      "spawnRadius": 5,
+      "angle": {
+        "min": 230,
+        "max": 310
+      },
+      "speed": {
+        "min": 60,
+        "max": 160
+      },
+      "gravity": {
+        "x": 0,
+        "y": 30
+      },
+      "friction": 0.02
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.4,
+        "max": 1
+      },
+      "shape": "star",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 7
+        },
+        "end": {
+          "min": 0,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.2,
+            "color": "#ffee66"
+          },
+          {
+            "stop": 0.6,
+            "color": "#ffcc00"
+          },
+          {
+            "stop": 1,
+            "color": "#664400"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "rotation": {
+        "speed": {
+          "min": -3,
+          "max": 3
+        }
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "loot-sparkle",
+    "version": 1,
+    "duration": 2,
+    "loop": true,
+    "tags": [
+      "ui",
+      "loot",
+      "ambient"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 6,
+      "spawnShape": "rect",
+      "spawnWidth": 20,
+      "spawnHeight": 20,
+      "angle": {
+        "min": 250,
+        "max": 290
+      },
+      "speed": {
+        "min": 5,
+        "max": 15
+      },
+      "gravity": {
+        "x": 0,
+        "y": -8
+      }
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.3,
+        "max": 0.8
+      },
+      "shape": "star",
+      "size": {
+        "start": {
+          "min": 1,
+          "max": 3
+        },
+        "end": {
+          "min": 0,
+          "max": 0.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.5,
+            "color": "#ffee88"
+          },
+          {
+            "stop": 1,
+            "color": "#997700"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.8,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "rotation": {
+        "speed": {
+          "min": -2,
+          "max": 2
+        }
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "Random Effect",
+    "version": 1,
+    "duration": 0.1,
+    "loop": true,
+    "tags": [
+      "random"
+    ],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 86,
+      "spawnRate": 35,
+      "spawnShape": "line",
+      "spawnRadius": 15.8729719655425,
+      "spawnWidth": 24.40612577176736,
+      "spawnHeight": 31.298637123170185,
+      "angle": {
+        "min": 259,
+        "max": 275.44714408789423
+      },
+      "speed": {
+        "min": 31.29511230968853,
+        "max": 160.93179467131068
+      },
+      "gravity": {
+        "x": -0.8748315060946155,
+        "y": 21.167965664025218
+      },
+      "friction": 0.031294515917144175,
+      "wind": {
+        "x": 16.24270386800653
+      }
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.3387957898702044,
+        "max": 0.8198822984326213
+      },
+      "shape": "line",
+      "size": {
+        "start": {
+          "min": 0.5,
+          "max": 1.5
+        },
+        "end": {
+          "min": 0,
+          "max": 3.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#f3f0ed"
+          },
+          {
+            "stop": 0.5740885280452037,
+            "color": "#ffa200"
+          },
+          {
+            "stop": 1,
+            "color": "#ffef42"
+          },
+          {
+            "stop": 1,
+            "color": "#fa8500"
+          },
+          {
+            "stop": 1,
+            "color": "#e3f207"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.9729751413318349,
+        "end": 0,
+        "easing": "linear"
+      },
+      "rotation": {
+        "start": {
+          "min": 0,
+          "max": 0
+        },
+        "speed": {
+          "min": -1.64708095496546,
+          "max": 0.2679598880077334
+        }
+      },
+      "trail": {
+        "length": 0
+      },
+      "blendMode": "lighter"
+    }
+  }
+]

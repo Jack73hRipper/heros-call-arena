@@ -1,0 +1,413 @@
+/* =====================================================
+   Phase 15 Chunk 7 — Form Element Theming
+   Global grim-dark theme for all form controls.
+   Recessed inputs, ornate selects, custom sliders,
+   ember-accented checkboxes. Pure CSS — no JSX changes.
+   ===================================================== */
+
+
+/* -----------------------------------------------
+   TEXT INPUTS — Recessed dark fields
+   Covers: text, email, password, search, url,
+   number, untyped inputs, and textareas.
+   ----------------------------------------------- */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="url"],
+input[type="number"],
+input:not([type]):not([role]),
+textarea {
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+  border-radius: 2px;
+  padding: 0.55rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  outline: none;
+  caret-color: var(--accent-ember);
+  box-shadow: var(--input-shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+/* Placeholder — dim italic Crimson Text */
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="password"]::placeholder,
+input[type="search"]::placeholder,
+input[type="url"]::placeholder,
+input[type="number"]::placeholder,
+input:not([type]):not([role])::placeholder,
+textarea::placeholder {
+  color: var(--input-placeholder);
+  font-style: italic;
+  font-family: var(--font-flavor);
+  opacity: 1;
+}
+
+/* Focus — ornate left/right ember border accents + glow */
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="search"]:focus,
+input[type="url"]:focus,
+input[type="number"]:focus,
+input:not([type]):not([role]):focus,
+textarea:focus {
+  border-color: var(--input-border-focus);
+  border-left-color: var(--input-focus-accent);
+  border-right-color: var(--input-focus-accent);
+  box-shadow:
+    var(--input-shadow),
+    var(--input-focus-glow),
+    inset 0 0 0 1px rgba(196, 151, 58, 0.06);
+}
+
+/* Disabled state */
+input[type="text"]:disabled,
+input[type="email"]:disabled,
+input[type="password"]:disabled,
+input[type="search"]:disabled,
+input[type="url"]:disabled,
+input[type="number"]:disabled,
+input:not([type]):not([role]):disabled,
+textarea:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(30%);
+}
+
+/* Textarea-specific */
+textarea {
+  resize: vertical;
+  min-height: 4rem;
+  line-height: 1.5;
+}
+
+
+/* -----------------------------------------------
+   SELECT DROPDOWNS — Custom ornate selects
+   appearance: none + custom arrow indicator.
+   Dark background, ember highlight, frame-like border.
+   ----------------------------------------------- */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+  border-radius: 2px;
+  padding: 0.45rem 2rem 0.45rem 0.65rem;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  outline: none;
+  box-shadow: var(--input-shadow);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  /* Custom dropdown arrow — ember chevron */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a6a28' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 12px 8px;
+}
+
+select:focus {
+  border-color: var(--input-border-focus);
+  box-shadow:
+    var(--input-shadow),
+    var(--input-focus-glow);
+
+  /* Brighten arrow on focus */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c4973a' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+select:hover:not(:disabled) {
+  border-color: var(--accent-ember-dim);
+}
+
+select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(30%);
+}
+
+/* Option elements — dark background */
+select option {
+  background: var(--bg-panel);
+  color: var(--input-text);
+  padding: 0.3rem 0.5rem;
+}
+
+/* Selected option highlight (limited browser support — Chromium) */
+select option:checked {
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.2) 0%, rgba(138, 106, 40, 0.15) 100%);
+  color: var(--accent-ember-bright);
+}
+
+
+/* -----------------------------------------------
+   RANGE SLIDERS — Custom track & thumb
+   Dark recessed track, ember-colored circular thumb.
+   Requires vendor prefixes for Webkit + Firefox.
+   ----------------------------------------------- */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  margin: 0.3rem 0;
+}
+
+/* --- Webkit (Chrome, Edge, Safari) Track --- */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px;
+  background: var(--range-track-bg);
+  border: 1px solid var(--range-track-border);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Webkit Thumb --- */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--accent-ember-bright) 0%, var(--accent-ember) 50%, var(--accent-ember-dim) 100%);
+  border: 2px solid var(--accent-ember-dim);
+  margin-top: -6px; /* Center thumb on track: -(thumbHeight/2 - trackHeight/2) */
+  box-shadow: var(--range-thumb-glow);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow:
+    var(--range-thumb-glow),
+    0 0 14px rgba(196, 151, 58, 0.4);
+  transform: scale(1.1);
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+  background: radial-gradient(circle at 40% 35%, var(--accent-ember-bright) 0%, var(--accent-ember-bright) 40%, var(--accent-ember) 100%);
+  box-shadow:
+    0 0 8px rgba(196, 151, 58, 0.5),
+    0 0 18px rgba(196, 151, 58, 0.35);
+  transform: scale(1.15);
+}
+
+/* --- Firefox Track --- */
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: var(--range-track-bg);
+  border: 1px solid var(--range-track-border);
+  border-radius: 3px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Firefox Thumb --- */
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, var(--accent-ember-bright) 0%, var(--accent-ember) 50%, var(--accent-ember-dim) 100%);
+  border: 2px solid var(--accent-ember-dim);
+  box-shadow: var(--range-thumb-glow);
+  transition: box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  box-shadow:
+    var(--range-thumb-glow),
+    0 0 14px rgba(196, 151, 58, 0.4);
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb:active {
+  background: radial-gradient(circle at 40% 35%, var(--accent-ember-bright) 0%, var(--accent-ember-bright) 40%, var(--accent-ember) 100%);
+  box-shadow:
+    0 0 8px rgba(196, 151, 58, 0.5),
+    0 0 18px rgba(196, 151, 58, 0.35);
+  transform: scale(1.15);
+}
+
+/* Focus ring for range (keyboard accessibility) */
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--accent-ember);
+  outline-offset: 2px;
+}
+
+input[type="range"]:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--accent-ember);
+  outline-offset: 2px;
+}
+
+/* Disabled range */
+input[type="range"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+input[type="range"]:disabled::-webkit-slider-thumb {
+  background: var(--border-medium);
+  border-color: var(--border-dark);
+  box-shadow: none;
+}
+
+input[type="range"]:disabled::-moz-range-thumb {
+  background: var(--border-medium);
+  border-color: var(--border-dark);
+  box-shadow: none;
+}
+
+
+/* -----------------------------------------------
+   CHECKBOXES — Custom ember-accented
+   Replaces default checkbox with dark box + ember check.
+   ----------------------------------------------- */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--checkbox-bg);
+  border: 1px solid var(--checkbox-border);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  vertical-align: middle;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+/* Checkmark via pseudo-element */
+input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 5px;
+  height: 9px;
+  border: solid transparent;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  transition: border-color 0.15s ease;
+}
+
+input[type="checkbox"]:checked {
+  background: var(--checkbox-checked-bg);
+  border-color: var(--accent-ember);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.2),
+    0 0 8px rgba(196, 151, 58, 0.2);
+}
+
+input[type="checkbox"]:checked::after {
+  border-color: var(--bg-abyss);
+}
+
+input[type="checkbox"]:hover:not(:disabled) {
+  border-color: var(--accent-ember-dim);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.3),
+    0 0 6px rgba(196, 151, 58, 0.1);
+}
+
+input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--accent-ember);
+  outline-offset: 2px;
+}
+
+input[type="checkbox"]:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+/* -----------------------------------------------
+   LABELS — Subtle enhancements for form labels
+   ----------------------------------------------- */
+label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  letter-spacing: 0.02em;
+}
+
+
+/* -----------------------------------------------
+   .grim-input — Opt-in enhanced text input
+   Extra ornate treatment beyond the global base.
+   ----------------------------------------------- */
+.grim-input {
+  padding: 0.65rem 0.9rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--border-medium);
+  /* Double-border inner line like grim-frame */
+  box-shadow:
+    var(--input-shadow),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.015);
+}
+
+.grim-input:focus {
+  border-color: var(--accent-ember-dim);
+  border-left-color: var(--accent-ember);
+  border-right-color: var(--accent-ember);
+  box-shadow:
+    var(--input-shadow),
+    inset 0 0 0 1px rgba(196, 151, 58, 0.06),
+    0 0 12px rgba(196, 151, 58, 0.12);
+}
+
+
+/* -----------------------------------------------
+   .grim-select — Opt-in enhanced select
+   Frame-like border treatment with inner glow.
+   ----------------------------------------------- */
+.grim-select {
+  padding: 0.5rem 2.2rem 0.5rem 0.8rem;
+  font-size: 0.9rem;
+  border: 1px solid var(--border-medium);
+  box-shadow:
+    var(--input-shadow),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.015);
+}
+
+.grim-select:focus {
+  border-color: var(--accent-ember-dim);
+  box-shadow:
+    var(--input-shadow),
+    inset 0 0 0 1px rgba(196, 151, 58, 0.06),
+    0 0 12px rgba(196, 151, 58, 0.12);
+}
+
+
+/* -----------------------------------------------
+   FIELDSET & LEGEND — Ornate field groups
+   ----------------------------------------------- */
+fieldset {
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 1rem;
+  margin: 0;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+legend {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  color: var(--accent-ember-dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 0.5rem;
+}

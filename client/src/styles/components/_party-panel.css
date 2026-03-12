@@ -1,0 +1,317 @@
+/* ===== Party Panel ===== */
+
+.party-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.party-panel-title {
+  font-family: var(--font-heading);
+  color: var(--accent-ember);
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-return-self {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.4rem;
+  background: rgba(0, 230, 255, 0.15);
+  border: 1px solid rgba(0, 230, 255, 0.4);
+  color: #00e6ff;
+  border-radius: 2px;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: var(--font-body);
+}
+
+.btn-return-self:hover {
+  background: rgba(0, 230, 255, 0.25);
+}
+
+.party-member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.party-member {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  color: var(--text-main);
+  font-family: var(--font-body);
+}
+
+.party-member:hover:not(:disabled) {
+  background: rgba(74, 159, 245, 0.1);
+  border-color: rgba(74, 159, 245, 0.3);
+}
+
+.party-member-selected {
+  background: rgba(0, 230, 255, 0.1) !important;
+  border-color: rgba(0, 230, 255, 0.5) !important;
+  box-shadow: 0 0 6px rgba(0, 230, 255, 0.2);
+}
+
+/* Phase 7B-2: Primary selected (actively controlled) — bright cyan */
+.party-member-primary {
+  background: rgba(0, 230, 255, 0.15) !important;
+  border-color: rgba(0, 230, 255, 0.6) !important;
+  box-shadow: 0 0 8px rgba(0, 230, 255, 0.25);
+}
+
+.party-member-dead {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.party-member-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.party-member-name {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--text-main);
+}
+
+.party-member-class {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: capitalize;
+}
+
+.party-member-hp-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.party-member-hp-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+
+.party-member-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.6rem;
+}
+
+.party-member-hp-text {
+  color: var(--text-dim);
+}
+
+.party-member-queue {
+  color: var(--accent-ember);
+  font-weight: bold;
+}
+
+.party-member-controlled {
+  color: #00e6ff;
+  font-weight: bold;
+  font-size: 0.55rem;
+  padding: 0.05rem 0.2rem;
+  border: 1px solid rgba(0, 230, 255, 0.4);
+  border-radius: 2px;
+  background: rgba(0, 230, 255, 0.1);
+}
+
+/* Phase 7B-2: Multi-selection styles */
+.party-member-multi-sel {
+  color: #ffc832;
+  font-weight: bold;
+  font-size: 0.55rem;
+  padding: 0.05rem 0.2rem;
+  border: 1px solid rgba(255, 200, 50, 0.4);
+  border-radius: 2px;
+  background: rgba(255, 200, 50, 0.1);
+}
+
+/* Phase 7B-3: Group movement indicator */
+.party-member-group-move {
+  color: #4caf50;
+  font-weight: bold;
+  font-size: 0.7rem;
+  margin-left: 0.15rem;
+  title: "Moving as group";
+}
+
+.party-multi-badge {
+  font-size: 0.6rem;
+  color: #ffc832;
+  font-weight: normal;
+  text-transform: none;
+  font-family: var(--font-body);
+  letter-spacing: normal;
+  margin-left: 0.3rem;
+}
+
+.party-group-buttons {
+  display: flex;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.party-ctrl-hint {
+  width: 100%;
+  font-size: 0.55rem;
+  color: rgba(200, 200, 200, 0.5);
+  text-align: center;
+  letter-spacing: 0.03rem;
+  margin-bottom: 0.15rem;
+}
+
+.btn-select-all,
+.btn-deselect-all {
+  flex: 1;
+  font-size: 0.6rem;
+  padding: 0.2rem 0.3rem;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.15s ease;
+}
+
+.btn-select-all {
+  background: rgba(255, 200, 50, 0.1);
+  border: 1px solid rgba(255, 200, 50, 0.3);
+  color: #ffc832;
+}
+
+.btn-select-all:hover {
+  background: rgba(255, 200, 50, 0.2);
+  border-color: rgba(255, 200, 50, 0.5);
+}
+
+.btn-deselect-all {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-dim);
+}
+
+.btn-deselect-all:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-deselect-all:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.multi-select-badge {
+  color: #ffc832;
+  font-weight: bold;
+  font-size: 0.65rem;
+  margin-right: 0.3rem;
+}
+
+.controlling-label {
+  color: #00e6ff;
+  font-size: 0.7rem;
+  font-weight: normal;
+  text-transform: none;
+  font-family: var(--font-body);
+  letter-spacing: normal;
+}
+
+/* Phase 7C-3: Stance UI Styles */
+
+/* Group stance buttons row (All Follow / All Aggressive / etc.) */
+.party-stance-group {
+  display: flex;
+  gap: 0.2rem;
+  margin-bottom: 0.4rem;
+}
+
+.btn-stance-group {
+  flex: 1;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.1rem;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.15s ease;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.btn-stance-group:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: currentColor;
+}
+
+/* Clickable area inside party member card (now a button inside a div) */
+.party-member-clickable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+}
+
+.party-member-clickable:disabled {
+  cursor: not-allowed;
+}
+
+/* Per-unit stance toggle row */
+.party-member-stances {
+  display: flex;
+  gap: 0.15rem;
+  margin-top: 0.2rem;
+  padding-top: 0.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.btn-stance {
+  flex: 1;
+  font-size: 0.65rem;
+  padding: 0.1rem 0.15rem;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.12s ease;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.btn-stance:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-stance-active {
+  font-weight: bold;
+}

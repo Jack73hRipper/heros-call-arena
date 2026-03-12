@@ -1,0 +1,3 @@
+"""
+Arena Prototype - FastAPI Backend
+"""

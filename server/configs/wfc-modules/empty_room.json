@@ -1,0 +1,32 @@
+{
+  "id": "empty_room",
+  "name": "Empty Room",
+  "version": 1,
+  "tags": ["filler", "empty"],
+  "width": 5,
+  "height": 5,
+  "difficulty": 0,
+  "frequency": 2.0,
+  "maxCount": -1,
+  "minCount": 0,
+  "sockets": {
+    "north": "corridor_2",
+    "south": "corridor_2",
+    "east": "wall",
+    "west": "wall"
+  },
+  "tiles": [
+    ["W", "W", "F", "W", "W"],
+    ["W", "F", "F", "F", "W"],
+    ["W", "F", "F", "F", "W"],
+    ["W", "F", "F", "F", "W"],
+    ["W", "W", "F", "W", "W"]
+  ],
+  "variants": [],
+  "metadata": {
+    "description": "Simple empty room for spacing and pacing",
+    "enemySpawns": [],
+    "chestSlots": [],
+    "doorPositions": []
+  }
+}

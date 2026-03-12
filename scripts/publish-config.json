@@ -1,0 +1,20 @@
+{
+  "host": "github",
+
+  "r2": {
+    "bucket": "heros-call-arena",
+    "publicUrl": "https://YOUR_R2_PUBLIC_URL.r2.dev",
+    "rcloneRemote": "r2"
+  },
+
+  "github": {
+    "repo": "Jack73hRipper/heros-call-arena",
+    "pagesUrl": "https://Jack73hRipper.github.io/heros-call-arena"
+  },
+
+  "local": {
+    "outputDir": "build/publish"
+  },
+
+  "_comment": "Set 'host' to: r2 | github | local.  'local' generates files without uploading — useful for testing. Fill in your GitHub username/repo before running publish-update.bat."
+}

@@ -1,0 +1,97 @@
+/* ===== Arena (6E-1: CSS Grid Layout) ===== */
+
+.arena {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  grid-template-columns: 260px 1fr 280px;
+  height: 100vh;
+  width: 100vw;
+  gap: 4px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 10;
+}
+
+.arena-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.arena-bottom-bar {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* Left panel — Combat Log */
+.arena-left-panel {
+  grid-column: 1;
+  grid-row: 3;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem;
+}
+
+.arena-canvas-area {
+  grid-column: 2;
+  grid-row: 3;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: relative;
+}
+
+.arena-right-panel {
+  grid-column: 3;
+  grid-row: 3;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.25rem;
+}
+
+/* ===== 6E-6: Responsive viewport-fit rules ===== */
+
+/* Laptop / smaller screens: narrow panels, compact bottom bar */
+@media (max-width: 1400px) {
+  .arena {
+    grid-template-columns: 220px 1fr 240px;
+  }
+}
+
+@media (max-height: 800px) {
+  .arena-bottom-bar {
+    padding: 0.15rem 0.4rem;
+  }
+  .bottom-bar {
+    gap: 0.25rem;
+  }
+  .action-slot {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .slot-icon {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .slot-icon .skill-icon-sprite {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  .slot-label {
+    font-size: 0.55rem !important;
+  }
+  .header-bar {
+    padding: 0.15rem 0.75rem;
+  }
+}

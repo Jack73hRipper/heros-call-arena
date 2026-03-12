@@ -1,0 +1,30 @@
+{
+  "id": "dead_end",
+  "name": "Dead End",
+  "version": 1,
+  "tags": ["filler", "dead_end"],
+  "width": 3,
+  "height": 3,
+  "difficulty": 0,
+  "frequency": 1.5,
+  "maxCount": 3,
+  "minCount": 0,
+  "sockets": {
+    "north": "wall",
+    "south": "corridor_1",
+    "east": "wall",
+    "west": "wall"
+  },
+  "tiles": [
+    ["W", "W", "W"],
+    ["W", "F", "W"],
+    ["W", "C", "W"]
+  ],
+  "variants": [],
+  "metadata": {
+    "description": "Simple dead end cap",
+    "enemySpawns": [],
+    "chestSlots": [],
+    "doorPositions": []
+  }
+}

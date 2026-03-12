@@ -1,0 +1,46 @@
+{
+  "id": "bleeding_catacombs",
+  "name": "Bleeding Catacombs",
+  "description": "Ancient burial halls where crimson mortar bleeds through cracked stone. The walls weep dark ichor and bones litter the flagstone floors.",
+  "palette": {
+    "primary": "#1a1015",
+    "secondary": "#2a1520",
+    "accent": "#8a2030",
+    "mortar": "#4a1525",
+    "highlight": "#cc3040",
+    "floor": "#3e2d3d",
+    "floorAlt": "#413040",
+    "grout": "#120a10"
+  },
+  "wall": {
+    "style": "cracked_stone",
+    "brickRows": 3,
+    "brickCols": 2,
+    "mortarWidth": 2,
+    "crackDensity": 0.08,
+    "bleedChance": 0.05,
+    "edgeVignette": true
+  },
+  "floor": {
+    "style": "flagstone",
+    "slabGrid": 2,
+    "groutWidth": 1,
+    "stainChance": 0.0,
+    "stainColor": "rgba(120, 20, 20, 0.18)",
+    "debrisChance": 0.0,
+    "debrisColor": "#4a4040",
+    "textureDots": 1
+  },
+  "corridor": {
+    "style": "worn_stone",
+    "streakChance": 0.0
+  },
+  "fog": {
+    "exploredTint": "rgba(30, 10, 15, 0.6)",
+    "unexploredColor": "#0a0508"
+  },
+  "ambient": {
+    "vignetteStrength": 0.15,
+    "vignetteColor": "rgba(80, 10, 20, 0.10)"
+  }
+}

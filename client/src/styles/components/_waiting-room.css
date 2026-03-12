@@ -1,0 +1,751 @@
+/* =====================================================
+   Phase 15 Chunk 5 — War Room / Staging Ground
+   Full-width two-column layout: orders+roster | chat.
+   Replaces narrow 640px centered waiting room.
+   ===================================================== */
+
+/* --- War Room: Outer container --- */
+.war-room {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* --- Header: Title + Meta --- */
+.war-room-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+/* Ornamental underline on header */
+.war-room-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-ember) 0%,
+    var(--accent-ember-dim) 25%,
+    transparent 70%
+  );
+}
+
+.war-room-title-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.war-room-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-ember-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  text-shadow: 0 0 20px rgba(196, 151, 58, 0.2), 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+.war-room-subtitle {
+  font-family: var(--font-flavor);
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 0.15rem;
+}
+
+.war-room-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.war-room-match-id {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.war-room-match-id .match-id-code {
+  color: var(--accent-ember);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.war-room-host-badge {
+  display: inline-block;
+  background: linear-gradient(180deg, var(--accent-ember) 0%, var(--accent-ember-dim) 100%);
+  color: var(--bg-abyss);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  padding: 0.15rem 0.6rem;
+  border-radius: 2px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.war-room-headcount {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+/* --- Procedural Dungeon Banner --- */
+.war-room-procedural-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(90deg, rgba(196, 151, 58, 0.06) 0%, transparent 100%);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-ember-dim);
+  padding: 0.5rem 0.8rem;
+  margin-bottom: 1rem;
+  border-radius: 2px;
+}
+
+.war-room-procedural-banner .procedural-badge {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  color: var(--accent-ember);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.war-room-procedural-banner .procedural-hint {
+  font-family: var(--font-flavor);
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-dim);
+}
+
+/* --- Two-Column Layout --- */
+.war-room-columns {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+  margin-bottom: 1rem;
+}
+
+/* Left panel: Battle Orders + Class Selection + Unit Roster */
+.war-room-left {
+  flex: 1;
+  min-width: 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  max-height: calc(100vh - 14rem);
+}
+
+/* Right panel: Chat */
+.war-room-right {
+  width: 320px;
+  flex-shrink: 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Battle Orders (Config Panel) --- */
+.war-room-orders {
+  margin-bottom: 0.25rem;
+}
+
+.war-room-orders .config-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.war-room-orders .config-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.war-room-orders .config-row label {
+  min-width: 120px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+}
+
+.war-room-orders .config-hint {
+  width: 100%;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: -0.25rem;
+  font-family: var(--font-body);
+}
+
+.war-room-orders .config-value {
+  color: var(--text-body);
+  font-size: 0.9rem;
+  font-family: var(--font-flavor);
+}
+
+.war-room-orders .config-readonly {
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  font-weight: normal;
+  text-transform: none;
+  font-family: var(--font-body);
+  letter-spacing: normal;
+}
+
+/* Styled select dropdowns in war room */
+.war-room-select {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  font-family: var(--font-heading);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-inset);
+}
+
+.war-room-select:focus {
+  border-color: var(--accent-ember-dim);
+  box-shadow: var(--shadow-inset), 0 0 8px rgba(196, 151, 58, 0.1);
+}
+
+.war-room-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mode toggle buttons */
+.war-room-mode-btns {
+  display: flex;
+  gap: 0.3rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.war-room-mode-btn {
+  flex: 1;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.73rem;
+  border-radius: 2px;
+  border: 1px solid var(--border-medium);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: var(--btn-bevel-highlight);
+}
+
+.war-room-mode-btn:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-ember-dim);
+  color: var(--text-primary);
+}
+
+.war-room-mode-btn--active {
+  border-color: var(--accent-ember);
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.15) 0%, rgba(138, 106, 40, 0.1) 100%);
+  color: var(--accent-ember-bright);
+  box-shadow: var(--btn-bevel-highlight), 0 0 10px rgba(196, 151, 58, 0.1);
+}
+
+.war-room-mode-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Range sliders in config */
+.war-room-orders .config-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent-ember);
+}
+
+/* --- Class Selection (within war room) --- */
+.war-room-class-selection {
+  margin-bottom: 0.25rem;
+}
+
+.war-room-class-selection .class-cards {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+/* Thin scrollbar for class cards */
+.war-room-class-selection .class-cards::-webkit-scrollbar {
+  height: 4px;
+}
+
+.war-room-class-selection .class-cards::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+.war-room-class-selection .class-cards::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 2px;
+}
+
+/* --- Unit Roster (Player List) --- */
+.war-room-roster {
+  flex: 1;
+  min-height: 0;
+}
+
+.war-room-unit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Unit Card — replaces flat player list items */
+.war-unit-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  border-radius: 2px;
+  transition: all 0.2s;
+  position: relative;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Inner border line for depth */
+.war-unit-card::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.015);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.war-unit-card:hover {
+  background: var(--bg-surface);
+  border-color: var(--border-subtle);
+}
+
+/* "You" highlight */
+.war-unit-card--you {
+  background: rgba(196, 151, 58, 0.04);
+  border-left: 3px solid var(--accent-ember-dim);
+}
+
+.war-unit-card--you:hover {
+  background: rgba(196, 151, 58, 0.07);
+}
+
+/* Ready state — verdant left border */
+.war-unit-card--ready {
+  border-left: 3px solid var(--accent-sickly-green);
+}
+
+.war-unit-card--you.war-unit-card--ready {
+  border-left: 3px solid var(--accent-ember);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 8px rgba(196, 151, 58, 0.06);
+}
+
+/* AI units — dimmer treatment */
+.war-unit-card--ai {
+  opacity: 0.8;
+  background: rgba(74, 69, 64, 0.06);
+}
+
+.war-unit-card--ai:hover {
+  opacity: 0.9;
+}
+
+/* Unit icon (class shape or crown) */
+.war-unit-icon {
+  font-size: 1.15rem;
+  width: 1.6rem;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* Unit info block (name + class) */
+.war-unit-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.war-unit-name {
+  font-family: var(--font-heading);
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.war-unit-you {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  color: var(--accent-ember-dim);
+  margin-left: 0.35rem;
+  font-weight: normal;
+  letter-spacing: normal;
+}
+
+.war-unit-class {
+  font-family: var(--font-flavor);
+  font-size: 0.72rem;
+  font-style: italic;
+  letter-spacing: 0.02em;
+}
+
+.war-unit-ai-role {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.war-unit-ai-type {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+}
+
+/* Team badge area */
+.war-unit-team {
+  flex-shrink: 0;
+}
+
+/* Team select in war room context */
+.war-room .team-select {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  box-shadow: var(--shadow-inset);
+}
+
+.war-room .team-select:focus {
+  border-color: var(--accent-ember-dim);
+}
+
+.war-room .team-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Team badges */
+.war-room .team-badge {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 2px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.war-room .team-badge.team-a {
+  background: rgba(58, 90, 139, 0.2);
+  color: #6a9fdf;
+  border: 1px solid rgba(58, 90, 139, 0.4);
+}
+
+.war-room .team-badge.team-b {
+  background: rgba(139, 32, 32, 0.2);
+  color: #d06060;
+  border: 1px solid rgba(139, 32, 32, 0.4);
+}
+
+.war-room .team-badge.team-c {
+  background: rgba(42, 90, 42, 0.2);
+  color: #6ab06a;
+  border: 1px solid rgba(42, 90, 42, 0.4);
+}
+
+.war-room .team-badge.team-d {
+  background: rgba(139, 120, 32, 0.2);
+  color: #d0b860;
+  border: 1px solid rgba(139, 120, 32, 0.4);
+}
+
+/* Ready/waiting status */
+.war-unit-status {
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.war-unit-status--ready {
+  color: var(--accent-sickly-green);
+  text-shadow: 0 0 8px rgba(74, 122, 42, 0.3);
+}
+
+/* --- Chat Panel (Right Column) --- */
+
+.war-room-chat-messages {
+  flex: 1;
+  min-height: 120px;
+  max-height: calc(100vh - 20rem);
+  overflow-y: auto;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  border-radius: 2px;
+  padding: 0.5rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.83rem;
+  font-family: var(--font-mono);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* Thin scrollbar for chat */
+.war-room-chat-messages::-webkit-scrollbar {
+  width: 4px;
+}
+
+.war-room-chat-messages::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+
+.war-room-chat-messages::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 2px;
+}
+
+.war-room-chat-placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+  font-family: var(--font-flavor);
+  text-align: center;
+  padding: 1.5rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* Reuse existing .chat-msg, .chat-sender, .chat-text from _lobby.css */
+
+.war-room-chat-form {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.war-room-chat-input {
+  flex: 1;
+  padding: 0.45rem 0.65rem;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  outline: none;
+  box-shadow: var(--shadow-inset);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.war-room-chat-input::placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+  font-family: var(--font-flavor);
+}
+
+.war-room-chat-input:focus {
+  border-color: var(--accent-ember-dim);
+  box-shadow: var(--shadow-inset), 0 0 8px rgba(196, 151, 58, 0.08);
+}
+
+/* --- Action Buttons — Full-width bottom bar --- */
+.war-room-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Start Match (host) — massive ember CTA */
+.war-room-btn-start {
+  flex: 1;
+}
+
+.war-room-btn-start:not(:disabled):hover {
+  box-shadow:
+    var(--btn-bevel-highlight),
+    0 0 25px rgba(196, 151, 58, 0.2),
+    0 0 50px rgba(196, 151, 58, 0.08);
+}
+
+/* Ready Up (non-host) — large verdant */
+.war-room-btn-ready {
+  flex: 1;
+}
+
+.war-room-btn-ready--active {
+  opacity: 0.7;
+  cursor: default;
+}
+
+/* Leave / Retreat — small, right corner */
+.war-room-btn-leave {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* --- Error banner in war room context --- */
+.war-room .lobby-error-banner {
+  margin-bottom: 1rem;
+}
+
+/* --- AI Class Selection Slots --- */
+.config-row--column {
+  flex-direction: column;
+  align-items: flex-start !important;
+  gap: 0.4rem !important;
+}
+
+/* --- Phase 27E: PVPVE Config Styles --- */
+.pvpve-team-size-slider {
+  max-width: 100px;
+}
+
+.ai-class-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.ai-class-slot {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 160px;
+  flex: 1 1 180px;
+  max-width: 250px;
+}
+
+.ai-class-slot-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  min-width: 32px;
+  white-space: nowrap;
+}
+
+.ai-class-select {
+  flex: 1;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.78rem;
+}
+
+/* === Responsive: below 900px === */
+@media (max-width: 900px) {
+  .war-room-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .war-room-meta {
+    justify-content: flex-start;
+  }
+
+  .war-room-columns {
+    flex-direction: column;
+  }
+
+  .war-room-left {
+    max-height: none;
+  }
+
+  .war-room-right {
+    width: 100%;
+  }
+
+  .war-room-chat-messages {
+    max-height: 200px;
+    min-height: 80px;
+  }
+}
+
+/* === Responsive: below 600px === */
+@media (max-width: 600px) {
+  .war-room {
+    padding: 0 0.5rem;
+  }
+
+  .war-room-title {
+    font-size: 1.2rem;
+  }
+
+  .war-room-orders .config-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+  }
+
+  .war-room-orders .config-row label {
+    min-width: 0;
+  }
+
+  .war-room-mode-btns {
+    width: 100%;
+  }
+
+  .war-room-select {
+    width: 100%;
+  }
+
+  .war-room-actions {
+    flex-direction: column;
+  }
+
+  .war-room-btn-start,
+  .war-room-btn-ready {
+    width: 100%;
+  }
+
+  .war-unit-card {
+    flex-wrap: wrap;
+  }
+}

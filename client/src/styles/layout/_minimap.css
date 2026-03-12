@@ -1,0 +1,28 @@
+/* ===== Minimap (absolute overlay in canvas area) ===== */
+
+.minimap-wrap {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 20;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 0;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.minimap-wrap.minimap-expanded {
+  background: var(--bg-surface);
+  border-color: var(--border-medium);
+  box-shadow: var(--shadow-md);
+}
+
+.minimap-canvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border-radius: 1px;
+}

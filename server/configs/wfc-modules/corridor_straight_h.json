@@ -1,0 +1,30 @@
+{
+  "id": "corridor_straight_h",
+  "name": "Corridor Straight (Horizontal)",
+  "version": 1,
+  "tags": ["corridor"],
+  "width": 5,
+  "height": 3,
+  "difficulty": 0,
+  "frequency": 3.0,
+  "maxCount": -1,
+  "minCount": 0,
+  "sockets": {
+    "north": "wall",
+    "south": "wall",
+    "east": "corridor_1",
+    "west": "corridor_1"
+  },
+  "tiles": [
+    ["W", "W", "W", "W", "W"],
+    ["C", "C", "C", "C", "C"],
+    ["W", "W", "W", "W", "W"]
+  ],
+  "variants": [],
+  "metadata": {
+    "description": "Simple horizontal corridor connecting rooms",
+    "enemySpawns": [],
+    "chestSlots": [],
+    "doorPositions": []
+  }
+}

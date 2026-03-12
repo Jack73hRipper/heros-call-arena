@@ -1,0 +1,591 @@
+/* ===== Queued Action Display ===== */
+
+.queued-action-display {
+  background: rgba(74, 122, 42, 0.08);
+  border: 1px solid rgba(74, 122, 42, 0.2);
+  border-radius: 2px;
+  padding: 0.4rem 0.6rem;
+  margin-top: 0.3rem;
+  font-size: 0.8rem;
+}
+
+.queued-label {
+  color: var(--text-dim);
+  margin-right: 0.3rem;
+}
+
+.queued-value {
+  color: var(--accent-sickly-green);
+  font-weight: bold;
+}
+
+/* ===== Match End Overlay ===== */
+
+.match-end-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.match-end-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--accent-ember-dim);
+  border-radius: 2px;
+  padding: 2rem 3rem;
+  text-align: center;
+  max-width: 400px;
+  box-shadow: var(--shadow-lg), var(--shadow-glow-ember);
+  position: relative;
+}
+
+.match-end-box::before,
+.match-end-box::after {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: var(--accent-ember-dim);
+  border-style: solid;
+}
+.match-end-box::before {
+  top: 8px;
+  left: 8px;
+  border-width: 1px 0 0 1px;
+}
+.match-end-box::after {
+  bottom: 8px;
+  right: 8px;
+  border-width: 0 1px 1px 0;
+}
+
+.victory-text {
+  font-family: var(--font-heading);
+  color: var(--accent-ember-bright);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 20px rgba(196, 151, 58, 0.3);
+}
+
+.defeat-text {
+  font-family: var(--font-heading);
+  color: var(--accent-crimson-bright);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 20px rgba(139, 32, 32, 0.3);
+}
+
+.end-message {
+  color: var(--text-body);
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-family: var(--font-flavor);
+}
+
+.match-stats {
+  margin-bottom: 1.5rem;
+}
+
+.match-stats h3 {
+  font-family: var(--font-heading);
+  color: var(--accent-ember);
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.stats-table th {
+  color: var(--text-dim);
+  text-align: left;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--border-medium);
+  font-weight: normal;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+}
+
+.stats-table td {
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid var(--border-dark);
+  color: var(--text-body);
+}
+
+.stats-table .winner-row td {
+  color: var(--accent-ember-bright);
+  font-weight: bold;
+}
+
+.btn-return-lobby {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.2) 0%, rgba(45, 74, 26, 0.15) 100%);
+  border-color: var(--accent-sickly-green);
+  border-radius: 2px;
+  color: #8cb860;
+  cursor: pointer;
+}
+
+.btn-return-lobby:hover {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.3) 0%, rgba(45, 74, 26, 0.2) 100%);
+  box-shadow: 0 0 15px rgba(74, 122, 42, 0.15);
+}
+
+/* ===== Phase 10E-2: Auto-Target HUD Frame ===== */
+
+.hud-auto-target {
+  background: rgba(180, 40, 40, 0.08);
+  border: 1px solid rgba(255, 60, 60, 0.25);
+  border-radius: 3px;
+  padding: 0.4rem 0.5rem;
+  margin-bottom: 0.4rem;
+  animation: fadeIn 0.15s ease;
+}
+
+.hud-auto-target-header {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.15rem;
+}
+
+.hud-auto-target-icon {
+  font-size: 0.75rem;
+  color: #f54a4a;
+}
+
+.hud-auto-target-label {
+  font-size: 0.65rem;
+  color: #cc8888;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-heading);
+}
+
+.hud-auto-target-name {
+  font-size: 0.8rem;
+  color: #f5a0a0;
+  font-family: var(--font-heading);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hud-auto-target-hp-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(60, 60, 60, 0.6);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.15rem;
+}
+
+.hud-auto-target-hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f54a4a, #ff7777);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.hud-auto-target-hp-text {
+  font-size: 0.65rem;
+  color: #aa7777;
+  font-family: var(--font-mono);
+  text-align: right;
+  margin-bottom: 0.1rem;
+}
+
+.hud-auto-target-status {
+  font-size: 0.6rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.hud-auto-target-status.status-pursuing {
+  color: #c4973a;
+}
+
+.hud-auto-target-status.status-attacking {
+  color: #f54a4a;
+  animation: pulse-text 1s ease-in-out infinite;
+}
+
+/* Phase 10G-7: Skill auto-target status variants */
+.hud-auto-target-status.status-casting {
+  color: #ff9933;
+  animation: pulse-text 0.8s ease-in-out infinite;
+}
+
+.hud-auto-target-status.status-cooldown {
+  color: #8888cc;
+}
+
+/* Phase 10G-7: Heal/support variant of auto-target frame */
+.hud-auto-target.auto-target-heal {
+  background: rgba(40, 180, 60, 0.08);
+  border-color: rgba(68, 255, 68, 0.25);
+}
+
+.hud-auto-target.auto-target-heal .hud-auto-target-icon {
+  color: #44cc44;
+}
+
+.hud-auto-target.auto-target-heal .hud-auto-target-label {
+  color: #88cc88;
+}
+
+.hud-auto-target.auto-target-heal .hud-auto-target-name {
+  color: #a0f5a0;
+}
+
+.hud-auto-target.auto-target-heal .hud-auto-target-hp-text {
+  color: #77aa77;
+}
+
+.hud-auto-target-hp-fill.hp-fill-heal {
+  background: linear-gradient(90deg, #44cc44, #77ff77);
+}
+
+/* Phase 10G-7: Selected target info pane (soft-selected, no auto-target) */
+.hud-selected-target {
+  border-radius: 3px;
+  padding: 0.4rem 0.5rem;
+  margin-bottom: 0.4rem;
+  animation: fadeIn 0.15s ease;
+}
+
+.hud-selected-target.selected-enemy {
+  background: rgba(180, 150, 40, 0.08);
+  border: 1px solid rgba(255, 215, 50, 0.25);
+}
+
+.hud-selected-target.selected-ally {
+  background: rgba(40, 180, 60, 0.08);
+  border: 1px solid rgba(100, 255, 120, 0.25);
+}
+
+.hud-selected-target-header {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.15rem;
+}
+
+.hud-selected-target-icon {
+  font-size: 0.75rem;
+}
+
+.hud-selected-target-label {
+  font-size: 0.65rem;
+  color: #ccaa66;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-heading);
+}
+
+.selected-ally .hud-selected-target-label {
+  color: #88cc88;
+}
+
+.hud-selected-target-name {
+  font-size: 0.8rem;
+  color: #f5d5a0;
+  font-family: var(--font-heading);
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.selected-ally .hud-selected-target-name {
+  color: #a0f5a0;
+}
+
+.hud-selected-target-hp-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(60, 60, 60, 0.6);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.15rem;
+}
+
+.hud-selected-target-hp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f5c542, #ffdd66);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.hud-selected-target-hp-fill.hp-fill-ally {
+  background: linear-gradient(90deg, #44cc44, #77ff77);
+}
+
+.hud-selected-target-hp-text {
+  font-size: 0.65rem;
+  color: #aa9955;
+  font-family: var(--font-mono);
+  text-align: right;
+}
+
+.selected-ally .hud-selected-target-hp-text {
+  color: #77aa77;
+}
+
+/* Empty target placeholder — always-visible, muted appearance */
+.hud-target-empty {
+  background: rgba(80, 80, 80, 0.06);
+  border: 1px solid rgba(120, 120, 120, 0.15);
+  opacity: 0.45;
+}
+
+.hud-target-empty .hud-selected-target-label {
+  color: #888;
+}
+
+.hud-target-muted {
+  color: #666 !important;
+  font-style: italic;
+  font-size: 0.7rem !important;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* ===== Action Intent Banner ===== */
+
+.action-intent-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(10, 10, 16, 0.85);
+  min-width: 200px;
+  max-width: 480px;
+  min-height: 40px;
+  flex: 1;
+  overflow: hidden;
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  cursor: default;
+}
+
+.intent-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.intent-icon .skill-icon-sprite {
+  image-rendering: pixelated;
+  display: block;
+}
+
+.intent-text {
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+}
+
+.intent-queue-count {
+  font-size: 0.6rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* --- Intent state variants --- */
+
+.action-intent-banner.intent-idle {
+  border-color: var(--border-dark);
+}
+.action-intent-banner.intent-idle .intent-text {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.action-intent-banner.intent-dead {
+  border-color: rgba(200, 50, 50, 0.3);
+  background: rgba(80, 10, 10, 0.4);
+}
+.action-intent-banner.intent-dead .intent-text {
+  color: #cc5555;
+}
+
+/* Targeting mode — purple glow, pulsing */
+.action-intent-banner.intent-targeting {
+  border-color: rgba(160, 80, 240, 0.6);
+  background: rgba(80, 30, 140, 0.2);
+  box-shadow: 0 0 10px rgba(160, 80, 240, 0.2);
+  animation: intent-pulse-purple 1.8s ease-in-out infinite;
+}
+.action-intent-banner.intent-targeting .intent-text {
+  color: #d8b4fe;
+}
+
+@keyframes intent-pulse-purple {
+  0%, 100% { box-shadow: 0 0 6px rgba(160, 80, 240, 0.15); }
+  50% { box-shadow: 0 0 14px rgba(160, 80, 240, 0.35); }
+}
+
+/* Pursuing — amber/yellow, pulsing */
+.action-intent-banner.intent-pursuing {
+  border-color: rgba(218, 168, 74, 0.5);
+  background: rgba(100, 75, 20, 0.15);
+  animation: intent-pulse-amber 2s ease-in-out infinite;
+}
+.action-intent-banner.intent-pursuing .intent-text {
+  color: #f0d060;
+}
+
+@keyframes intent-pulse-amber {
+  0%, 100% { box-shadow: 0 0 4px rgba(218, 168, 74, 0.1); }
+  50% { box-shadow: 0 0 12px rgba(218, 168, 74, 0.3); }
+}
+
+/* Attacking — red/crimson, solid */
+.action-intent-banner.intent-attacking {
+  border-color: rgba(220, 60, 60, 0.6);
+  background: rgba(120, 20, 20, 0.2);
+  box-shadow: 0 0 8px rgba(220, 60, 60, 0.2);
+}
+.action-intent-banner.intent-attacking .intent-text {
+  color: #ff7070;
+}
+
+/* Casting — bright purple, solid */
+.action-intent-banner.intent-casting {
+  border-color: rgba(160, 80, 240, 0.7);
+  background: rgba(80, 30, 140, 0.25);
+  box-shadow: 0 0 12px rgba(160, 80, 240, 0.3);
+}
+.action-intent-banner.intent-casting .intent-text {
+  color: #e0b0ff;
+  font-weight: 600;
+}
+
+/* Cooldown — dim orange */
+.action-intent-banner.intent-cooldown {
+  border-color: rgba(180, 120, 40, 0.4);
+  background: rgba(80, 50, 10, 0.15);
+}
+.action-intent-banner.intent-cooldown .intent-text {
+  color: #cca050;
+}
+
+/* Healing — green glow */
+.action-intent-banner.intent-healing,
+.action-intent-banner.intent-heal-pursuing {
+  border-color: rgba(60, 200, 80, 0.5);
+  background: rgba(20, 80, 30, 0.15);
+  box-shadow: 0 0 8px rgba(60, 200, 80, 0.15);
+}
+.action-intent-banner.intent-healing .intent-text,
+.action-intent-banner.intent-heal-pursuing .intent-text {
+  color: #70e080;
+}
+
+/* Moving — blue */
+.action-intent-banner.intent-moving {
+  border-color: rgba(74, 159, 245, 0.4);
+  background: rgba(20, 50, 100, 0.15);
+}
+.action-intent-banner.intent-moving .intent-text {
+  color: #8ac4ff;
+}
+
+/* Queued actions — orange/warm */
+.action-intent-banner.intent-attack-queued,
+.action-intent-banner.intent-skill-queued,
+.action-intent-banner.intent-item-queued,
+.action-intent-banner.intent-interact-queued,
+.action-intent-banner.intent-queued {
+  border-color: rgba(218, 140, 50, 0.45);
+  background: rgba(100, 65, 15, 0.15);
+}
+.action-intent-banner.intent-attack-queued .intent-text,
+.action-intent-banner.intent-skill-queued .intent-text,
+.action-intent-banner.intent-item-queued .intent-text,
+.action-intent-banner.intent-interact-queued .intent-text,
+.action-intent-banner.intent-queued .intent-text {
+  color: #f0b860;
+}
+
+/* Selected target — subtle outline */
+.action-intent-banner.intent-target-enemy {
+  border-color: rgba(220, 80, 80, 0.35);
+  background: rgba(80, 20, 20, 0.12);
+}
+.action-intent-banner.intent-target-enemy .intent-text {
+  color: #e08888;
+}
+
+.action-intent-banner.intent-target-ally {
+  border-color: rgba(60, 180, 80, 0.35);
+  background: rgba(20, 60, 25, 0.12);
+}
+.action-intent-banner.intent-target-ally .intent-text {
+  color: #80d080;
+}
+
+/* Clickable banner — cancel intent on click */
+.action-intent-banner.intent-clickable {
+  cursor: pointer;
+}
+.action-intent-banner.intent-clickable:hover {
+  filter: brightness(1.15);
+}
+
+/* Responsive: shrink on small screens */
+@media (max-width: 900px) {
+  .action-intent-banner {
+    min-width: 120px;
+    max-width: 280px;
+    padding: 0.25rem 0.5rem;
+  }
+  .intent-text {
+    font-size: 0.7rem;
+  }
+}

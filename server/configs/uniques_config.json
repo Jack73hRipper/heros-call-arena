@@ -1,0 +1,378 @@
+{
+  "uniques": {
+    "unique_soulreaver": {
+      "unique_id": "unique_soulreaver",
+      "name": "Soulreaver",
+      "item_type": "weapon",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "description": "Forged from the screaming souls of a thousand martyrs. Each strike drinks deep.",
+      "stat_bonuses": {
+        "attack_damage": 15,
+        "life_on_hit": 5
+      },
+      "special_effect": {
+        "effect_id": "soulreaver_lifesteal",
+        "description": "Heals 15% of melee damage dealt",
+        "type": "melee_lifesteal_pct",
+        "value": 0.15
+      },
+      "best_for": ["crusader", "hexblade"],
+      "sell_value": 120,
+      "item_level": 14
+    },
+    "unique_whisper": {
+      "unique_id": "unique_whisper",
+      "name": "The Whisper",
+      "item_type": "weapon",
+      "equip_slot": "weapon",
+      "weapon_category": "ranged",
+      "description": "A bolt loosed from this bow arrives before its sound. Death whispers — then screams.",
+      "stat_bonuses": {
+        "ranged_damage": 10,
+        "crit_chance": 0.08
+      },
+      "special_effect": {
+        "effect_id": "whisper_crit_mult",
+        "description": "Critical hits deal 3× instead of 1.5×",
+        "type": "override_crit_multiplier",
+        "value": 3.0
+      },
+      "best_for": ["ranger", "inquisitor"],
+      "sell_value": 130,
+      "item_level": 14
+    },
+    "unique_grimfang": {
+      "unique_id": "unique_grimfang",
+      "name": "Grimfang",
+      "item_type": "weapon",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "description": "The blade bites with unnatural hunger. Each kill only makes it faster.",
+      "stat_bonuses": {
+        "attack_damage": 20,
+        "crit_chance": 0.05
+      },
+      "special_effect": {
+        "effect_id": "grimfang_kill_speed",
+        "description": "On kill: +25% move speed for 2 turns",
+        "type": "on_kill_buff",
+        "buff_id": "grimfang_haste",
+        "buff_type": "move_speed_bonus",
+        "value": 1,
+        "duration": 2
+      },
+      "best_for": ["hexblade"],
+      "sell_value": 140,
+      "item_level": 15
+    },
+    "unique_dawnbreaker": {
+      "unique_id": "unique_dawnbreaker",
+      "name": "Dawnbreaker",
+      "item_type": "weapon",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "description": "Radiant steel that burns the unholy. The dawn comes for all who linger in shadow.",
+      "stat_bonuses": {
+        "attack_damage": 12,
+        "holy_damage_pct": 0.25
+      },
+      "special_effect": {
+        "effect_id": "dawnbreaker_holy_cdr",
+        "description": "Exorcism/Rebuke cooldowns reduced by 2 turns",
+        "type": "skill_cooldown_reduction",
+        "skills": ["exorcism", "rebuke"],
+        "value": 2
+      },
+      "best_for": ["confessor", "inquisitor"],
+      "sell_value": 125,
+      "item_level": 14
+    },
+    "unique_plaguebow": {
+      "unique_id": "unique_plaguebow",
+      "name": "Plaguebow",
+      "item_type": "weapon",
+      "equip_slot": "weapon",
+      "weapon_category": "ranged",
+      "description": "Its arrows carry a sickness older than kingdoms. What they pierce, they rot.",
+      "stat_bonuses": {
+        "ranged_damage": 16,
+        "dot_damage_pct": 0.20
+      },
+      "special_effect": {
+        "effect_id": "plaguebow_poison",
+        "description": "Ranged hits apply 4 damage/turn poison for 2 turns",
+        "type": "ranged_apply_dot",
+        "damage_per_tick": 4,
+        "duration": 2,
+        "dot_id": "plaguebow_poison"
+      },
+      "best_for": ["ranger"],
+      "sell_value": 135,
+      "item_level": 15
+    },
+    "unique_voidedge": {
+      "unique_id": "unique_voidedge",
+      "name": "Voidedge",
+      "item_type": "weapon",
+      "equip_slot": "weapon",
+      "weapon_category": "hybrid",
+      "description": "Half the blade exists in the Void. Armor means nothing to what isn't fully here.",
+      "stat_bonuses": {
+        "attack_damage": 14,
+        "ranged_damage": 14
+      },
+      "special_effect": {
+        "effect_id": "voidedge_armor_ignore",
+        "description": "All damage ignores 50% of target armor",
+        "type": "armor_ignore_pct",
+        "value": 0.50
+      },
+      "best_for": ["hexblade", "inquisitor"],
+      "sell_value": 145,
+      "item_level": 16
+    },
+    "unique_bonecage": {
+      "unique_id": "unique_bonecage",
+      "name": "The Bonecage",
+      "item_type": "armor",
+      "equip_slot": "armor",
+      "description": "Ribs of ancient giants, lashed together with sinew and spite. Heavy, but impenetrable.",
+      "stat_bonuses": {
+        "armor": 10,
+        "max_hp": 40,
+        "move_speed": -1
+      },
+      "special_effect": {
+        "effect_id": "bonecage_dr",
+        "description": "Take 15% less damage from all sources",
+        "type": "flat_damage_reduction_bonus",
+        "value": 0.15
+      },
+      "best_for": ["crusader"],
+      "sell_value": 115,
+      "item_level": 14
+    },
+    "unique_shadowshroud": {
+      "unique_id": "unique_shadowshroud",
+      "name": "Shadowshroud",
+      "item_type": "armor",
+      "equip_slot": "armor",
+      "description": "Woven from the last light of a dying star. Its wearer flickers at the edge of sight.",
+      "stat_bonuses": {
+        "armor": 5,
+        "dodge_chance": 0.05,
+        "cooldown_reduction_pct": 0.10
+      },
+      "special_effect": {
+        "effect_id": "shadowshroud_cdr",
+        "description": "Shadow Step cooldown reduced by 2 turns",
+        "type": "skill_cooldown_reduction",
+        "skills": ["shadow_step"],
+        "value": 2
+      },
+      "best_for": ["hexblade", "inquisitor"],
+      "sell_value": 110,
+      "item_level": 13
+    },
+    "unique_penitent_mail": {
+      "unique_id": "unique_penitent_mail",
+      "name": "Penitent Mail",
+      "item_type": "armor",
+      "equip_slot": "armor",
+      "description": "Each link was forged through prayer and penance. Blood shed in its making sanctified the steel.",
+      "stat_bonuses": {
+        "armor": 6,
+        "max_hp": 60
+      },
+      "special_effect": {
+        "effect_id": "penitent_heal_bonus",
+        "description": "Healing received increased by 30%",
+        "type": "healing_received_bonus",
+        "value": 0.30
+      },
+      "best_for": ["crusader", "confessor"],
+      "sell_value": 105,
+      "item_level": 13
+    },
+    "unique_wraithmantle": {
+      "unique_id": "unique_wraithmantle",
+      "name": "Wraithmantle",
+      "item_type": "armor",
+      "equip_slot": "armor",
+      "description": "A cloak stitched from graveyard mist. When it moves, the dead seem to reach out.",
+      "stat_bonuses": {
+        "armor": 4,
+        "dodge_chance": 0.10
+      },
+      "special_effect": {
+        "effect_id": "wraithmantle_dodge_retaliate",
+        "description": "On dodge: deal 10 damage to attacker",
+        "type": "on_dodge_damage",
+        "value": 10
+      },
+      "best_for": ["ranger"],
+      "sell_value": 115,
+      "item_level": 14
+    },
+    "unique_ironwill": {
+      "unique_id": "unique_ironwill",
+      "name": "Ironwill Plate",
+      "item_type": "armor",
+      "equip_slot": "armor",
+      "description": "The plate of a general who never retreated. Not once. Not even from death.",
+      "stat_bonuses": {
+        "armor": 14,
+        "max_hp": 20
+      },
+      "special_effect": {
+        "effect_id": "ironwill_cc_immune",
+        "description": "Immune to stun and root",
+        "type": "cc_immunity",
+        "immune_to": ["stun", "root"]
+      },
+      "best_for": ["crusader"],
+      "sell_value": 130,
+      "item_level": 15
+    },
+    "unique_eye_of_malice": {
+      "unique_id": "unique_eye_of_malice",
+      "name": "Eye of Malice",
+      "item_type": "accessory",
+      "equip_slot": "accessory",
+      "description": "It stares. It sees weakness. And when it finds it — it whispers to the blade.",
+      "stat_bonuses": {
+        "crit_chance": 0.08,
+        "skill_damage_pct": 0.20
+      },
+      "special_effect": {
+        "effect_id": "eye_of_malice_reset",
+        "description": "Skills that deal critical hits have no cooldown on next use",
+        "type": "crit_skill_reset_cooldown",
+        "value": true
+      },
+      "best_for": ["all"],
+      "sell_value": 150,
+      "item_level": 16
+    },
+    "unique_bloodpact": {
+      "unique_id": "unique_bloodpact",
+      "name": "Bloodpact Ring",
+      "item_type": "accessory",
+      "equip_slot": "accessory",
+      "description": "Sealed in blood, broken in rage. When death is near, the ring drinks deep and strikes harder.",
+      "stat_bonuses": {
+        "max_hp": 80,
+        "life_on_hit": 4
+      },
+      "special_effect": {
+        "effect_id": "bloodpact_low_hp_damage",
+        "description": "At below 30% HP: +40% damage",
+        "type": "low_hp_damage_bonus",
+        "hp_threshold": 0.30,
+        "value": 0.40
+      },
+      "best_for": ["all"],
+      "sell_value": 135,
+      "item_level": 15
+    },
+    "unique_greed_sigil": {
+      "unique_id": "unique_greed_sigil",
+      "name": "Sigil of Greed",
+      "item_type": "accessory",
+      "equip_slot": "accessory",
+      "description": "Gold is its own god. This sigil is its prayer. Wear it, and riches follow — but strength falters.",
+      "stat_bonuses": {
+        "gold_find_pct": 0.50,
+        "magic_find_pct": 0.30
+      },
+      "special_effect": {
+        "effect_id": "greed_sigil_damage_penalty",
+        "description": "-15% damage dealt",
+        "type": "damage_dealt_penalty",
+        "value": -0.15
+      },
+      "best_for": ["all"],
+      "sell_value": 100,
+      "item_level": 10
+    },
+    "unique_wardens_oath": {
+      "unique_id": "unique_wardens_oath",
+      "name": "Warden's Oath",
+      "item_type": "accessory",
+      "equip_slot": "accessory",
+      "description": "An oath older than the walls it defends. Its bearer draws all wrath to themselves — willingly.",
+      "stat_bonuses": {
+        "armor": 6,
+        "thorns": 4,
+        "max_hp": 30
+      },
+      "special_effect": {
+        "effect_id": "wardens_oath_taunt_range",
+        "description": "Taunt radius increased by 1 tile",
+        "type": "taunt_range_bonus",
+        "value": 1
+      },
+      "best_for": ["crusader"],
+      "sell_value": 120,
+      "item_level": 14
+    },
+    "unique_prayer_beads": {
+      "unique_id": "unique_prayer_beads",
+      "name": "Prayer Beads",
+      "item_type": "accessory",
+      "equip_slot": "accessory",
+      "description": "Each bead represents a soul saved. The more you carry, the wider the light spreads.",
+      "stat_bonuses": {
+        "heal_power_pct": 0.30,
+        "hp_regen": 4,
+        "max_hp": 40
+      },
+      "special_effect": {
+        "effect_id": "prayer_beads_aoe_heal",
+        "description": "Prayer heals all adjacent allies (not just target)",
+        "type": "prayer_aoe_heal",
+        "value": true
+      },
+      "best_for": ["confessor"],
+      "sell_value": 125,
+      "item_level": 14
+    }
+  },
+  "drop_rules": {
+    "base_drop_chance": 0.005,
+    "min_enemy_tier": "elite",
+    "allowed_tiers": ["elite", "boss"],
+    "max_per_run": 1,
+    "magic_find_scaling": true,
+    "floor_scaling": {
+      "1": 1.0,
+      "3": 1.15,
+      "5": 1.35,
+      "7": 1.60,
+      "9": 2.0
+    }
+  },
+  "enemy_type_weights": {
+    "undead": {
+      "unique_dawnbreaker": 3.0,
+      "unique_prayer_beads": 2.0,
+      "unique_penitent_mail": 2.0
+    },
+    "demon": {
+      "unique_soulreaver": 3.0,
+      "unique_grimfang": 2.0,
+      "unique_voidedge": 2.0
+    },
+    "beast": {
+      "unique_wraithmantle": 3.0,
+      "unique_plaguebow": 2.0,
+      "unique_grimfang": 2.0
+    },
+    "corrupted": {
+      "unique_eye_of_malice": 3.0,
+      "unique_voidedge": 2.0,
+      "unique_bloodpact": 2.0
+    }
+  }
+}

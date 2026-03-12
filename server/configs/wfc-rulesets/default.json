@@ -1,0 +1,38 @@
+{
+  "id": "default",
+  "name": "Default Dungeon Ruleset",
+  "version": 1,
+  "description": "Standard grimdark dungeon generation rules",
+  "socketCompatibility": {
+    "wall": ["wall"],
+    "corridor_1": ["corridor_1"],
+    "corridor_2": ["corridor_2"],
+    "corridor_3": ["corridor_3"]
+  },
+  "globalConstraints": {
+    "minRooms": 5,
+    "maxRooms": 12,
+    "maxDeadEnds": 3,
+    "requireSpawnRoom": true,
+    "requireBossRoom": true,
+    "minSpawnToBossDistance": 4,
+    "ensureFullConnectivity": true
+  },
+  "difficultyGradient": {
+    "enabled": true,
+    "mode": "distance_from_spawn",
+    "zones": [
+      { "minDistance": 0, "maxDistance": 1, "maxDifficulty": 2 },
+      { "minDistance": 2, "maxDistance": 3, "maxDifficulty": 5 },
+      { "minDistance": 4, "maxDistance": 99, "maxDifficulty": 10 }
+    ]
+  },
+  "tileLegend": {
+    "W": { "type": "wall", "color": "#333344", "label": "Wall" },
+    "F": { "type": "floor", "color": "#1a1a2e", "label": "Floor" },
+    "D": { "type": "door", "color": "#8B4513", "label": "Door" },
+    "C": { "type": "corridor", "color": "#222238", "label": "Corridor" },
+    "S": { "type": "spawn", "color": "#44aa66", "label": "Spawn" },
+    "X": { "type": "chest", "color": "#ccaa44", "label": "Chest" }
+  }
+}

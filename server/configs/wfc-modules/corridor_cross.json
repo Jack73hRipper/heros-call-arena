@@ -1,0 +1,32 @@
+{
+  "id": "corridor_cross",
+  "name": "Corridor Crossroads",
+  "version": 1,
+  "tags": ["corridor", "junction"],
+  "width": 5,
+  "height": 5,
+  "difficulty": 0,
+  "frequency": 1.0,
+  "maxCount": -1,
+  "minCount": 0,
+  "sockets": {
+    "north": "corridor_1",
+    "south": "corridor_1",
+    "east": "corridor_1",
+    "west": "corridor_1"
+  },
+  "tiles": [
+    ["W", "W", "C", "W", "W"],
+    ["W", "W", "C", "W", "W"],
+    ["C", "C", "C", "C", "C"],
+    ["W", "W", "C", "W", "W"],
+    ["W", "W", "C", "W", "W"]
+  ],
+  "variants": [],
+  "metadata": {
+    "description": "Four-way crossroads corridor",
+    "enemySpawns": [],
+    "chestSlots": [],
+    "doorPositions": []
+  }
+}

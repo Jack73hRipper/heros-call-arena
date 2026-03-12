@@ -1,0 +1,277 @@
+/* ===== Enemy Panel (Hostile Units in FOV) ===== */
+
+.enemy-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.enemy-panel-title {
+  font-family: var(--font-heading);
+  color: #d04040;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.enemy-count-badge {
+  font-size: 0.6rem;
+  color: #ff6a6a;
+  font-weight: normal;
+  text-transform: none;
+  font-family: var(--font-body);
+  letter-spacing: normal;
+  background: rgba(208, 64, 64, 0.15);
+  border: 1px solid rgba(208, 64, 64, 0.3);
+  border-radius: 2px;
+  padding: 0.05rem 0.3rem;
+}
+
+.enemy-panel-hint {
+  font-size: 0.55rem;
+  color: rgba(200, 200, 200, 0.5);
+  text-align: center;
+  letter-spacing: 0.03rem;
+  margin-bottom: 0.4rem;
+}
+
+.enemy-member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(208, 64, 64, 0.3) transparent;
+}
+
+.enemy-panel-empty {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.enemy-member-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.enemy-member-list::-webkit-scrollbar-thumb {
+  background: rgba(208, 64, 64, 0.3);
+  border-radius: 2px;
+}
+
+.enemy-member {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.4rem 0.5rem;
+  background: rgba(208, 64, 64, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  color: var(--text-main);
+  font-family: var(--font-body);
+}
+
+.enemy-member:hover {
+  background: rgba(208, 64, 64, 0.12);
+  border-color: rgba(208, 64, 64, 0.35);
+}
+
+.enemy-member-selected {
+  background: rgba(255, 100, 100, 0.12) !important;
+  border-color: rgba(255, 100, 100, 0.5) !important;
+  box-shadow: 0 0 6px rgba(255, 100, 100, 0.2);
+}
+
+.enemy-member-auto-target {
+  background: rgba(255, 60, 60, 0.18) !important;
+  border-color: rgba(255, 60, 60, 0.6) !important;
+  box-shadow: 0 0 8px rgba(255, 60, 60, 0.25);
+}
+
+.enemy-member-clickable {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+}
+
+.enemy-member-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.enemy-member-name {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #ff8a8a;
+}
+
+.enemy-boss-badge {
+  margin-right: 0.2rem;
+}
+
+.enemy-member-class {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: capitalize;
+}
+
+.enemy-member-hp-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.enemy-member-hp-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+
+.enemy-member-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.6rem;
+}
+
+.enemy-member-hp-text {
+  color: var(--text-dim);
+}
+
+.enemy-member-distance {
+  color: rgba(200, 200, 200, 0.45);
+  font-size: 0.55rem;
+}
+
+.enemy-member-pursuit {
+  color: #ff4040;
+  font-weight: bold;
+  font-size: 0.55rem;
+  padding: 0.05rem 0.2rem;
+  border: 1px solid rgba(255, 64, 64, 0.4);
+  border-radius: 2px;
+  background: rgba(255, 64, 64, 0.1);
+}
+
+.enemy-member-targeted {
+  color: #ff8a4a;
+  font-weight: bold;
+  font-size: 0.55rem;
+  padding: 0.05rem 0.2rem;
+  border: 1px solid rgba(255, 138, 74, 0.4);
+  border-radius: 2px;
+  background: rgba(255, 138, 74, 0.1);
+}
+
+/* ===== Phase 18E (E7): Rarity Badge, Champion Type, Affix Icons ===== */
+
+.enemy-rarity-badge {
+  font-size: 0.55rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.05rem 0.3rem;
+  border: 1px solid;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+.enemy-champion-tag {
+  font-size: 0.6rem;
+  color: rgba(200, 200, 220, 0.75);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.05rem 0;
+}
+
+.enemy-affix-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.2rem 0 0.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: 0.15rem;
+}
+
+.enemy-affix-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-size: 0.6rem;
+  line-height: 1.3;
+  padding: 0.05rem 0;
+}
+
+.enemy-affix-entry-icon {
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  width: 1rem;
+  text-align: center;
+}
+
+.enemy-affix-entry-name {
+  color: rgba(230, 220, 200, 0.9);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.enemy-affix-entry-desc {
+  color: rgba(180, 175, 165, 0.65);
+  font-style: italic;
+}
+
+/* Keep old classes for backward compat — hidden */
+.enemy-affix-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem;
+  padding: 0.1rem 0;
+}
+
+.enemy-affix-icon {
+  font-size: 0.65rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  cursor: default;
+  transition: background 0.15s ease;
+}
+
+.enemy-affix-icon:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.3);
+}

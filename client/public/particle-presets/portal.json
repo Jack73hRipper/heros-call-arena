@@ -1,0 +1,504 @@
+[
+  {
+    "name": "portal-swirl",
+    "version": 2,
+    "duration": 3,
+    "loop": true,
+    "tags": [
+      "ui",
+      "portal",
+      "ambient"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 24,
+      "spawnShape": "ring",
+      "spawnRadius": 20,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 8,
+        "max": 20
+      },
+      "gravity": {
+        "x": 0,
+        "y": -3
+      },
+      "friction": 0.01
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.5,
+        "max": 1.4
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 2,
+          "max": 5
+        },
+        "end": {
+          "min": 0,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#00F5D4"
+          },
+          {
+            "stop": 0.3,
+            "color": "#00BBD4"
+          },
+          {
+            "stop": 0.6,
+            "color": "#9D4EDD"
+          },
+          {
+            "stop": 1,
+            "color": "#3C096C"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.9,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter",
+      "trail": {
+        "length": 5
+      }
+    }
+  },
+  {
+    "name": "portal-ground-ring",
+    "version": 2,
+    "duration": 5,
+    "loop": true,
+    "tags": [
+      "portal",
+      "compound",
+      "ring"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 30,
+      "spawnShape": "ring",
+      "spawnRadius": 22,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 8,
+        "max": 22
+      },
+      "gravity": {
+        "x": 0,
+        "y": 0
+      },
+      "friction": 0.015
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.9,
+        "max": 2
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 2,
+          "max": 5
+        },
+        "end": {
+          "min": 0,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#00F5D4"
+          },
+          {
+            "stop": 0.25,
+            "color": "#00BBD4"
+          },
+          {
+            "stop": 0.55,
+            "color": "#7B2FBE"
+          },
+          {
+            "stop": 0.8,
+            "color": "#5A189A"
+          },
+          {
+            "stop": 1,
+            "color": "#240046"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.85,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter",
+      "trail": {
+        "length": 6
+      }
+    }
+  },
+  {
+    "name": "portal-core-glow",
+    "version": 2,
+    "duration": 2.5,
+    "loop": true,
+    "tags": [
+      "portal",
+      "compound",
+      "glow"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 18,
+      "spawnShape": "circle",
+      "spawnRadius": 6,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 1,
+        "max": 5
+      },
+      "gravity": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.25,
+        "max": 0.65
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 5,
+          "max": 12
+        },
+        "end": {
+          "min": 1,
+          "max": 3
+        },
+        "easing": "easeOutCubic"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.15,
+            "color": "#C0FFF4"
+          },
+          {
+            "stop": 0.4,
+            "color": "#00F5D4"
+          },
+          {
+            "stop": 0.7,
+            "color": "#9D4EDD"
+          },
+          {
+            "stop": 1,
+            "color": "#3C096C"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutQuad"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "portal-rising-sparks",
+    "version": 2,
+    "duration": 3.5,
+    "loop": true,
+    "tags": [
+      "portal",
+      "compound",
+      "sparks"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 12,
+      "spawnShape": "circle",
+      "spawnRadius": 14,
+      "angle": {
+        "min": 245,
+        "max": 295
+      },
+      "speed": {
+        "min": 30,
+        "max": 70
+      },
+      "gravity": {
+        "x": 0,
+        "y": -15
+      },
+      "friction": 0.008
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.7,
+        "max": 1.8
+      },
+      "shape": "triangle",
+      "size": {
+        "start": {
+          "min": 2,
+          "max": 5
+        },
+        "end": {
+          "min": 0,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.15,
+            "color": "#72EFDD"
+          },
+          {
+            "stop": 0.4,
+            "color": "#00F5D4"
+          },
+          {
+            "stop": 0.65,
+            "color": "#C77DFF"
+          },
+          {
+            "stop": 1,
+            "color": "#3C096C"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "rotation": {
+        "start": {
+          "min": 0,
+          "max": 6.28
+        },
+        "speed": {
+          "min": -5,
+          "max": 5
+        }
+      },
+      "trail": {
+        "length": 7
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "portal-channel-swirl",
+    "version": 2,
+    "duration": 3,
+    "loop": true,
+    "tags": [
+      "portal",
+      "compound",
+      "cast"
+    ],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 40,
+      "spawnShape": "ring",
+      "spawnRadius": 16,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 20,
+        "max": 50
+      },
+      "gravity": {
+        "x": 0,
+        "y": -8
+      },
+      "friction": 0.025
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.25,
+        "max": 0.7
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 2,
+          "max": 4
+        },
+        "end": {
+          "min": 0,
+          "max": 1
+        },
+        "easing": "easeOutElastic"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.1,
+            "color": "#B8FFF5"
+          },
+          {
+            "stop": 0.35,
+            "color": "#00F5D4"
+          },
+          {
+            "stop": 0.6,
+            "color": "#7B2FBE"
+          },
+          {
+            "stop": 0.85,
+            "color": "#5A189A"
+          },
+          {
+            "stop": 1,
+            "color": "#10002B"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "trail": {
+        "length": 8
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "portal-open-flash",
+    "version": 2,
+    "duration": 0.6,
+    "loop": false,
+    "tags": [
+      "portal",
+      "compound",
+      "flash"
+    ],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 50,
+      "spawnShape": "point",
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 50,
+        "max": 160
+      },
+      "gravity": {
+        "x": 0,
+        "y": 0
+      },
+      "friction": 0.035
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.2,
+        "max": 0.7
+      },
+      "shape": "star",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 10
+        },
+        "end": {
+          "min": 0,
+          "max": 2
+        },
+        "easing": "easeOutCubic"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.1,
+            "color": "#E0FFFA"
+          },
+          {
+            "stop": 0.3,
+            "color": "#00F5D4"
+          },
+          {
+            "stop": 0.55,
+            "color": "#C77DFF"
+          },
+          {
+            "stop": 0.8,
+            "color": "#7B2FBE"
+          },
+          {
+            "stop": 1,
+            "color": "#240046"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutQuad"
+      },
+      "rotation": {
+        "start": {
+          "min": 0,
+          "max": 6.28
+        },
+        "speed": {
+          "min": -4,
+          "max": 4
+        }
+      },
+      "blendMode": "lighter"
+    }
+  }
+]

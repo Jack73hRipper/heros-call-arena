@@ -1,0 +1,542 @@
+{
+  "items": {
+
+    "common_sword": {
+      "item_id": "common_sword",
+      "name": "Rusty Sword",
+      "item_type": "weapon",
+      "rarity": "common",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "stat_bonuses": { "attack_damage": 5, "ranged_damage": 0, "armor": 0, "max_hp": 0 },
+      "description": "A battered blade. Still sharp enough to cut.",
+      "sell_value": 10
+    },
+    "common_bow": {
+      "item_id": "common_bow",
+      "name": "Shortbow",
+      "item_type": "weapon",
+      "rarity": "common",
+      "equip_slot": "weapon",
+      "weapon_category": "ranged",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 8, "armor": 0, "max_hp": 0 },
+      "description": "A simple shortbow. Effective at range.",
+      "sell_value": 12
+    },
+    "common_mace": {
+      "item_id": "common_mace",
+      "name": "Iron Mace",
+      "item_type": "weapon",
+      "rarity": "common",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "stat_bonuses": { "attack_damage": 8, "ranged_damage": 0, "armor": 0, "max_hp": 0 },
+      "description": "Heavy and blunt. Crushes bone easily.",
+      "sell_value": 15
+    },
+    "common_dagger": {
+      "item_id": "common_dagger",
+      "name": "Chipped Dagger",
+      "item_type": "weapon",
+      "rarity": "common",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "stat_bonuses": { "attack_damage": 3, "ranged_damage": 0, "armor": 0, "max_hp": 0, "crit_chance": 0.03 },
+      "description": "Small and quick. Finds gaps in armor.",
+      "sell_value": 10
+    },
+    "common_staff": {
+      "item_id": "common_staff",
+      "name": "Gnarled Staff",
+      "item_type": "weapon",
+      "rarity": "common",
+      "equip_slot": "weapon",
+      "weapon_category": "caster",
+      "stat_bonuses": { "attack_damage": 2, "ranged_damage": 0, "armor": 0, "max_hp": 0, "skill_damage_pct": 0.08 },
+      "description": "Twisted wood humming with faint power. Amplifies spells.",
+      "sell_value": 12
+    },
+    "common_crossbow": {
+      "item_id": "common_crossbow",
+      "name": "Hand Crossbow",
+      "item_type": "weapon",
+      "rarity": "common",
+      "equip_slot": "weapon",
+      "weapon_category": "ranged",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 6, "armor": 0, "max_hp": 0, "armor_pen": 1 },
+      "description": "Compact and vicious. Bolts punch through mail.",
+      "sell_value": 14
+    },
+    "common_flail": {
+      "item_id": "common_flail",
+      "name": "Rusted Flail",
+      "item_type": "weapon",
+      "rarity": "common",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "stat_bonuses": { "attack_damage": 6, "ranged_damage": 0, "armor": 0, "max_hp": 0, "holy_damage_pct": 0.05 },
+      "description": "A heavy chain weapon consecrated long ago. Still carries faint blessing.",
+      "sell_value": 14
+    },
+    "common_throwing_axes": {
+      "item_id": "common_throwing_axes",
+      "name": "Throwing Axes",
+      "item_type": "weapon",
+      "rarity": "common",
+      "equip_slot": "weapon",
+      "weapon_category": "hybrid",
+      "stat_bonuses": { "attack_damage": 3, "ranged_damage": 5, "armor": 0, "max_hp": 0 },
+      "description": "Balanced for hurling or hacking. Effective at any range.",
+      "sell_value": 13
+    },
+
+    "common_chain_armor": {
+      "item_id": "common_chain_armor",
+      "name": "Chainmail Shirt",
+      "item_type": "armor",
+      "rarity": "common",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 3, "max_hp": 0 },
+      "description": "Rusted chain links. Better than nothing.",
+      "sell_value": 10
+    },
+    "common_leather_armor": {
+      "item_id": "common_leather_armor",
+      "name": "Leather Vest",
+      "item_type": "armor",
+      "rarity": "common",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 4, "max_hp": 0 },
+      "description": "Stiff leather. Provides decent protection.",
+      "sell_value": 12
+    },
+    "common_plate_armor": {
+      "item_id": "common_plate_armor",
+      "name": "Dented Breastplate",
+      "item_type": "armor",
+      "rarity": "common",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 6, "max_hp": 0 },
+      "description": "Battered plate armor. Heavy but protective.",
+      "sell_value": 18
+    },
+    "common_robes": {
+      "item_id": "common_robes",
+      "name": "Tattered Robes",
+      "item_type": "armor",
+      "rarity": "common",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 1, "max_hp": 0, "skill_damage_pct": 0.05 },
+      "description": "Threadbare cloth woven with residual magic. Almost no physical protection.",
+      "sell_value": 10
+    },
+    "common_hide_armor": {
+      "item_id": "common_hide_armor",
+      "name": "Hide Armor",
+      "item_type": "armor",
+      "rarity": "common",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 2, "max_hp": 0, "dodge_chance": 0.03 },
+      "description": "Supple beast hide. Light enough to dodge in.",
+      "sell_value": 11
+    },
+    "common_brigandine": {
+      "item_id": "common_brigandine",
+      "name": "Brigandine Coat",
+      "item_type": "armor",
+      "rarity": "common",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 4, "max_hp": 10 },
+      "description": "Steel plates riveted to leather. Balanced protection.",
+      "sell_value": 14
+    },
+    "common_bone_armor": {
+      "item_id": "common_bone_armor",
+      "name": "Bone Hauberk",
+      "item_type": "armor",
+      "rarity": "common",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 3, "max_hp": 0, "thorns": 2 },
+      "description": "Lashed from dungeon bones. Jagged edges cut anyone who strikes you.",
+      "sell_value": 13
+    },
+    "common_vestments": {
+      "item_id": "common_vestments",
+      "name": "Blessed Vestments",
+      "item_type": "armor",
+      "rarity": "common",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 2, "max_hp": 0, "heal_power_pct": 0.05 },
+      "description": "Holy cloth, faded but functional. Strengthens divine healing.",
+      "sell_value": 12
+    },
+
+    "common_ring": {
+      "item_id": "common_ring",
+      "name": "Iron Ring",
+      "item_type": "accessory",
+      "rarity": "common",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 20 },
+      "description": "A simple ring. Grants fortitude.",
+      "sell_value": 10
+    },
+    "common_amulet": {
+      "item_id": "common_amulet",
+      "name": "Bone Amulet",
+      "item_type": "accessory",
+      "rarity": "common",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 30 },
+      "description": "Carved from dungeon bone. Unsettling but potent.",
+      "sell_value": 15
+    },
+    "common_talisman": {
+      "item_id": "common_talisman",
+      "name": "Stone Talisman",
+      "item_type": "accessory",
+      "rarity": "common",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 10, "damage_reduction_pct": 0.03 },
+      "description": "A smooth river stone on a cord. Absorbs impact.",
+      "sell_value": 12
+    },
+    "common_charm": {
+      "item_id": "common_charm",
+      "name": "Wolf Fang Charm",
+      "item_type": "accessory",
+      "rarity": "common",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0, "crit_chance": 0.02, "crit_damage": 0.10 },
+      "description": "A fang from a dire wolf. Sharpens your killer instinct.",
+      "sell_value": 13
+    },
+    "common_idol": {
+      "item_id": "common_idol",
+      "name": "Cracked Idol",
+      "item_type": "accessory",
+      "rarity": "common",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0, "skill_damage_pct": 0.05, "cooldown_reduction_pct": 0.03 },
+      "description": "A fragment of a forgotten god. Hums with latent energy.",
+      "sell_value": 14
+    },
+    "common_relic": {
+      "item_id": "common_relic",
+      "name": "Tarnished Relic",
+      "item_type": "accessory",
+      "rarity": "common",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0, "holy_damage_pct": 0.05, "heal_power_pct": 0.03 },
+      "description": "A sacred symbol, blackened with age. Still channels divine light.",
+      "sell_value": 14
+    },
+    "common_trophy": {
+      "item_id": "common_trophy",
+      "name": "Goblin Ear Necklace",
+      "item_type": "accessory",
+      "rarity": "common",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0, "gold_find_pct": 0.10, "magic_find_pct": 0.05 },
+      "description": "A grisly trophy. Brings strange luck and draws coin.",
+      "sell_value": 8
+    },
+    "common_fetish": {
+      "item_id": "common_fetish",
+      "name": "Venom Fetish",
+      "item_type": "accessory",
+      "rarity": "common",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0, "dot_damage_pct": 0.05, "life_on_hit": 1 },
+      "description": "A tiny effigy dripping with dark ichor. Poisons and heals in equal measure.",
+      "sell_value": 13
+    },
+
+    "uncommon_greatsword": {
+      "item_id": "uncommon_greatsword",
+      "name": "Tempered Greatsword",
+      "item_type": "weapon",
+      "rarity": "magic",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "stat_bonuses": { "attack_damage": 12, "ranged_damage": 0, "armor": 0, "max_hp": 0 },
+      "description": "Well-forged steel. Cleaves through armor.",
+      "sell_value": 35
+    },
+    "uncommon_longbow": {
+      "item_id": "uncommon_longbow",
+      "name": "Yew Longbow",
+      "item_type": "weapon",
+      "rarity": "magic",
+      "equip_slot": "weapon",
+      "weapon_category": "ranged",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 14, "armor": 0, "max_hp": 0 },
+      "description": "Fine yew construction. Deadly accurate at distance.",
+      "sell_value": 40
+    },
+    "uncommon_warhammer": {
+      "item_id": "uncommon_warhammer",
+      "name": "Blessed Warhammer",
+      "item_type": "weapon",
+      "rarity": "magic",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "stat_bonuses": { "attack_damage": 10, "ranged_damage": 0, "armor": 0, "max_hp": 10 },
+      "description": "Consecrated steel. Hits hard and bolsters the wielder.",
+      "sell_value": 45
+    },
+    "uncommon_stiletto": {
+      "item_id": "uncommon_stiletto",
+      "name": "Assassin's Stiletto",
+      "item_type": "weapon",
+      "rarity": "magic",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "stat_bonuses": { "attack_damage": 6, "ranged_damage": 0, "armor": 0, "max_hp": 0, "crit_chance": 0.05, "crit_damage": 0.15 },
+      "description": "Thin as a needle. Designed for one lethal thrust.",
+      "sell_value": 40
+    },
+    "uncommon_arcanist_staff": {
+      "item_id": "uncommon_arcanist_staff",
+      "name": "Arcanist's Conduit",
+      "item_type": "weapon",
+      "rarity": "magic",
+      "equip_slot": "weapon",
+      "weapon_category": "caster",
+      "stat_bonuses": { "attack_damage": 3, "ranged_damage": 0, "armor": 0, "max_hp": 0, "skill_damage_pct": 0.12, "cooldown_reduction_pct": 0.05 },
+      "description": "A crystal-tipped staff that channels raw magical force.",
+      "sell_value": 50
+    },
+    "uncommon_heavy_crossbow": {
+      "item_id": "uncommon_heavy_crossbow",
+      "name": "Siege Crossbow",
+      "item_type": "weapon",
+      "rarity": "magic",
+      "equip_slot": "weapon",
+      "weapon_category": "ranged",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 10, "armor": 0, "max_hp": 0, "armor_pen": 2 },
+      "description": "Requires a winch to draw. Bolts shatter steel.",
+      "sell_value": 45
+    },
+    "uncommon_flail": {
+      "item_id": "uncommon_flail",
+      "name": "Sanctified Flail",
+      "item_type": "weapon",
+      "rarity": "magic",
+      "equip_slot": "weapon",
+      "weapon_category": "melee",
+      "stat_bonuses": { "attack_damage": 9, "ranged_damage": 0, "armor": 0, "max_hp": 0, "holy_damage_pct": 0.10 },
+      "description": "Anointed by confessors. Burns the unholy on impact.",
+      "sell_value": 48
+    },
+    "uncommon_war_axes": {
+      "item_id": "uncommon_war_axes",
+      "name": "Balanced War Axes",
+      "item_type": "weapon",
+      "rarity": "magic",
+      "equip_slot": "weapon",
+      "weapon_category": "hybrid",
+      "stat_bonuses": { "attack_damage": 6, "ranged_damage": 8, "armor": 0, "max_hp": 0 },
+      "description": "Perfectly weighted for melee or throwing. Versatile destruction.",
+      "sell_value": 42
+    },
+
+    "uncommon_plate_armor": {
+      "item_id": "uncommon_plate_armor",
+      "name": "Reinforced Plate",
+      "item_type": "armor",
+      "rarity": "magic",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 8, "max_hp": 10 },
+      "description": "Well-maintained plate. Excellent protection.",
+      "sell_value": 50
+    },
+    "uncommon_shadow_cloak": {
+      "item_id": "uncommon_shadow_cloak",
+      "name": "Shadow Cloak",
+      "item_type": "armor",
+      "rarity": "magic",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 6, "max_hp": 20 },
+      "description": "Woven from dark threads. Light yet tough.",
+      "sell_value": 45
+    },
+    "uncommon_mage_robes": {
+      "item_id": "uncommon_mage_robes",
+      "name": "Invoker's Robes",
+      "item_type": "armor",
+      "rarity": "magic",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 2, "max_hp": 0, "skill_damage_pct": 0.10, "cooldown_reduction_pct": 0.04 },
+      "description": "Silk inscribed with glyphs. Spells flow faster and hit harder.",
+      "sell_value": 48
+    },
+    "uncommon_hide_armor": {
+      "item_id": "uncommon_hide_armor",
+      "name": "Stalker's Hides",
+      "item_type": "armor",
+      "rarity": "magic",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 4, "max_hp": 0, "dodge_chance": 0.06 },
+      "description": "Cured in alchemical oils. Supple enough to slip any blow.",
+      "sell_value": 45
+    },
+    "uncommon_bone_plate": {
+      "item_id": "uncommon_bone_plate",
+      "name": "Spiked Bone Plate",
+      "item_type": "armor",
+      "rarity": "magic",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 5, "max_hp": 10, "thorns": 4 },
+      "description": "Reinforced with sharpened bone spurs. Agony for attackers.",
+      "sell_value": 50
+    },
+    "uncommon_vestments": {
+      "item_id": "uncommon_vestments",
+      "name": "Oracle's Vestments",
+      "item_type": "armor",
+      "rarity": "magic",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 3, "max_hp": 15, "heal_power_pct": 0.10 },
+      "description": "Radiant cloth that amplifies divine channeling. Favored by confessors.",
+      "sell_value": 48
+    },
+    "uncommon_brigandine": {
+      "item_id": "uncommon_brigandine",
+      "name": "Commander's Brigandine",
+      "item_type": "armor",
+      "rarity": "magic",
+      "equip_slot": "armor",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 6, "max_hp": 20, "damage_reduction_pct": 0.03 },
+      "description": "Battle-tested and well-repaired. Trusted by veterans.",
+      "sell_value": 52
+    },
+
+    "uncommon_sigil_ring": {
+      "item_id": "uncommon_sigil_ring",
+      "name": "Sigil Ring",
+      "item_type": "accessory",
+      "rarity": "magic",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 3, "ranged_damage": 3, "armor": 0, "max_hp": 30 },
+      "description": "Engraved with arcane sigils. Amplifies the bearer.",
+      "sell_value": 55
+    },
+    "uncommon_skull_pendant": {
+      "item_id": "uncommon_skull_pendant",
+      "name": "Skull Pendant",
+      "item_type": "accessory",
+      "rarity": "magic",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 2, "max_hp": 50 },
+      "description": "A grim talisman. Massive vitality boost.",
+      "sell_value": 60
+    },
+    "uncommon_crit_charm": {
+      "item_id": "uncommon_crit_charm",
+      "name": "Bloodhound Charm",
+      "item_type": "accessory",
+      "rarity": "magic",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 10, "crit_chance": 0.04, "crit_damage": 0.20 },
+      "description": "Carved from bloodstone. Sharpens every strike to a killing blow.",
+      "sell_value": 50
+    },
+    "uncommon_idol": {
+      "item_id": "uncommon_idol",
+      "name": "Eldritch Idol",
+      "item_type": "accessory",
+      "rarity": "magic",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 10, "skill_damage_pct": 0.08, "cooldown_reduction_pct": 0.05 },
+      "description": "An idol of something that should not be named. Power at a cost.",
+      "sell_value": 52
+    },
+    "uncommon_holy_relic": {
+      "item_id": "uncommon_holy_relic",
+      "name": "Consecrated Relic",
+      "item_type": "accessory",
+      "rarity": "magic",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 15, "holy_damage_pct": 0.08, "heal_power_pct": 0.06 },
+      "description": "A fragment of a saint's bone. Blazes with inner light.",
+      "sell_value": 55
+    },
+    "uncommon_fortune_trophy": {
+      "item_id": "uncommon_fortune_trophy",
+      "name": "Hoarder's Satchel",
+      "item_type": "accessory",
+      "rarity": "magic",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0, "gold_find_pct": 0.20, "magic_find_pct": 0.10 },
+      "description": "A bottomless pouch that attracts wealth. Everything glitters around it.",
+      "sell_value": 30
+    },
+    "uncommon_venom_fetish": {
+      "item_id": "uncommon_venom_fetish",
+      "name": "Plague Fetish",
+      "item_type": "accessory",
+      "rarity": "magic",
+      "equip_slot": "accessory",
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0, "dot_damage_pct": 0.10, "life_on_hit": 2 },
+      "description": "Bound in rotting sinew. Empowers corruption and sustains the wielder.",
+      "sell_value": 48
+    },
+
+    "health_potion": {
+      "item_id": "health_potion",
+      "name": "Health Potion",
+      "item_type": "consumable",
+      "rarity": "common",
+      "equip_slot": null,
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0 },
+      "consumable_effect": { "type": "heal", "magnitude": 40 },
+      "description": "Restores 40 HP. A dungeon essential.",
+      "sell_value": 15
+    },
+    "greater_health_potion": {
+      "item_id": "greater_health_potion",
+      "name": "Greater Health Potion",
+      "item_type": "consumable",
+      "rarity": "magic",
+      "equip_slot": null,
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0 },
+      "consumable_effect": { "type": "heal", "magnitude": 75 },
+      "description": "Restores 75 HP. Premium healing.",
+      "sell_value": 35
+    },
+    "portal_scroll": {
+      "item_id": "portal_scroll",
+      "name": "Portal Scroll",
+      "item_type": "consumable",
+      "rarity": "magic",
+      "equip_slot": null,
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0 },
+      "consumable_effect": { "type": "portal", "magnitude": 0 },
+      "description": "Tears open a portal. Entire party escapes the dungeon.",
+      "sell_value": 50
+    },
+    "iron_skin_potion": {
+      "item_id": "iron_skin_potion",
+      "name": "Iron Skin Potion",
+      "item_type": "consumable",
+      "rarity": "common",
+      "equip_slot": null,
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0 },
+      "consumable_effect": { "type": "buff_armor", "magnitude": 5, "duration": 3 },
+      "description": "Hardens your skin to iron for 3 turns. +5 armor.",
+      "sell_value": 18
+    },
+    "whetstone": {
+      "item_id": "whetstone",
+      "name": "Whetstone",
+      "item_type": "consumable",
+      "rarity": "common",
+      "equip_slot": null,
+      "stat_bonuses": { "attack_damage": 0, "ranged_damage": 0, "armor": 0, "max_hp": 0 },
+      "consumable_effect": { "type": "buff_damage", "magnitude": 5, "duration": 3 },
+      "description": "Sharpens your weapon for 3 turns. +5 attack damage.",
+      "sell_value": 18
+    }
+  }
+}

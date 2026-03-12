@@ -1,0 +1,424 @@
+{
+  "_version": 1,
+  "_description": "Maps game events to particle effect presets. Edit this file to change which effects play — no code changes needed.",
+
+  "combat": {
+    "attack": {
+      "effect": "melee-hit",
+      "target": "victim",
+      "extras": ["blood-splatter"]
+    },
+    "ranged_attack": {
+      "effect": "ranged-hit",
+      "target": "victim",
+      "projectile": {
+        "trail": "arrow-trail",
+        "head": "arrow-head",
+        "speed": 520,
+        "arc": 0.1
+      }
+    },
+    "kill": {
+      "effect": "death-burst",
+      "target": "victim"
+    },
+    "dodge": {
+      "effect": "evasion-blur",
+      "target": "victim"
+    }
+  },
+
+  "skills": {
+    "heal": {
+      "effect": "heal-pulse",
+      "target": "victim",
+      "follow": true
+    },
+    "double_strike": {
+      "effect": "double-slash",
+      "target": "victim"
+    },
+    "power_shot": {
+      "effect": "power-shot-impact",
+      "target": "victim",
+      "projectile": {
+        "trail": "power-shot-trail",
+        "head": "power-shot-head",
+        "speed": 700,
+        "arc": 0.12
+      }
+    },
+    "war_cry": {
+      "effect": "war-cry-blast",
+      "target": "caster",
+      "extras": ["war-cry-shockwave"],
+      "follow": true
+    },
+    "shadow_step": {
+      "effect": "dark-bolt",
+      "target": "destination",
+      "extras": ["portal-swirl"],
+      "extrasTarget": "caster",
+      "follow": true
+    },
+    "wither": {
+      "effect": "wither-curse",
+      "target": "victim",
+      "follow": true,
+      "projectile": {
+        "trail": "wither-trail",
+        "head": "dark-head",
+        "speed": 600,
+        "arc": 0
+      }
+    },
+    "ward": {
+      "effect": "ward-barrier",
+      "target": "caster",
+      "follow": true
+    },
+    "divine_sense": {
+      "effect": "divine-pulse",
+      "target": "caster"
+    },
+    "rebuke": {
+      "effect": "holy-smite",
+      "target": "victim",
+      "projectile": {
+        "trail": "rebuke-trail",
+        "head": "holy-head",
+        "speed": 950,
+        "arc": 0
+      }
+    },
+    "fireball": {
+      "effect": "fireball-impact",
+      "target": "victim",
+      "extras": ["fireball-scorch"],
+      "projectile": {
+        "trail": "fireball-trail",
+        "head": "fireball-head",
+        "speed": 600,
+        "arc": 0.08
+      }
+    },
+    "frost_nova": {
+      "effect": "frost-nova-burst",
+      "target": "caster",
+      "extras": ["frost-nova-ring"]
+    },
+    "arcane_barrage": {
+      "effect": "arcane-barrage-rain",
+      "target": "destination",
+      "extras": ["arcane-barrage-flash"]
+    },
+    "shield_of_faith": {
+      "effect": "faith-descend",
+      "target": "victim",
+      "extras": ["faith-flash"],
+      "follow": true
+    },
+    "exorcism": {
+      "effect": "exorcism-flare",
+      "target": "victim",
+      "loopDuration": 2.0,
+      "projectile": {
+        "trail": "exorcism-trail",
+        "head": "holy-head",
+        "speed": 850,
+        "arc": 0
+      }
+    },
+    "prayer": {
+      "effect": "prayer-blessing",
+      "target": "victim",
+      "extras": ["prayer-ground-glow"],
+      "follow": true
+    },
+    "taunt": {
+      "effect": "taunt-shockwave",
+      "target": "caster"
+    },
+    "shield_bash": {
+      "effect": "shield-bash-impact",
+      "target": "victim",
+      "extras": ["block"]
+    },
+    "holy_ground": {
+      "effect": "holy-ground-ring",
+      "target": "caster"
+    },
+    "bulwark": {
+      "effect": "bulwark-slam",
+      "target": "caster",
+      "extras": ["bulwark-dust"],
+      "follow": true
+    },
+    "volley": {
+      "effect": "volley-rain",
+      "target": "destination"
+    },
+    "evasion": {
+      "effect": "evasion-streak",
+      "target": "caster"
+    },
+    "crippling_shot": {
+      "effect": "crippling-shot-impact",
+      "target": "victim",
+      "extras": ["ice-shard"],
+      "projectile": {
+        "trail": "crip-shot-trail",
+        "head": "ice-arrow-head",
+        "speed": 520,
+        "arc": 0.08
+      }
+    },
+    "soul_reap": {
+      "effect": "soul-reap-rend",
+      "target": "victim",
+      "projectile": {
+        "trail": "soul-reap-trail",
+        "head": "dark-head",
+        "speed": 1000,
+        "arc": 0
+      }
+    },
+    "venom_gaze": {
+      "effect": "venom-gaze-bolt",
+      "target": "victim",
+      "follow": true,
+      "projectile": {
+        "trail": "venom-trail",
+        "head": "venom-head",
+        "speed": 650,
+        "arc": 0
+      }
+    },
+    "ballad_of_might": {
+      "effect": "ballad-buff-pulse",
+      "target": "caster",
+      "extras": ["ballad-ring-inner", "ballad-ring-outer"],
+      "follow": true
+    },
+    "dirge_of_weakness": {
+      "effect": "dirge-debuff-cloud",
+      "target": "destination",
+      "extras": ["dirge-miasma-burst"]
+    },
+    "verse_of_haste": {
+      "effect": "verse-haste-burst",
+      "target": "victim",
+      "follow": true,
+      "projectile": {
+        "trail": "verse-haste-trail",
+        "head": "verse-haste-head",
+        "speed": 800,
+        "arc": 0
+      }
+    },
+    "cacophony": {
+      "effect": "cacophony-blast",
+      "target": "caster",
+      "extras": ["cacophony-shockwave"]
+    },
+    "blood_strike": {
+      "effect": "blood-strike-drain",
+      "target": "victim",
+      "extras": ["blood-strike-heal-wisps"],
+      "extrasTarget": "caster"
+    },
+    "crimson_veil": {
+      "effect": "crimson-veil-cast",
+      "target": "caster",
+      "follow": true
+    },
+    "sanguine_burst": {
+      "effect": "sanguine-burst-nova",
+      "target": "caster",
+      "extras": ["sanguine-burst-droplets"],
+      "extrasTarget": "caster"
+    },
+    "blood_frenzy": {
+      "effect": "blood-frenzy-ignite",
+      "target": "caster",
+      "extras": ["blood-frenzy-spikes"],
+      "follow": true
+    },
+    "miasma": {
+      "effect": "plague-miasma-cloud",
+      "target": "destination",
+      "extras": ["plague-miasma-wisps"]
+    },
+    "plague_flask": {
+      "effect": "plague-flask-impact",
+      "target": "victim",
+      "follow": true,
+      "projectile": {
+        "trail": "plague-flask-trail",
+        "head": "plague-flask-head",
+        "speed": 550,
+        "arc": 0.15
+      }
+    },
+    "enfeeble": {
+      "effect": "plague-enfeeble-wave",
+      "target": "destination",
+      "extras": ["plague-enfeeble-wisps"]
+    },
+    "inoculate": {
+      "effect": "plague-inoculate-sparkle",
+      "target": "victim",
+      "extras": ["plague-inoculate-cleanse"],
+      "follow": true
+    },
+    "grave_thorns": {
+      "effect": "revenant-thorns-cast",
+      "target": "caster",
+      "follow": true
+    },
+    "grave_chains": {
+      "effect": "revenant-chains-taunt",
+      "target": "victim"
+    },
+    "undying_will": {
+      "effect": "revenant-undying-activate",
+      "target": "caster",
+      "follow": true
+    },
+    "soul_rend": {
+      "effect": "revenant-soul-rend",
+      "target": "victim"
+    },
+    "healing_totem": {
+      "effect": "shaman-totem-place",
+      "target": "destination",
+      "extras": ["shaman-totem-place-spirits"]
+    },
+    "searing_totem": {
+      "effect": "shaman-searing-totem-place",
+      "target": "destination",
+      "extras": ["shaman-searing-totem-fire"]
+    },
+    "soul_anchor": {
+      "effect": "shaman-soul-anchor",
+      "target": "victim",
+      "extras": ["shaman-soul-anchor-chains"],
+      "follow": true
+    },
+    "earthgrasp": {
+      "effect": "shaman-earthgrasp",
+      "target": "destination",
+      "extras": ["shaman-earthgrasp-hands"]
+    }
+  },
+
+  "items": {
+    "use_potion": {
+      "effect": "heal-pulse",
+      "target": "caster",
+      "follow": true
+    }
+  },
+
+  "environment": {
+    "door_open": {
+      "effect": "dust-motes",
+      "target": "tile"
+    },
+    "chest_open": {
+      "effect": "loot-sparkle",
+      "target": "tile"
+    },
+    "portal_channel": {
+      "effect": "portal-channel-swirl",
+      "target": "caster",
+      "follow": true,
+      "loopDuration": 3.0
+    },
+    "portal_open": {
+      "effect": "portal-ground-ring",
+      "target": "tile",
+      "extras": ["portal-core-glow", "portal-rising-sparks", "portal-open-flash"]
+    },
+    "portal_extract": {
+      "effect": "portal-open-flash",
+      "target": "tile"
+    }
+  },
+
+  "cc_status": {
+    "stun": {
+      "effect": "stun-stars",
+      "follow": true
+    },
+    "slow": {
+      "effect": "slow-frost",
+      "follow": true
+    },
+    "rooted": {
+      "effect": "shaman-earthgrasp-hold",
+      "follow": true
+    }
+  },
+
+  "buff_status": {
+    "_description": "Persistent looping auras shown while a unit has an active buff. Keyed by buff type from active_buffs[].type. buff_id overrides allow different auras per skill for the generic 'buff' type.",
+    "buff": {
+      "effect": "buff-aura-armor",
+      "follow": true,
+      "yOffset": 0,
+      "buff_id_overrides": {
+        "war_cry":        { "effect": "buff-aura-war-cry" },
+        "shield_of_faith": { "effect": "buff-aura-armor" },
+        "bulwark":        { "effect": "buff-aura-bulwark" },
+        "ballad_of_might": { "effect": "buff-aura-ballad" },
+        "crimson_veil":   { "effect": "buff-aura-crimson-veil" },
+        "blood_frenzy":   { "effect": "buff-aura-blood-frenzy" },
+        "inoculate":      { "effect": "buff-aura-inoculate" }
+      }
+    },
+    "debuff": {
+      "effect": "buff-aura-dirge",
+      "follow": true,
+      "yOffset": 0,
+      "buff_id_overrides": {
+        "enfeeble":       { "effect": "buff-aura-enfeeble" }
+      }
+    },
+    "shield_charges": {
+      "effect": "buff-aura-ward",
+      "follow": true,
+      "yOffset": 0
+    },
+    "evasion": {
+      "effect": "buff-aura-evasion",
+      "follow": true,
+      "yOffset": 0
+    },
+    "hot": {
+      "effect": "buff-aura-hot",
+      "follow": true,
+      "yOffset": -6
+    },
+    "taunt": {
+      "effect": "buff-aura-taunt",
+      "follow": true,
+      "yOffset": 0
+    },
+    "thorns_buff": {
+      "effect": "buff-aura-thorns",
+      "follow": true,
+      "yOffset": 0
+    },
+    "cheat_death": {
+      "effect": "buff-aura-cheat-death",
+      "follow": true,
+      "yOffset": -4
+    },
+    "soul_anchor": {
+      "effect": "buff-aura-soul-anchor",
+      "follow": true,
+      "yOffset": -4
+    }
+  }
+}

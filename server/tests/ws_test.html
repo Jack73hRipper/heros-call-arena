@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>WebSocket Test — Arena</title>
+  <style>
+    body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; padding: 1rem; }
+    h2 { color: #e0a040; }
+    .panel { display: inline-block; vertical-align: top; width: 45%; margin: 0.5rem; padding: 1rem; background: #111; border: 1px solid #333; border-radius: 4px; }
+    button { padding: 0.4rem 0.8rem; background: #2a4a6b; color: #e0e0e0; border: 1px solid #446; border-radius: 4px; cursor: pointer; margin: 0.2rem; }
+    button:hover { background: #3a5a8b; }
+    input { padding: 0.4rem; background: #222; color: #e0e0e0; border: 1px solid #444; border-radius: 4px; }
+    .log { max-height: 300px; overflow-y: auto; margin-top: 0.5rem; font-size: 0.85rem; white-space: pre-wrap; }
+    .log .sent { color: #4af; }
+    .log .recv { color: #4f4; }
+    .log .err { color: #f44; }
+    .log .info { color: #aaa; }
+  </style>
+</head>
+<body>
+  <h2>⚔️ Arena WebSocket Test</h2>
+  <p>Open this page in two tabs to test bidirectional WS communication.</p>
+  <p>
+    Match ID: <input id="matchId" value="test123" style="width:100px">
+    Player ID: <input id="playerId" value="player1" style="width:100px">
+    <button onclick="doConnect()">Connect</button>
+    <button onclick="doDisconnect()">Disconnect</button>
+  </p>
+
+  <div class="panel">
+    <h3>Send Messages</h3>
+    <button onclick="sendMsg({type:'ready'})">Send Ready</button>
+    <button onclick="sendMsg({type:'action', action_type:'move', target_x:5, target_y:3})">Send Move(5,3)</button>
+    <button onclick="sendMsg({type:'action', action_type:'attack', target_x:6, target_y:5})">Send Attack(6,5)</button>
+    <button onclick="sendMsg({type:'action', action_type:'wait'})">Send Wait</button>
+    <br><br>
+    <b>Malformed tests:</b><br>
+    <button onclick="sendRaw('not json at all')">Send Bad JSON</button>
+    <button onclick="sendRaw('{}')">Send No Type</button>
+    <button onclick="sendMsg({type:'action', action_type:'fly'})">Send Bad Action</button>
+    <button onclick="sendMsg({type:'unknown'})">Send Unknown Type</button>
+    <br><br>
+    <b>Custom:</b><br>
+    <input id="customMsg" value='{"type":"ready"}' style="width:250px">
+    <button onclick="sendRaw(document.getElementById('customMsg').value)">Send</button>
+  </div>
+
+  <div class="panel">
+    <h3>Log</h3>
+    <div id="log" class="log"></div>
+  </div>
+
+  <script>
+    let ws = null;
+    const logEl = document.getElementById('log');
+
+    function log(cls, msg) {
+      const d = document.createElement('div');
+      d.className = cls;
+      d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.appendChild(d);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function doConnect() {
+      if (ws && ws.readyState <= 1) { ws.close(); }
+      const matchId = document.getElementById('matchId').value;
+      const playerId = document.getElementById('playerId').value;
+      const url = `ws://${location.hostname}:8000/ws/${matchId}/${playerId}`;
+      log('info', `Connecting to ${url}...`);
+      ws = new WebSocket(url);
+      ws.onopen = () => log('info', 'Connected ✓');
+      ws.onmessage = (e) => log('recv', `← ${e.data}`);
+      ws.onclose = (e) => log('info', `Disconnected (code=${e.code})`);
+      ws.onerror = () => log('err', 'Connection error');
+    }
+
+    function doDisconnect() {
+      if (ws) { ws.close(); ws = null; }
+    }
+
+    function sendMsg(obj) {
+      sendRaw(JSON.stringify(obj));
+    }
+
+    function sendRaw(text) {
+      if (!ws || ws.readyState !== 1) { log('err', 'Not connected'); return; }
+      ws.send(text);
+      log('sent', `→ ${text}`);
+    }
+  </script>
+</body>
+</html>

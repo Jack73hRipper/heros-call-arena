@@ -1,0 +1,351 @@
+/* ===== Hero Roster — Phase 15 Chunk 4 ===== */
+/* Ornate grim-frame hero cards with class-color accents, */
+/* stat-block dotted leaders, and ribbon-style buttons.   */
+
+.hero-roster h3 {
+  font-family: var(--font-heading);
+  color: var(--accent-ember);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+}
+
+.roster-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+/* --- Grim-frame hero card --- */
+.roster-hero-card {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-medium);
+  border-left: 3px solid var(--border-medium);
+  border-radius: 2px;
+  padding: 0.85rem 0.85rem 0;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  min-height: 180px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  /* Layered depth — mimics grim-frame */
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  /* Subtle inner gradient */
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015) 0%,
+    transparent 40%
+  );
+}
+
+/* Inner border line (double-border effect) */
+.roster-hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--border-dark);
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 1px;
+}
+
+/* Corner accents */
+.roster-hero-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 1px 10px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 1px 10px,
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 1px 10px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 1px 10px;
+}
+
+.roster-hero-card:hover {
+  border-color: var(--border-medium);
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 0 16px rgba(196, 151, 58, 0.06);
+}
+
+/* Selected state — full ember glow, corner accents brighten */
+.roster-hero-selected {
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 0 20px rgba(196, 151, 58, 0.2),
+    0 0 40px rgba(196, 151, 58, 0.08);
+}
+
+.roster-hero-selected::after {
+  background:
+    linear-gradient(90deg, var(--accent-ember) 0%, transparent 100%) no-repeat 0 0 / 14px 1px,
+    linear-gradient(180deg, var(--accent-ember) 0%, transparent 100%) no-repeat 0 0 / 1px 14px,
+    linear-gradient(270deg, var(--accent-ember) 0%, transparent 100%) no-repeat 100% 0 / 14px 1px,
+    linear-gradient(180deg, var(--accent-ember) 0%, transparent 100%) no-repeat 100% 0 / 1px 14px,
+    linear-gradient(90deg, var(--accent-ember) 0%, transparent 100%) no-repeat 0 100% / 14px 1px,
+    linear-gradient(0deg, var(--accent-ember) 0%, transparent 100%) no-repeat 0 100% / 1px 14px,
+    linear-gradient(270deg, var(--accent-ember) 0%, transparent 100%) no-repeat 100% 100% / 14px 1px,
+    linear-gradient(0deg, var(--accent-ember) 0%, transparent 100%) no-repeat 100% 100% / 1px 14px;
+}
+
+.selected-badge {
+  color: #8cb860;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  background: rgba(74, 122, 42, 0.15);
+  padding: 0.15rem 0.45rem;
+  border-radius: 2px;
+  border: 1px solid rgba(74, 122, 42, 0.4);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 0 6px rgba(74, 122, 42, 0.15);
+}
+
+.hero-card-equipment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.4rem 0;
+}
+
+.hero-equip-tag {
+  font-size: 0.7rem;
+  padding: 0.12rem 0.45rem;
+  background: var(--bg-deep);
+  border-radius: 2px;
+  border: 1px solid var(--border-subtle);
+  border-left: 2px solid var(--border-medium);
+  color: var(--text-secondary);
+  cursor: default;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  position: relative;
+}
+
+.hero-equip-tag:hover {
+  border-color: var(--border-medium);
+  background: var(--bg-hover);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Rarity: common — subtle steel accent */
+.hero-equip-tag.rarity-common {
+  border-left-color: var(--text-dim);
+}
+
+/* Rarity: uncommon / magic — blue ornate border (Phase 16C) */
+.hero-equip-tag.rarity-uncommon,
+.hero-equip-tag.rarity-magic {
+  border-color: rgba(68, 136, 255, 0.4);
+  border-left: 2px solid var(--rarity-magic);
+  color: var(--rarity-magic);
+  box-shadow: 0 0 4px rgba(68, 136, 255, 0.08);
+}
+
+.hero-equip-tag.rarity-uncommon:hover,
+.hero-equip-tag.rarity-magic:hover {
+  background: rgba(68, 136, 255, 0.1);
+  box-shadow: 0 0 8px rgba(68, 136, 255, 0.15);
+}
+
+/* Rarity: rare — yellow ornate (Phase 16C) */
+.hero-equip-tag.rarity-rare {
+  border-color: rgba(255, 204, 0, 0.4);
+  border-left: 2px solid var(--rarity-rare);
+  color: var(--rarity-rare);
+  box-shadow: 0 0 4px rgba(255, 204, 0, 0.08);
+}
+
+.hero-equip-tag.rarity-rare:hover {
+  background: rgba(255, 204, 0, 0.1);
+  box-shadow: 0 0 8px rgba(255, 204, 0, 0.15);
+}
+
+/* Rarity: epic — purple ornate (Phase 16C) */
+.hero-equip-tag.rarity-epic {
+  border-color: rgba(176, 64, 255, 0.4);
+  border-left: 2px solid var(--rarity-epic);
+  color: var(--rarity-epic);
+  box-shadow: 0 0 4px rgba(176, 64, 255, 0.08);
+}
+
+.hero-equip-tag.rarity-epic:hover {
+  background: rgba(176, 64, 255, 0.1);
+  box-shadow: 0 0 8px rgba(176, 64, 255, 0.15);
+}
+
+/* Rarity: unique — orange ornate (Phase 16C) */
+.hero-equip-tag.rarity-unique {
+  border-color: rgba(255, 136, 0, 0.4);
+  border-left: 2px solid var(--rarity-unique);
+  color: var(--rarity-unique);
+  box-shadow: 0 0 4px rgba(255, 136, 0, 0.08);
+}
+
+.hero-equip-tag.rarity-unique:hover {
+  background: rgba(255, 136, 0, 0.1);
+  box-shadow: 0 0 8px rgba(255, 136, 0, 0.15);
+}
+
+/* Rarity: set — green ornate (Phase 16C) */
+.hero-equip-tag.rarity-set {
+  border-color: rgba(0, 204, 68, 0.4);
+  border-left: 2px solid var(--rarity-set);
+  color: var(--rarity-set);
+  box-shadow: 0 0 4px rgba(0, 204, 68, 0.08);
+}
+
+.hero-equip-tag.rarity-set:hover {
+  background: rgba(0, 204, 68, 0.1);
+  box-shadow: 0 0 8px rgba(0, 204, 68, 0.15);
+}
+
+.roster-gear-tooltip {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6));
+}
+
+.hero-card-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.3rem 0;
+}
+
+.hero-inv-count,
+.hero-track {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+}
+
+/* "Select for Dungeon" — styled button matching Manage Gear */
+.btn-select-hero {
+  width: 100%;
+  padding: 0.35rem;
+  background: linear-gradient(180deg, rgba(58, 90, 139, 0.12) 0%, rgba(38, 60, 100, 0.06) 100%);
+  color: #7ab0e0;
+  border: 1px solid rgba(58, 90, 139, 0.5);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  min-height: 2rem;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 3;
+}
+
+.btn-select-hero:hover {
+  background: linear-gradient(180deg, rgba(58, 90, 139, 0.22) 0%, rgba(38, 60, 100, 0.12) 100%);
+  color: #9ac0e8;
+  border-color: rgba(58, 90, 139, 0.7);
+  box-shadow: 0 0 10px rgba(58, 90, 139, 0.15);
+}
+
+/* Selected state — verdant button */
+.btn-selected {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.15) 0%, rgba(45, 74, 26, 0.08) 100%);
+  color: #8cb860;
+  border-color: rgba(74, 122, 42, 0.5);
+}
+
+.btn-selected:hover {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.25) 0%, rgba(45, 74, 26, 0.12) 100%);
+  border-color: rgba(74, 122, 42, 0.7);
+  box-shadow: 0 0 10px rgba(74, 122, 42, 0.15);
+}
+
+.btn-select-hero.btn-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  color: var(--text-dim);
+}
+.btn-select-hero.btn-disabled:hover {
+  background: linear-gradient(180deg, rgba(58, 90, 139, 0.12) 0%, rgba(38, 60, 100, 0.06) 100%);
+  border-color: rgba(58, 90, 139, 0.5);
+  box-shadow: none;
+}
+
+.party-counter {
+  color: #e0a040;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+/* Fallen heroes section */
+.fallen-heroes-section {
+  margin-top: 1.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-dark);
+}
+
+.fallen-header {
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.fallen-hero-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.fallen-hero-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--bg-deep);
+  border-radius: 2px;
+  opacity: 0.5;
+  border: 1px solid var(--border-dark);
+}
+
+.fallen-icon {
+  filter: grayscale(100%);
+}
+
+.fallen-hero-name {
+  color: var(--text-dim);
+  text-decoration: line-through;
+  font-size: 0.85rem;
+  font-family: var(--font-heading);
+}
+
+.fallen-hero-class {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  font-family: var(--font-flavor);
+  font-style: italic;
+}
+
+.fallen-hero-kills {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  margin-left: auto;
+}

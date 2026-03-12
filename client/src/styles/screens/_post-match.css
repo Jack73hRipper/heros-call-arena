@@ -1,0 +1,1202 @@
+/* ===== Phase 15 Chunk 6 — Post-Match Screen ===== */
+/* Enhanced: dramatic banners, ornate hero cards,    */
+/* combat ledger stats, treasure panel, grim-frame   */
+
+.post-match-screen {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 2.5rem;
+}
+
+/* -----------------------------------------------
+   Victory / Defeat Banner
+   Larger, more dramatic with animated glow
+   ----------------------------------------------- */
+.post-match-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 2rem 1.5rem 1.75rem;
+  position: relative;
+  /* grim-frame base */
+  background: var(--bg-panel);
+  border: var(--frame-border-outer);
+  box-shadow: var(--frame-shadow);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015) 0%,
+    transparent 40%
+  );
+}
+
+/* Inner border (double-border effect) */
+.post-match-header::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: var(--frame-border-inner);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Corner accents */
+.post-match-header::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Animated top banner line — shared base */
+.post-match-banner-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 3;
+}
+
+/* Outcome-specific banner + corner colors */
+.post-match-header.outcome-dungeon_cleared {
+  box-shadow: var(--frame-shadow), 0 0 30px rgba(218, 168, 74, 0.15);
+}
+.post-match-header.outcome-dungeon_cleared .post-match-banner-line {
+  background: linear-gradient(90deg, transparent, var(--accent-ember-bright), transparent);
+  animation: banner-pulse-ember 3s ease-in-out infinite;
+}
+.post-match-header.outcome-dungeon_cleared::after {
+  --frame-corner-color: var(--accent-ember-bright);
+  background:
+    linear-gradient(90deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 0 / 1px 16px,
+    linear-gradient(270deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 0 / 1px 16px,
+    linear-gradient(90deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 100% / 1px 16px,
+    linear-gradient(270deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 100% / 1px 16px;
+}
+
+.post-match-header.outcome-dungeon_escaped {
+  box-shadow: var(--frame-shadow), 0 0 25px rgba(58, 90, 139, 0.15);
+}
+.post-match-header.outcome-dungeon_escaped .post-match-banner-line {
+  background: linear-gradient(90deg, transparent, var(--accent-blue-steel), transparent);
+  animation: banner-pulse-steel 3s ease-in-out infinite;
+}
+.post-match-header.outcome-dungeon_escaped::after {
+  background:
+    linear-gradient(90deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 0 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 0 0 / 1px 16px,
+    linear-gradient(270deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 100% 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 100% 0 / 1px 16px,
+    linear-gradient(90deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 0 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 0 100% / 1px 16px,
+    linear-gradient(270deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 100% 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 100% 100% / 1px 16px;
+}
+
+.post-match-header.outcome-party_wipe {
+  box-shadow: var(--frame-shadow), 0 0 35px rgba(139, 32, 32, 0.2);
+}
+.post-match-header.outcome-party_wipe .post-match-banner-line {
+  background: linear-gradient(90deg, transparent, var(--accent-crimson-bright), transparent);
+  animation: banner-pulse-crimson 3s ease-in-out infinite;
+}
+.post-match-header.outcome-party_wipe::after {
+  background:
+    linear-gradient(90deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 0 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 0 0 / 1px 16px,
+    linear-gradient(270deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 100% 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 100% 0 / 1px 16px,
+    linear-gradient(90deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 0 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 0 100% / 1px 16px,
+    linear-gradient(270deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 100% 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 100% 100% / 1px 16px;
+}
+
+.post-match-header.outcome-arena_victory {
+  box-shadow: var(--frame-shadow), 0 0 30px rgba(218, 168, 74, 0.15);
+}
+.post-match-header.outcome-arena_victory .post-match-banner-line {
+  background: linear-gradient(90deg, transparent, var(--accent-ember-bright), transparent);
+  animation: banner-pulse-ember 3s ease-in-out infinite;
+}
+.post-match-header.outcome-arena_victory::after {
+  background:
+    linear-gradient(90deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 0 / 1px 16px,
+    linear-gradient(270deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 0 / 1px 16px,
+    linear-gradient(90deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 100% / 1px 16px,
+    linear-gradient(270deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 100% / 1px 16px;
+}
+
+.post-match-header.outcome-arena_defeat {
+  box-shadow: var(--frame-shadow), 0 0 30px rgba(139, 32, 32, 0.18);
+}
+.post-match-header.outcome-arena_defeat .post-match-banner-line {
+  background: linear-gradient(90deg, transparent, var(--accent-crimson-bright), transparent);
+  animation: banner-pulse-crimson 3s ease-in-out infinite;
+}
+.post-match-header.outcome-arena_defeat::after {
+  background:
+    linear-gradient(90deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 0 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 0 0 / 1px 16px,
+    linear-gradient(270deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 100% 0 / 16px 1px,
+    linear-gradient(180deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 100% 0 / 1px 16px,
+    linear-gradient(90deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 0 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 0 100% / 1px 16px,
+    linear-gradient(270deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 100% 100% / 16px 1px,
+    linear-gradient(0deg, var(--accent-crimson-bright) 0%, transparent 100%) no-repeat 100% 100% / 1px 16px;
+}
+
+.post-match-header.outcome-arena_draw {
+  box-shadow: var(--frame-shadow);
+}
+.post-match-header.outcome-arena_draw .post-match-banner-line {
+  background: linear-gradient(90deg, transparent, var(--text-dim), transparent);
+}
+.post-match-header.outcome-arena_draw::after {
+  background:
+    linear-gradient(90deg, var(--text-dim) 0%, transparent 100%) no-repeat 0 0 / 12px 1px,
+    linear-gradient(180deg, var(--text-dim) 0%, transparent 100%) no-repeat 0 0 / 1px 12px,
+    linear-gradient(270deg, var(--text-dim) 0%, transparent 100%) no-repeat 100% 0 / 12px 1px,
+    linear-gradient(180deg, var(--text-dim) 0%, transparent 100%) no-repeat 100% 0 / 1px 12px,
+    linear-gradient(90deg, var(--text-dim) 0%, transparent 100%) no-repeat 0 100% / 12px 1px,
+    linear-gradient(0deg, var(--text-dim) 0%, transparent 100%) no-repeat 0 100% / 1px 12px,
+    linear-gradient(270deg, var(--text-dim) 0%, transparent 100%) no-repeat 100% 100% / 12px 1px,
+    linear-gradient(0deg, var(--text-dim) 0%, transparent 100%) no-repeat 100% 100% / 1px 12px;
+}
+
+/* Banner glow pulse animations */
+@keyframes banner-pulse-ember {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(218, 168, 74, 0.3); }
+  50% { opacity: 0.7; box-shadow: 0 0 20px rgba(218, 168, 74, 0.6); }
+}
+
+@keyframes banner-pulse-crimson {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(179, 48, 48, 0.3); }
+  50% { opacity: 0.7; box-shadow: 0 0 20px rgba(179, 48, 48, 0.6); }
+}
+
+@keyframes banner-pulse-steel {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(58, 90, 139, 0.3); }
+  50% { opacity: 0.7; box-shadow: 0 0 20px rgba(58, 90, 139, 0.6); }
+}
+
+@keyframes banner-pulse-pvpve {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(160, 80, 200, 0.3); }
+  50% { opacity: 0.7; box-shadow: 0 0 20px rgba(160, 80, 200, 0.6); }
+}
+
+/* Phase 27E: PVPVE outcome styles */
+.post-match-header.outcome-pvpve_victory {
+  box-shadow: var(--frame-shadow), 0 0 30px rgba(160, 80, 200, 0.18);
+}
+.post-match-header.outcome-pvpve_victory .post-match-banner-line {
+  background: linear-gradient(90deg, transparent, #c080d0, transparent);
+  animation: banner-pulse-pvpve 3s ease-in-out infinite;
+}
+
+.post-match-header.outcome-pvpve_defeat {
+  box-shadow: var(--frame-shadow), 0 0 30px rgba(139, 32, 32, 0.15);
+}
+.post-match-header.outcome-pvpve_defeat .post-match-banner-line {
+  background: linear-gradient(90deg, transparent, var(--accent-crimson-bright), transparent);
+  animation: banner-pulse-crimson 3s ease-in-out infinite;
+}
+
+/* --- Title --- */
+.post-match-title {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: clamp(1.4rem, 3vw, 1.8rem);
+  margin: 0 0 0.5rem;
+  line-height: 1.3;
+  position: relative;
+  z-index: 3;
+}
+
+.outcome-dungeon_cleared .post-match-title {
+  color: var(--accent-ember-bright);
+  text-shadow:
+    0 0 20px rgba(218, 168, 74, 0.4),
+    0 0 40px rgba(218, 168, 74, 0.15);
+}
+.outcome-dungeon_escaped .post-match-title {
+  color: var(--accent-blue-steel);
+  text-shadow:
+    0 0 15px rgba(58, 90, 139, 0.4),
+    0 0 30px rgba(58, 90, 139, 0.15);
+}
+.outcome-party_wipe .post-match-title {
+  color: var(--accent-crimson-bright);
+  text-shadow:
+    0 0 20px rgba(179, 48, 48, 0.4),
+    0 0 40px rgba(179, 48, 48, 0.15);
+}
+.outcome-arena_victory .post-match-title {
+  color: var(--accent-ember-bright);
+  text-shadow:
+    0 0 20px rgba(218, 168, 74, 0.4),
+    0 0 40px rgba(218, 168, 74, 0.15);
+}
+.outcome-arena_defeat .post-match-title {
+  color: var(--accent-crimson-bright);
+  text-shadow:
+    0 0 15px rgba(179, 48, 48, 0.4),
+    0 0 30px rgba(179, 48, 48, 0.15);
+}
+.outcome-arena_draw .post-match-title {
+  color: var(--text-secondary);
+}
+.outcome-pvpve_victory .post-match-title {
+  color: #c080d0;
+  text-shadow:
+    0 0 20px rgba(160, 80, 200, 0.4),
+    0 0 40px rgba(160, 80, 200, 0.15);
+}
+.outcome-pvpve_defeat .post-match-title {
+  color: var(--accent-crimson-bright);
+  text-shadow:
+    0 0 15px rgba(179, 48, 48, 0.4),
+    0 0 30px rgba(179, 48, 48, 0.15);
+}
+
+.post-match-subtext {
+  color: var(--text-body);
+  font-family: var(--font-flavor);
+  font-style: italic;
+  font-size: 1rem;
+  margin: 0 0 1rem;
+  position: relative;
+  z-index: 3;
+}
+
+.post-match-meta {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 3;
+}
+
+.meta-turns, .meta-stat {
+  font-size: 0.85rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  padding: 0.2rem 0.6rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-dark);
+  border-radius: 2px;
+}
+
+.meta-turns {
+  color: var(--text-dim);
+}
+
+.meta-stat {
+  color: var(--text-secondary);
+}
+
+
+/* -----------------------------------------------
+   Hero Roster — Ornate Outcome Cards
+   Survived = ember glow, Fallen = crimson + desat
+   ----------------------------------------------- */
+.post-match-roster-section {
+  margin-bottom: 2rem;
+}
+
+.post-match-roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Card — grim-frame treatment */
+.roster-card {
+  position: relative;
+  background: var(--bg-panel);
+  border: var(--frame-border-outer);
+  box-shadow: var(--frame-shadow);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015) 0%,
+    transparent 40%
+  );
+  padding: 0.85rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Inner border (double-border) */
+.roster-card::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: var(--frame-border-inner);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Corner accents */
+.roster-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 0 0 / var(--frame-corner-size) 1px,
+    linear-gradient(180deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 0 0 / 1px var(--frame-corner-size),
+    linear-gradient(270deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 100% 0 / var(--frame-corner-size) 1px,
+    linear-gradient(180deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 100% 0 / 1px var(--frame-corner-size),
+    linear-gradient(90deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 0 100% / var(--frame-corner-size) 1px,
+    linear-gradient(0deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 0 100% / 1px var(--frame-corner-size),
+    linear-gradient(270deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 100% 100% / var(--frame-corner-size) 1px,
+    linear-gradient(0deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 100% 100% / 1px var(--frame-corner-size);
+}
+
+/* Survived card — ember glow, left verdant accent */
+.roster-card.roster-alive {
+  border-left: 3px solid rgba(74, 122, 42, 0.6);
+  box-shadow: var(--frame-shadow), 0 0 18px rgba(74, 122, 42, 0.08);
+}
+
+/* Fallen card — crimson accent, desaturated */
+.roster-card.roster-dead {
+  border-left: 3px solid rgba(179, 48, 48, 0.6);
+  box-shadow: var(--frame-shadow), 0 0 18px rgba(139, 32, 32, 0.1);
+  filter: saturate(0.7);
+}
+
+.roster-card.roster-dead .roster-card-header {
+  opacity: 0.85;
+}
+
+/* "You" card — bright ember glow + highlight */
+.roster-card.roster-self {
+  border-color: var(--accent-ember-dim);
+  box-shadow: var(--frame-shadow), 0 0 25px rgba(196, 151, 58, 0.12);
+}
+
+.roster-card.roster-self::after {
+  --frame-corner-color: var(--accent-ember-bright);
+  background:
+    linear-gradient(90deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 0 / 14px 1px,
+    linear-gradient(180deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 0 / 1px 14px,
+    linear-gradient(270deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 0 / 14px 1px,
+    linear-gradient(180deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 0 / 1px 14px,
+    linear-gradient(90deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 100% / 14px 1px,
+    linear-gradient(0deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 0 100% / 1px 14px,
+    linear-gradient(270deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 100% / 14px 1px,
+    linear-gradient(0deg, var(--accent-ember-bright) 0%, transparent 100%) no-repeat 100% 100% / 1px 14px;
+}
+
+/* Card header — sprite + identity */
+.roster-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border-dark);
+  position: relative;
+  z-index: 3;
+}
+
+.roster-card-identity {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.roster-name {
+  font-family: var(--font-heading);
+  color: var(--text-bright);
+  font-size: 1.05rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+}
+
+.roster-class {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.roster-status {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 0.15rem;
+}
+
+.status-survived {
+  color: #8cb860;
+  text-shadow: 0 0 8px rgba(140, 184, 96, 0.3);
+}
+
+.status-fallen {
+  color: #c05050;
+  text-shadow: 0 0 8px rgba(192, 80, 80, 0.3);
+}
+
+/* -----------------------------------------------
+   Combat Ledger — Stat Rows
+   Ornamental column headers, dotted leaders
+   ----------------------------------------------- */
+.roster-card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  z-index: 3;
+  /* Recessed stat block background */
+  background: rgba(0, 0, 0, 0.15);
+  padding: 0.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3);
+  margin-top: 0.1rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.2rem 0;
+  position: relative;
+}
+
+/* Dotted leader between label and value */
+.stat-row::after {
+  content: '';
+  position: absolute;
+  bottom: 0.35rem;
+  left: 0;
+  right: 0;
+  border-bottom: 1px dotted var(--border-dark);
+  z-index: 0;
+}
+
+.stat-label {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(0, 0, 0, 0.15);
+  padding-right: 0.3rem;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-value {
+  color: var(--text-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  background: rgba(0, 0, 0, 0.15);
+  padding-left: 0.3rem;
+  position: relative;
+  z-index: 1;
+}
+
+.stat-boss .stat-value {
+  color: #d4a0ff;
+  text-shadow: 0 0 6px rgba(212, 160, 255, 0.2);
+}
+
+.stat-heal .stat-value {
+  color: #8cb860;
+  text-shadow: 0 0 6px rgba(140, 184, 96, 0.2);
+}
+
+.stat-gold .stat-value {
+  color: var(--accent-ember-bright);
+  text-shadow: 0 0 6px rgba(218, 168, 74, 0.2);
+}
+
+
+/* -----------------------------------------------
+   Loot Summary — Treasure Chest Panel
+   Framed like a chest inventory
+   ----------------------------------------------- */
+.post-match-loot-section {
+  margin-bottom: 2rem;
+}
+
+.post-match-loot-panel {
+  position: relative;
+  background: var(--bg-deep);
+  border: var(--frame-border-outer);
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 2px 6px rgba(0, 0, 0, 0.4);
+  padding: 1rem;
+  background-image: linear-gradient(
+    180deg,
+    rgba(196, 151, 58, 0.02) 0%,
+    transparent 30%
+  );
+}
+
+.post-match-loot-panel::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: var(--frame-border-inner);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.post-match-loot-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / var(--frame-corner-size) 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 1px var(--frame-corner-size),
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / var(--frame-corner-size) 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 1px var(--frame-corner-size),
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / var(--frame-corner-size) 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 1px var(--frame-corner-size),
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / var(--frame-corner-size) 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 1px var(--frame-corner-size);
+}
+
+.post-match-loot-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 3;
+}
+
+.loot-totals {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 3;
+}
+
+.loot-total-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.loot-total-icon {
+  font-size: 1rem;
+}
+
+.loot-total-label {
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.7rem;
+}
+
+.loot-total-value {
+  color: var(--text-body);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.loot-total-value--gold {
+  color: var(--accent-ember-bright);
+  text-shadow: 0 0 6px rgba(218, 168, 74, 0.2);
+}
+
+.loot-total-value--kills {
+  color: var(--accent-crimson-bright);
+}
+
+.loot-total-value--damage {
+  color: var(--text-primary);
+}
+
+.loot-total-value--healing {
+  color: #8cb860;
+}
+
+
+/* -----------------------------------------------
+   Permadeath Section — Enhanced
+   ----------------------------------------------- */
+.permadeath-section {
+  margin-bottom: 2rem;
+  position: relative;
+  padding: 1.25rem;
+  background: var(--bg-panel);
+  border: var(--frame-border-outer);
+  box-shadow: var(--frame-shadow), 0 0 20px rgba(139, 32, 32, 0.12);
+  background-image: linear-gradient(
+    180deg,
+    rgba(139, 32, 32, 0.04) 0%,
+    transparent 30%
+  );
+}
+
+/* Inner border */
+.permadeath-section::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid rgba(139, 32, 32, 0.15);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Crimson corner accents */
+.permadeath-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, var(--accent-crimson) 0%, transparent 100%) no-repeat 0 0 / 14px 1px,
+    linear-gradient(180deg, var(--accent-crimson) 0%, transparent 100%) no-repeat 0 0 / 1px 14px,
+    linear-gradient(270deg, var(--accent-crimson) 0%, transparent 100%) no-repeat 100% 0 / 14px 1px,
+    linear-gradient(180deg, var(--accent-crimson) 0%, transparent 100%) no-repeat 100% 0 / 1px 14px,
+    linear-gradient(90deg, var(--accent-crimson) 0%, transparent 100%) no-repeat 0 100% / 14px 1px,
+    linear-gradient(0deg, var(--accent-crimson) 0%, transparent 100%) no-repeat 0 100% / 1px 14px,
+    linear-gradient(270deg, var(--accent-crimson) 0%, transparent 100%) no-repeat 100% 100% / 14px 1px,
+    linear-gradient(0deg, var(--accent-crimson) 0%, transparent 100%) no-repeat 100% 100% / 1px 14px;
+}
+
+.permadeath-header {
+  font-family: var(--font-heading);
+  color: #c05050;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  font-size: 0.95rem;
+  text-shadow: 0 0 10px rgba(192, 80, 80, 0.2);
+  position: relative;
+  z-index: 3;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(139, 32, 32, 0.2);
+}
+
+.permadeath-card {
+  background: var(--bg-deep);
+  padding: 0.7rem;
+  border-radius: 0;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--border-dark);
+  border-left: 3px solid rgba(179, 48, 48, 0.5);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 3;
+}
+
+.permadeath-card:last-child {
+  margin-bottom: 0;
+}
+
+.permadeath-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.permadeath-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.permadeath-info strong {
+  color: #c07070;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  text-shadow: 0 0 6px rgba(192, 112, 112, 0.15);
+}
+
+.permadeath-class {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.permadeath-lost-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+  margin-top: 0.4rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid var(--border-dark);
+}
+
+.lost-items-label {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  margin-right: 0.3rem;
+  font-style: italic;
+}
+
+.lost-item {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  background: var(--bg-surface);
+  border-radius: 0;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-left: 2px solid var(--border-medium);
+}
+
+.lost-item.rarity-uncommon,
+.lost-item.rarity-magic {
+  color: var(--rarity-magic);
+  border-color: rgba(68, 136, 255, 0.3);
+  border-left-color: var(--rarity-magic);
+}
+
+.lost-item.rarity-rare {
+  color: var(--rarity-rare);
+  border-color: rgba(255, 204, 0, 0.3);
+  border-left-color: var(--rarity-rare);
+}
+
+.lost-item.rarity-epic {
+  color: var(--rarity-epic);
+  border-color: rgba(176, 64, 255, 0.3);
+  border-left-color: var(--rarity-epic);
+}
+
+.lost-item.rarity-unique {
+  color: var(--rarity-unique);
+  border-color: rgba(255, 136, 0, 0.3);
+  border-left-color: var(--rarity-unique);
+}
+
+.lost-item.rarity-set {
+  color: var(--rarity-set);
+  border-color: rgba(0, 204, 68, 0.3);
+  border-left-color: var(--rarity-set);
+}
+
+
+/* -----------------------------------------------
+   Action Buttons — Centered, prominent
+   ----------------------------------------------- */
+.post-match-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Legacy btn classes kept for backward compat — now styled via .grim-btn in JSX */
+.btn-back-town {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.2) 0%, rgba(138, 106, 40, 0.12) 100%);
+  color: var(--accent-ember-bright);
+  border: 1px solid var(--accent-ember-dim);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.btn-back-town:hover {
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.3) 0%, rgba(138, 106, 40, 0.18) 100%);
+  border-color: var(--accent-ember);
+  box-shadow: 0 0 15px rgba(196, 151, 58, 0.12);
+}
+
+.btn-leave-post {
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+
+.btn-leave-post:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+
+/* -----------------------------------------------
+   Battle Scoreboard — Full team-vs-team display
+   Shows all units (human + AI) grouped by team
+   with comparison bars and MVP highlight
+   ----------------------------------------------- */
+.battle-scoreboard-section {
+  margin-bottom: 1.5rem;
+}
+
+/* ── Team comparison bars ── */
+.team-comparison-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+  background: var(--bg-panel);
+  border: var(--frame-border-outer);
+  box-shadow: var(--frame-shadow);
+}
+
+.team-compare-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.team-compare-val {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 3.5rem;
+}
+
+.team-compare-val--a {
+  text-align: right;
+  color: #c05050;
+}
+
+.team-compare-val--b {
+  text-align: left;
+  color: #5078b0;
+}
+
+.team-compare-bar-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  position: relative;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-dark);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.team-compare-bar {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.team-compare-bar--a {
+  position: absolute;
+  right: 50%;
+  border-radius: 2px 0 0 2px;
+}
+
+.team-compare-bar--b {
+  position: absolute;
+  left: 50%;
+  border-radius: 0 2px 2px 0;
+}
+
+.team-compare-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-bright);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Team columns ── */
+.battle-scoreboard-teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.battle-team-column {
+  position: relative;
+  background: var(--bg-panel);
+  border: var(--frame-border-outer);
+  box-shadow: var(--frame-shadow);
+  padding: 0;
+  overflow: hidden;
+}
+
+.battle-team-column::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: var(--frame-border-inner);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.battle-team-column.team-winner {
+  box-shadow: var(--frame-shadow), 0 0 20px rgba(218, 168, 74, 0.12);
+}
+
+.battle-team-column.team-loser {
+  filter: saturate(0.85);
+}
+
+/* ── Team header ── */
+.battle-team-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.battle-team-name {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.team-color-a { color: #c05050; text-shadow: 0 0 8px rgba(192, 80, 80, 0.3); }
+.team-color-b { color: #5078b0; text-shadow: 0 0 8px rgba(80, 120, 176, 0.3); }
+.team-color-c { color: #8cb860; text-shadow: 0 0 8px rgba(140, 184, 96, 0.3); }
+.team-color-d { color: #d4a0ff; text-shadow: 0 0 8px rgba(212, 160, 255, 0.3); }
+
+.battle-team-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  border: 1px solid;
+}
+
+.badge-victory {
+  color: var(--accent-ember-bright);
+  border-color: rgba(218, 168, 74, 0.4);
+  background: rgba(218, 168, 74, 0.1);
+}
+
+.badge-defeat {
+  color: #c05050;
+  border-color: rgba(192, 80, 80, 0.3);
+  background: rgba(192, 80, 80, 0.08);
+}
+
+.badge-draw {
+  color: var(--text-dim);
+  border-color: var(--border-dark);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.battle-team-score {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+/* ── Unit cards within a team ── */
+.battle-team-units {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem;
+  gap: 0.35rem;
+}
+
+.battle-unit-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0.6rem;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-left: 3px solid rgba(74, 122, 42, 0.5);
+  border-radius: 2px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.battle-unit-card.battle-unit-dead {
+  border-left-color: rgba(179, 48, 48, 0.5);
+  filter: saturate(0.7);
+  opacity: 0.85;
+}
+
+.battle-unit-card.battle-unit-mvp {
+  border-left-color: var(--accent-ember-bright);
+  background: rgba(218, 168, 74, 0.05);
+  box-shadow: 0 0 12px rgba(218, 168, 74, 0.08);
+}
+
+.battle-unit-card.battle-unit-self {
+  border-color: rgba(196, 151, 58, 0.3);
+  border-left-color: var(--accent-ember-dim);
+  background: rgba(196, 151, 58, 0.04);
+}
+
+/* Unit header line: sprite + name + status */
+.battle-unit-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.battle-unit-identity {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.battle-unit-name {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.battle-ai-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.05rem 0.3rem;
+  border-radius: 2px;
+  background: rgba(80, 120, 176, 0.15);
+  border: 1px solid rgba(80, 120, 176, 0.3);
+  color: #6090c0;
+}
+
+.battle-mvp-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.05rem 0.3rem;
+  border-radius: 2px;
+  background: rgba(218, 168, 74, 0.15);
+  border: 1px solid rgba(218, 168, 74, 0.4);
+  color: var(--accent-ember-bright);
+  animation: mvp-glow 2s ease-in-out infinite;
+}
+
+@keyframes mvp-glow {
+  0%, 100% { box-shadow: 0 0 4px rgba(218, 168, 74, 0.2); }
+  50% { box-shadow: 0 0 10px rgba(218, 168, 74, 0.5); }
+}
+
+.battle-unit-class {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.battle-unit-status {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* Compact stat line under each unit */
+.battle-unit-stats {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.3rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.battle-stat {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+}
+
+.battle-stat--heal {
+  color: #8cb860;
+}
+
+.battle-stat--kills {
+  color: var(--text-secondary);
+}
+
+
+/* -----------------------------------------------
+   Responsive — ≤700px
+   ----------------------------------------------- */
+@media (max-width: 700px) {
+  .post-match-screen {
+    padding: 1rem 0.75rem 1.5rem;
+  }
+
+  .post-match-header {
+    padding: 1.25rem 1rem;
+  }
+
+  .post-match-title {
+    font-size: 1.2rem;
+  }
+
+  .post-match-roster {
+    grid-template-columns: 1fr;
+  }
+
+  .post-match-meta {
+    gap: 0.75rem;
+  }
+
+  .loot-totals {
+    gap: 0.75rem;
+  }
+
+  .post-match-actions {
+    flex-direction: column;
+  }
+
+  .battle-scoreboard-teams {
+    grid-template-columns: 1fr;
+  }
+
+  .team-compare-val {
+    min-width: 2.5rem;
+    font-size: 0.7rem;
+  }
+}

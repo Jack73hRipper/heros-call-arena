@@ -1,0 +1,78 @@
+{
+  "name": "Training Room",
+  "width": 20,
+  "height": 15,
+  "map_type": "dungeon",
+  "spawn_points": [
+    { "x": 2, "y": 2 },
+    { "x": 3, "y": 2 },
+    { "x": 2, "y": 3 },
+    { "x": 3, "y": 3 },
+    { "x": 2, "y": 4 }
+  ],
+  "spawn_zones": {
+    "a": { "x_min": 1, "y_min": 1, "x_max": 4, "y_max": 5 }
+  },
+  "ffa_points": [
+    { "x": 2, "y": 2 },
+    { "x": 3, "y": 2 },
+    { "x": 2, "y": 3 },
+    { "x": 3, "y": 3 },
+    { "x": 2, "y": 4 }
+  ],
+  "rooms": [
+    {
+      "id": "spawn_room",
+      "name": "Spawn Room",
+      "purpose": "spawn",
+      "bounds": { "x_min": 1, "y_min": 1, "x_max": 4, "y_max": 5 }
+    },
+    {
+      "id": "single_targets",
+      "name": "Single Target Dummies",
+      "purpose": "enemy",
+      "bounds": { "x_min": 6, "y_min": 2, "x_max": 11, "y_max": 12 },
+      "enemy_spawns": [
+        { "x": 8, "y": 4, "enemy_type": "training_dummy" },
+        { "x": 8, "y": 7, "enemy_type": "training_dummy" },
+        { "x": 8, "y": 10, "enemy_type": "training_dummy" }
+      ]
+    },
+    {
+      "id": "aoe_targets",
+      "name": "AoE Target Cluster",
+      "purpose": "enemy",
+      "bounds": { "x_min": 13, "y_min": 4, "x_max": 18, "y_max": 10 },
+      "enemy_spawns": [
+        { "x": 15, "y": 6, "enemy_type": "training_dummy" },
+        { "x": 16, "y": 6, "enemy_type": "training_dummy" },
+        { "x": 15, "y": 7, "enemy_type": "training_dummy" },
+        { "x": 16, "y": 7, "enemy_type": "training_dummy" }
+      ]
+    }
+  ],
+  "doors": [],
+  "chests": [],
+  "tiles": [
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","S","S","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","S","S","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","S","S","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W"]
+  ],
+  "tile_legend": {
+    "W": "wall",
+    "F": "floor",
+    "S": "spawn"
+  }
+}

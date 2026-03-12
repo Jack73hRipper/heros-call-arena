@@ -1,0 +1,47 @@
+/* ===== App Header — Game Title ===== */
+
+.app-header {
+  text-align: center;
+  padding: 1.5rem 0 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-dark);
+  position: relative;
+}
+
+/* Ornate line under header */
+.app-header::after {
+  content: '— ◆ —';
+  display: block;
+  position: absolute;
+  bottom: -0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--accent-ember-dim);
+  font-size: 0.75rem;
+  letter-spacing: 0.5rem;
+  background: var(--bg-abyss);
+  padding: 0 1rem;
+}
+
+.app-header h1 {
+  font-family: var(--font-heading);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--accent-ember);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 30px rgba(196, 151, 58, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.app-header .title-sub {
+  display: block;
+  font-family: var(--font-flavor);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--text-secondary);
+  letter-spacing: 0.3em;
+  margin-top: 0.25rem;
+  text-transform: none;
+}

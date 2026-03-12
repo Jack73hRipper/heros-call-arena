@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com;" />
+  <title>Hero's Call Arena Launcher</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ═══ Custom Title Bar ═══ -->
+  <header class="title-bar" id="titleBar">
+    <span class="title-bar__label">Hero's Call Arena</span>
+    <div class="title-bar__controls">
+      <button class="title-bar__btn" id="btnMinimize" aria-label="Minimize">
+        <svg width="12" height="12" viewBox="0 0 12 12"><rect y="5" width="12" height="2" fill="currentColor"/></svg>
+      </button>
+      <button class="title-bar__btn title-bar__btn--close" id="btnClose" aria-label="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12">
+          <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/>
+          <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ Main Content ═══ -->
+  <main class="launcher">
+
+    <!-- Phase L6: Launcher self-update notification -->
+    <div class="launcher-update-bar" id="launcherUpdateBar" style="display:none;">
+      <span class="launcher-update-bar__text" id="launcherUpdateText"></span>
+      <button class="launcher-update-bar__btn" id="btnLauncherRestart" style="display:none;">Restart Now</button>
+    </div>
+
+    <!-- Banner / Logo area -->
+    <section class="launcher__banner">
+      <h1 class="banner__title">HERO'S CALL</h1>
+      <p class="banner__subtitle">ARENA</p>
+    </section>
+
+    <!-- Patch Notes -->
+    <section class="launcher__patchnotes">
+      <h2 class="patchnotes__heading">Patch Notes</h2>
+      <div class="patchnotes__content" id="patchNotes">
+        <div class="patchnotes__entry">
+          <h3>v0.1.0 — Initial Release</h3>
+          <ul>
+            <li>Turn-based arena combat with 8 character classes</li>
+            <li>Grimdark dungeon crawler mode</li>
+            <li>Procedurally generated dungeons via WFC</li>
+            <li>Monster rarity system with affixes</li>
+            <li>Full item and equipment system</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Status Bar -->
+    <section class="launcher__status">
+      <div class="status__row">
+        <div class="status__message" id="statusMessage">Ready to play</div>
+        <!-- Phase L7: Loading spinner during version check -->
+        <div class="status__spinner" id="statusSpinner" style="display:none;">
+          <svg class="spinner-svg" viewBox="0 0 24 24" width="16" height="16">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5" fill="none"
+                    stroke-dasharray="50 20" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="status__progress-wrapper" id="progressWrapper" style="display:none;">
+        <div class="status__progress-bar">
+          <div class="status__progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+        <span class="status__progress-text" id="progressText">0%</span>
+      </div>
+    </section>
+
+    <!-- Action Row -->
+    <section class="launcher__actions">
+      <button class="play-btn" id="btnPlay">
+        <span class="play-btn__icon">&#9654;</span>
+        <span class="play-btn__label">PLAY</span>
+      </button>
+    </section>
+
+    <!-- Footer -->
+    <footer class="launcher__footer">
+      <span class="footer__version" id="versionLabel">v0.1.0</span>
+      <button class="footer__settings" id="btnSettings" aria-label="Settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65
+            1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9
+            19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0
+            4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65
+            0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65
+            0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2
+            2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1
+            0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </footer>
+
+  </main>
+
+  <!-- ═══ Phase L7: Settings Panel Overlay ═══ -->
+  <div class="settings-overlay" id="settingsOverlay" style="display:none;">
+    <div class="settings-panel">
+      <div class="settings-panel__header">
+        <h2 class="settings-panel__title">Settings</h2>
+        <button class="settings-panel__close" id="btnSettingsClose" aria-label="Close settings">
+          <svg width="14" height="14" viewBox="0 0 12 12">
+            <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="2"/>
+            <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="settings-panel__body">
+        <!-- Install Location -->
+        <div class="settings-group">
+          <label class="settings-label">Install Location</label>
+          <div class="settings-dir-row">
+            <input class="settings-input" id="settingsInstallDir" type="text" readonly />
+            <button class="settings-btn-browse" id="btnBrowseDir">Browse</button>
+          </div>
+        </div>
+
+        <!-- Toggles -->
+        <div class="settings-group">
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsAutoCheck" />
+            <span class="settings-toggle__slider"></span>
+            <span class="settings-toggle__text">Auto-check for updates on launch</span>
+          </label>
+        </div>
+
+        <div class="settings-group">
+          <label class="settings-toggle">
+            <input type="checkbox" id="settingsMinimizeToTray" />
+            <span class="settings-toggle__slider"></span>
+            <span class="settings-toggle__text">Minimize to system tray when game is running</span>
+          </label>
+        </div>
+
+        <!-- Repair / Clear Cache -->
+        <div class="settings-group settings-group--actions">
+          <button class="settings-btn-action settings-btn-action--repair" id="btnRepair">
+            Repair Game
+          </button>
+          <p class="settings-hint">Force re-download and reinstall the game</p>
+        </div>
+      </div>
+
+      <div class="settings-panel__footer">
+        <button class="settings-btn-save" id="btnSettingsSave">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

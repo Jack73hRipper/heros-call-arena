@@ -1,0 +1,81 @@
+{
+  "name": "Open Arena Large",
+  "width": 20,
+  "height": 20,
+  "spawn_points": [
+    { "x": 1, "y": 1 },
+    { "x": 18, "y": 1 },
+    { "x": 1, "y": 18 },
+    { "x": 18, "y": 18 },
+    { "x": 9, "y": 1 },
+    { "x": 9, "y": 18 },
+    { "x": 1, "y": 9 },
+    { "x": 18, "y": 9 }
+  ],
+  "obstacles": [
+    { "x": 9, "y": 9, "type": "wall" },
+    { "x": 10, "y": 9, "type": "wall" },
+    { "x": 9, "y": 10, "type": "wall" },
+    { "x": 10, "y": 10, "type": "wall" },
+
+    { "x": 4, "y": 4, "type": "wall" },
+    { "x": 15, "y": 4, "type": "wall" },
+    { "x": 4, "y": 15, "type": "wall" },
+    { "x": 15, "y": 15, "type": "wall" },
+
+    { "x": 7, "y": 7, "type": "wall" },
+    { "x": 12, "y": 7, "type": "wall" },
+    { "x": 7, "y": 12, "type": "wall" },
+    { "x": 12, "y": 12, "type": "wall" },
+
+    { "x": 0, "y": 9, "type": "wall" },
+    { "x": 19, "y": 9, "type": "wall" },
+    { "x": 9, "y": 0, "type": "wall" },
+    { "x": 9, "y": 19, "type": "wall" },
+    { "x": 0, "y": 10, "type": "wall" },
+    { "x": 19, "y": 10, "type": "wall" },
+    { "x": 10, "y": 0, "type": "wall" },
+    { "x": 10, "y": 19, "type": "wall" },
+
+    { "x": 4, "y": 9, "type": "wall" },
+    { "x": 15, "y": 9, "type": "wall" },
+    { "x": 9, "y": 4, "type": "wall" },
+    { "x": 9, "y": 15, "type": "wall" },
+    { "x": 4, "y": 10, "type": "wall" },
+    { "x": 15, "y": 10, "type": "wall" },
+    { "x": 10, "y": 4, "type": "wall" },
+    { "x": 10, "y": 15, "type": "wall" },
+
+    { "x": 2, "y": 2, "type": "wall" },
+    { "x": 17, "y": 2, "type": "wall" },
+    { "x": 2, "y": 17, "type": "wall" },
+    { "x": 17, "y": 17, "type": "wall" },
+    { "x": 6, "y": 2, "type": "wall" },
+    { "x": 13, "y": 2, "type": "wall" },
+    { "x": 6, "y": 17, "type": "wall" },
+    { "x": 13, "y": 17, "type": "wall" },
+    { "x": 2, "y": 6, "type": "wall" },
+    { "x": 17, "y": 6, "type": "wall" },
+    { "x": 2, "y": 13, "type": "wall" },
+    { "x": 17, "y": 13, "type": "wall" },
+    { "x": 8, "y": 6, "type": "wall" },
+    { "x": 11, "y": 6, "type": "wall" },
+    { "x": 8, "y": 13, "type": "wall" }
+  ],
+  "spawn_zones": {
+    "a": { "x_min": 0, "y_min": 0, "x_max": 4, "y_max": 4 },
+    "b": { "x_min": 15, "y_min": 15, "x_max": 19, "y_max": 19 },
+    "c": { "x_min": 15, "y_min": 0, "x_max": 19, "y_max": 4 },
+    "d": { "x_min": 0, "y_min": 15, "x_max": 4, "y_max": 19 }
+  },
+  "ffa_points": [
+    { "x": 1, "y": 1 },
+    { "x": 18, "y": 18 },
+    { "x": 18, "y": 1 },
+    { "x": 1, "y": 18 },
+    { "x": 9, "y": 1 },
+    { "x": 9, "y": 18 },
+    { "x": 1, "y": 9 },
+    { "x": 18, "y": 9 }
+  ]
+}

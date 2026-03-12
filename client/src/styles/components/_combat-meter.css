@@ -1,0 +1,594 @@
+/* ===== Combat Meter ===== */
+
+/* Toggle button in the action bar */
+.bar-meter-toggle {
+  display: flex;
+  align-items: center;
+  margin-left: 2px;
+}
+
+.btn-meter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid var(--border-medium);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.btn-meter .meter-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.btn-meter:hover {
+  border-color: #daa84a;
+  background: rgba(196, 151, 58, 0.1);
+  box-shadow: 0 0 8px var(--accent-ember-glow);
+}
+
+.btn-meter.active {
+  border-color: var(--accent-ember);
+  background: rgba(196, 151, 58, 0.15);
+  box-shadow: 0 0 12px var(--accent-ember-glow);
+}
+
+/* Panel — drops below the action bar, overlays the main content */
+.combat-meter-panel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  width: min(600px, 90vw);
+  max-height: 340px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-medium);
+  border-top: 2px solid var(--accent-ember-dim);
+  border-radius: 0 0 8px 8px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  animation: meter-slide-down 0.15s ease-out;
+}
+
+@keyframes meter-slide-down {
+  from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* The arena-bottom-bar needs relative positioning for the meter to anchor */
+.arena-bottom-bar {
+  position: relative;
+}
+
+/* Header row */
+.combat-meter-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  border-radius: 0;
+  flex-shrink: 0;
+}
+
+.combat-meter-icon {
+  font-size: 1rem;
+  color: var(--accent-ember);
+}
+
+.combat-meter-select {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-medium);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  outline: none;
+}
+
+.combat-meter-select:focus {
+  border-color: var(--accent-ember-dim);
+}
+
+.combat-meter-select option {
+  background: var(--bg-panel);
+  color: var(--text-primary);
+}
+
+.combat-meter-turn {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.combat-meter-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.combat-meter-close:hover {
+  color: var(--accent-crimson-bright);
+  background: rgba(139, 32, 32, 0.15);
+}
+
+/* Body — scrollable view area */
+.combat-meter-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.35rem 0.5rem;
+  min-height: 80px;
+}
+
+.meter-empty {
+  text-align: center;
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 1.5rem;
+  font-family: var(--font-flavor);
+}
+
+/* ---- MeterBar rows ---- */
+.meter-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.meter-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: background 0.1s;
+}
+
+.meter-bar-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.meter-bar-self {
+  background: rgba(196, 151, 58, 0.06);
+  border-left: 2px solid var(--accent-ember-dim);
+}
+
+.meter-bar-rank {
+  width: 18px;
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-align: center;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+
+.meter-bar-name {
+  width: 90px;
+  font-size: 0.72rem;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.meter-bar-self .meter-bar-name {
+  color: var(--accent-ember-bright);
+  font-weight: 600;
+}
+
+.meter-bar-track {
+  flex: 1;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.meter-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  opacity: 0.7;
+}
+
+.meter-bar-value {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.65rem;
+  color: var(--text-bright);
+  font-family: var(--font-mono);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
+}
+
+.meter-bar-dps {
+  width: 42px;
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  text-align: right;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+}
+
+/* ---- Table views (Kills, Overview) ---- */
+.meter-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+}
+
+.meter-table th {
+  text-align: left;
+  padding: 3px 6px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.65rem;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.meter-table td {
+  padding: 2px 6px;
+}
+
+.meter-row-self {
+  background: rgba(196, 151, 58, 0.06);
+}
+
+.meter-row-self .meter-name {
+  color: var(--accent-ember-bright);
+  font-weight: 600;
+}
+
+.meter-rank {
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  width: 20px;
+}
+
+.meter-name {
+  color: var(--text-body);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meter-val {
+  font-family: var(--font-mono);
+  text-align: right;
+  color: var(--text-primary);
+}
+
+.meter-boss {
+  color: #ff44ff;
+}
+
+/* Overview table specific */
+.meter-table-overview .meter-dmg { color: #f44; }
+.meter-table-overview .meter-dpt { color: #ff8866; font-size: 0.6rem; }
+.meter-table-overview .meter-heal { color: #44dd44; }
+.meter-table-overview .meter-hpt { color: #88ffaa; font-size: 0.6rem; }
+.meter-table-overview .meter-taken { color: #ffaa44; }
+
+.meter-overview-scroll {
+  overflow-x: auto;
+}
+
+/* ---- Clickable rows (drill-in to skill breakdown) ---- */
+.meter-bar-clickable {
+  cursor: pointer;
+}
+
+.meter-bar-clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.meter-row-clickable {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.meter-row-clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.meter-table-clickable tbody tr {
+  cursor: pointer;
+}
+
+/* Header breadcrumb when viewing a unit breakdown */
+.combat-meter-viewing {
+  font-size: 0.7rem;
+  color: var(--accent-ember-bright);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+/* ---- Skill Breakdown View ---- */
+.skill-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skill-breakdown-back {
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-family: var(--font-body);
+  padding: 3px 10px;
+  border-radius: 4px;
+  align-self: flex-start;
+  transition: all 0.15s;
+}
+
+.skill-breakdown-back:hover {
+  color: var(--accent-ember-bright);
+  border-color: var(--accent-ember-dim);
+  background: rgba(196, 151, 58, 0.08);
+}
+
+/* Unit summary header */
+.skill-breakdown-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.4rem;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.skill-breakdown-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-ember-bright);
+  font-family: var(--font-heading);
+}
+
+.skill-breakdown-class {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: capitalize;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--border-subtle);
+}
+
+.skill-breakdown-totals {
+  display: flex;
+  gap: 0.7rem;
+  margin-left: auto;
+}
+
+.skill-breakdown-stat {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+}
+
+.skill-breakdown-stat small {
+  font-size: 0.58rem;
+  color: var(--text-dim);
+}
+
+.skill-breakdown-dmg {
+  color: #f44;
+}
+
+.skill-breakdown-heal {
+  color: #44dd44;
+}
+
+.skill-breakdown-kills {
+  color: var(--text-secondary);
+}
+
+/* Section titles */
+.skill-breakdown-section-title {
+  font-size: 0.65rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 0.15rem;
+}
+
+/* Skill table */
+.skill-breakdown-table {
+  font-size: 0.68rem;
+}
+
+.skill-breakdown-table th {
+  font-size: 0.6rem;
+}
+
+.skill-breakdown-row td {
+  vertical-align: top;
+  padding: 3px 5px;
+}
+
+.skill-breakdown-icon {
+  margin-right: 4px;
+  font-size: 0.75rem;
+}
+
+.skill-breakdown-skill-name {
+  color: var(--text-body);
+  font-size: 0.68rem;
+}
+
+/* Per-skill % bar (inline under the ability name) */
+.skill-breakdown-bar-track {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  margin-top: 2px;
+  overflow: hidden;
+}
+
+.skill-breakdown-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  opacity: 0.75;
+}
+
+/* Column color coding */
+.skill-col-dmg  { color: #f44; }
+.skill-col-heal { color: #44dd44; }
+.skill-col-casts { color: var(--text-secondary); }
+.skill-col-avg  { color: #ffaa44; }
+.skill-col-best { color: #ff8866; }
+.skill-col-pct  { color: var(--text-dim); font-size: 0.6rem; }
+
+/* ---- Source type breakdown bars ---- */
+.skill-breakdown-sources {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.skill-breakdown-source-group {
+  flex: 1;
+  min-width: 180px;
+}
+
+.skill-breakdown-source-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.skill-breakdown-source-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.skill-breakdown-source-label {
+  width: 50px;
+  font-size: 0.62rem;
+  color: var(--text-secondary);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.skill-breakdown-source-track {
+  flex: 1;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 40px;
+}
+
+.skill-breakdown-source-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+  opacity: 0.7;
+}
+
+.skill-breakdown-source-val {
+  font-size: 0.6rem;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  white-space: nowrap;
+  min-width: 70px;
+}
+
+/* ---- Meter Skill Tooltip (portal-based, floats outside combat meter) ---- */
+.skill-breakdown-ability {
+  min-width: 120px;
+  max-width: 160px;
+  position: relative;
+}
+
+/* Hover target — only name/icon trigger the tooltip */
+.skill-breakdown-name-hover {
+  cursor: default;
+  display: inline;
+}
+
+.meter-skill-tooltip-portal {
+  pointer-events: none;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.8));
+  animation: meter-tooltip-fadein 0.1s ease-out;
+}
+
+.meter-skill-tooltip-anchor {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  z-index: 9999;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.8));
+  animation: meter-tooltip-fadein 0.1s ease-out;
+}
+
+@keyframes meter-tooltip-fadein {
+  from { opacity: 0; transform: translateY(-2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.meter-skill-tooltip-anchor .skill-tooltip {
+  min-width: 180px;
+  max-width: 240px;
+}
+
+.meter-skill-tooltip-portal .skill-tooltip {
+  min-width: 180px;
+  max-width: 240px;
+}
+
+/* Row highlight on hover (paired with tooltip) */
+.skill-breakdown-row:hover {
+  background: rgba(196, 151, 58, 0.06);
+}
+
+/* Responsive: smaller panels on compact screens */
+@media (max-width: 1200px) {
+  .combat-meter-panel {
+    width: min(480px, 95vw);
+  }
+}
+
+@media (max-height: 800px) {
+  .combat-meter-panel {
+    max-height: 260px;
+  }
+}

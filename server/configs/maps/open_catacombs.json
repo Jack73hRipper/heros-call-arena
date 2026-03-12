@@ -1,0 +1,136 @@
+{
+  "name": "The Open Catacombs",
+  "width": 30,
+  "height": 30,
+  "map_type": "dungeon",
+  "spawn_points": [
+    { "x": 2, "y": 2 },
+    { "x": 3, "y": 2 },
+    { "x": 4, "y": 2 },
+    { "x": 5, "y": 2 },
+    { "x": 2, "y": 3 },
+    { "x": 3, "y": 3 },
+    { "x": 4, "y": 3 },
+    { "x": 5, "y": 3 }
+  ],
+  "spawn_zones": {
+    "a": { "x_min": 1, "y_min": 1, "x_max": 7, "y_max": 6 }
+  },
+  "ffa_points": [
+    { "x": 2, "y": 2 },
+    { "x": 3, "y": 2 },
+    { "x": 4, "y": 2 },
+    { "x": 5, "y": 2 },
+    { "x": 2, "y": 3 },
+    { "x": 3, "y": 3 },
+    { "x": 4, "y": 3 },
+    { "x": 5, "y": 3 }
+  ],
+  "rooms": [
+    {
+      "id": "spawn_chamber",
+      "name": "Spawn Chamber",
+      "purpose": "spawn",
+      "bounds": { "x_min": 1, "y_min": 1, "x_max": 7, "y_max": 6 }
+    },
+    {
+      "id": "demon_barracks",
+      "name": "Demon Barracks",
+      "purpose": "enemy",
+      "bounds": { "x_min": 21, "y_min": 1, "x_max": 27, "y_max": 6 },
+      "enemy_spawns": [
+        { "x": 23, "y": 3, "enemy_type": "demon" },
+        { "x": 25, "y": 3, "enemy_type": "demon" },
+        { "x": 24, "y": 5, "enemy_type": "demon" }
+      ]
+    },
+    {
+      "id": "central_nexus",
+      "name": "Central Nexus",
+      "purpose": "enemy",
+      "bounds": { "x_min": 11, "y_min": 10, "x_max": 18, "y_max": 18 },
+      "enemy_spawns": [
+        { "x": 13, "y": 12, "enemy_type": "demon" },
+        { "x": 16, "y": 16, "enemy_type": "demon" }
+      ]
+    },
+    {
+      "id": "bone_crypt",
+      "name": "Bone Crypt",
+      "purpose": "enemy",
+      "bounds": { "x_min": 22, "y_min": 10, "x_max": 27, "y_max": 16 },
+      "enemy_spawns": [
+        { "x": 24, "y": 11, "enemy_type": "skeleton" },
+        { "x": 26, "y": 11, "enemy_type": "skeleton" },
+        { "x": 25, "y": 14, "enemy_type": "skeleton" }
+      ]
+    },
+    {
+      "id": "treasury",
+      "name": "Treasury",
+      "purpose": "loot",
+      "bounds": { "x_min": 1, "y_min": 22, "x_max": 7, "y_max": 27 }
+    },
+    {
+      "id": "boss_throne",
+      "name": "Throne of Ruin",
+      "purpose": "boss",
+      "bounds": { "x_min": 21, "y_min": 22, "x_max": 28, "y_max": 28 },
+      "enemy_spawns": [
+        { "x": 23, "y": 24, "enemy_type": "skeleton" },
+        { "x": 26, "y": 24, "enemy_type": "skeleton" },
+        { "x": 25, "y": 26, "enemy_type": "undead_knight", "is_boss": true }
+      ]
+    }
+  ],
+  "doors": [],
+  "chests": [
+    { "x": 2, "y": 23 },
+    { "x": 4, "y": 23 },
+    { "x": 6, "y": 23 },
+    { "x": 3, "y": 25 },
+    { "x": 5, "y": 25 },
+    { "x": 14, "y": 14 },
+    { "x": 25, "y": 13 },
+    { "x": 24, "y": 26 }
+  ],
+  "tiles": [
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W"],
+    ["W","F","F","F","F","F","F","F","W","W","W","W","W","W","W","W","W","W","W","W","W","F","F","F","F","F","F","F","W","W"],
+    ["W","F","S","S","S","S","F","F","W","W","W","W","W","W","W","W","W","W","W","W","W","F","F","F","F","F","F","F","W","W"],
+    ["W","F","S","S","S","S","F","F","C","C","C","C","C","C","C","C","C","C","C","C","C","F","F","F","F","F","F","F","W","W"],
+    ["W","F","S","S","S","S","F","F","C","C","C","C","C","C","C","C","C","C","C","C","C","F","F","F","F","F","F","F","W","W"],
+    ["W","F","F","F","F","F","F","F","W","W","W","W","W","W","W","W","W","W","W","W","W","F","F","F","F","F","F","F","W","W"],
+    ["W","F","F","F","F","F","F","F","W","W","W","W","W","W","W","W","W","W","W","W","W","F","F","F","F","F","F","F","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","C","C","W","W","W","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","C","C","W","W","W","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","C","C","W","W","W","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","F","F","F","F","F","F","F","F","W","W","W","F","F","F","F","F","F","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","F","F","F","F","F","F","F","F","W","W","W","F","F","F","F","F","F","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","F","F","F","F","F","F","F","F","W","W","W","F","F","F","F","F","F","W","W"],
+    ["W","W","W","C","C","C","C","C","C","C","C","F","F","F","F","F","F","F","F","C","C","C","F","F","F","X","F","F","W","W"],
+    ["W","W","W","C","C","C","C","C","C","C","C","F","F","F","X","F","F","F","F","C","C","C","F","F","F","F","F","F","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","F","F","F","F","F","F","F","F","W","W","W","F","F","F","F","F","F","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","F","F","F","F","F","F","F","F","W","W","W","F","F","F","F","F","F","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","F","F","F","F","F","F","F","F","W","W","W","W","C","C","W","W","W","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","F","F","F","F","F","F","F","F","W","W","W","W","C","C","W","W","W","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","W","W","W","C","C","W","W","W","W","W","W","W","C","C","W","W","W","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","W","W","W","C","C","W","W","W","W","W","W","W","C","C","W","W","W","W","W"],
+    ["W","W","W","C","C","W","W","W","W","W","W","W","W","W","C","C","W","W","W","W","W","W","W","C","C","W","W","W","W","W"],
+    ["W","F","F","F","F","F","F","F","W","W","W","W","W","W","C","C","W","W","W","W","W","F","F","F","F","F","F","F","F","W"],
+    ["W","F","X","F","X","F","X","F","W","W","W","W","W","W","C","C","W","W","W","W","W","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","C","C","C","C","C","C","C","C","C","C","C","C","C","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","X","F","X","F","F","C","C","C","C","C","C","C","C","C","C","C","C","C","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","W","W","W","W","W","W","W","W","W","W","W","W","W","F","F","F","X","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","W","W","W","W","W","W","W","W","W","W","W","W","W","F","F","F","F","F","F","F","F","W"],
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","F","F","F","F","F","F","F","F","W"],
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W"]
+  ],
+  "tile_legend": {
+    "W": "wall",
+    "F": "floor",
+    "C": "corridor",
+    "S": "spawn",
+    "X": "chest"
+  }
+}

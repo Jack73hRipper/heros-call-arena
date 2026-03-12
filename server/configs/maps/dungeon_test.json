@@ -1,0 +1,112 @@
+{
+  "name": "Dungeon Test",
+  "width": 20,
+  "height": 20,
+  "map_type": "dungeon",
+  "spawn_points": [
+    { "x": 2, "y": 2 },
+    { "x": 3, "y": 2 },
+    { "x": 2, "y": 3 },
+    { "x": 3, "y": 3 },
+    { "x": 4, "y": 2 }
+  ],
+  "spawn_zones": {
+    "a": { "x_min": 1, "y_min": 1, "x_max": 5, "y_max": 5 }
+  },
+  "ffa_points": [
+    { "x": 2, "y": 2 },
+    { "x": 3, "y": 2 },
+    { "x": 2, "y": 3 },
+    { "x": 3, "y": 3 },
+    { "x": 4, "y": 2 }
+  ],
+  "rooms": [
+    {
+      "id": "start_room",
+      "name": "Start Room",
+      "purpose": "spawn",
+      "bounds": { "x_min": 1, "y_min": 1, "x_max": 5, "y_max": 5 }
+    },
+    {
+      "id": "enemy_room_1",
+      "name": "Demon Den",
+      "purpose": "enemy",
+      "bounds": { "x_min": 10, "y_min": 1, "x_max": 15, "y_max": 5 },
+      "enemy_spawns": [
+        { "x": 12, "y": 3, "enemy_type": "demon" },
+        { "x": 13, "y": 2, "enemy_type": "demon" }
+      ]
+    },
+    {
+      "id": "loot_room",
+      "name": "Treasury",
+      "purpose": "loot",
+      "bounds": { "x_min": 1, "y_min": 10, "x_max": 5, "y_max": 14 }
+    },
+    {
+      "id": "enemy_room_2",
+      "name": "Skeleton Hall",
+      "purpose": "enemy",
+      "bounds": { "x_min": 10, "y_min": 10, "x_max": 15, "y_max": 14 },
+      "enemy_spawns": [
+        { "x": 12, "y": 12, "enemy_type": "skeleton" },
+        { "x": 13, "y": 11, "enemy_type": "skeleton" }
+      ]
+    },
+    {
+      "id": "boss_room",
+      "name": "Throne of the Undead Knight",
+      "purpose": "boss",
+      "bounds": { "x_min": 14, "y_min": 16, "x_max": 18, "y_max": 18 },
+      "enemy_spawns": [
+        { "x": 16, "y": 17, "enemy_type": "undead_knight", "is_boss": true }
+      ]
+    }
+  ],
+  "doors": [
+    { "x": 6, "y": 3, "state": "closed" },
+    { "x": 9, "y": 3, "state": "closed" },
+    { "x": 3, "y": 6, "state": "closed" },
+    { "x": 3, "y": 9, "state": "closed" },
+    { "x": 12, "y": 6, "state": "closed" },
+    { "x": 12, "y": 9, "state": "closed" },
+    { "x": 6, "y": 12, "state": "closed" },
+    { "x": 9, "y": 12, "state": "closed" },
+    { "x": 13, "y": 15, "state": "closed" }
+  ],
+  "chests": [
+    { "x": 2, "y": 12 },
+    { "x": 4, "y": 12 },
+    { "x": 3, "y": 13 }
+  ],
+  "tiles": [
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W"],
+    ["W","F","F","F","F","F","W","W","W","W","F","F","F","F","F","F","W","W","W","W"],
+    ["W","F","S","S","S","F","W","W","W","W","F","F","F","F","F","F","W","W","W","W"],
+    ["W","F","S","S","S","F","D","C","C","D","F","F","F","F","F","F","W","W","W","W"],
+    ["W","F","F","F","F","F","W","W","W","W","F","F","F","F","F","F","W","W","W","W"],
+    ["W","F","F","F","F","F","W","W","W","W","F","F","F","F","F","F","W","W","W","W"],
+    ["W","W","W","D","W","W","W","W","W","W","W","W","D","W","W","W","W","W","W","W"],
+    ["W","W","W","C","W","W","W","W","W","W","W","W","C","W","W","W","W","W","W","W"],
+    ["W","W","W","C","W","W","W","W","W","W","W","W","C","W","W","W","W","W","W","W"],
+    ["W","W","W","D","W","W","W","W","W","W","W","W","D","W","W","W","W","W","W","W"],
+    ["W","F","F","F","F","F","W","W","W","W","F","F","F","F","F","F","W","W","W","W"],
+    ["W","F","F","F","F","F","W","W","W","W","F","F","F","F","F","F","W","W","W","W"],
+    ["W","F","X","F","X","F","D","C","C","D","F","F","F","F","F","F","W","W","W","W"],
+    ["W","F","F","X","F","F","W","W","W","W","F","F","F","F","F","F","W","W","W","W"],
+    ["W","F","F","F","F","F","W","W","W","W","F","F","F","F","F","F","W","W","W","W"],
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","D","W","W","W","W","W","W"],
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","C","F","F","F","F","F","W"],
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","F","F","F","F","F","W"],
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","F","F","F","F","F","W"],
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W"]
+  ],
+  "tile_legend": {
+    "W": "wall",
+    "F": "floor",
+    "D": "door",
+    "C": "corridor",
+    "S": "spawn",
+    "X": "chest"
+  }
+}

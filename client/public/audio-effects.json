@@ -1,0 +1,546 @@
+{
+  "_version": 2,
+  "_description": "Maps game events to sound effects. Edit this file to change which sounds play — no code changes needed. Mirrors particle-effects.json pattern.",
+  "_instructions": {
+    "adding_sounds": "1) Place audio file in client/public/audio/<category>/  2) Add a key→path entry to _soundFiles below  3) Reference the key in the appropriate section  4) AudioManager preloads everything in _soundFiles on init.",
+    "key_format": "Each mapping has: key (single sound), variants (array — picks random), volume (0-1), pitchVariance (0-0.2 = ±%)",
+    "unmapped_keys": "Any key referenced in combat/skills/etc that has no _soundFiles entry is silently skipped — no errors."
+  },
+
+  "_soundFiles": {
+    "melee_hit_1":          "/audio/combat/melee-hit_sword-slash.wav",
+    "melee_hit_2":          "/audio/combat/melee-hit_swish-hit.wav",
+    "melee_hit_3":          "/audio/combat/melee-hit_strong-punch.wav",
+    "melee_hit_4":          "/audio/combat/melee-hit_strong-smack.wav",
+    "melee_hit_5":          "/audio/combat/melee-hit_sword-slash-2.wav",
+    "melee_hit_6":          "/audio/combat/melee-hit_sword-slash-3.wav",
+    "melee_hit_7":          "/audio/combat/melee-hit_swish-hit-2.wav",
+    "melee_hit_8":          "/audio/combat/melee-hit_strong-punch-2.wav",
+    "melee_hit_9":          "/audio/combat/melee-hit_strong-smack-2.wav",
+    "melee_hit_retro":      "/audio/combat/melee-hit_bit-sword.wav",
+    "melee_crit":           "/audio/combat/melee-crit_sword-critical.wav",
+    "melee_crit_2":         "/audio/combat/melee-crit_sword-critical-2.wav",
+    "ranged_hit_1":         "/audio/combat/ranged-hit_hollow-point.wav",
+    "ranged_hit_2":         "/audio/combat/ranged-hit_high-whoosh.wav",
+    "ranged_hit_3":         "/audio/combat/ranged-hit_fleeting-hit.wav",
+    "ranged_hit_4":         "/audio/combat/ranged-hit_hollow-point-2.wav",
+    "ranged_hit_5":         "/audio/combat/ranged-hit_high-whoosh-2.wav",
+    "ranged_hit_6":         "/audio/combat/ranged-hit_fleeting-hit-2.wav",
+    "miss_1":               "/audio/combat/miss_bamboo-whip.wav",
+    "miss_2":               "/audio/combat/miss_simple-whoosh.wav",
+    "miss_3":               "/audio/combat/miss_bamboo-whip-2.wav",
+    "miss_4":               "/audio/combat/miss_simple-whoosh-2.wav",
+    "dodge":                "/audio/combat/miss_simple-whoosh.wav",
+    "block_1":              "/audio/combat/block_sword-deflect.wav",
+    "block_2":              "/audio/combat/block_sword-parry.wav",
+    "block_3":              "/audio/combat/block_sword-reflect.wav",
+    "block_4":              "/audio/combat/block_kick-block.wav",
+    "block_5":              "/audio/combat/block_deflected-hit.wav",
+    "block_6":              "/audio/combat/block_sword-deflect-2.wav",
+    "block_7":              "/audio/combat/block_sword-parry-2.wav",
+    "death_1":              "/audio/combat/death_thud.wav",
+    "death_2":              "/audio/combat/death_forced-shutdown.wav",
+    "death_3":              "/audio/combat/death_toon-fall.wav",
+    "death_4":              "/audio/combat/death_thud-2.wav",
+    "death_5":              "/audio/combat/death_forced-shutdown-2.wav",
+    "stun_hit":             "/audio/combat/stun_forced-interruption.wav",
+    "stun_hit_2":           "/audio/combat/stun_forced-interruption-2.wav",
+    "stun_locked":          "/audio/combat/stun_turn-locked.wav",
+
+    "skill_cast":           "/audio/skills/cast_skill-ready.wav",
+    "skill_cast_energy":    "/audio/skills/cast_energy-riser.wav",
+    "skill_cast_dark":      "/audio/skills/cast_hollow-spell.wav",
+    "skill_cast_power":     "/audio/skills/cast_strong-energy.wav",
+    "skill_cast_sphere":    "/audio/skills/cast_sphere-up.wav",
+
+    "skill_taunt":          "/audio/skills/taunt_growing-strength.wav",
+    "skill_shield_bash":    "/audio/skills/shield-bash_critical-strike.wav",
+    "skill_holy_ground":    "/audio/skills/holy-ground_aura-rise.wav",
+    "skill_bulwark":        "/audio/skills/bulwark_bonus-max-shield.wav",
+    "skill_power_shot":     "/audio/skills/power-shot_flare-gun.wav",
+    "skill_volley":         "/audio/skills/volley_thousand-needles.wav",
+    "skill_evasion":        "/audio/skills/evasion_dodge-chance.wav",
+    "skill_crippling_shot": "/audio/skills/crippling-shot_water-bolt.wav",
+    "skill_heal":           "/audio/skills/heal_simple-heal.wav",
+    "skill_rebuke":         "/audio/skills/rebuke_rising-lasers.wav",
+    "skill_exorcism":       "/audio/skills/exorcism_mind-eraser.wav",
+    "skill_prayer":         "/audio/skills/prayer_casting-buff.wav",
+    "skill_shield_of_faith":"/audio/skills/shield-of-faith_shimmering-winds.wav",
+    "skill_shadow_step":    "/audio/skills/shadow-step_teleport-downer.wav",
+    "skill_wither":         "/audio/skills/wither_dark-energy-sphere.wav",
+    "skill_ward":           "/audio/skills/ward_bubble-deflect.wav",
+    "skill_soul_reap":      "/audio/skills/soul-reap_gore-pierce.wav",
+    "skill_venom_gaze":     "/audio/skills/venom-gaze_slime-ball.wav",
+    "skill_war_cry":        "/audio/skills/cast_strong-energy.wav",
+    "skill_double_strike":  "/audio/combat/melee-crit_sword-critical.wav",
+    "skill_divine_sense":   "/audio/skills/cast_energy-riser.wav",
+
+    "heal":                 "/audio/skills/heal_simple-heal.wav",
+    "buff_apply":           "/audio/buffs/buff_generic-buff.wav",
+    "buff_shimmer":         "/audio/buffs/buff_shimmer-tone.wav",
+    "buff_stats":           "/audio/buffs/buff_stats-up.wav",
+    "buff_vigor":           "/audio/buffs/buff_invigoration.wav",
+    "regen":                "/audio/buffs/regen_bonus-regen-rate.wav",
+    "debuff_enemy":         "/audio/buffs/debuff_enemy-debuff.wav",
+    "debuff_speed":         "/audio/buffs/debuff_speed-debuff.wav",
+
+    "potion_use":           "/audio/items/potion_generic-consume.wav",
+    "loot_pickup":          "/audio/items/loot_coin-toss.wav",
+
+    "portal_channel":       "/audio/events/portal-channel_complex-rise.wav",
+    "portal_open":          "/audio/events/portal-open_flare-nova.wav",
+    "wave_clear":           "/audio/events/wave-clear_effect-success.wav",
+    "floor_descend":        "/audio/events/floor-descend_eruption.wav",
+    "match_start":          "/audio/events/wave-clear_level-up.wav",
+    "match_end":            "/audio/events/floor-descend_noise-decay.wav",
+
+    "ui_click_1":           "/audio/ui/click_metallic.wav",
+    "ui_click_2":           "/audio/ui/click_positive.wav",
+    "ui_click_3":           "/audio/ui/click_tonal.wav",
+    "ui_click_4":           "/audio/ui/click_metallic-2.wav",
+    "ui_click_5":           "/audio/ui/click_positive-2.wav",
+    "ui_confirm":           "/audio/ui/confirm_strong-click.wav",
+    "ui_confirm_2":         "/audio/ui/confirm_strong-click-alt.wav",
+    "ui_cancel":            "/audio/ui/denied.wav",
+    "ui_equip":             "/audio/items/equip_upgrade-equip.wav",
+    "ui_buy":               "/audio/items/buy_coin-spend.wav",
+    "ui_sell":              "/audio/items/sell_magic-coin.wav",
+    "ui_lock":              "/audio/ui/lock.wav",
+    "ui_select":            "/audio/ui/select_zap.wav",
+
+    "step_dungeon":         "/audio/movement/step_boots-dungeon.wav",
+    "step_generic":         "/audio/movement/step_boots-generic.wav",
+    "step_hard":            "/audio/movement/step_hard.wav",
+
+    "skill_grave_thorns":   "/audio/combat/block_sword-deflect.wav",
+    "skill_grave_chains":   "/audio/skills/cast_hollow-spell.wav",
+    "skill_undying_will":   "/audio/skills/cast_hollow-spell.wav",
+    "skill_undying_revive": "/audio/events/portal-open_flare-nova.wav",
+    "skill_soul_rend":      "/audio/skills/soul-reap_gore-pierce.wav",
+
+    "skill_healing_totem":  "/audio/skills/cast_hollow-spell.wav",
+    "skill_searing_totem":  "/audio/skills/cast_strong-energy.wav",
+    "skill_soul_anchor":    "/audio/skills/cast_hollow-spell.wav",
+    "skill_soul_anchor_save":"/audio/events/portal-open_flare-nova.wav",
+    "skill_earthgrasp":     "/audio/skills/cast_strong-energy.wav"
+  },
+
+  "combat": {
+    "melee_hit": {
+      "_comment": "Melee attack lands — sword clash / blunt impact",
+      "variants": ["melee_hit_1", "melee_hit_2", "melee_hit_3", "melee_hit_4", "melee_hit_5", "melee_hit_6", "melee_hit_7", "melee_hit_8", "melee_hit_9"],
+      "volume": 0.8,
+      "pitchVariance": 0.1
+    },
+    "melee_crit": {
+      "_comment": "Critical / high-damage melee hit — bigger impact sound",
+      "variants": ["melee_crit", "melee_crit_2"],
+      "volume": 1.0,
+      "pitchVariance": 0.05
+    },
+    "ranged_hit": {
+      "_comment": "Ranged attack lands — arrow impact / thwip",
+      "variants": ["ranged_hit_1", "ranged_hit_2", "ranged_hit_3", "ranged_hit_4", "ranged_hit_5", "ranged_hit_6"],
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "miss": {
+      "_comment": "Attack missed — whoosh / whiff",
+      "variants": ["miss_1", "miss_2", "miss_3", "miss_4"],
+      "volume": 0.4,
+      "pitchVariance": 0.12
+    },
+    "dodge": {
+      "_comment": "Target dodged / evaded — swift dodge sound",
+      "key": "dodge",
+      "volume": 0.5,
+      "pitchVariance": 0.1
+    },
+    "block": {
+      "_comment": "Attack blocked / reflected — metallic clang",
+      "variants": ["block_1", "block_2", "block_3", "block_4", "block_5", "block_6", "block_7"],
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "death": {
+      "_comment": "Unit dies — thud / collapse",
+      "variants": ["death_1", "death_2", "death_3", "death_4", "death_5"],
+      "volume": 0.9,
+      "pitchVariance": 0.05
+    },
+    "skill_cast": {
+      "_comment": "Generic skill activation fallback — arcane whoosh",
+      "key": "skill_cast",
+      "volume": 0.6,
+      "pitchVariance": 0.1
+    },
+    "heal": {
+      "_comment": "Heal lands — warm chime / glow",
+      "key": "heal",
+      "volume": 0.6,
+      "pitchVariance": 0.05
+    },
+    "buff_apply": {
+      "_comment": "Buff applied — ward hum / power-up",
+      "key": "buff_apply",
+      "volume": 0.5,
+      "pitchVariance": 0.05
+    },
+    "stun_hit": {
+      "_comment": "Stun applied — heavy metallic clang",
+      "variants": ["stun_hit", "stun_hit_2", "stun_locked"],
+      "volume": 0.8,
+      "pitchVariance": 0.05
+    },
+    "potion_use": {
+      "_comment": "Potion consumed — bottle / gulp",
+      "key": "potion_use",
+      "volume": 0.6,
+      "pitchVariance": 0.08
+    },
+    "loot_pickup": {
+      "_comment": "Item picked up from ground — coin jingle / item rustle",
+      "key": "loot_pickup",
+      "volume": 0.5,
+      "pitchVariance": 0.05
+    }
+  },
+
+  "skills": {
+    "_comment": "Per-skill sound overrides. If a skill_id isn't listed here, the generic combat.skill_cast plays instead.",
+    "taunt": {
+      "key": "skill_taunt",
+      "volume": 0.7,
+      "pitchVariance": 0.05
+    },
+    "shield_bash": {
+      "key": "skill_shield_bash",
+      "volume": 0.8,
+      "pitchVariance": 0.05
+    },
+    "holy_ground": {
+      "key": "skill_holy_ground",
+      "volume": 0.6,
+      "pitchVariance": 0.05
+    },
+    "bulwark": {
+      "key": "skill_bulwark",
+      "volume": 0.6,
+      "pitchVariance": 0.05
+    },
+    "power_shot": {
+      "key": "skill_power_shot",
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "volley": {
+      "key": "skill_volley",
+      "volume": 0.7,
+      "pitchVariance": 0.05
+    },
+    "evasion": {
+      "key": "skill_evasion",
+      "volume": 0.5,
+      "pitchVariance": 0.05
+    },
+    "crippling_shot": {
+      "key": "skill_crippling_shot",
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "heal": {
+      "key": "skill_heal",
+      "volume": 0.6,
+      "pitchVariance": 0.05
+    },
+    "rebuke": {
+      "key": "skill_rebuke",
+      "volume": 0.7,
+      "pitchVariance": 0.05
+    },
+    "exorcism": {
+      "key": "skill_exorcism",
+      "volume": 0.7,
+      "pitchVariance": 0.05
+    },
+    "prayer": {
+      "key": "skill_prayer",
+      "volume": 0.5,
+      "pitchVariance": 0.05
+    },
+    "shield_of_faith": {
+      "key": "skill_shield_of_faith",
+      "volume": 0.6,
+      "pitchVariance": 0.05
+    },
+    "divine_sense": {
+      "key": "skill_divine_sense",
+      "volume": 0.5,
+      "pitchVariance": 0.05
+    },
+    "shadow_step": {
+      "key": "skill_shadow_step",
+      "volume": 0.7,
+      "pitchVariance": 0.1
+    },
+    "wither": {
+      "key": "skill_wither",
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "ward": {
+      "key": "skill_ward",
+      "volume": 0.6,
+      "pitchVariance": 0.05
+    },
+    "soul_reap": {
+      "key": "skill_soul_reap",
+      "volume": 0.8,
+      "pitchVariance": 0.08
+    },
+    "venom_gaze": {
+      "key": "skill_venom_gaze",
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "war_cry": {
+      "key": "skill_war_cry",
+      "volume": 0.8,
+      "pitchVariance": 0.05
+    },
+    "double_strike": {
+      "key": "skill_double_strike",
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "ballad_of_might": {
+      "_comment": "Bard — ascending buff chord, empowering swell",
+      "key": "buff_shimmer",
+      "volume": 0.7,
+      "pitchVariance": 0.05
+    },
+    "dirge_of_weakness": {
+      "_comment": "Bard — dark droning debuff, oppressive chant",
+      "key": "debuff_enemy",
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "verse_of_haste": {
+      "_comment": "Bard — quick ascending arpeggio, cooldown acceleration",
+      "key": "buff_vigor",
+      "volume": 0.6,
+      "pitchVariance": 0.05
+    },
+    "cacophony": {
+      "_comment": "Bard — harsh dissonant blast, AoE shockwave",
+      "key": "skill_cast_power",
+      "volume": 0.8,
+      "pitchVariance": 0.1
+    },
+    "blood_strike": {
+      "_comment": "Blood Knight — wet vampiric slash + drain whoosh",
+      "key": "skill_soul_reap",
+      "volume": 0.8,
+      "pitchVariance": 0.08
+    },
+    "crimson_veil": {
+      "_comment": "Blood Knight — dark swirling buff activation",
+      "key": "skill_cast_dark",
+      "volume": 0.6,
+      "pitchVariance": 0.05
+    },
+    "sanguine_burst": {
+      "_comment": "Blood Knight — visceral AoE blood burst",
+      "key": "skill_cast_power",
+      "volume": 0.8,
+      "pitchVariance": 0.1
+    },
+    "blood_frenzy": {
+      "_comment": "Blood Knight — rage activation, heartbeat + roar",
+      "key": "skill_cast_energy",
+      "volume": 0.9,
+      "pitchVariance": 0.05
+    },
+    "miasma": {
+      "_comment": "Plague Doctor — hissing toxic gas cloud release",
+      "key": "skill_cast_dark",
+      "volume": 0.7,
+      "pitchVariance": 0.1
+    },
+    "plague_flask": {
+      "_comment": "Plague Doctor — cork pop + liquid splash + sizzle",
+      "key": "skill_venom_gaze",
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "enfeeble": {
+      "_comment": "Plague Doctor — low rumbling debuff whoosh, oppressive",
+      "key": "debuff_enemy",
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "inoculate": {
+      "_comment": "Plague Doctor — clean chime + cleansing sparkle",
+      "key": "buff_shimmer",
+      "volume": 0.6,
+      "pitchVariance": 0.05
+    },
+    "grave_thorns": {
+      "_comment": "Revenant — bone shards erupting, grinding retaliation aura",
+      "key": "skill_grave_thorns",
+      "volume": 0.7,
+      "pitchVariance": 0.08
+    },
+    "grave_chains": {
+      "_comment": "Revenant — spectral chains erupting from hallowed ground",
+      "key": "skill_grave_chains",
+      "volume": 0.7,
+      "pitchVariance": 0.1
+    },
+    "undying_will": {
+      "_comment": "Revenant — deep ominous hum, cheat death activation",
+      "key": "skill_undying_will",
+      "volume": 0.7,
+      "pitchVariance": 0.05
+    },
+    "soul_rend": {
+      "_comment": "Revenant — ghostly cursed blade slash",
+      "key": "skill_soul_rend",
+      "volume": 0.8,
+      "pitchVariance": 0.08
+    },
+    "healing_totem": {
+      "_comment": "Shaman — bone cracking + spirit hum, totem rising from earth",
+      "key": "skill_healing_totem",
+      "volume": 0.7,
+      "pitchVariance": 0.1
+    },
+    "searing_totem": {
+      "_comment": "Shaman — bone cracking + fire crackle, offensive totem placement",
+      "key": "skill_searing_totem",
+      "volume": 0.7,
+      "pitchVariance": 0.1
+    },
+    "soul_anchor": {
+      "_comment": "Shaman — deep ethereal chord + anchor thud, death prevention buff",
+      "key": "skill_soul_anchor",
+      "volume": 0.7,
+      "pitchVariance": 0.05
+    },
+    "earthgrasp": {
+      "_comment": "Shaman — earth rumble + grabbing/scraping, AoE root",
+      "key": "skill_earthgrasp",
+      "volume": 0.8,
+      "pitchVariance": 0.1
+    }
+  },
+
+  "environment": {
+    "door_open": {
+      "_comment": "Door opened — reusing lock click as placeholder until we find a creak sound",
+      "key": "ui_lock",
+      "volume": 0.7,
+      "pitchVariance": 0.1
+    },
+    "chest_open": {
+      "_comment": "Chest opened — coin toss shimmer",
+      "key": "loot_pickup",
+      "volume": 0.7,
+      "pitchVariance": 0.05
+    }
+  },
+
+  "events": {
+    "_comment": "One-shot event sounds triggered by specific game moments",
+    "portal_channel": {
+      "key": "portal_channel",
+      "volume": 0.6,
+      "pitchVariance": 0
+    },
+    "portal_open": {
+      "key": "portal_open",
+      "volume": 0.8,
+      "pitchVariance": 0
+    },
+    "wave_clear": {
+      "_comment": "All enemies on wave/floor killed — short fanfare",
+      "key": "wave_clear",
+      "volume": 0.8,
+      "pitchVariance": 0
+    },
+    "floor_descend": {
+      "_comment": "Descending to next floor — rumble / stairs echo",
+      "key": "floor_descend",
+      "volume": 0.7,
+      "pitchVariance": 0
+    },
+    "match_start": {
+      "key": "match_start",
+      "volume": 0.6,
+      "pitchVariance": 0
+    },
+    "match_end": {
+      "key": "match_end",
+      "volume": 0.7,
+      "pitchVariance": 0
+    }
+  },
+
+  "ui": {
+    "_comment": "UI interaction sounds — buttons, menus, inventory",
+    "click": {
+      "variants": ["ui_click_1", "ui_click_2", "ui_click_3", "ui_click_4", "ui_click_5"],
+      "volume": 0.4,
+      "pitchVariance": 0.05
+    },
+    "confirm": {
+      "variants": ["ui_confirm", "ui_confirm_2"],
+      "volume": 0.5,
+      "pitchVariance": 0
+    },
+    "cancel": {
+      "key": "ui_cancel",
+      "volume": 0.4,
+      "pitchVariance": 0
+    },
+    "equip": {
+      "key": "ui_equip",
+      "volume": 0.5,
+      "pitchVariance": 0.08
+    },
+    "buy": {
+      "key": "ui_buy",
+      "volume": 0.5,
+      "pitchVariance": 0.05
+    },
+    "sell": {
+      "key": "ui_sell",
+      "volume": 0.5,
+      "pitchVariance": 0.05
+    }
+  },
+
+  "ambient": {
+    "_comment": "Looping background tracks — no ambient files yet. Keys here are referenced by useAmbientAudio hook.",
+    "dungeon": "ambient_dungeon",
+    "town": "ambient_town",
+    "arena": "ambient_arena"
+  },
+
+  "music": {
+    "_comment": "Music playlist — streamed via HTML5 Audio (not preloaded into Web Audio buffers). Shuffle by default.",
+    "tracks": [
+      { "title": "Shadowed Hearth Alehouse",    "path": "/audio/music/Shadowed Hearth Alehouse.mp3" },
+      { "title": "Shadowed Hearth Alehouse II",  "path": "/audio/music/Shadowed Hearth Alehouse (1).mp3" },
+      { "title": "Ashfall Crown",                "path": "/audio/music/Ashfall Crown.mp3" },
+      { "title": "Echoes Beneath the Stone",     "path": "/audio/music/Echoes Beneath the Stone.mp3" },
+      { "title": "Pit of Breathless Iron",       "path": "/audio/music/Pit of Breathless Iron.mp3" },
+      { "title": "Subterranean Pressure",        "path": "/audio/music/Subterranean Pressure.mp3" },
+      { "title": "Blood in the Sand",            "path": "/audio/music/Blood in the Sand.mp3" },
+      { "title": "Kneel Before the Dawn",        "path": "/audio/music/Kneel Before the Dawn.mp3" },
+      { "title": "The Light Returns",            "path": "/audio/music/The Light Returns.mp3" },
+      { "title": "Tired Banner Unfurled",        "path": "/audio/music/Tired Banner Unfurled.mp3" },
+      { "title": "After the Last Signal",        "path": "/audio/music/After the Last Signal.mp3" }
+    ]
+  }
+}

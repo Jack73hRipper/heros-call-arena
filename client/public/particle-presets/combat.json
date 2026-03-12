@@ -1,0 +1,425 @@
+[
+  {
+    "name": "melee-hit",
+    "version": 1,
+    "duration": 0.3,
+    "loop": false,
+    "tags": [
+      "combat",
+      "impact"
+    ],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 18,
+      "spawnShape": "point",
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 60,
+        "max": 160
+      },
+      "gravity": {
+        "x": 0,
+        "y": 40
+      },
+      "friction": 0.02
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.15,
+        "max": 0.45
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 2,
+          "max": 5
+        },
+        "end": {
+          "min": 0,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.25,
+            "color": "#ffdd44"
+          },
+          {
+            "stop": 0.7,
+            "color": "#ff6600"
+          },
+          {
+            "stop": 1,
+            "color": "#441100"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "ranged-hit",
+    "version": 1,
+    "duration": 0.25,
+    "loop": false,
+    "tags": [
+      "combat",
+      "impact",
+      "ranged"
+    ],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 12,
+      "spawnShape": "point",
+      "angle": {
+        "min": 160,
+        "max": 200
+      },
+      "speed": {
+        "min": 40,
+        "max": 100
+      },
+      "gravity": {
+        "x": 0,
+        "y": 20
+      }
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.1,
+        "max": 0.35
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 1,
+          "max": 3
+        },
+        "end": {
+          "min": 0,
+          "max": 0.5
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.3,
+            "color": "#aaddff"
+          },
+          {
+            "stop": 1,
+            "color": "#3366aa"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "critical-hit",
+    "version": 1,
+    "duration": 0.4,
+    "loop": false,
+    "tags": [
+      "combat",
+      "impact",
+      "critical"
+    ],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 30,
+      "spawnShape": "point",
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 80,
+        "max": 220
+      },
+      "gravity": {
+        "x": 0,
+        "y": 30
+      },
+      "friction": 0.01
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.25,
+        "max": 0.6
+      },
+      "shape": "star",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 8
+        },
+        "end": {
+          "min": 0,
+          "max": 1
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ffffff"
+          },
+          {
+            "stop": 0.2,
+            "color": "#ffee55"
+          },
+          {
+            "stop": 0.6,
+            "color": "#ffaa00"
+          },
+          {
+            "stop": 1,
+            "color": "#663300"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 1,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "death-burst",
+    "version": 1,
+    "duration": 0.5,
+    "loop": false,
+    "tags": [
+      "combat",
+      "death"
+    ],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 35,
+      "spawnShape": "circle",
+      "spawnRadius": 5,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 30,
+        "max": 120
+      },
+      "gravity": {
+        "x": 0,
+        "y": 60
+      },
+      "friction": 0.03
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.4,
+        "max": 1
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 7
+        },
+        "end": {
+          "min": 1,
+          "max": 3
+        },
+        "easing": "easeOutCubic"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#ff3333"
+          },
+          {
+            "stop": 0.4,
+            "color": "#aa1111"
+          },
+          {
+            "stop": 0.7,
+            "color": "#552222"
+          },
+          {
+            "stop": 1,
+            "color": "#110000"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.9,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "blood-splatter",
+    "version": 1,
+    "duration": 0.2,
+    "loop": false,
+    "tags": [
+      "combat",
+      "gore"
+    ],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 10,
+      "spawnShape": "point",
+      "angle": {
+        "min": 200,
+        "max": 340
+      },
+      "speed": {
+        "min": 30,
+        "max": 90
+      },
+      "gravity": {
+        "x": 0,
+        "y": 180
+      }
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.3,
+        "max": 0.7
+      },
+      "shape": "circle",
+      "size": {
+        "start": {
+          "min": 2,
+          "max": 4
+        },
+        "end": {
+          "min": 1,
+          "max": 2
+        },
+        "easing": "linear"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#cc2222"
+          },
+          {
+            "stop": 0.5,
+            "color": "#882222"
+          },
+          {
+            "stop": 1,
+            "color": "#331111"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.9,
+        "end": 0.2,
+        "easing": "easeOutCubic"
+      },
+      "blendMode": "source-over"
+    }
+  },
+  {
+    "name": "block",
+    "version": 1,
+    "duration": 0.2,
+    "loop": false,
+    "tags": [
+      "combat",
+      "defense"
+    ],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 8,
+      "spawnShape": "ring",
+      "spawnRadius": 8,
+      "angle": {
+        "min": 0,
+        "max": 360
+      },
+      "speed": {
+        "min": 20,
+        "max": 50
+      }
+    },
+    "particle": {
+      "lifetime": {
+        "min": 0.15,
+        "max": 0.3
+      },
+      "shape": "square",
+      "size": {
+        "start": {
+          "min": 3,
+          "max": 5
+        },
+        "end": {
+          "min": 1,
+          "max": 2
+        },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          {
+            "stop": 0,
+            "color": "#aaccff"
+          },
+          {
+            "stop": 0.5,
+            "color": "#6688bb"
+          },
+          {
+            "stop": 1,
+            "color": "#334466"
+          }
+        ]
+      },
+      "alpha": {
+        "start": 0.8,
+        "end": 0,
+        "easing": "easeOutCubic"
+      },
+      "rotation": {
+        "speed": {
+          "min": -4,
+          "max": 4
+        }
+      },
+      "blendMode": "lighter"
+    }
+  }
+]

@@ -1,0 +1,311 @@
+{
+  "rarity_tiers": {
+    "normal": {
+      "tier_id": "normal",
+      "name": "Normal",
+      "name_color": "#ffffff",
+      "hp_multiplier": 1.0,
+      "damage_multiplier": 1.0,
+      "armor_bonus": 0,
+      "affix_count": 0,
+      "minion_count": 0,
+      "loot_drop_chance_bonus": 0.0,
+      "loot_bonus_items": 0,
+      "loot_guaranteed_rarity": null,
+      "xp_multiplier": 1.0
+    },
+    "champion": {
+      "tier_id": "champion",
+      "name": "Champion",
+      "name_color": "#6688ff",
+      "hp_multiplier": 1.4,
+      "damage_multiplier": 1.2,
+      "armor_bonus": 3,
+      "affix_count": 0,
+      "champion_type_count": 1,
+      "pack_size": [2, 3],
+      "loot_drop_chance_bonus": 0.5,
+      "loot_bonus_items": 1,
+      "loot_guaranteed_rarity": null,
+      "xp_multiplier": 1.5
+    },
+    "rare": {
+      "tier_id": "rare",
+      "name": "Rare",
+      "name_color": "#ffcc00",
+      "hp_multiplier": 1.7,
+      "damage_multiplier": 1.3,
+      "armor_bonus": 5,
+      "affix_count": [2, 3],
+      "minion_count": [2, 3],
+      "loot_drop_chance_bonus": 1.0,
+      "loot_bonus_items": 2,
+      "loot_guaranteed_rarity": "magic",
+      "xp_multiplier": 2.0
+    },
+    "super_unique": {
+      "tier_id": "super_unique",
+      "name": "Super Unique",
+      "name_color": "#cc66ff",
+      "hp_multiplier": null,
+      "damage_multiplier": null,
+      "armor_bonus": null,
+      "affix_count": null,
+      "loot_drop_chance_bonus": 2.0,
+      "loot_bonus_items": 3,
+      "loot_guaranteed_rarity": "rare",
+      "xp_multiplier": 3.0
+    }
+  },
+
+  "champion_types": {
+    "berserker": {
+      "type_id": "berserker",
+      "name": "Berserker",
+      "damage_bonus": 0.30,
+      "enrage_threshold": 0.30,
+      "enrage_damage_bonus": 0.50,
+      "visual_tint": "#ff4444"
+    },
+    "fanatic": {
+      "type_id": "fanatic",
+      "name": "Fanatic",
+      "cooldown_reduction": 1,
+      "visual_tint": "#ffcc44"
+    },
+    "ghostly": {
+      "type_id": "ghostly",
+      "name": "Ghostly",
+      "dodge_chance": 0.25,
+      "phase_through_units": true,
+      "visual_tint": "#aaccff"
+    },
+    "resilient": {
+      "type_id": "resilient",
+      "name": "Resilient",
+      "hp_multiplier": 1.5,
+      "armor_bonus": 5,
+      "visual_tint": "#888899"
+    },
+    "possessed": {
+      "type_id": "possessed",
+      "name": "Possessed",
+      "death_explosion_damage": 15,
+      "death_explosion_radius": 1,
+      "visual_tint": "#9944cc"
+    }
+  },
+
+  "affixes": {
+    "extra_strong": {
+      "affix_id": "extra_strong",
+      "name": "Extra Strong",
+      "category": "offensive",
+      "effects": [
+        { "type": "stat_multiplier", "stat": "attack_damage", "value": 1.3 }
+      ],
+      "prefixes": ["Mighty", "Brutal", "Savage", "Hulking"],
+      "suffixes": ["of Ruin", "the Crusher", "the Destroyer"]
+    },
+    "extra_fast": {
+      "affix_id": "extra_fast",
+      "name": "Extra Fast",
+      "category": "offensive",
+      "effects": [
+        { "type": "cooldown_reduction_flat", "value": 2 }
+      ],
+      "prefixes": ["Swift", "Frenzied", "Relentless"],
+      "suffixes": ["the Quick", "of Haste", "the Blurred"]
+    },
+    "might_aura": {
+      "affix_id": "might_aura",
+      "name": "Might Aura",
+      "category": "offensive",
+      "is_aura": true,
+      "effects": [
+        { "type": "aura_ally_buff", "stat": "attack_damage", "multiplier": 1.15, "radius": 2 }
+      ],
+      "prefixes": ["Commanding", "Warlord", "Rallying"],
+      "suffixes": ["the Commander", "the Warbringer"]
+    },
+    "cursed": {
+      "affix_id": "cursed",
+      "name": "Cursed",
+      "category": "offensive",
+      "effects": [
+        { "type": "on_hit_extend_cooldowns", "turns": 1 }
+      ],
+      "prefixes": ["Hexed", "Accursed", "Profane"],
+      "suffixes": ["of Misery", "the Blighted", "the Cursed"]
+    },
+    "stone_skin": {
+      "affix_id": "stone_skin",
+      "name": "Stone Skin",
+      "category": "defensive",
+      "effects": [
+        { "type": "stat_multiplier", "stat": "armor", "value": 1.5 }
+      ],
+      "prefixes": ["Iron", "Adamant", "Hardened", "Stonebound"],
+      "suffixes": ["the Unbreaking", "the Immovable"]
+    },
+    "spectral_hit": {
+      "affix_id": "spectral_hit",
+      "name": "Spectral Hit",
+      "category": "defensive",
+      "effects": [
+        { "type": "life_steal_pct", "value": 0.20 }
+      ],
+      "prefixes": ["Draining", "Leeching", "Vampiric"],
+      "suffixes": ["the Hungering", "the Blooddrinker"]
+    },
+    "shielded": {
+      "affix_id": "shielded",
+      "name": "Shielded",
+      "category": "defensive",
+      "effects": [
+        { "type": "grant_ward", "charges": 3, "reflect_damage": 10 }
+      ],
+      "prefixes": ["Warded", "Fortified", "Aegis"],
+      "suffixes": ["the Protected", "the Shielded"]
+    },
+    "teleporter": {
+      "affix_id": "teleporter",
+      "name": "Teleporter",
+      "category": "mobility",
+      "effects": [
+        { "type": "auto_shadow_step", "cooldown": 3 }
+      ],
+      "excludes_class_skills": ["shadow_step"],
+      "prefixes": ["Flickering", "Phasing", "Shifting"],
+      "suffixes": ["the Elusive", "the Unbound"]
+    },
+    "fire_enchanted": {
+      "affix_id": "fire_enchanted",
+      "name": "Fire Enchanted",
+      "category": "on_death",
+      "effects": [
+        { "type": "on_death_explosion", "damage": 20, "radius": 2 }
+      ],
+      "prefixes": ["Blazing", "Infernal", "Scorching", "Embered"],
+      "suffixes": ["of Cinders", "the Pyreborn"]
+    },
+    "cold_enchanted": {
+      "affix_id": "cold_enchanted",
+      "name": "Cold Enchanted",
+      "category": "on_hit",
+      "effects": [
+        { "type": "on_hit_slow", "chance": 0.30, "duration": 1 }
+      ],
+      "prefixes": ["Frozen", "Glacial", "Bitter", "Rimefrost"],
+      "suffixes": ["of Frost", "the Chilling"]
+    },
+    "thorns": {
+      "affix_id": "thorns",
+      "name": "Thorns",
+      "category": "retaliation",
+      "effects": [
+        { "type": "set_stat", "stat": "thorns", "value": 8 }
+      ],
+      "prefixes": ["Barbed", "Spiked", "Jagged"],
+      "suffixes": ["of Thorns", "the Spined"]
+    },
+    "mana_burn": {
+      "affix_id": "mana_burn",
+      "name": "Mana Burn",
+      "category": "disruption",
+      "effects": [
+        { "type": "on_hit_extend_cooldowns", "turns": 2, "target": "highest_active" }
+      ],
+      "prefixes": ["Nullifying", "Draining", "Silencing"],
+      "suffixes": ["the Voidspark", "of Negation"]
+    },
+    "conviction_aura": {
+      "affix_id": "conviction_aura",
+      "name": "Conviction Aura",
+      "category": "debuff",
+      "is_aura": true,
+      "effects": [
+        { "type": "aura_enemy_debuff", "stat": "armor", "value": -2, "radius": 2 }
+      ],
+      "prefixes": ["Dreaded", "Withering", "Corroding"],
+      "suffixes": ["of Dread", "the Unmaker"]
+    },
+    "multishot": {
+      "affix_id": "multishot",
+      "name": "Multishot",
+      "category": "offensive",
+      "effects": [
+        { "type": "extra_ranged_target", "count": 1, "splash_radius": 2 }
+      ],
+      "applies_to": "ranged_only",
+      "prefixes": ["Splitting", "Forking", "Twin-bolt"],
+      "suffixes": ["of Barrage", "the Volley"]
+    },
+    "regenerating": {
+      "affix_id": "regenerating",
+      "name": "Regenerating",
+      "category": "sustain",
+      "effects": [
+        { "type": "hp_regen_pct", "value": 0.03 }
+      ],
+      "prefixes": ["Regenerating", "Festering", "Undying"],
+      "suffixes": ["the Unkillable", "the Deathless"]
+    }
+  },
+
+  "affix_rules": {
+    "max_affixes": 3,
+    "max_auras": 1,
+    "max_on_death": 1,
+    "forbidden_combinations": [
+      ["might_aura", "conviction_aura"]
+    ],
+    "ranged_only_affixes": ["multishot"],
+    "melee_only_affixes": []
+  },
+
+  "spawn_chances": {
+    "_comment": "Chance per eligible spawn point to upgrade from Normal. Floor bonuses stack additively.",
+    "champion_base_chance": 0.04,
+    "rare_base_chance": 0.02,
+    "floor_bonus_per_level": 0.01,
+    "boss_tiles_never_upgrade": true,
+    "max_enhanced_per_room": 2,
+    "min_floor_for_champions": 2,
+    "min_floor_for_rares": 4,
+
+    "floor_overrides": [
+      {
+        "_comment": "Floors 1-3: Only 1 enhanced mob per room, rares get 1-2 affixes and 1 minion",
+        "max_floor": 3,
+        "max_enhanced_per_room": 1,
+        "max_rare_minions": 1,
+        "rare_affix_count": [1, 2]
+      },
+      {
+        "_comment": "Floors 4-5: Normal enhanced cap, rares get exactly 2 affixes and up to 2 minions",
+        "max_floor": 5,
+        "max_enhanced_per_room": 2,
+        "max_rare_minions": 2,
+        "rare_affix_count": [2, 2]
+      }
+    ]
+  },
+
+  "difficulty_budget": {
+    "_comment": "Per-room difficulty point budget constraining how much rarity can stack. Budget = base + (per_enemy × enemy_count). Rarity upgrades are downgraded if they exceed the remaining budget.",
+    "rarity_costs": {
+      "normal": 1,
+      "champion": 3,
+      "rare": 5,
+      "super_unique": 8
+    },
+    "floor_budgets": [
+      { "max_floor": 2,  "base": 6,  "per_enemy": 1.0 },
+      { "max_floor": 4,  "base": 8,  "per_enemy": 1.5 },
+      { "max_floor": 6,  "base": 10, "per_enemy": 2.0 },
+      { "max_floor": 8,  "base": 12, "per_enemy": 2.0 },
+      { "max_floor": 99, "base": 15, "per_enemy": 2.5 }
+    ]
+  }
+}

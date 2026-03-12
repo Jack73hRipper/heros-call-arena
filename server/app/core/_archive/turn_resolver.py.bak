@@ -1,0 +1,787 @@
+"""
+Turn Resolver — Processes all queued actions for a turn tick.
+
+Resolution order:
+  0.   Item-use phase (consume potions/scrolls)
+  0.5  Tick cooldowns for all units
+  0.75 Tick active buffs (decrement turns, remove expired)    — Phase 6B
+  1.   Movement actions
+  1.5  Interaction actions (open doors — Phase 4B-2)
+  1.75 Loot actions (chest interaction + ground pickup — Phase 4D-2)
+  1.9  Skill resolution (heal, multi-hit, ranged, buff, teleport) — Phase 6B
+  2.   Ranged attack actions
+  3.   Melee attack actions
+  3.5  Loot drops from deaths
+  3.75 Kill tracking + permadeath
+  4.   Victory check
+
+All actions submitted during a turn are resolved simultaneously within each phase.
+"""
+
+from __future__ import annotations
+
+from app.models.player import PlayerState, Position
+from app.models.actions import PlayerAction, ActionType, ActionResult, TurnResult
+from app.models.items import Item, Inventory, INVENTORY_MAX_CAPACITY, ConsumableType
+from app.core.loot import roll_enemy_loot, roll_chest_loot
+from app.core.combat import (
+    calculate_damage,
+    calculate_ranged_damage,
+    apply_damage,
+    is_adjacent,
+    is_valid_move,
+    is_in_range,
+    can_ranged_attack,
+    apply_ranged_cooldown,
+    tick_cooldowns,
+    check_victory,
+    check_team_victory,
+    are_allies,
+    get_combat_config,
+    resolve_movement_batch,
+)
+from app.core.skills import (
+    get_skill,
+    can_use_skill,
+    tick_buffs,
+    resolve_skill_action,
+)
+
+
+def _is_cardinal_adjacent(pos: Position, tx: int, ty: int) -> bool:
+    """Check if (tx, ty) is cardinally adjacent (up/down/left/right) to pos."""
+    dx = abs(pos.x - tx)
+    dy = abs(pos.y - ty)
+    return (dx + dy) == 1
+
+
+def _is_chebyshev_adjacent(pos: Position, tx: int, ty: int) -> bool:
+    """Check if (tx, ty) is adjacent in any of 8 directions (Chebyshev distance 1)."""
+    dx = abs(pos.x - tx)
+    dy = abs(pos.y - ty)
+    return max(dx, dy) == 1
+
+
+def resolve_turn(
+    match_id: str,
+    turn_number: int,
+    players: dict[str, PlayerState],
+    actions: list[PlayerAction],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_a: list[str] | None = None,
+    team_b: list[str] | None = None,
+    team_c: list[str] | None = None,
+    team_d: list[str] | None = None,
+    door_states: dict[str, str] | None = None,
+) -> TurnResult:
+    """
+    Resolve all queued actions for a single turn tick.
+
+    Args:
+        match_id: The match identifier.
+        turn_number: Current turn number.
+        players: Dict of player_id -> PlayerState for all units in match.
+        actions: List of all queued actions this turn.
+        grid_width: Map width in tiles.
+        grid_height: Map height in tiles.
+        obstacles: Set of (x, y) tuples that are impassable (mutable — doors
+                   removed on open).
+        team_a: List of unit IDs on team A. None for FFA.
+        team_b: List of unit IDs on team B. None for FFA.
+        team_c: List of unit IDs on team C. None if unused.
+        team_d: List of unit IDs on team D. None if unused.
+        door_states: Dict of "x,y" -> "closed"/"open" for dungeon matches.
+                     Mutated in place when a door opens. None for arena matches.
+
+    Returns:
+        TurnResult with all action outcomes, plus door_changes list.
+    """
+def resolve_turn(
+    match_id: str,
+    turn_number: int,
+    players: dict[str, PlayerState],
+    actions: list[PlayerAction],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_a: list[str] | None = None,
+    team_b: list[str] | None = None,
+    team_c: list[str] | None = None,
+    team_d: list[str] | None = None,
+    door_states: dict[str, str] | None = None,
+    chest_states: dict[str, str] | None = None,
+    ground_items: dict[str, list] | None = None,
+) -> TurnResult:
+    """
+    Resolve all queued actions for a single turn tick.
+
+    Args:
+        match_id: The match identifier.
+        turn_number: Current turn number.
+        players: Dict of player_id -> PlayerState for all units in match.
+        actions: List of all queued actions this turn.
+        grid_width: Map width in tiles.
+        grid_height: Map height in tiles.
+        obstacles: Set of (x, y) tuples that are impassable (mutable — doors
+                   removed on open).
+        team_a: List of unit IDs on team A. None for FFA.
+        team_b: List of unit IDs on team B. None for FFA.
+        team_c: List of unit IDs on team C. None if unused.
+        team_d: List of unit IDs on team D. None if unused.
+        door_states: Dict of "x,y" -> "closed"/"open" for dungeon matches.
+                     Mutated in place when a door opens. None for arena matches.
+        chest_states: Dict of "x,y" -> "unopened"/"opened" for dungeon matches.
+                      Mutated in place when a chest is looted. None for arena matches.
+        ground_items: Dict of "x,y" -> list of serialized Item dicts for items on
+                      the ground. Mutated in place on pickup/drop. None for arena.
+
+    Returns:
+        TurnResult with all action outcomes, loot events, and door_changes.
+    """
+    config = get_combat_config()
+    ranged_cd = config.get("ranged_cooldown", 3)
+
+    results: list[ActionResult] = []
+    deaths: list[str] = []
+    door_changes: list[dict] = []  # [{x, y, state: "open"}, ...]
+    loot_drops: list[dict] = []         # [{x, y, items: [...]}, ...]
+    chest_opened: list[dict] = []       # [{x, y, items: [...], player_id}, ...]
+    items_picked_up: list[dict] = []    # [{player_id, items: [...]}, ...]
+    items_used: list[dict] = []         # [{player_id, item_id, effect}, ...]
+
+    # Separate action types
+    move_actions = [a for a in actions if a.action_type == ActionType.MOVE]
+    melee_actions = [a for a in actions if a.action_type == ActionType.ATTACK]
+    ranged_actions = [a for a in actions if a.action_type == ActionType.RANGED_ATTACK]
+    interact_actions = [a for a in actions if a.action_type == ActionType.INTERACT]
+    loot_actions = [a for a in actions if a.action_type == ActionType.LOOT]
+    use_item_actions = [a for a in actions if a.action_type == ActionType.USE_ITEM]
+    skill_actions = [a for a in actions if a.action_type == ActionType.SKILL]
+
+    # --- Phase 0: Use Items (potions/scrolls — before cooldowns/movement) ---
+    for action in use_item_actions:
+        player = players.get(action.player_id)
+        if not player or not player.is_alive:
+            continue
+        # target_x is overloaded: not used for coordinates, but we need
+        # the item_id. It's passed as a string in a special field on the action.
+        # We look for the item_id either in target_x (hacky) or as extra data.
+        # Convention: target_x = None, target_y = None. The item_id is carried
+        # in a custom way. For now, we consume the first health potion found.
+        # The WS layer passes item_id via a separate field — we store it in
+        # target_x as an index into the inventory, or we search by item type.
+        #
+        # For 4D-2: USE_ITEM with target_x = inventory index (int) or None
+        # If target_x is provided, use that inventory index. Otherwise, consume
+        # first consumable found.
+
+        inv_items = player.inventory
+        if not inv_items:
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.USE_ITEM,
+                success=False,
+                message=f"{player.username} has no items to use",
+            ))
+            continue
+
+        # Find the consumable to use. target_x is used as inventory index if set.
+        item_data = None
+        item_index = None
+        if action.target_x is not None and 0 <= action.target_x < len(inv_items):
+            candidate = inv_items[action.target_x]
+            if candidate.get("item_type") == "consumable":
+                item_data = candidate
+                item_index = action.target_x
+        else:
+            # Find first consumable
+            for idx, it in enumerate(inv_items):
+                if it.get("item_type") == "consumable":
+                    item_data = it
+                    item_index = idx
+                    break
+
+        if item_data is None:
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.USE_ITEM,
+                success=False,
+                message=f"{player.username} has no usable consumable",
+            ))
+            continue
+
+        # Parse the consumable effect
+        effect_data = item_data.get("consumable_effect", {})
+        effect_type = effect_data.get("type")
+        magnitude = effect_data.get("magnitude", 0)
+
+        if effect_type == "portal":
+            # Portal scroll — deferred to 4F
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.USE_ITEM,
+                success=False,
+                message=f"{player.username} tried to use {item_data.get('name', 'Portal Scroll')} — portal scrolls can only be used in dungeon escape (coming in 4F)",
+            ))
+            continue
+
+        if effect_type == "heal":
+            # Consume potion — remove from inventory, restore HP
+            player.inventory.pop(item_index)
+            old_hp = player.hp
+            player.hp = min(player.max_hp, player.hp + magnitude)
+            healed = player.hp - old_hp
+
+            items_used.append({
+                "player_id": player.player_id,
+                "item_id": item_data.get("item_id"),
+                "item_name": item_data.get("name"),
+                "effect": {"type": "heal", "magnitude": magnitude, "actual_healed": healed},
+            })
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.USE_ITEM,
+                success=True,
+                message=f"{player.username} used {item_data.get('name', 'potion')} and restored {healed} HP",
+            ))
+            continue
+
+        # Unknown consumable type
+        results.append(ActionResult(
+            player_id=player.player_id,
+            username=player.username,
+            action_type=ActionType.USE_ITEM,
+            success=False,
+            message=f"{player.username} cannot use {item_data.get('name', 'item')}",
+        ))
+
+    # --- Phase 0.5: Tick cooldowns ---
+    for p in players.values():
+        if p.is_alive:
+            tick_cooldowns(p)
+
+    # --- Phase 0.75: Tick active buffs (decrement turns, remove expired) ---
+    buff_changes: list[dict] = []
+    for p in players.values():
+        if p.is_alive and p.active_buffs:
+            expired = tick_buffs(p)
+            # Always report current buff state after ticking
+            buff_changes.append({
+                "player_id": p.player_id,
+                "buffs": [b.copy() for b in p.active_buffs],
+                "expired": [e.copy() for e in expired],
+            })
+
+    # --- Pre-movement snapshot (for melee target tracking) ---
+    # Record which player was at each position before movement resolves,
+    # so melee attacks can track targets that moved but are still in range.
+    pre_move_occupants: dict[tuple[int, int], str] = {}
+    for p in players.values():
+        if p.is_alive:
+            pre_move_occupants[(p.position.x, p.position.y)] = p.player_id
+
+    # --- Phase 1: Resolve Movement (Cooperative Batch — Phase 7A-1) ---
+    # Build move intents for the batch resolver
+    move_intents: list[dict] = []
+    for action in move_actions:
+        player = players.get(action.player_id)
+        if not player or not player.is_alive:
+            continue
+        if action.target_x is None or action.target_y is None:
+            continue
+        move_intents.append({
+            "player_id": action.player_id,
+            "target": (action.target_x, action.target_y),
+        })
+
+    batch_results = resolve_movement_batch(
+        move_intents, players, grid_width, grid_height, obstacles,
+    )
+
+    for br in batch_results:
+        player = players.get(br["player_id"])
+        if not player:
+            continue
+        if br["success"]:
+            old_pos = br["from"]
+            new_pos = br["to"]
+            player.position.x = new_pos[0]
+            player.position.y = new_pos[1]
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.MOVE,
+                success=True,
+                message=f"{player.username} moved to ({new_pos[0]}, {new_pos[1]})",
+                from_x=old_pos[0], from_y=old_pos[1],
+                to_x=new_pos[0], to_y=new_pos[1],
+            ))
+        else:
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.MOVE,
+                success=False,
+                message=f"{player.username} failed to move",
+            ))
+
+    # --- Phase 1.5: Resolve Interactions (toggle doors open/closed) ---
+    if door_states is not None:
+        for action in interact_actions:
+            player = players.get(action.player_id)
+            if not player or not player.is_alive:
+                continue
+            if action.target_x is None or action.target_y is None:
+                continue
+
+            door_key = f"{action.target_x},{action.target_y}"
+
+            # Must be adjacent (8-directional / Chebyshev distance 1)
+            if not _is_chebyshev_adjacent(player.position, action.target_x, action.target_y):
+                results.append(ActionResult(
+                    player_id=player.player_id,
+                    username=player.username,
+                    action_type=ActionType.INTERACT,
+                    success=False,
+                    message=f"{player.username} cannot interact — not adjacent",
+                ))
+                continue
+
+            current_state = door_states.get(door_key)
+
+            # Must be a door (either open or closed)
+            if current_state not in ("closed", "open"):
+                results.append(ActionResult(
+                    player_id=player.player_id,
+                    username=player.username,
+                    action_type=ActionType.INTERACT,
+                    success=False,
+                    message=f"{player.username} nothing to interact with at ({action.target_x}, {action.target_y})",
+                ))
+                continue
+
+            if current_state == "closed":
+                # Open the door
+                door_states[door_key] = "open"
+                obstacles.discard((action.target_x, action.target_y))
+                door_changes.append({
+                    "x": action.target_x,
+                    "y": action.target_y,
+                    "state": "open",
+                })
+                results.append(ActionResult(
+                    player_id=player.player_id,
+                    username=player.username,
+                    action_type=ActionType.INTERACT,
+                    success=True,
+                    message=f"{player.username} opened a door at ({action.target_x}, {action.target_y})",
+                    to_x=action.target_x,
+                    to_y=action.target_y,
+                ))
+            else:
+                # Close the door (current_state == "open")
+                door_states[door_key] = "closed"
+                obstacles.add((action.target_x, action.target_y))
+                door_changes.append({
+                    "x": action.target_x,
+                    "y": action.target_y,
+                    "state": "closed",
+                })
+                results.append(ActionResult(
+                    player_id=player.player_id,
+                    username=player.username,
+                    action_type=ActionType.INTERACT,
+                    success=True,
+                    message=f"{player.username} closed a door at ({action.target_x}, {action.target_y})",
+                    to_x=action.target_x,
+                    to_y=action.target_y,
+                ))
+
+    # --- Phase 1.75: Resolve Loot Actions (chest interaction + ground pickup) ---
+    for action in loot_actions:
+        player = players.get(action.player_id)
+        if not player or not player.is_alive:
+            continue
+
+        # Case 1: Chest interaction — target is an unopened chest tile
+        if action.target_x is not None and action.target_y is not None and chest_states is not None:
+            chest_key = f"{action.target_x},{action.target_y}"
+            if chest_states.get(chest_key) == "unopened":
+                # Must be cardinally adjacent
+                if not _is_cardinal_adjacent(player.position, action.target_x, action.target_y):
+                    results.append(ActionResult(
+                        player_id=player.player_id,
+                        username=player.username,
+                        action_type=ActionType.LOOT,
+                        success=False,
+                        message=f"{player.username} cannot loot chest — not adjacent",
+                    ))
+                    continue
+
+                # Generate chest loot
+                chest_items = roll_chest_loot("default")
+                chest_states[chest_key] = "opened"
+
+                # Add to player inventory, overflow to ground
+                added_items = []
+                overflow_items = []
+                for item in chest_items:
+                    item_dict = item.model_dump()
+                    if len(player.inventory) < INVENTORY_MAX_CAPACITY:
+                        player.inventory.append(item_dict)
+                        added_items.append(item_dict)
+                    else:
+                        overflow_items.append(item_dict)
+
+                # Place overflow on ground at chest tile
+                if overflow_items and ground_items is not None:
+                    if chest_key not in ground_items:
+                        ground_items[chest_key] = []
+                    ground_items[chest_key].extend(overflow_items)
+
+                chest_opened.append({
+                    "x": action.target_x,
+                    "y": action.target_y,
+                    "items": [i.model_dump() for i in chest_items],
+                    "player_id": player.player_id,
+                    "added_to_inventory": added_items,
+                    "overflow_to_ground": overflow_items,
+                })
+                results.append(ActionResult(
+                    player_id=player.player_id,
+                    username=player.username,
+                    action_type=ActionType.LOOT,
+                    success=True,
+                    message=f"{player.username} opened a chest and found {len(chest_items)} item(s)",
+                    to_x=action.target_x,
+                    to_y=action.target_y,
+                ))
+                continue
+
+        # Case 2: Ground pickup — player is standing on tile with ground items
+        if ground_items is not None:
+            player_key = f"{player.position.x},{player.position.y}"
+            tile_items = ground_items.get(player_key, [])
+
+            if tile_items:
+                picked_up = []
+                remaining = []
+                for item_dict in tile_items:
+                    if len(player.inventory) < INVENTORY_MAX_CAPACITY:
+                        player.inventory.append(item_dict)
+                        picked_up.append(item_dict)
+                    else:
+                        remaining.append(item_dict)
+
+                if picked_up:
+                    if remaining:
+                        ground_items[player_key] = remaining
+                    else:
+                        ground_items.pop(player_key, None)
+
+                    items_picked_up.append({
+                        "player_id": player.player_id,
+                        "items": picked_up,
+                    })
+                    results.append(ActionResult(
+                        player_id=player.player_id,
+                        username=player.username,
+                        action_type=ActionType.LOOT,
+                        success=True,
+                        message=f"{player.username} picked up {len(picked_up)} item(s)",
+                    ))
+                    continue
+
+        # No valid loot target
+        results.append(ActionResult(
+            player_id=player.player_id,
+            username=player.username,
+            action_type=ActionType.LOOT,
+            success=False,
+            message=f"{player.username} nothing to loot here",
+        ))
+
+    # --- Phase 1.9: Resolve Skill Actions ---
+    for action in skill_actions:
+        player = players.get(action.player_id)
+        if not player or not player.is_alive:
+            continue
+
+        skill_id = action.skill_id
+        if not skill_id:
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.SKILL,
+                success=False,
+                message=f"{player.username} skill action missing skill_id",
+            ))
+            continue
+
+        # Validate skill usage (class, cooldown, alive)
+        can_use, reason = can_use_skill(player, skill_id)
+        if not can_use:
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.SKILL,
+                skill_id=skill_id,
+                success=False,
+                message=f"{player.username} cannot use skill — {reason}",
+            ))
+            continue
+
+        # Get skill definition and dispatch to handler
+        skill_def = get_skill(skill_id)
+        result = resolve_skill_action(
+            player, action, skill_def, players, obstacles,
+            grid_width, grid_height,
+        )
+        results.append(result)
+
+        # Track kills from skill actions
+        if result.killed and result.target_id:
+            deaths.append(result.target_id)
+
+        # Track buff changes from skill usage
+        if result.buff_applied:
+            buff_changes.append({
+                "player_id": player.player_id,
+                "buffs": [b.copy() for b in player.active_buffs],
+                "expired": [],
+            })
+
+    # --- Phase 2: Resolve Ranged Attacks ---
+    for action in ranged_actions:
+        player = players.get(action.player_id)
+        if not player or not player.is_alive:
+            continue
+        if action.target_x is None or action.target_y is None:
+            continue
+
+        # Validate ranged attack — use per-player ranged_range (class-based)
+        player_range = getattr(player, 'ranged_range', config.get("ranged_range", 5))
+        can_fire, reason = can_ranged_attack(
+            player, action.target_x, action.target_y, player_range, obstacles
+        )
+
+        if not can_fire:
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.RANGED_ATTACK,
+                success=False,
+                message=f"{player.username} ranged attack failed — {reason}",
+            ))
+            continue
+
+        # Apply cooldown regardless of hit/miss
+        apply_ranged_cooldown(player, ranged_cd)
+
+        # Find target at position
+        target = None
+        for p in players.values():
+            if p.is_alive and p.position.x == action.target_x and p.position.y == action.target_y:
+                # Don't allow friendly fire
+                if not are_allies(player, p):
+                    target = p
+                break
+
+        if not target:
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.RANGED_ATTACK,
+                success=False,
+                message=f"{player.username} ranged attack missed — no enemy at ({action.target_x}, {action.target_y})",
+            ))
+            continue
+
+        damage = calculate_ranged_damage(player, target)
+        killed = apply_damage(target, damage)
+
+        results.append(ActionResult(
+            player_id=player.player_id,
+            username=player.username,
+            action_type=ActionType.RANGED_ATTACK,
+            success=True,
+            message=f"{player.username} shot {target.username} for {damage} damage"
+                    + (f" — {target.username} was killed!" if killed else ""),
+            target_id=target.player_id,
+            target_username=target.username,
+            damage_dealt=damage,
+            target_hp_remaining=target.hp,
+            killed=killed,
+        ))
+
+        if killed:
+            deaths.append(target.player_id)
+
+    # --- Phase 3: Resolve Melee Attacks ---
+    for action in melee_actions:
+        player = players.get(action.player_id)
+        if not player or not player.is_alive:
+            continue
+        if action.target_x is None or action.target_y is None:
+            continue
+
+        target_pos = Position(x=action.target_x, y=action.target_y)
+
+        # --- Try to find the target ---
+        # First: look for an enemy still at the originally-targeted tile
+        target = None
+        for p in players.values():
+            if p.is_alive and p.position.x == action.target_x and p.position.y == action.target_y:
+                if not are_allies(player, p):
+                    target = p
+                break
+
+        # Second: if nobody is there anymore, the target may have moved.
+        # Look up who was at that tile before movement and check if they're
+        # still within melee range.
+        if not target:
+            original_occupant_id = pre_move_occupants.get((action.target_x, action.target_y))
+            if original_occupant_id and original_occupant_id != player.player_id:
+                candidate = players.get(original_occupant_id)
+                if (candidate and candidate.is_alive
+                        and not are_allies(player, candidate)
+                        and is_adjacent(player.position, candidate.position)):
+                    target = candidate
+
+        # Check adjacency against the target's actual current position
+        if target:
+            if not is_adjacent(player.position, target.position):
+                results.append(ActionResult(
+                    player_id=player.player_id,
+                    username=player.username,
+                    action_type=ActionType.ATTACK,
+                    success=False,
+                    message=f"{player.username} attack missed — target out of range",
+                ))
+                continue
+        else:
+            # No target found at original tile or tracked through movement
+            # Also check original adjacency for the "out of range" message
+            if not is_adjacent(player.position, target_pos):
+                results.append(ActionResult(
+                    player_id=player.player_id,
+                    username=player.username,
+                    action_type=ActionType.ATTACK,
+                    success=False,
+                    message=f"{player.username} attack missed — target out of range",
+                ))
+            else:
+                results.append(ActionResult(
+                    player_id=player.player_id,
+                    username=player.username,
+                    action_type=ActionType.ATTACK,
+                    success=False,
+                    message=f"{player.username} attack missed — no enemy at ({action.target_x}, {action.target_y})",
+                ))
+            continue
+
+        damage = calculate_damage(player, target)
+        killed = apply_damage(target, damage)
+
+        results.append(ActionResult(
+            player_id=player.player_id,
+            username=player.username,
+            action_type=ActionType.ATTACK,
+            success=True,
+            message=f"{player.username} hit {target.username} for {damage} damage"
+                    + (f" — {target.username} was killed!" if killed else ""),
+            target_id=target.player_id,
+            target_username=target.username,
+            damage_dealt=damage,
+            target_hp_remaining=target.hp,
+            killed=killed,
+        ))
+
+        if killed:
+            deaths.append(target.player_id)
+
+    # --- Phase 3.5: Loot Drops from Deaths ---
+    # For each enemy that died this turn, roll loot and place on ground
+    if ground_items is not None:
+        for death_pid in deaths:
+            dead_unit = players.get(death_pid)
+            if not dead_unit:
+                continue
+            enemy_type = getattr(dead_unit, 'enemy_type', None)
+            if not enemy_type:
+                continue  # Only enemies drop loot, not players (for now)
+
+            dropped_items = roll_enemy_loot(enemy_type)
+            if dropped_items:
+                death_key = f"{dead_unit.position.x},{dead_unit.position.y}"
+                item_dicts = [item.model_dump() for item in dropped_items]
+                if death_key not in ground_items:
+                    ground_items[death_key] = []
+                ground_items[death_key].extend(item_dicts)
+                loot_drops.append({
+                    "x": dead_unit.position.x,
+                    "y": dead_unit.position.y,
+                    "enemy_type": enemy_type,
+                    "enemy_name": dead_unit.username,
+                    "items": item_dicts,
+                })
+
+    # --- Phase 3.75: Kill Tracking & Permadeath (4E-2) ---
+    # Track kills for gold rewards and trigger permadeath for dead heroes
+    from app.core.match_manager import track_kill, handle_hero_permadeath
+
+    hero_deaths: list[dict] = []
+
+    # Build killer map from action results: who killed whom this turn
+    for result_action in results:
+        if result_action.killed and result_action.target_id:
+            dead_unit = players.get(result_action.target_id)
+            if dead_unit and dead_unit.unit_type == "ai":
+                # Track the kill for gold rewards
+                track_kill(match_id, result_action.player_id,
+                          victim_is_boss=getattr(dead_unit, 'is_boss', False))
+
+    # Handle permadeath for human heroes that died
+    for death_pid in deaths:
+        dead_unit = players.get(death_pid)
+        if not dead_unit:
+            continue
+        if dead_unit.unit_type == "human" and dead_unit.hero_id:
+            hero_death = handle_hero_permadeath(match_id, death_pid)
+            if hero_death:
+                hero_deaths.append(hero_death)
+
+    # --- Phase 4: Victory Check ---
+    use_teams = team_a is not None and team_b is not None
+    winner = None
+
+    if use_teams:
+        team_result = check_team_victory(
+            list(players.values()), team_a, team_b,
+            team_c=team_c, team_d=team_d,
+        )
+        if team_result:
+            winner = team_result  # "team_a", "team_b", "team_c", "team_d", or "draw"
+    else:
+        winner = check_victory(list(players.values()))
+
+    return TurnResult(
+        match_id=match_id,
+        turn_number=turn_number,
+        actions=results,
+        deaths=deaths,
+        winner=winner,
+        door_changes=door_changes,
+        loot_drops=loot_drops,
+        chest_opened=chest_opened,
+        items_picked_up=items_picked_up,
+        items_used=items_used,
+        hero_deaths=hero_deaths,
+        buff_changes=buff_changes,
+    )

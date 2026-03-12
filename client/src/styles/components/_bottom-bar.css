@@ -1,0 +1,679 @@
+/* ===== Phase 6E-4 Redesign: Icon-Centric Action Bar ===== */
+
+.bottom-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---- Action Slots Container (left side) ---- */
+.action-slots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+/* ---- Individual Action Slot (MMO-style square button) ---- */
+.action-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  padding: 2px;
+  border: 2px solid var(--border-medium);
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-deep) 100%);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 2px 4px rgba(0,0,0,0.4);
+}
+
+.action-slot:hover:not(:disabled):not(.disabled) {
+  border-color: #a050f0;
+  box-shadow: 0 0 10px rgba(160, 80, 240, 0.35), inset 0 1px 0 rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, var(--bg-hover) 0%, var(--bg-elevated) 100%);
+  transform: translateY(-1px);
+}
+
+.action-slot.active {
+  border-color: #a050f0;
+  box-shadow: 0 0 14px rgba(160, 80, 240, 0.5), inset 0 0 12px rgba(160, 80, 240, 0.15);
+  background: linear-gradient(180deg, rgba(160, 80, 240, 0.2) 0%, rgba(80, 40, 160, 0.15) 100%);
+}
+
+.action-slot:disabled,
+.action-slot.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.action-slot.on-cooldown:not(.slot-auto-attack) {
+  border-color: var(--border-dark);
+}
+
+/* Auto-attack slot — distinct gold/warm border */
+.action-slot.slot-auto-attack {
+  border-color: var(--accent-ember-dim);
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.08) 0%, var(--bg-deep) 100%);
+}
+
+.action-slot.slot-auto-attack:hover:not(:disabled) {
+  border-color: var(--accent-ember);
+  box-shadow: 0 0 10px var(--accent-ember-glow);
+}
+
+.action-slot.slot-auto-attack.active {
+  border-color: var(--accent-ember-bright);
+  box-shadow: 0 0 14px var(--accent-ember-glow), inset 0 0 12px rgba(196, 151, 58, 0.15);
+}
+
+/* Ranged slot — ember colored */
+.action-slot.slot-ranged {
+  border-color: var(--accent-ember-dim);
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.06) 0%, var(--bg-deep) 100%);
+}
+
+.action-slot.slot-ranged:hover:not(:disabled) {
+  border-color: var(--accent-ember);
+  box-shadow: 0 0 10px var(--accent-ember-glow);
+}
+
+.action-slot.slot-ranged.active {
+  border-color: var(--accent-ember-bright);
+  box-shadow: 0 0 14px var(--accent-ember-glow);
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.15) 0%, rgba(100, 75, 20, 0.1) 100%);
+}
+
+/* Potion slot — purple tint */
+.action-slot.slot-potion {
+  border-color: rgba(130, 60, 130, 0.4);
+  background: linear-gradient(180deg, rgba(100, 40, 100, 0.08) 0%, var(--bg-deep) 100%);
+}
+
+.action-slot.slot-potion:hover:not(:disabled):not(.disabled) {
+  border-color: rgba(160, 80, 160, 0.6);
+  box-shadow: 0 0 10px rgba(130, 60, 130, 0.3);
+}
+
+/* ---- Hotkey Badge (top-left corner) ---- */
+.slot-hotkey {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 3px;
+  padding: 0 4px;
+  line-height: 1.4;
+  min-width: 14px;
+  text-align: center;
+  z-index: 2;
+  font-family: var(--font-mono);
+  pointer-events: none;
+}
+
+.action-slot:hover:not(:disabled) .slot-hotkey {
+  color: var(--text-secondary);
+}
+
+/* ---- Icon Area (center of slot) ---- */
+.slot-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.slot-icon .skill-icon-sprite {
+  width: 40px;
+  height: 40px;
+  image-rendering: pixelated;
+  filter: brightness(1.05);
+  border-radius: 2px;
+}
+
+.action-slot:hover:not(:disabled) .skill-icon-sprite {
+  filter: brightness(1.2);
+}
+
+.action-slot.on-cooldown .skill-icon-sprite {
+  filter: brightness(0.5) saturate(0.4);
+}
+
+.slot-icon .skill-icon-emoji {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+/* ---- Slot Label (skill name at bottom) ---- */
+.slot-label {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 0 2px;
+  margin-top: 1px;
+}
+
+.action-slot:hover:not(:disabled) .slot-label {
+  color: var(--text-primary);
+}
+
+.action-slot.active .slot-label {
+  color: #d8b4fe;
+}
+
+/* ---- Item Count Badge (potions etc.) ---- */
+.slot-count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  color: #b080b0;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 3px;
+  padding: 0 3px;
+  line-height: 1.4;
+  z-index: 2;
+  font-family: var(--font-mono);
+}
+
+/* ---- Cooldown Overlay ---- */
+.slot-cooldown-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.slot-cooldown-number {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ff6666;
+  text-shadow: 0 0 6px rgba(255, 60, 60, 0.5), 0 2px 4px rgba(0, 0, 0, 0.8);
+  font-family: var(--font-heading);
+}
+
+/* ---- Action Slot Wrapper (for tooltip positioning) ---- */
+.action-slot-wrapper {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+/* ---- Skill Tooltip Anchor (below the slot — bar is at top of screen) ---- */
+.skill-tooltip-anchor {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 6px;
+  z-index: 9999;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.8));
+}
+
+/* ---- Skill Tooltip (matches gear-tooltip style — fully opaque) ---- */
+.skill-tooltip {
+  background: #0a0a10;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  padding: 0.5rem 0.7rem;
+  min-width: 200px;
+  max-width: 280px;
+  white-space: normal;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+
+.skill-tooltip-name {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+/* Tooltip header row: name left, hotkey badge right */
+.skill-tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.2rem;
+}
+
+/* Hotkey badge in header */
+.skill-tooltip-hotkey-badge {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-dark);
+  border-radius: 2px;
+  padding: 0.1rem 0.35rem;
+  font-family: var(--font-body);
+  line-height: 1;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+/* Subtle section dividers */
+.skill-tooltip-divider {
+  height: 1px;
+  background: var(--border-dark);
+  margin: 0.35rem 0;
+  opacity: 0.5;
+}
+
+.skill-tooltip-type {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: capitalize;
+  margin-bottom: 0.3rem;
+}
+
+.skill-tooltip-cooldown {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.3rem;
+}
+
+.skill-tooltip-cooldown.on-cd {
+  color: #ff6666;
+}
+
+.skill-tooltip-cooldown .cd-status {
+  color: #ff6666;
+  font-style: italic;
+}
+
+.skill-tooltip-cooldown .cd-ready {
+  color: var(--accent-sickly-green);
+  font-style: italic;
+}
+
+.skill-tooltip-effects {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-bottom: 0.3rem;
+}
+
+.skill-tooltip-effects span {
+  font-size: 0.75rem;
+  color: #8cb860;
+}
+
+/* Inline damage estimate next to effect line */
+.skill-tooltip-estimate {
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  margin-left: 0.3rem;
+}
+
+/* Mechanical description — clear, readable, NOT italic */
+.skill-tooltip-desc {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-style: normal;
+  margin-bottom: 0.2rem;
+  line-height: 1.4;
+}
+
+/* Optional flavor text — italic, dimmer, clearly separated */
+.skill-tooltip-flavor {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-family: var(--font-flavor);
+  font-style: italic;
+  margin-top: 0.25rem;
+  line-height: 1.3;
+  opacity: 0.8;
+}
+
+.skill-tooltip-stock {
+  font-size: 0.7rem;
+  color: var(--accent-ember-dim);
+  margin-bottom: 0.2rem;
+}
+
+/* (skill-tooltip-hint removed in Phase 24C — replaced by .skill-tooltip-hotkey-badge) */
+
+/* ---- Right-side Controls ---- */
+.bar-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.bar-queue-info {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.bar-queue-count {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  white-space: nowrap;
+}
+
+.bar-queue-actions {
+  font-size: 0.6rem;
+  color: var(--accent-sickly-green);
+  font-family: var(--font-body);
+  font-weight: bold;
+  white-space: nowrap;
+  background: rgba(74, 122, 42, 0.12);
+  border: 1px solid rgba(74, 122, 42, 0.25);
+  border-radius: 2px;
+  padding: 1px 5px;
+  line-height: 1;
+}
+
+.bar-queue-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-bar {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.12s ease;
+}
+
+.btn-bar:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+}
+
+.btn-bar:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-bar.btn-leave {
+  color: var(--accent-crimson-bright);
+  border-color: rgba(139, 32, 32, 0.4);
+}
+
+.btn-bar.btn-leave:hover {
+  background: rgba(139, 32, 32, 0.15);
+  border-color: var(--accent-crimson);
+}
+
+.controlling-badge {
+  display: inline-block;
+  background: rgba(196, 151, 58, 0.15);
+  color: var(--accent-ember);
+  border: 1px solid var(--accent-ember);
+  border-radius: 2px;
+  padding: 0 4px;
+  font-size: 0.65rem;
+  margin-right: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Hint row — spans full width below the buttons */
+.bottom-bar-hint {
+  flex-basis: 100%;
+  text-align: center;
+  padding: 0;
+  margin: -0.1rem 0;
+}
+
+.bottom-bar-hint .mode-hint {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-style: italic;
+  font-family: var(--font-flavor);
+}
+
+.bottom-bar-hint .dead-message {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--accent-crimson-bright);
+  font-family: var(--font-heading);
+  font-weight: bold;
+}
+
+.arena-grid {
+  flex-shrink: 0;
+  position: relative;
+}
+
+#arena-canvas {
+  background-color: var(--bg-deep);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  display: block;
+  box-shadow: var(--shadow-md);
+}
+
+.tile-tooltip {
+  position: absolute;
+  bottom: -24px;
+  left: 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+/* ===== Shared Action/Skill Button Styles ===== */
+
+.btn-action {
+  flex: 1;
+  padding: 0.5rem 0.4rem;
+  font-size: 0.85rem;
+  border-radius: 2px;
+  border: 1px solid var(--border-medium);
+  background: var(--bg-surface);
+  color: var(--text-body);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-action:hover:not(:disabled) {
+  background: var(--bg-hover);
+}
+
+.btn-action.active {
+  border-color: var(--accent-ember);
+  background: rgba(196, 151, 58, 0.1);
+  color: var(--accent-ember-bright);
+  box-shadow: 0 0 8px rgba(196, 151, 58, 0.15);
+}
+
+.btn-move.active {
+  border-color: var(--accent-blue-steel);
+  background: rgba(58, 90, 139, 0.1);
+  color: #7ab0e0;
+  box-shadow: 0 0 8px rgba(58, 90, 139, 0.15);
+}
+
+.btn-attack.active {
+  border-color: var(--accent-crimson);
+  background: rgba(139, 32, 32, 0.1);
+  color: #d06060;
+  box-shadow: 0 0 8px rgba(139, 32, 32, 0.15);
+}
+
+/* ===== Queue Controls (shared by BottomBar) ===== */
+
+.btn-undo, .btn-clear-queue {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.7rem;
+  border-radius: 2px;
+  border: 1px solid var(--border-medium);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-undo:hover {
+  background: var(--bg-hover);
+  color: #7ab0e0;
+  border-color: var(--accent-blue-steel);
+}
+
+.btn-clear-queue:hover {
+  background: rgba(139, 32, 32, 0.1);
+  color: #d06060;
+  border-color: var(--accent-crimson);
+}
+
+/* ===== Phase 2: Ranged Attack Button ===== */
+
+.btn-ranged.active {
+  border-color: var(--accent-ember);
+  background: rgba(196, 151, 58, 0.1);
+  color: var(--accent-ember-bright);
+  box-shadow: 0 0 8px rgba(196, 151, 58, 0.15);
+}
+
+.btn-ranged:disabled {
+  opacity: 0.4;
+}
+
+/* ===== Phase 4B-2: Interact Button ===== */
+
+.btn-interact.active {
+  border-color: var(--accent-ember-dim);
+  background: rgba(196, 151, 58, 0.08);
+  color: var(--accent-ember);
+  box-shadow: 0 0 8px rgba(196, 151, 58, 0.12);
+}
+
+.btn-interact:disabled {
+  opacity: 0.4;
+}
+
+/* ===== Phase 6D: Skill Button Styles (shared by BottomBar) ===== */
+
+.btn-skill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: var(--font-body);
+  transition: all 0.15s ease;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.btn-skill:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+  border-color: #a050f0;
+  box-shadow: 0 0 6px rgba(160, 80, 240, 0.3);
+}
+
+.btn-skill.active {
+  background-color: rgba(160, 80, 240, 0.2);
+  border-color: #a050f0;
+  box-shadow: 0 0 8px rgba(160, 80, 240, 0.4);
+  color: #d8b4fe;
+}
+
+.btn-skill:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-skill.on-cooldown {
+  opacity: 0.5;
+}
+
+.skill-hotkey {
+  font-size: 0.65rem;
+  font-weight: bold;
+  color: var(--text-dim);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  padding: 1px 4px;
+  min-width: 14px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.skill-icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.skill-name {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skill-cooldown-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.55);
+  color: #ff6666;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border-radius: 3px;
+  pointer-events: none;
+  text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+.skill-targeting-hint {
+  font-size: 0.75rem;
+  color: #c0a0f0;
+  margin: 0.3rem 0 0 0;
+  font-style: italic;
+  font-family: var(--font-flavor);
+}

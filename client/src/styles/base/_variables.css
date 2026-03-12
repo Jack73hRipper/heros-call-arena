@@ -1,0 +1,105 @@
+/* --- CSS Custom Properties --- */
+:root {
+  /* Backgrounds */
+  --bg-abyss: #06060b;
+  --bg-deep: #0a0a10;
+  --bg-panel: #0f0e16;
+  --bg-surface: #16141f;
+  --bg-elevated: #1c1a28;
+  --bg-hover: #222030;
+
+  /* Accents */
+  --accent-ember: #c4973a;
+  --accent-ember-bright: #daa84a;
+  --accent-ember-dim: #8a6a28;
+  --accent-ember-glow: rgba(196, 151, 58, 0.25);
+  --accent-crimson: #8b2020;
+  --accent-crimson-bright: #b33030;
+  --accent-blood: #6b1515;
+  --accent-sickly-green: #4a7a2a;
+  --accent-blue-steel: #3a5a8b;
+
+  /* Phase 16C — Rarity Colors */
+  --rarity-common: #9d9d9d;
+  --rarity-magic: #4488ff;
+  --rarity-rare: #ffcc00;
+  --rarity-epic: #b040ff;
+  --rarity-unique: #ff8800;
+  --rarity-set: #00cc44;
+
+  /* Text */
+  --text-primary: #d4c5a0;
+  --text-body: #b0a58a;
+  --text-secondary: #7a7060;
+  --text-dim: #4a4540;
+  --text-bright: #f0e8d0;
+
+  /* Borders */
+  --border-dark: #1a1820;
+  --border-subtle: #2a2835;
+  --border-medium: #3a3545;
+  --border-ember: rgba(196, 151, 58, 0.4);
+
+  /* Fonts */
+  --font-heading: 'Cinzel', 'Georgia', serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+  --font-flavor: 'Crimson Text', 'Georgia', serif;
+  --font-mono: 'Fira Code', 'Consolas', monospace;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --shadow-glow-ember: 0 0 20px rgba(196, 151, 58, 0.15);
+  --shadow-glow-crimson: 0 0 20px rgba(139, 32, 32, 0.2);
+  --shadow-inset: inset 0 1px 4px rgba(0, 0, 0, 0.4);
+
+  /* === Phase 15 — Frame System === */
+
+  /* Frame borders — ornate double-line with corner accents */
+  --frame-border-outer: 1px solid var(--border-medium);
+  --frame-border-inner: 1px solid var(--border-dark);
+  --frame-corner-size: 12px;
+  --frame-corner-color: var(--accent-ember-dim);
+
+  /* Decorative separator */
+  --separator-ornament: '◆';
+
+  /* Frame shadow layers — layered depth effect */
+  --frame-shadow:
+    0 0 0 1px var(--border-dark),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+
+  /* Glow variants for frames */
+  --frame-glow-ember: 0 0 15px rgba(196, 151, 58, 0.1);
+  --frame-glow-crimson: 0 0 15px rgba(139, 32, 32, 0.12);
+  --frame-glow-verdant: 0 0 15px rgba(74, 122, 42, 0.12);
+
+  /* Button bevel — subtle top highlight for hammered-metal feel */
+  --btn-bevel-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --btn-bevel-pressed: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+
+  /* === Phase 15 Chunk 7 — Form Element System === */
+
+  /* Text inputs */
+  --input-bg: var(--bg-deep);
+  --input-border: var(--border-medium);
+  --input-border-focus: var(--accent-ember-dim);
+  --input-text: var(--text-primary);
+  --input-placeholder: var(--text-dim);
+  --input-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  --input-focus-glow: 0 0 10px rgba(196, 151, 58, 0.1);
+  --input-focus-accent: var(--accent-ember);
+
+  /* Range sliders */
+  --range-track-bg: var(--bg-deep);
+  --range-track-border: var(--border-dark);
+  --range-thumb-bg: var(--accent-ember);
+  --range-thumb-glow: 0 0 8px rgba(196, 151, 58, 0.3);
+
+  /* Checkboxes */
+  --checkbox-bg: var(--bg-deep);
+  --checkbox-border: var(--border-medium);
+  --checkbox-checked-bg: var(--accent-ember);
+}

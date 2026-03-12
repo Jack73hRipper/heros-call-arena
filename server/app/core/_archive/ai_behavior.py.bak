@@ -1,0 +1,3049 @@
+"""
+AI Behavior Engine — Decision logic for AI combatants.
+
+Implements:
+  - A* pathfinding (obstacle-aware, occupied-tile-aware)
+  - Behavior profiles: aggressive (melee), ranged (kiting), boss (guardian)
+  - Aggressive AI behavior: pursue → melee → ranged (at distance) → patrol
+  - Ranged AI behavior: maintain distance → ranged attack → retreat if too close
+  - Boss AI behavior: guard room center → attack intruders → never leave room
+  - Active scouting: waypoint-based map exploration when no enemies visible
+  - FOV-aware decision making (AI cannot see through walls)
+  - Shared team FOV: AI uses combined ally vision to spot enemies
+  - Last-known enemy memory: AI remembers where enemies were last seen
+  - Ally reinforcement: AI moves to help teammates in combat
+  - Weighted target selection: prioritizes low-HP and threatening enemies
+  - Room leashing: dungeon enemies stay within their assigned room bounds
+"""
+
+from __future__ import annotations
+
+import heapq
+import random
+
+from app.models.player import PlayerState, Position
+from app.models.actions import PlayerAction, ActionType
+from app.core.fov import compute_fov, has_line_of_sight
+from app.core.combat import is_adjacent, is_in_range, get_combat_config
+from app.core.skills import can_use_skill, get_skill
+
+
+# ---------------------------------------------------------------------------
+# Phase 8C: Support AI — Heal thresholds
+# ---------------------------------------------------------------------------
+_HEAL_SELF_THRESHOLD = 0.50    # Support heals self below 50% HP
+_HEAL_ALLY_THRESHOLD = 0.60    # Support heals allies below 60% HP
+
+
+# ---------------------------------------------------------------------------
+# Patrol Waypoint Memory (module-level, keyed by AI player_id)
+# ---------------------------------------------------------------------------
+
+# Stores the current patrol target for each AI unit
+_patrol_targets: dict[str, tuple[int, int]] = {}
+
+# Tracks tiles each AI has recently visited to avoid revisiting
+_visited_history: dict[str, list[tuple[int, int]]] = {}
+
+# Max history length before oldest entries are dropped
+_MAX_VISIT_HISTORY = 15
+
+# ---------------------------------------------------------------------------
+# Last-Known Enemy Memory (module-level, keyed by AI player_id)
+# ---------------------------------------------------------------------------
+# {ai_id: {enemy_id: (x, y, turns_since_seen)}}
+_enemy_memory: dict[str, dict[str, tuple[int, int, int]]] = {}
+
+# How many turns AI will pursue a last-known position before giving up
+_MEMORY_EXPIRY_TURNS = 3
+
+# ---------------------------------------------------------------------------
+# Phase 8E-2: Scout AI — Shadow Step thresholds
+# ---------------------------------------------------------------------------
+_SHADOW_STEP_ESCAPE_HP_THRESHOLD = 0.30   # Below 30% HP, scouts escape with Shadow Step
+_SHADOW_STEP_OFFENSIVE_MIN_DISTANCE = 4   # Enemies this far trigger offensive Shadow Step
+
+# ---------------------------------------------------------------------------
+# Phase 8A: AI Potion Usage — HP thresholds per stance
+# ---------------------------------------------------------------------------
+# Below these HP% thresholds, hero AI will drink a potion instead of fighting.
+_POTION_THRESHOLDS: dict[str, float] = {
+    "follow": 0.40,       # Balanced — drink when moderately hurt
+    "aggressive": 0.25,   # Reckless — push damage, drink only when critical
+    "defensive": 0.50,    # Cautious — drink early to stay topped off
+    "hold": 0.40,         # Same as follow — stationary but not suicidal
+}
+
+
+# ---------------------------------------------------------------------------
+# Phase 8B: AI Skill Decision Framework — Role mapping & helpers
+# ---------------------------------------------------------------------------
+# Map class_id → AI behavior role. New classes just need an entry here;
+# role handlers are reusable across any class that shares the same role.
+_CLASS_ROLE_MAP: dict[str, str] = {
+    "crusader": "tank",
+    "confessor": "support",
+    "inquisitor": "scout",
+    "ranger": "ranged_dps",
+    "hexblade": "hybrid_dps",
+}
+
+# ---------------------------------------------------------------------------
+# Phase 8K: AI Retreat Behavior — HP thresholds per role
+# ---------------------------------------------------------------------------
+# Below these HP% thresholds (AND no potions remaining), hero AI will
+# disengage from melee and retreat instead of continuing to fight.
+_RETREAT_THRESHOLDS: dict[str, float] = {
+    "tank": 0.15,         # Tanks retreat last — they're built to take hits
+    "support": 0.35,      # Supports retreat earliest — dead healer = party wipe
+    "ranged_dps": 0.25,   # Ranged should be at distance anyway, retreat if caught in melee
+    "hybrid_dps": 0.20,   # Hybrid commits to melee, moderate retreat threshold
+    "scout": 0.25,        # Scout has Shadow Step escape; walk-retreat is the fallback
+}
+
+# Default retreat threshold for unknown roles
+_RETREAT_THRESHOLD_DEFAULT = 0.25
+
+
+def _get_role_for_class(class_id: str) -> str | None:
+    """Get the AI behavior role for a class. None = no special skill logic."""
+    return _CLASS_ROLE_MAP.get(class_id)
+
+
+def _try_skill(
+    ai: PlayerState,
+    skill_id: str,
+    target_x: int | None = None,
+    target_y: int | None = None,
+) -> PlayerAction | None:
+    """Attempt to build a SKILL action if the skill is usable.
+
+    Wraps the existing can_use_skill() validation from skills.py.
+    Returns PlayerAction(SKILL) if the skill passes validation, else None.
+    """
+    can_use, _reason = can_use_skill(ai, skill_id)
+    if not can_use:
+        return None
+    return PlayerAction(
+        player_id=ai.player_id,
+        action_type=ActionType.SKILL,
+        skill_id=skill_id,
+        target_x=target_x,
+        target_y=target_y,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 8B: Role-Specific Skill Handlers (stubs — implemented in 8C/8D/8E)
+# ---------------------------------------------------------------------------
+
+def _support_skill_logic(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+) -> PlayerAction | None:
+    """Support role AI: prioritize healing injured allies over attacking.
+
+    Phase 8C implementation.
+
+    Priority:
+    1. Heal self if below 50% HP (self-preservation)
+    2. Heal ally with lowest HP% within heal range if they're below 60% HP
+    3. Return None → fall through to basic attack logic
+    """
+    # --- Check if Heal is usable at all ---
+    heal_action_base = _try_skill(ai, "heal")
+    if heal_action_base is None:
+        return None  # On cooldown, wrong class, dead, etc.
+
+    # --- Get heal range from config ---
+    heal_def = get_skill("heal")
+    heal_range = heal_def["range"] if heal_def else 1
+
+    ai_pos = (ai.position.x, ai.position.y)
+
+    # --- Priority 1: Self-heal if below threshold ---
+    if ai.hp / ai.max_hp < _HEAL_SELF_THRESHOLD and ai.hp < ai.max_hp:
+        return _try_skill(ai, "heal", target_x=ai.position.x, target_y=ai.position.y)
+
+    # --- Priority 2: Heal the most injured ally within heal range ---
+    heal_candidates: list[PlayerState] = []
+    for unit in all_units.values():
+        if not unit.is_alive:
+            continue
+        if unit.player_id == ai.player_id:
+            continue  # Already handled self above
+        if unit.team != ai.team:
+            continue  # Not an ally
+        if unit.hp >= unit.max_hp:
+            continue  # Already full HP
+        if unit.max_hp <= 0:
+            continue
+        if unit.hp / unit.max_hp >= _HEAL_ALLY_THRESHOLD:
+            continue  # Not hurt enough
+
+        # Check Chebyshev distance <= heal range
+        dist = _chebyshev(ai_pos, (unit.position.x, unit.position.y))
+        if dist <= heal_range:
+            heal_candidates.append(unit)
+
+    if not heal_candidates:
+        return None  # No one needs healing → fall through to basic attack
+
+    # Sort by HP percentage ascending (heal the most hurt first)
+    heal_candidates.sort(key=lambda u: u.hp / u.max_hp)
+    target = heal_candidates[0]
+
+    return _try_skill(ai, "heal", target_x=target.position.x, target_y=target.position.y)
+
+
+def _support_move_preference(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+) -> tuple[int, int] | None:
+    """Return a preferred move target for support-role units (8C-2).
+
+    Support units prefer to stay near allies rather than charging at enemies.
+    Priority:
+      1. Most injured ally (below 60% HP) — move toward them to heal next turn
+      2. Nearest ally — stay grouped, don't solo charge
+      3. None — no allies alive, fall through to default behavior
+
+    Returns (x, y) position of the preferred move target, or None.
+    """
+    ai_pos = (ai.position.x, ai.position.y)
+    injured_allies: list[tuple[float, int, PlayerState]] = []
+    all_allies: list[tuple[int, PlayerState]] = []
+
+    for unit in all_units.values():
+        if not unit.is_alive:
+            continue
+        if unit.player_id == ai.player_id:
+            continue
+        if unit.team != ai.team:
+            continue
+        dist = _chebyshev(ai_pos, (unit.position.x, unit.position.y))
+        all_allies.append((dist, unit))
+
+        if unit.max_hp > 0 and (unit.hp / unit.max_hp) < _HEAL_ALLY_THRESHOLD:
+            injured_allies.append((unit.hp / unit.max_hp, dist, unit))
+
+    # Prefer moving toward most injured ally
+    if injured_allies:
+        injured_allies.sort(key=lambda t: (t[0], t[1]))  # lowest HP%, then closest
+        target = injured_allies[0][2]
+        return (target.position.x, target.position.y)
+
+    # Otherwise, move toward nearest ally (stay grouped)
+    if all_allies:
+        all_allies.sort(key=lambda t: t[0])
+        target = all_allies[0][1]
+        return (target.position.x, target.position.y)
+
+    return None
+
+
+def _tank_skill_logic(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+    obstacles: set[tuple[int, int]],
+) -> PlayerAction | None:
+    """Tank role AI: buff before engagement, Double Strike over basic melee.
+
+    Phase 8D implementation.
+
+    Priority:
+      1. War Cry: if enemies visible AND off cooldown AND no melee_damage_multiplier
+         buff currently active → buff self (2× melee damage for 2 turns).
+      2. Double Strike: if adjacent to an enemy AND off cooldown → use it
+         (2 hits × 60% = 120% > 100% basic melee — strictly superior).
+      3. Return None → fall through to basic melee/move logic.
+
+    Combo flow (emergent, not explicitly sequenced):
+      Turn 1: War Cry (buff applied)
+      Turn 2: Double Strike (2 × 60% × 2.0 = 240% damage!)
+      Turn 3-4: Basic attack (buff expired, DS on cooldown)
+      Turn 5+: Double Strike again / War Cry again when CD ready
+    """
+    if not enemies:
+        return None  # No enemies visible → don't waste War Cry
+
+    # --- Priority 1: War Cry (self-buff) ---
+    # Only use if no melee_damage_multiplier buff is already active.
+    has_melee_buff = any(
+        buff.get("stat") == "melee_damage_multiplier"
+        for buff in ai.active_buffs
+    )
+    if not has_melee_buff:
+        war_cry_action = _try_skill(ai, "war_cry")
+        if war_cry_action:
+            return war_cry_action
+
+    # --- Priority 2: Double Strike (adjacent enemy) ---
+    ai_pos_obj = Position(x=ai.position.x, y=ai.position.y)
+    adjacent_enemies = [
+        e for e in enemies
+        if is_adjacent(ai_pos_obj, Position(x=e.position.x, y=e.position.y))
+    ]
+    if adjacent_enemies:
+        target = _pick_best_target(ai, adjacent_enemies, all_units)
+        ds_action = _try_skill(
+            ai, "double_strike",
+            target_x=target.position.x,
+            target_y=target.position.y,
+        )
+        if ds_action:
+            return ds_action
+
+    # --- No skill to use → fall through to basic attack/move ---
+    return None
+
+
+def _ranged_dps_skill_logic(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+    obstacles: set[tuple[int, int]],
+) -> PlayerAction | None:
+    """Ranged DPS role: prefer Power Shot over basic ranged when available.
+
+    Phase 8E-1 implementation.
+
+    Priority:
+      1. Power Shot: if enemy in ranged range + LOS + Power Shot off CD
+         → use Power Shot (1.8× damage >> 1.0× basic ranged — strictly superior).
+      2. Return None → fall through to basic ranged/melee logic.
+
+    Power Shot uses the class's ranged_range (matches basic ranged attack range).
+    The skill config has range=0, meaning "use class ranged_range" — mirroring
+    the turn resolver behavior where power_shot range = attacker.ranged_range.
+    """
+    if not enemies:
+        return None
+
+    # Check if Power Shot is even usable (class restriction + cooldown)
+    ps_base = _try_skill(ai, "power_shot")
+    if ps_base is None:
+        return None  # On cooldown or wrong class
+
+    # Get the AI's ranged range from class stats
+    config = get_combat_config()
+    ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
+
+    # Pick best target using weighted scoring (low HP, threatening, close)
+    target = _pick_best_target(ai, enemies, all_units)
+    target_pos = Position(x=target.position.x, y=target.position.y)
+
+    # Check range + line of sight
+    if is_in_range(ai.position, target_pos, ranged_range):
+        if has_line_of_sight(
+            ai.position.x, ai.position.y,
+            target.position.x, target.position.y,
+            obstacles,
+        ):
+            return _try_skill(
+                ai, "power_shot",
+                target_x=target.position.x,
+                target_y=target.position.y,
+            )
+
+    # Best target not in range/LOS — check other enemies
+    for enemy in enemies:
+        if enemy.player_id == target.player_id:
+            continue  # Already checked
+        e_pos = Position(x=enemy.position.x, y=enemy.position.y)
+        if is_in_range(ai.position, e_pos, ranged_range):
+            if has_line_of_sight(
+                ai.position.x, ai.position.y,
+                enemy.position.x, enemy.position.y,
+                obstacles,
+            ):
+                return _try_skill(
+                    ai, "power_shot",
+                    target_x=enemy.position.x,
+                    target_y=enemy.position.y,
+                )
+
+    # No enemy in range + LOS → fall through to basic attack/move
+    return None
+
+
+def _find_shadow_step_gapcloser_tile(
+    ai: PlayerState,
+    target_enemy: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+) -> tuple[int, int] | None:
+    """Find the best Shadow Step gap-close tile for a hybrid DPS (Hexblade).
+
+    Hexblades want to land ADJACENT to the target enemy for immediate melee.
+    Scoring:
+      - Primary: prefer tiles adjacent (Chebyshev distance 1) to the target
+      - Tiebreak: minimize distance from AI's current position (preserve momentum)
+
+    If no adjacent tiles are available, fall back to the closest valid tile.
+
+    Returns (x, y) of best tile, or None if no valid tiles.
+    """
+    valid_tiles = _find_valid_shadow_step_tiles(
+        ai, all_units, grid_width, grid_height, obstacles,
+    )
+    if not valid_tiles:
+        return None
+
+    target_pos = (target_enemy.position.x, target_enemy.position.y)
+    ai_pos = (ai.position.x, ai.position.y)
+
+    # Prefer tiles adjacent to target enemy (Chebyshev distance 1)
+    adjacent_tiles = [
+        t for t in valid_tiles
+        if _chebyshev(t, target_pos) == 1
+    ]
+
+    if adjacent_tiles:
+        # Among adjacent tiles, pick the one closest to AI (least wasted movement)
+        return min(adjacent_tiles, key=lambda t: _chebyshev(t, ai_pos))
+
+    # No adjacent tiles — fall back to closest valid tile to target
+    return min(valid_tiles, key=lambda t: _chebyshev(t, target_pos))
+
+
+# ---------------------------------------------------------------------------
+# Phase 8E-3: Hybrid DPS gap-close distance threshold
+# ---------------------------------------------------------------------------
+_SHADOW_STEP_GAPCLOSER_MIN_DISTANCE = 3  # Enemies this far trigger gap-close Shadow Step
+
+
+def _hybrid_dps_skill_logic(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+) -> PlayerAction | None:
+    """Hybrid DPS role: gap-close with Shadow Step, finish with Double Strike.
+
+    Phase 8E-3 implementation.
+
+    Priority:
+      1. Double Strike: if adjacent to enemy AND off cooldown
+         → Use Double Strike (2 × 60% = 120% damage — strictly superior to basic melee).
+      2. Shadow Step gap-close: if closest enemy > 3 tiles away AND off cooldown
+         → Teleport ADJACENT to enemy (Hexblade wants melee, unlike Inquisitor).
+      3. Return None → fall through to basic attack/move logic.
+
+    Design:
+      - Hexblade is a melee-first hybrid: Double Strike takes priority over gap-close
+        because if already adjacent, using Shadow Step would waste it.
+      - Shadow Step gap-close prefers tiles adjacent to the target enemy for immediate
+        melee follow-up on the next turn.
+      - Unlike the Scout (Inquisitor), the Hexblade does NOT escape with Shadow Step.
+        Hexblades commit to melee and rely on their higher HP (110) and armor (5).
+    """
+    if not enemies:
+        return None
+
+    ai_pos = (ai.position.x, ai.position.y)
+    ai_pos_obj = Position(x=ai.position.x, y=ai.position.y)
+
+    # --- Priority 1: Double Strike (adjacent enemy) ---
+    adjacent_enemies = [
+        e for e in enemies
+        if is_adjacent(ai_pos_obj, Position(x=e.position.x, y=e.position.y))
+    ]
+    if adjacent_enemies:
+        target = _pick_best_target(ai, adjacent_enemies, all_units)
+        ds_action = _try_skill(
+            ai, "double_strike",
+            target_x=target.position.x,
+            target_y=target.position.y,
+        )
+        if ds_action:
+            return ds_action
+
+    # --- Priority 2: Shadow Step gap-close (offensive) ---
+    closest_enemy = min(
+        enemies,
+        key=lambda e: _chebyshev(ai_pos, (e.position.x, e.position.y)),
+    )
+    closest_dist = _chebyshev(ai_pos, (closest_enemy.position.x, closest_enemy.position.y))
+
+    if closest_dist > _SHADOW_STEP_GAPCLOSER_MIN_DISTANCE:
+        ss_action = _try_skill(ai, "shadow_step")
+        if ss_action is not None:
+            gapcloser_tile = _find_shadow_step_gapcloser_tile(
+                ai, closest_enemy, all_units, grid_width, grid_height,
+                obstacles,
+            )
+            if gapcloser_tile:
+                return _try_skill(
+                    ai, "shadow_step",
+                    target_x=gapcloser_tile[0],
+                    target_y=gapcloser_tile[1],
+                )
+
+    # --- No skill to use → fall through to basic attack/move ---
+    return None
+
+
+def _find_valid_shadow_step_tiles(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+) -> list[tuple[int, int]]:
+    """Find all valid Shadow Step destination tiles.
+
+    Valid tiles must be:
+      - Within range 3 (Chebyshev) of the AI
+      - Within grid bounds
+      - Not the AI's current position
+      - Not an obstacle
+      - Not occupied by another alive unit
+      - Have LOS from the AI's current position
+    """
+    ai_pos = (ai.position.x, ai.position.y)
+    ss_range = 3  # Shadow Step range from skills_config
+
+    # Build occupied set
+    occupied = set()
+    for unit in all_units.values():
+        if unit.is_alive and unit.player_id != ai.player_id:
+            occupied.add((unit.position.x, unit.position.y))
+
+    valid_tiles: list[tuple[int, int]] = []
+    for dx in range(-ss_range, ss_range + 1):
+        for dy in range(-ss_range, ss_range + 1):
+            tx, ty = ai_pos[0] + dx, ai_pos[1] + dy
+
+            if tx == ai_pos[0] and ty == ai_pos[1]:
+                continue  # Can't teleport to own position
+            if max(abs(dx), abs(dy)) > ss_range:
+                continue  # Out of Chebyshev range
+            if tx < 0 or tx >= grid_width or ty < 0 or ty >= grid_height:
+                continue  # Out of bounds
+            if (tx, ty) in obstacles:
+                continue  # Obstacle
+            if (tx, ty) in occupied:
+                continue  # Occupied
+            if not has_line_of_sight(ai_pos[0], ai_pos[1], tx, ty, obstacles):
+                continue  # No LOS
+
+            valid_tiles.append((tx, ty))
+
+    return valid_tiles
+
+
+def _find_shadow_step_escape_tile(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    ranged_range: int,
+) -> tuple[int, int] | None:
+    """Find the best Shadow Step escape tile for a scout.
+
+    Scoring:
+      - Primary: maximize distance from nearest enemy (survival)
+      - Bonus: tile is still within ranged_range of an enemy (retreat to shoot)
+
+    Returns (x, y) of best tile, or None if no valid tiles.
+    """
+    valid_tiles = _find_valid_shadow_step_tiles(
+        ai, all_units, grid_width, grid_height, obstacles,
+    )
+    if not valid_tiles:
+        return None
+
+    def escape_score(tile: tuple[int, int]) -> float:
+        tx, ty = tile
+        # Minimum distance from any enemy (maximize this)
+        min_enemy_dist = min(
+            _chebyshev((tx, ty), (e.position.x, e.position.y))
+            for e in enemies
+        )
+        score = float(min_enemy_dist) * 10.0  # Heavy weight on distance
+
+        # Bonus: tile is within ranged range of at least one enemy (can still shoot)
+        for e in enemies:
+            if _chebyshev((tx, ty), (e.position.x, e.position.y)) <= ranged_range:
+                score += 5.0  # Can still shoot from this position
+                break
+
+        return score
+
+    best_tile = max(valid_tiles, key=escape_score)
+    return best_tile
+
+
+def _find_shadow_step_offensive_tile(
+    ai: PlayerState,
+    target_enemy: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+) -> tuple[int, int] | None:
+    """Find the best Shadow Step offensive tile for a scout.
+
+    Scouts prefer ranged distance — teleport closer but NOT adjacent.
+    Scoring:
+      - Minimize distance to target (get closer)
+      - Prefer tiles at least 2 tiles away (Inquisitor prefers range, not melee)
+
+    Returns (x, y) of best tile, or None if no valid tiles.
+    """
+    valid_tiles = _find_valid_shadow_step_tiles(
+        ai, all_units, grid_width, grid_height, obstacles,
+    )
+    if not valid_tiles:
+        return None
+
+    target_pos = (target_enemy.position.x, target_enemy.position.y)
+
+    # Filter: prefer tiles at least 2 tiles from target (keep ranged distance)
+    ranged_tiles = [
+        t for t in valid_tiles
+        if _chebyshev(t, target_pos) >= 2
+    ]
+
+    # If no tiles at 2+ distance, allow adjacent as fallback
+    candidates = ranged_tiles if ranged_tiles else valid_tiles
+
+    # Score: minimize distance to target enemy
+    best_tile = min(candidates, key=lambda t: _chebyshev(t, target_pos))
+    return best_tile
+
+
+def _scout_skill_logic(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+) -> PlayerAction | None:
+    """Scout role: Power Shot for offense, Shadow Step for repositioning.
+
+    Phase 8E-2 implementation.
+
+    Priority:
+      1. Shadow Step escape: HP < 30% AND adjacent to enemy AND Shadow Step off CD
+         → Teleport away from nearest enemy (defensive escape).
+         Prefer tiles still within ranged range (retreat to shoot).
+      2. Power Shot: enemy in range + LOS + off CD
+         → Use Power Shot (1.8× damage — strictly superior to basic ranged).
+      3. Shadow Step offense: closest enemy > 4 tiles away AND Shadow Step off CD
+         → Teleport closer (within 2 tiles of target, not adjacent).
+         Inquisitor prefers ranged distance, unlike Hexblade who wants melee.
+      4. Return None → fall through to basic attack/move logic.
+    """
+    if not enemies:
+        return None
+
+    ai_pos = (ai.position.x, ai.position.y)
+
+    # Get class ranged range for positioning decisions
+    config = get_combat_config()
+    ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
+
+    # Check adjacency to any enemy (needed for escape check)
+    ai_pos_obj = Position(x=ai.position.x, y=ai.position.y)
+    adjacent_enemies = [
+        e for e in enemies
+        if is_adjacent(ai_pos_obj, Position(x=e.position.x, y=e.position.y))
+    ]
+
+    # --- Priority 1: Shadow Step escape (defensive) ---
+    if (ai.max_hp > 0
+            and ai.hp / ai.max_hp < _SHADOW_STEP_ESCAPE_HP_THRESHOLD
+            and adjacent_enemies):
+        ss_action = _try_skill(ai, "shadow_step")
+        if ss_action is not None:
+            escape_tile = _find_shadow_step_escape_tile(
+                ai, enemies, all_units, grid_width, grid_height,
+                obstacles, ranged_range,
+            )
+            if escape_tile:
+                return _try_skill(
+                    ai, "shadow_step",
+                    target_x=escape_tile[0],
+                    target_y=escape_tile[1],
+                )
+
+    # --- Priority 2: Power Shot (offensive ranged) ---
+    ps_base = _try_skill(ai, "power_shot")
+    if ps_base is not None:
+        target = _pick_best_target(ai, enemies, all_units)
+        target_pos = Position(x=target.position.x, y=target.position.y)
+
+        if is_in_range(ai.position, target_pos, ranged_range):
+            if has_line_of_sight(
+                ai.position.x, ai.position.y,
+                target.position.x, target.position.y,
+                obstacles,
+            ):
+                return _try_skill(
+                    ai, "power_shot",
+                    target_x=target.position.x,
+                    target_y=target.position.y,
+                )
+
+        # Check secondary targets
+        for enemy in enemies:
+            if enemy.player_id == target.player_id:
+                continue
+            e_pos = Position(x=enemy.position.x, y=enemy.position.y)
+            if is_in_range(ai.position, e_pos, ranged_range):
+                if has_line_of_sight(
+                    ai.position.x, ai.position.y,
+                    enemy.position.x, enemy.position.y,
+                    obstacles,
+                ):
+                    return _try_skill(
+                        ai, "power_shot",
+                        target_x=enemy.position.x,
+                        target_y=enemy.position.y,
+                    )
+
+    # --- Priority 3: Shadow Step offense (close the gap to ranged distance) ---
+    closest_enemy = min(
+        enemies,
+        key=lambda e: _chebyshev(ai_pos, (e.position.x, e.position.y)),
+    )
+    closest_dist = _chebyshev(ai_pos, (closest_enemy.position.x, closest_enemy.position.y))
+
+    if closest_dist > _SHADOW_STEP_OFFENSIVE_MIN_DISTANCE:
+        ss_action = _try_skill(ai, "shadow_step")
+        if ss_action is not None:
+            offensive_tile = _find_shadow_step_offensive_tile(
+                ai, closest_enemy, all_units, grid_width, grid_height,
+                obstacles,
+            )
+            if offensive_tile:
+                return _try_skill(
+                    ai, "shadow_step",
+                    target_x=offensive_tile[0],
+                    target_y=offensive_tile[1],
+                )
+
+    # --- No skill to use → fall through to basic attack/move ---
+    return None
+
+
+def _decide_skill_usage(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+) -> PlayerAction | None:
+    """Evaluate whether the AI should use a skill instead of basic attack.
+
+    Dispatches to role-specific handlers based on class_id.
+    Returns SKILL action or None (fall through to basic attack logic).
+
+    Future-proof: New classes map to existing role handlers via _CLASS_ROLE_MAP.
+    """
+    class_id = ai.class_id
+    if not class_id:
+        return None
+
+    role = _get_role_for_class(class_id)
+    if role is None:
+        return None
+
+    if role == "support":
+        return _support_skill_logic(ai, enemies, all_units, grid_width, grid_height, obstacles)
+    elif role == "tank":
+        return _tank_skill_logic(ai, enemies, all_units, obstacles)
+    elif role == "ranged_dps":
+        return _ranged_dps_skill_logic(ai, enemies, all_units, obstacles)
+    elif role == "hybrid_dps":
+        return _hybrid_dps_skill_logic(ai, enemies, all_units, grid_width, grid_height, obstacles)
+    elif role == "scout":
+        return _scout_skill_logic(ai, enemies, all_units, grid_width, grid_height, obstacles)
+
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Room Bounds Cache — for leashing dungeon enemies (Phase 4C)
+# ---------------------------------------------------------------------------
+# {match_id: {room_id: {"x_min": int, "y_min": int, "x_max": int, "y_max": int}}}
+_room_bounds_cache: dict[str, dict[str, dict]] = {}
+
+
+def set_room_bounds(match_id: str, rooms: list[dict]) -> None:
+    """Cache room bounds for a match so AI can be leashed to rooms."""
+    _room_bounds_cache[match_id] = {}
+    for room in rooms:
+        room_id = room.get("id")
+        bounds = room.get("bounds")
+        if room_id and bounds:
+            _room_bounds_cache[match_id][room_id] = bounds
+
+
+def clear_room_bounds(match_id: str | None = None) -> None:
+    """Clear room bounds cache for a match or all matches."""
+    if match_id:
+        _room_bounds_cache.pop(match_id, None)
+    else:
+        _room_bounds_cache.clear()
+
+
+def _is_in_room(x: int, y: int, bounds: dict) -> bool:
+    """Check if a position is within a room's bounds."""
+    return (
+        bounds["x_min"] <= x <= bounds["x_max"]
+        and bounds["y_min"] <= y <= bounds["y_max"]
+    )
+
+
+def _get_room_bounds(match_id: str, room_id: str) -> dict | None:
+    """Get room bounds for leashing. Returns None if not cached."""
+    return _room_bounds_cache.get(match_id, {}).get(room_id)
+
+
+# ---------------------------------------------------------------------------
+# Occupied-Set Builder (Phase 7A-3: Movement Prediction)
+# ---------------------------------------------------------------------------
+
+def _build_occupied_set(
+    all_units: dict[str, PlayerState],
+    exclude_id: str,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+) -> set[tuple[int, int]]:
+    """Build the set of tiles occupied by other alive units.
+
+    Phase 7A-3: If *pending_moves* is provided, units that have already
+    been assigned a MOVE action this tick are treated predictively:
+      - Their **current** position is excluded (they will vacate it).
+
+    This prevents sequential AI decisions from blocking each other
+    when multiple allies are moving through the same corridor.
+    The batch resolver (Phase 7A-1) handles any conflicts at resolution
+    time, so we do NOT add claimed target positions here — that would
+    break A* pathfinding in narrow hallways.
+
+    Args:
+        all_units:     Full dict of player_id -> PlayerState.
+        exclude_id:    The AI unit computing its own action (skip itself).
+        pending_moves: ``{unit_id: (from_pos, to_pos)}`` for units that
+                       already have a MOVE intent this tick.  ``None``
+                       disables prediction (backward compat).
+    """
+    pending_unit_ids: set[str] = set()
+    vacating: set[tuple[int, int]] = set()
+    if pending_moves:
+        for pid, (from_pos, _to_pos) in pending_moves.items():
+            pending_unit_ids.add(pid)
+            vacating.add(from_pos)
+
+    occupied: set[tuple[int, int]] = set()
+    for u in all_units.values():
+        if not u.is_alive or u.player_id == exclude_id:
+            continue
+        pos = (u.position.x, u.position.y)
+        # Skip positions being vacated by units with pending moves
+        if pos in vacating and u.player_id in pending_unit_ids:
+            continue
+        occupied.add(pos)
+
+    return occupied
+
+
+# ---------------------------------------------------------------------------
+# A* Pathfinding
+# ---------------------------------------------------------------------------
+
+def _heuristic(a: tuple[int, int], b: tuple[int, int]) -> int:
+    """Chebyshev distance (allows diagonal movement)."""
+    return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
+
+
+def _neighbors(x: int, y: int, grid_w: int, grid_h: int) -> list[tuple[int, int]]:
+    """Return all 8-directional neighbors within bounds."""
+    result = []
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            if dx == 0 and dy == 0:
+                continue
+            nx, ny = x + dx, y + dy
+            if 0 <= nx < grid_w and 0 <= ny < grid_h:
+                result.append((nx, ny))
+    return result
+
+
+def a_star(
+    start: tuple[int, int],
+    goal: tuple[int, int],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+    door_tiles: set[tuple[int, int]] | None = None,
+) -> list[tuple[int, int]] | None:
+    """A* pathfinding from start to goal.
+
+    Returns the full path (list of (x, y) positions excluding start),
+    or None if no path exists.
+
+    Args:
+        start: Starting (x, y).
+        goal: Target (x, y).
+        grid_width: Map width.
+        grid_height: Map height.
+        obstacles: Impassable tiles.
+        occupied: Tiles occupied by other units (treated as impassable
+                  except for the goal tile itself, which the AI wants
+                  to approach but not step on).
+        door_tiles: Optional set of closed-door positions. These tiles are
+                    excluded from the blocked set so A* can path *through*
+                    them, but at an elevated traversal cost (+3 instead of
+                    +1).  This makes A* prefer open routes but still plan
+                    paths through doors when necessary (Phase 7D-1).
+    """
+    if start == goal:
+        return []
+
+    # If the goal tile is occupied by another unit (e.g. an enemy we want
+    # to approach), we cannot step onto it.  Instead, A* terminates when
+    # it reaches any tile *adjacent* to the goal — that's close enough
+    # for melee range.
+    goal_is_occupied = goal in occupied
+
+    # Phase 7D-1: Remove closed-door tiles from the blocked set so A* can
+    # traverse them (with elevated cost computed below).
+    blocked = obstacles | (occupied - {goal})
+    if door_tiles:
+        blocked = blocked - door_tiles
+
+    open_set: list[tuple[int, tuple[int, int]]] = []
+    heapq.heappush(open_set, (0, start))
+    came_from: dict[tuple[int, int], tuple[int, int]] = {}
+    g_score: dict[tuple[int, int], float] = {start: 0}
+
+    while open_set:
+        _, current = heapq.heappop(open_set)
+
+        # --- Termination conditions ---
+        # 1. Reached the goal tile itself (goal is walkable)
+        # 2. Reached a tile adjacent to an occupied goal (close enough)
+        reached = (
+            current == goal
+            or (goal_is_occupied and _heuristic(current, goal) == 1)
+        )
+        if reached:
+            # Reconstruct path
+            path = []
+            while current in came_from:
+                path.append(current)
+                current = came_from[current]
+            path.reverse()
+            return path
+
+        for nb in _neighbors(current[0], current[1], grid_width, grid_height):
+            if nb in blocked:
+                continue
+            # Don't allow stepping onto goal if it's occupied (we want to
+            # stop adjacent to it)
+            if nb == goal and goal_is_occupied:
+                continue
+
+            # Phase 7D-1: Elevated cost for stepping through a closed door.
+            # Normal step = 1. Door step = 3 (makes A* prefer open routes).
+            step_cost = 3 if (door_tiles and nb in door_tiles) else 1
+            tentative_g = g_score[current] + step_cost
+            if tentative_g < g_score.get(nb, float("inf")):
+                came_from[nb] = current
+                g_score[nb] = tentative_g
+                f_score = tentative_g + _heuristic(nb, goal)
+                heapq.heappush(open_set, (f_score, nb))
+
+    return None  # No path found
+
+
+def get_next_step_toward(
+    start: tuple[int, int],
+    goal: tuple[int, int],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+    door_tiles: set[tuple[int, int]] | None = None,
+) -> tuple[int, int] | None:
+    """Return the next single tile to move to when pathing toward goal.
+
+    Returns None if already at goal or no path exists.
+    """
+    path = a_star(start, goal, grid_width, grid_height, obstacles, occupied, door_tiles)
+    if path:
+        return path[0]
+    return None
+
+
+# ---------------------------------------------------------------------------
+# AI Decision Logic
+# ---------------------------------------------------------------------------
+
+def decide_ai_action(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov: set[tuple[int, int]] | None = None,
+    match_id: str | None = None,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+) -> PlayerAction | None:
+    """Decide the next action for an AI unit based on its behavior profile.
+
+    Dispatches to behavior-specific logic:
+      - 'aggressive' (default): chase → melee → ranged → patrol
+      - 'ranged': maintain distance → ranged attack → retreat if close
+      - 'boss': guard room → attack intruders → never leave room
+      - None/unknown: falls back to aggressive (arena backward compat)
+
+    Args:
+        team_fov: Pre-computed shared team FOV.
+        match_id: Match ID for room bounds lookup (needed for boss leashing).
+        pending_moves: Phase 7A-3 — ``{unit_id: (from_pos, to_pos)}`` for
+                       AI units that already decided to MOVE this tick.
+                       Vacating positions are excluded from the occupied set
+                       and claimed positions are added, preventing sequential
+                       AI decisions from blocking each other.
+        door_tiles: Phase 7D-1 — set of closed-door positions for door-aware
+                    A*.  Only passed to hero ally stance functions; enemy AI
+                    does NOT receive door_tiles (enemies cannot open doors).
+
+    Returns a PlayerAction, or None if no action needed.
+    """
+    if not ai.is_alive:
+        return None
+
+    # Phase 7C: Hero allies with stances use stance-based behavior instead of
+    # the enemy AI behavior profiles (aggressive/ranged/boss).
+    # Phase 7D-1: Pass door_tiles so hero allies can path through closed doors.
+    if ai.hero_id is not None and ai.ai_stance:
+        return _decide_stance_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles)
+
+    # Enemy AI does NOT receive door_tiles — enemies cannot open doors.
+    behavior = ai.ai_behavior or "aggressive"
+
+    if behavior == "ranged":
+        return _decide_ranged_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves)
+    elif behavior == "boss":
+        return _decide_boss_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves)
+    else:
+        # "aggressive" or any unknown behavior → default aggressive
+        return _decide_aggressive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves)
+
+
+def _decide_aggressive_action(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov: set[tuple[int, int]] | None = None,
+    match_id: str | None = None,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+) -> PlayerAction | None:
+    """Aggressive AI behavior — chase → melee → ranged → patrol.
+
+    Decision loop:
+      1. Compute FOV (merged with team FOV if available)
+      2. Find visible enemies
+      3. Update last-known enemy memory
+      4. If no visible enemies → check memory → reinforce allies → patrol
+      5. Pick best enemy (weighted: low HP, threatening allies, distance)
+      6. If adjacent → melee attack
+      7. If within 3 tiles → rush to melee (move toward target)
+      8. If far away + ranged ready + LOS → ranged attack (harass at distance)
+      9. Otherwise → move toward target (A* pathfinding)
+     10. Stuck + ranged ready → ranged attack (last resort)
+
+    Room leashing: If the AI has a room_id, it won't path outside its room.
+
+    Returns a PlayerAction, or None if no action needed.
+    """
+
+    config = get_combat_config()
+    # Use per-unit ranged_range from class stats, fallback to global config
+    ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
+    ai_id = ai.player_id
+
+    # Step 1: Compute own FOV, then merge with team shared FOV
+    own_fov = compute_fov(
+        ai.position.x, ai.position.y,
+        ai.vision_range,
+        grid_width, grid_height,
+        obstacles,
+    )
+    visible_tiles = (own_fov | team_fov) if team_fov else own_fov
+
+    # Step 2: Find visible enemies
+    enemies: list[PlayerState] = []
+    for unit in all_units.values():
+        if not unit.is_alive:
+            continue
+        if unit.player_id == ai_id:
+            continue
+        if unit.team == ai.team:
+            continue  # Skip allies
+        if (unit.position.x, unit.position.y) in visible_tiles:
+            enemies.append(unit)
+
+    # Step 3: Update last-known enemy memory
+    _update_enemy_memory(ai_id, enemies, all_units)
+
+    # Room leashing: compute effective obstacles for movement (adds room boundary)
+    room_bounds = None
+    effective_obstacles = obstacles
+    if ai.room_id and match_id:
+        room_bounds = _get_room_bounds(match_id, ai.room_id)
+        if room_bounds:
+            effective_obstacles = _add_room_leash_obstacles(
+                obstacles, room_bounds, grid_width, grid_height
+            )
+
+    # Step 4: No visible enemies — try memory, then reinforce allies, then patrol
+    if not enemies:
+        # Leashed enemies don't chase memory or reinforce — they wait in room
+        if room_bounds:
+            return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
+
+        # 4a: Check last-known enemy positions (pursue memory targets)
+        memory_action = _pursue_memory_target(
+            ai, all_units, grid_width, grid_height, obstacles, pending_moves
+        )
+        if memory_action:
+            return memory_action
+
+        # 4b: Check if any ally is fighting — go help them
+        reinforce_action = _reinforce_ally(
+            ai, all_units, grid_width, grid_height, obstacles, pending_moves
+        )
+        if reinforce_action:
+            return reinforce_action
+
+        # 4c: Party members (hero allies) hold position instead of patrolling.
+        # This prevents aimless wandering that hinders gameplay.
+        if ai.hero_id is not None:
+            return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
+
+        # 4d: Fall back to patrol (enemy AI only)
+        return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves)
+
+    # Enemies found — clear patrol waypoint so AI doesn't resume old patrol
+    _patrol_targets.pop(ai_id, None)
+
+    # Step 5: Pick best enemy using weighted scoring
+    target = _pick_best_target(ai, enemies, all_units)
+
+    target_pos = Position(x=target.position.x, y=target.position.y)
+
+    # Step 5: Adjacent → melee attack (highest priority when next to enemy)
+    if is_adjacent(ai.position, target_pos):
+        return PlayerAction(
+            player_id=ai.player_id,
+            action_type=ActionType.ATTACK,
+            target_x=target.position.x,
+            target_y=target.position.y,
+        )
+
+    # Pre-compute occupied tiles and pathing for movement decisions
+    # Phase 7A-3: Use _build_occupied_set with pending_moves prediction
+    occupied = _build_occupied_set(all_units, ai.player_id, pending_moves)
+
+    # Chebyshev distance to target (max of dx, dy — matches diagonal movement)
+    dist_to_target = max(
+        abs(ai.position.x - target.position.x),
+        abs(ai.position.y - target.position.y),
+    )
+
+    ranged_cd = ai.cooldowns.get("ranged_attack", 0)
+
+    # Step 6: If close (within 3 tiles), always rush to melee range.
+    # This prevents the AI from standing at mid-range spamming ranged.
+    if dist_to_target <= 3:
+        next_step = get_next_step_toward(
+            (ai.position.x, ai.position.y),
+            (target.position.x, target.position.y),
+            grid_width, grid_height,
+            effective_obstacles, occupied,
+        )
+        if next_step:
+            return PlayerAction(
+                player_id=ai.player_id,
+                action_type=ActionType.MOVE,
+                target_x=next_step[0],
+                target_y=next_step[1],
+            )
+        # Can't move closer — use ranged as fallback if available
+        if ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
+            if has_line_of_sight(
+                ai.position.x, ai.position.y,
+                target.position.x, target.position.y,
+                obstacles,
+            ):
+                return PlayerAction(
+                    player_id=ai.player_id,
+                    action_type=ActionType.RANGED_ATTACK,
+                    target_x=target.position.x,
+                    target_y=target.position.y,
+                )
+
+    # Step 7: Far away (>3 tiles) — harass with ranged if available, otherwise close distance
+    if ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
+        if has_line_of_sight(
+            ai.position.x, ai.position.y,
+            target.position.x, target.position.y,
+            obstacles,
+        ):
+            return PlayerAction(
+                player_id=ai.player_id,
+                action_type=ActionType.RANGED_ATTACK,
+                target_x=target.position.x,
+                target_y=target.position.y,
+            )
+
+    # Step 8: Move toward target using A*
+    next_step = get_next_step_toward(
+        (ai.position.x, ai.position.y),
+        (target.position.x, target.position.y),
+        grid_width, grid_height,
+        effective_obstacles, occupied,
+    )
+
+    if next_step:
+        return PlayerAction(
+            player_id=ai.player_id,
+            action_type=ActionType.MOVE,
+            target_x=next_step[0],
+            target_y=next_step[1],
+        )
+
+    # Fallback: ranged if stuck and cooldown ready (last resort)
+    if ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
+        if has_line_of_sight(
+            ai.position.x, ai.position.y,
+            target.position.x, target.position.y,
+            obstacles,
+        ):
+            return PlayerAction(
+                player_id=ai.player_id,
+                action_type=ActionType.RANGED_ATTACK,
+                target_x=target.position.x,
+                target_y=target.position.y,
+            )
+
+    # Truly stuck: wait
+    return PlayerAction(
+        player_id=ai.player_id,
+        action_type=ActionType.WAIT,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Room Leash Helper
+# ---------------------------------------------------------------------------
+
+def _add_room_leash_obstacles(
+    obstacles: set[tuple[int, int]],
+    room_bounds: dict,
+    grid_width: int,
+    grid_height: int,
+) -> set[tuple[int, int]]:
+    """Create an expanded obstacle set that includes all tiles outside the room.
+
+    This effectively prevents an AI from pathing outside its assigned room.
+    The returned set is a new copy (does not modify the original).
+    """
+    leashed = set(obstacles)
+    x_min, y_min = room_bounds["x_min"], room_bounds["y_min"]
+    x_max, y_max = room_bounds["x_max"], room_bounds["y_max"]
+    for x in range(grid_width):
+        for y in range(grid_height):
+            if not (x_min <= x <= x_max and y_min <= y <= y_max):
+                leashed.add((x, y))
+    return leashed
+
+
+# ---------------------------------------------------------------------------
+# Ranged AI Behavior (Phase 4C — Skeleton)
+# ---------------------------------------------------------------------------
+
+def _decide_ranged_action(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov: set[tuple[int, int]] | None = None,
+    match_id: str | None = None,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+) -> PlayerAction | None:
+    """Ranged AI behavior — maintain distance, ranged attack, retreat if close.
+
+    Decision loop:
+      1. Compute FOV + find visible enemies
+      2. No enemies → wait (leashed) or patrol (unleashed)
+      3. Pick best enemy target
+      4. If adjacent → retreat away from enemy (move to max-distance tile)
+      5. If within 2 tiles → retreat (too close for comfort)
+      6. If in ranged range + LOS + cooldown ready → ranged attack
+      7. If ranged on cooldown → move to maintain ideal distance (3-4 tiles)
+      8. If out of range → move closer (but not too close)
+
+    Room leashing: If the AI has a room_id, it stays within room bounds.
+    """
+    config = get_combat_config()
+    ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
+    ai_id = ai.player_id
+    ai_pos = (ai.position.x, ai.position.y)
+
+    # Compute FOV
+    own_fov = compute_fov(
+        ai.position.x, ai.position.y,
+        ai.vision_range,
+        grid_width, grid_height,
+        obstacles,
+    )
+    visible_tiles = (own_fov | team_fov) if team_fov else own_fov
+
+    # Find visible enemies
+    enemies: list[PlayerState] = []
+    for unit in all_units.values():
+        if not unit.is_alive or unit.player_id == ai_id or unit.team == ai.team:
+            continue
+        if (unit.position.x, unit.position.y) in visible_tiles:
+            enemies.append(unit)
+
+    _update_enemy_memory(ai_id, enemies, all_units)
+
+    # Room leashing
+    room_bounds = None
+    effective_obstacles = obstacles
+    if ai.room_id and match_id:
+        room_bounds = _get_room_bounds(match_id, ai.room_id)
+        if room_bounds:
+            effective_obstacles = _add_room_leash_obstacles(
+                obstacles, room_bounds, grid_width, grid_height
+            )
+
+    if not enemies:
+        if room_bounds:
+            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        # Party members (hero allies) hold position instead of patrolling
+        if ai.hero_id is not None:
+            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves)
+
+    _patrol_targets.pop(ai_id, None)
+
+    target = _pick_best_target(ai, enemies, all_units)
+    target_pos = Position(x=target.position.x, y=target.position.y)
+
+    # Phase 7A-3: Use _build_occupied_set with pending_moves prediction
+    occupied = _build_occupied_set(all_units, ai_id, pending_moves)
+
+    dist_to_target = max(
+        abs(ai.position.x - target.position.x),
+        abs(ai.position.y - target.position.y),
+    )
+    ranged_cd = ai.cooldowns.get("ranged_attack", 0)
+
+    # Ideal distance for ranged AI: 3-4 tiles away
+    IDEAL_MIN = 3
+    IDEAL_MAX = ranged_range - 1  # Stay within range but not at edge
+
+    # Too close (adjacent or within 2 tiles) → retreat away from target
+    if dist_to_target <= 2:
+        retreat_tile = _find_retreat_tile(
+            ai_pos,
+            (target.position.x, target.position.y),
+            grid_width, grid_height,
+            effective_obstacles, occupied,
+        )
+        if retreat_tile:
+            return PlayerAction(
+                player_id=ai_id,
+                action_type=ActionType.MOVE,
+                target_x=retreat_tile[0],
+                target_y=retreat_tile[1],
+            )
+        # Can't retreat — melee as last resort
+        if is_adjacent(ai.position, target_pos):
+            return PlayerAction(
+                player_id=ai_id,
+                action_type=ActionType.ATTACK,
+                target_x=target.position.x,
+                target_y=target.position.y,
+            )
+
+    # In range + cooldown ready + LOS → ranged attack
+    if ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
+        if has_line_of_sight(
+            ai.position.x, ai.position.y,
+            target.position.x, target.position.y,
+            obstacles,
+        ):
+            return PlayerAction(
+                player_id=ai_id,
+                action_type=ActionType.RANGED_ATTACK,
+                target_x=target.position.x,
+                target_y=target.position.y,
+            )
+
+    # Out of range or no LOS → move closer but maintain ideal distance
+    if dist_to_target > ranged_range:
+        next_step = get_next_step_toward(
+            ai_pos,
+            (target.position.x, target.position.y),
+            grid_width, grid_height,
+            effective_obstacles, occupied,
+        )
+        if next_step:
+            return PlayerAction(
+                player_id=ai_id,
+                action_type=ActionType.MOVE,
+                target_x=next_step[0],
+                target_y=next_step[1],
+            )
+
+    # In range but ranged on cooldown → try to maintain ideal distance
+    if IDEAL_MIN <= dist_to_target <= IDEAL_MAX:
+        # Good position — wait for cooldown
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+    # Fallback: wait
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+
+def _find_retreat_tile(
+    ai_pos: tuple[int, int],
+    threat_pos: tuple[int, int],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+) -> tuple[int, int] | None:
+    """Find the best adjacent tile to retreat away from a threat.
+
+    Picks the walkable neighbor that maximizes distance from the threat.
+    """
+    best = None
+    best_dist = -1
+
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            if dx == 0 and dy == 0:
+                continue
+            nx, ny = ai_pos[0] + dx, ai_pos[1] + dy
+            if not (0 <= nx < grid_width and 0 <= ny < grid_height):
+                continue
+            if (nx, ny) in obstacles or (nx, ny) in occupied:
+                continue
+            dist = max(abs(nx - threat_pos[0]), abs(ny - threat_pos[1]))
+            if dist > best_dist:
+                best_dist = dist
+                best = (nx, ny)
+
+    return best
+
+
+# ---------------------------------------------------------------------------
+# Boss AI Behavior (Phase 4C — Undead Knight)
+# ---------------------------------------------------------------------------
+
+def _decide_boss_action(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov: set[tuple[int, int]] | None = None,
+    match_id: str | None = None,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+) -> PlayerAction | None:
+    """Boss AI behavior — guard room, attack intruders, never leave room.
+
+    Decision loop:
+      1. Compute FOV + find visible enemies
+      2. No enemies → wait at guard position (center of room)
+      3. If enemy in room → engage (melee priority, then chase within room)
+      4. If enemy visible but outside room → wait (guardian doesn't chase)
+      5. Never leaves assigned room bounds
+
+    Boss-specific:
+      - Higher aggro range within room (engages anything visible in room)
+      - Melee-only (ranged_range=1 typically), but will use ranged if configured
+      - Won't pursue outside room bounds — returns to center when idle
+    """
+    ai_id = ai.player_id
+    ai_pos = (ai.position.x, ai.position.y)
+
+    # Compute FOV
+    own_fov = compute_fov(
+        ai.position.x, ai.position.y,
+        ai.vision_range,
+        grid_width, grid_height,
+        obstacles,
+    )
+    visible_tiles = (own_fov | team_fov) if team_fov else own_fov
+
+    # Room leashing — boss MUST have a room
+    room_bounds = None
+    effective_obstacles = obstacles
+    if ai.room_id and match_id:
+        room_bounds = _get_room_bounds(match_id, ai.room_id)
+        if room_bounds:
+            effective_obstacles = _add_room_leash_obstacles(
+                obstacles, room_bounds, grid_width, grid_height
+            )
+
+    # Find visible enemies that are INSIDE the boss's room (or adjacent to it)
+    enemies_in_room: list[PlayerState] = []
+    enemies_visible: list[PlayerState] = []
+    for unit in all_units.values():
+        if not unit.is_alive or unit.player_id == ai_id or unit.team == ai.team:
+            continue
+        if (unit.position.x, unit.position.y) in visible_tiles:
+            enemies_visible.append(unit)
+            # Check if enemy is in the room (or close enough to engage)
+            if room_bounds and _is_in_room(unit.position.x, unit.position.y, room_bounds):
+                enemies_in_room.append(unit)
+            elif not room_bounds:
+                # No room bounds — treat all visible enemies as in-room
+                enemies_in_room.append(unit)
+
+    occupied = _build_occupied_set(all_units, ai_id, pending_moves)
+
+    # No enemies in room → return to room center or wait
+    if not enemies_in_room:
+        if room_bounds:
+            center_x = (room_bounds["x_min"] + room_bounds["x_max"]) // 2
+            center_y = (room_bounds["y_min"] + room_bounds["y_max"]) // 2
+            if ai_pos != (center_x, center_y):
+                next_step = get_next_step_toward(
+                    ai_pos, (center_x, center_y),
+                    grid_width, grid_height,
+                    effective_obstacles, occupied,
+                )
+                if next_step:
+                    return PlayerAction(
+                        player_id=ai_id,
+                        action_type=ActionType.MOVE,
+                        target_x=next_step[0],
+                        target_y=next_step[1],
+                    )
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+    # Enemy in room — engage aggressively
+    target = _pick_best_target(ai, enemies_in_room, all_units)
+    target_pos = Position(x=target.position.x, y=target.position.y)
+
+    # Adjacent → melee attack
+    if is_adjacent(ai.position, target_pos):
+        return PlayerAction(
+            player_id=ai_id,
+            action_type=ActionType.ATTACK,
+            target_x=target.position.x,
+            target_y=target.position.y,
+        )
+
+    ranged_range = getattr(ai, 'ranged_range', 1)
+    ranged_cd = ai.cooldowns.get("ranged_attack", 0)
+
+    # Ranged attack if available
+    if ranged_range > 1 and ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
+        if has_line_of_sight(
+            ai.position.x, ai.position.y,
+            target.position.x, target.position.y,
+            obstacles,
+        ):
+            return PlayerAction(
+                player_id=ai_id,
+                action_type=ActionType.RANGED_ATTACK,
+                target_x=target.position.x,
+                target_y=target.position.y,
+            )
+
+    # Chase within room using leashed obstacles
+    next_step = get_next_step_toward(
+        ai_pos,
+        (target.position.x, target.position.y),
+        grid_width, grid_height,
+        effective_obstacles, occupied,
+    )
+    if next_step:
+        return PlayerAction(
+            player_id=ai_id,
+            action_type=ActionType.MOVE,
+            target_x=next_step[0],
+            target_y=next_step[1],
+        )
+
+    # Stuck — wait
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+
+# ---------------------------------------------------------------------------
+# Valid AI Stances (Phase 7C)
+# ---------------------------------------------------------------------------
+
+VALID_STANCES = {"follow", "aggressive", "defensive", "hold"}
+
+
+# ---------------------------------------------------------------------------
+# Stance Owner Lookup (Phase 7C)
+# ---------------------------------------------------------------------------
+
+def _find_owner(ai: PlayerState, all_units: dict[str, PlayerState]) -> PlayerState | None:
+    """Find the human player who owns this hero ally.
+
+    Owner is the human on the same team.  For multi-player scenarios, the
+    owner is the player whose ``controlled_by`` matches, or falling back
+    to any human on the same team.
+    """
+    # If explicitly controlled, find that controller
+    if ai.controlled_by:
+        owner = all_units.get(ai.controlled_by)
+        if owner and owner.is_alive:
+            return owner
+
+    # Fallback: find any alive human on the same team
+    for u in all_units.values():
+        if u.unit_type == "human" and u.team == ai.team and u.is_alive:
+            return u
+    return None
+
+
+def _chebyshev(a: tuple[int, int], b: tuple[int, int]) -> int:
+    """Chebyshev distance between two points."""
+    return max(abs(a[0] - b[0]), abs(a[1] - b[1]))
+
+
+# ---------------------------------------------------------------------------
+# Door Interaction Helper (Phase 7D-1)
+# ---------------------------------------------------------------------------
+
+def _maybe_interact_door(
+    ai: PlayerState,
+    next_step: tuple[int, int],
+    door_tiles: set[tuple[int, int]] | None,
+) -> PlayerAction | None:
+    """Check if the AI's planned next step is a closed door.
+
+    If adjacent (Chebyshev) to a closed door that's on the path, return
+    INTERACT instead of MOVE.  Next tick the door will be open and A*
+    will path through normally.
+
+    Only hero allies should call this — enemy AI must NOT open doors.
+
+    Args:
+        ai: The AI unit considering the move.
+        next_step: The (x, y) tile that A* says to step onto next.
+        door_tiles: Set of closed-door positions (or None if no doors).
+
+    Returns:
+        A PlayerAction(INTERACT) if the next step is a closed door and
+        the AI is adjacent to it, otherwise None (caller should proceed
+        with the original MOVE action).
+    """
+    if not door_tiles or next_step not in door_tiles:
+        return None
+
+    ai_pos = (ai.position.x, ai.position.y)
+    if _chebyshev(ai_pos, next_step) == 1:
+        return PlayerAction(
+            player_id=ai.player_id,
+            action_type=ActionType.INTERACT,
+            target_x=next_step[0],
+            target_y=next_step[1],
+        )
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Phase 8K: AI Retreat Helpers
+# ---------------------------------------------------------------------------
+
+def _has_heal_potions(ai: PlayerState) -> bool:
+    """Check if the AI has any heal consumables in inventory.
+
+    Returns True if at least one item in inventory is a consumable with
+    heal effect. Does not check HP threshold or cooldowns — purely an
+    inventory scan.
+
+    Used by retreat logic: retreat only triggers when potions are exhausted.
+    """
+    for item in ai.inventory:
+        if not isinstance(item, dict):
+            continue
+        if item.get("item_type") != "consumable":
+            continue
+        effect = item.get("consumable_effect")
+        if not effect or not isinstance(effect, dict):
+            continue
+        if effect.get("type") == "heal":
+            return True
+    return False
+
+
+def _should_retreat(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+) -> bool:
+    """Determine if the AI should retreat from combat.
+
+    Returns True when:
+      1. HP is at or below the role-specific retreat threshold
+      2. No heal potions remaining in inventory
+      3. At least one enemy is within 2 tiles (in active danger)
+      4. Stance is not 'hold' (hold units never move)
+
+    This check runs AFTER the potion check in _decide_stance_action().
+    If potions were available, _should_use_potion() would have already
+    returned a USE_ITEM action before we get here.
+
+    Args:
+        ai: The AI unit.
+        enemies: List of visible enemies (pre-computed in _decide_stance_action).
+
+    Returns:
+        True if the AI should disengage and retreat.
+    """
+    # Hold stance: never retreat (never moves by design)
+    stance = ai.ai_stance or "follow"
+    if stance == "hold":
+        return False
+
+    # Check HP threshold based on role
+    role = _get_role_for_class(ai.class_id) if ai.class_id else None
+    threshold = _RETREAT_THRESHOLDS.get(role, _RETREAT_THRESHOLD_DEFAULT) if role else _RETREAT_THRESHOLD_DEFAULT
+
+    if ai.max_hp <= 0:
+        return False
+    if ai.hp / ai.max_hp > threshold:
+        return False  # HP is OK, no need to retreat
+
+    # Only retreat when potions are exhausted
+    if _has_heal_potions(ai):
+        return False  # Still have potions — potion check should handle this
+
+    # Must be in active danger (enemy within 2 tiles)
+    ai_pos = (ai.position.x, ai.position.y)
+    in_danger = any(
+        _chebyshev(ai_pos, (e.position.x, e.position.y)) <= 2
+        for e in enemies
+    )
+
+    return in_danger
+
+
+def _find_retreat_destination(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+    door_tiles: set[tuple[int, int]] | None = None,
+) -> PlayerAction | None:
+    """Find the best retreat action for a low-HP hero ally.
+
+    Retreat target priority:
+      1. Move toward alive support ally (Confessor) — they can heal us
+      2. Move toward owner (human player) — safety in numbers
+      3. Move away from nearest enemy — generic flee
+
+    For each target, uses A* pathfinding (door-aware) and returns a MOVE
+    action toward the first step of the path to the retreat destination.
+
+    Returns MOVE action, or None if completely stuck (cornered, surrounded).
+    """
+    ai_id = ai.player_id
+    ai_pos = (ai.position.x, ai.position.y)
+
+    # --- Priority 1: Move toward alive support ally within 8 tiles ---
+    best_support: PlayerState | None = None
+    best_support_dist = 999
+    for unit in all_units.values():
+        if not unit.is_alive or unit.player_id == ai.player_id:
+            continue
+        if unit.team != ai.team:
+            continue
+        unit_role = _get_role_for_class(unit.class_id) if unit.class_id else None
+        if unit_role != "support":
+            continue
+        dist = _chebyshev(ai_pos, (unit.position.x, unit.position.y))
+        if dist <= 8 and dist < best_support_dist:
+            best_support = unit
+            best_support_dist = dist
+
+    if best_support:
+        # Already adjacent to support — no need to move closer
+        if best_support_dist <= 1:
+            pass  # Fall through to owner / generic flee
+        else:
+            support_pos = (best_support.position.x, best_support.position.y)
+            next_step = get_next_step_toward(
+                ai_pos, support_pos,
+                grid_width, grid_height, obstacles, occupied,
+                door_tiles,
+            )
+            if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id,
+                    action_type=ActionType.MOVE,
+                    target_x=next_step[0],
+                    target_y=next_step[1],
+                )
+
+    # --- Priority 2: Move toward owner ---
+    owner = _find_owner(ai, all_units)
+    if owner:
+        owner_pos = (owner.position.x, owner.position.y)
+        owner_dist = _chebyshev(ai_pos, owner_pos)
+        if owner_dist > 1:
+            next_step = get_next_step_toward(
+                ai_pos, owner_pos,
+                grid_width, grid_height, obstacles, occupied,
+                door_tiles,
+            )
+            if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id,
+                    action_type=ActionType.MOVE,
+                    target_x=next_step[0],
+                    target_y=next_step[1],
+                )
+
+    # --- Priority 3: Generic flee — move away from nearest enemy ---
+    if enemies:
+        nearest_enemy = min(
+            enemies,
+            key=lambda e: _chebyshev(ai_pos, (e.position.x, e.position.y)),
+        )
+        nearest_pos = (nearest_enemy.position.x, nearest_enemy.position.y)
+        retreat_tile = _find_retreat_tile(
+            ai_pos, nearest_pos,
+            grid_width, grid_height, obstacles, occupied,
+        )
+        if retreat_tile:
+            door_action = _maybe_interact_door(ai, retreat_tile, door_tiles)
+            if door_action:
+                return door_action
+            return PlayerAction(
+                player_id=ai_id,
+                action_type=ActionType.MOVE,
+                target_x=retreat_tile[0],
+                target_y=retreat_tile[1],
+            )
+
+    # Completely stuck — cornered, surrounded. Return None so caller
+    # falls through to skill/combat.
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Phase 8A: AI Potion Usage Helper
+# ---------------------------------------------------------------------------
+
+def _should_use_potion(
+    ai: PlayerState,
+    hp_threshold: float = 0.40,
+) -> PlayerAction | None:
+    """Check if AI should use a health potion.
+
+    Returns USE_ITEM action if:
+    1. AI is alive
+    2. HP is at or below threshold (% of max_hp)
+    3. AI has a consumable with heal effect in inventory
+    4. AI is not already at full HP
+
+    Prefers greater_health_potion over health_potion when both available
+    (uses highest magnitude first).
+
+    Args:
+        ai: The AI unit's PlayerState.
+        hp_threshold: HP fraction at or below which AI will drink (default 0.40 = 40%).
+
+    Returns:
+        PlayerAction(USE_ITEM) with target_x = inventory index, or None.
+    """
+    if not ai.is_alive:
+        return None
+
+    # Don't drink at full HP
+    if ai.hp >= ai.max_hp:
+        return None
+
+    # Check HP threshold
+    if ai.max_hp <= 0:
+        return None
+    if ai.hp / ai.max_hp > hp_threshold:
+        return None
+
+    # Scan inventory for heal consumables
+    heal_candidates: list[tuple[int, int]] = []  # (inventory_index, magnitude)
+    for idx, item in enumerate(ai.inventory):
+        if not isinstance(item, dict):
+            continue
+        if item.get("item_type") != "consumable":
+            continue
+        effect = item.get("consumable_effect")
+        if not effect or not isinstance(effect, dict):
+            continue
+        if effect.get("type") != "heal":
+            continue
+        magnitude = effect.get("magnitude", 0)
+        heal_candidates.append((idx, magnitude))
+
+    if not heal_candidates:
+        return None
+
+    # Sort by magnitude descending — prefer greater_health_potion (75) over health_potion (40)
+    heal_candidates.sort(key=lambda c: c[1], reverse=True)
+    best_index = heal_candidates[0][0]
+
+    return PlayerAction(
+        player_id=ai.player_id,
+        action_type=ActionType.USE_ITEM,
+        target_x=best_index,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Phase 7C: Stance-Based AI Behavior Dispatch
+# ---------------------------------------------------------------------------
+
+def _decide_stance_action(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov: set[tuple[int, int]] | None = None,
+    match_id: str | None = None,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+) -> PlayerAction | None:
+    """Dispatch to the correct stance handler for hero allies (Phase 7C).
+
+    Stances:
+      - follow (default): stay close to owner, fight nearby enemies, regroup
+      - aggressive: fight enemies freely, roam within 5 tiles of owner
+      - defensive: stay within 2 tiles of owner, only attack nearby enemies
+      - hold: never move, only attack enemies in range from current position
+
+    Phase 8A: Potion check runs FIRST — survival takes priority over everything.
+    Phase 8B: Skill decision runs SECOND — role-appropriate skills before basic attacks.
+    """
+    stance = ai.ai_stance or "follow"
+
+    # --- Phase 8A: Potion check (highest priority) ---
+    threshold = _POTION_THRESHOLDS.get(stance, 0.40)
+    potion_action = _should_use_potion(ai, hp_threshold=threshold)
+    if potion_action:
+        return potion_action
+
+    # --- Phase 8B: Pre-compute visible enemies for skill decision ---
+    ai_pos = (ai.position.x, ai.position.y)
+    own_fov = compute_fov(
+        ai.position.x, ai.position.y, ai.vision_range,
+        grid_width, grid_height, obstacles,
+    )
+    visible_tiles = (own_fov | team_fov) if team_fov else own_fov
+
+    pre_enemies: list[PlayerState] = []
+    for unit in all_units.values():
+        if not unit.is_alive or unit.player_id == ai.player_id or unit.team == ai.team:
+            continue
+        if (unit.position.x, unit.position.y) in visible_tiles:
+            pre_enemies.append(unit)
+
+    # --- Phase 8K-2b: Pre-compute occupied set (shared by retreat + stance handlers) ---
+    occupied = _build_occupied_set(all_units, ai.player_id, pending_moves)
+
+    # --- Phase 8K-2a: Retreat check (second priority — after potions, before skills) ---
+    if _should_retreat(ai, pre_enemies):
+        retreat_action = _find_retreat_destination(
+            ai, pre_enemies, all_units,
+            grid_width, grid_height, obstacles,
+            occupied, door_tiles,
+        )
+        if retreat_action:
+            return retreat_action
+        # If retreat failed (cornered), fall through to skills/combat
+        # — fighting is better than doing nothing when you can't escape
+
+    # --- Phase 8B: Skill decision (third priority) ---
+    skill_action = _decide_skill_usage(
+        ai, pre_enemies, all_units, grid_width, grid_height, obstacles,
+    )
+    if skill_action:
+        return skill_action
+
+    # --- Stance dispatch (pass pre-computed FOV + enemies + occupied to avoid redundant computation) ---
+    if stance == "hold":
+        return _decide_hold_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies)
+    elif stance == "defensive":
+        return _decide_defensive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied)
+    elif stance == "aggressive":
+        return _decide_aggressive_stance_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied)
+    else:
+        # "follow" or unknown → follow behavior
+        return _decide_follow_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied)
+
+
+# ---------------------------------------------------------------------------
+# Follow Stance (Phase 7C — Default)
+# ---------------------------------------------------------------------------
+
+def _decide_follow_action(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov: set[tuple[int, int]] | None = None,
+    match_id: str | None = None,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+    precomputed_visible_tiles: set[tuple[int, int]] | None = None,
+    precomputed_enemies: list[PlayerState] | None = None,
+    precomputed_occupied: set[tuple[int, int]] | None = None,
+) -> PlayerAction | None:
+    """Follow stance: stay close to owner, fight nearby enemies, regroup after combat.
+
+    Behavior:
+      1. If distance to owner > 4: break off combat and move toward owner (regroup)
+      2. If distance to owner > 2 and no enemies visible: path toward owner
+      3. If enemies visible and within 2 tiles of owner: fight normally (aggressive)
+      4. If close enough and no enemies: wait
+
+    Phase 7D-1: Uses door-aware A* so hero allies can path through closed doors
+    to follow their owner across rooms.  When the next step in the path is a
+    closed door tile, returns INTERACT instead of MOVE (the door opens, and
+    next tick A* resumes the path normally).
+
+    Phase 8F-2: Accepts pre-computed visible_tiles and enemies from
+    _decide_stance_action() to avoid redundant FOV computation.
+    """
+    ai_id = ai.player_id
+    ai_pos = (ai.position.x, ai.position.y)
+    config = get_combat_config()
+    ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
+
+    owner = _find_owner(ai, all_units)
+    if not owner:
+        # No owner found — fall back to wait
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+    owner_pos = (owner.position.x, owner.position.y)
+    dist_to_owner = _chebyshev(ai_pos, owner_pos)
+
+    # Use pre-computed FOV + enemies if available (Phase 8F-2), else compute
+    if precomputed_visible_tiles is not None and precomputed_enemies is not None:
+        visible_tiles = precomputed_visible_tiles
+        enemies = list(precomputed_enemies)
+    else:
+        own_fov = compute_fov(
+            ai.position.x, ai.position.y, ai.vision_range,
+            grid_width, grid_height, obstacles,
+        )
+        visible_tiles = (own_fov | team_fov) if team_fov else own_fov
+
+        enemies: list[PlayerState] = []
+        for unit in all_units.values():
+            if not unit.is_alive or unit.player_id == ai_id or unit.team == ai.team:
+                continue
+            if (unit.position.x, unit.position.y) in visible_tiles:
+                enemies.append(unit)
+
+    _update_enemy_memory(ai_id, enemies, all_units)
+    # Phase 8K-2b: Reuse pre-computed occupied set if available
+    occupied = precomputed_occupied if precomputed_occupied is not None else _build_occupied_set(all_units, ai_id, pending_moves)
+
+    # Priority 1: If too far from owner (>4), regroup even during combat
+    if dist_to_owner > 4:
+        _patrol_targets.pop(ai_id, None)
+        next_step = get_next_step_toward(
+            ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
+        )
+        if next_step:
+            # Phase 7D-1: If next step is a closed door, INTERACT instead of MOVE
+            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if door_action:
+                return door_action
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.MOVE,
+                target_x=next_step[0], target_y=next_step[1],
+            )
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+    # Priority 2: If enemies visible and close to owner, fight
+    if enemies:
+        _patrol_targets.pop(ai_id, None)
+        target = _pick_best_target(ai, enemies, all_units)
+        target_pos = Position(x=target.position.x, y=target.position.y)
+
+        # --- Phase 8C: Support role positioning modifier ---
+        # Support units prefer moving toward allies instead of charging enemies.
+        # If no one needs healing (skill check already returned None), stay grouped.
+        is_support = _get_role_for_class(ai.class_id) == "support" if ai.class_id else False
+        role = _get_role_for_class(ai.class_id) if ai.class_id else None
+        is_ranged_role = role in ("ranged_dps", "scout") if role else False
+
+        dist_to_target = _chebyshev(ai_pos, (target.position.x, target.position.y))
+        ranged_cd = ai.cooldowns.get("ranged_attack", 0)
+
+        # --- Phase 8K-3: Ranged kiting ---
+        # Ranged roles (Ranger, Inquisitor) step back when too close to enemy
+        # instead of staying in melee. Kiting preserves ranged advantage.
+        if is_ranged_role and dist_to_target <= 2:
+            retreat_tile = _find_retreat_tile(
+                ai_pos, (target.position.x, target.position.y),
+                grid_width, grid_height, obstacles, occupied,
+            )
+            if retreat_tile:
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=retreat_tile[0], target_y=retreat_tile[1],
+                )
+            # Can't step back — fall through to melee as last resort
+
+        # Adjacent → melee (even support attacks if next to enemy w/ nothing to heal)
+        if is_adjacent(ai.position, target_pos):
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.ATTACK,
+                target_x=target.position.x, target_y=target.position.y,
+            )
+
+        if is_support:
+            ally_target = _support_move_preference(ai, all_units)
+            if ally_target:
+                move_target = ally_target
+            else:
+                move_target = (target.position.x, target.position.y)
+        else:
+            move_target = (target.position.x, target.position.y)
+
+        # Close enough to rush → melee (non-support, non-ranged only)
+        if not is_support and not is_ranged_role and dist_to_target <= 3:
+            next_step = get_next_step_toward(
+                ai_pos, (target.position.x, target.position.y),
+                grid_width, grid_height, obstacles, occupied, door_tiles,
+            )
+            if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=next_step[0], target_y=next_step[1],
+                )
+
+        # Ranged attack if available
+        if ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
+            if has_line_of_sight(
+                ai.position.x, ai.position.y,
+                target.position.x, target.position.y, obstacles,
+            ):
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
+                    target_x=target.position.x, target_y=target.position.y,
+                )
+
+        # Move toward target (support: toward ally; others: toward enemy)
+        next_step = get_next_step_toward(
+            ai_pos, move_target,
+            grid_width, grid_height, obstacles, occupied, door_tiles,
+        )
+        if next_step:
+            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if door_action:
+                return door_action
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.MOVE,
+                target_x=next_step[0], target_y=next_step[1],
+            )
+
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+    # Priority 3: No enemies — if too far from owner (>2), path toward them
+    if dist_to_owner > 2:
+        next_step = get_next_step_toward(
+            ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
+        )
+        if next_step:
+            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if door_action:
+                return door_action
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.MOVE,
+                target_x=next_step[0], target_y=next_step[1],
+            )
+
+    # Close enough, no enemies — wait
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+
+# ---------------------------------------------------------------------------
+# Aggressive Stance (Phase 7C)
+# ---------------------------------------------------------------------------
+
+def _decide_aggressive_stance_action(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov: set[tuple[int, int]] | None = None,
+    match_id: str | None = None,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+    precomputed_visible_tiles: set[tuple[int, int]] | None = None,
+    precomputed_enemies: list[PlayerState] | None = None,
+    precomputed_occupied: set[tuple[int, int]] | None = None,
+) -> PlayerAction | None:
+    """Aggressive stance: pursue enemies freely within 5 tiles of owner.
+
+    Behavior:
+      1. If enemies visible: fight aggressively (standard combat AI)
+      2. No enemies: if within 5 tiles of owner, roam seeking enemies (reinforce allies)
+      3. If > 5 tiles from owner: path back toward owner
+
+    Phase 7D-1: Uses door-aware A* so hero allies can path through closed doors.
+
+    Phase 8F-2: Accepts pre-computed visible_tiles and enemies from
+    _decide_stance_action() to avoid redundant FOV computation.
+    """
+    ai_id = ai.player_id
+    ai_pos = (ai.position.x, ai.position.y)
+    config = get_combat_config()
+    ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
+
+    owner = _find_owner(ai, all_units)
+    owner_pos = (owner.position.x, owner.position.y) if owner else ai_pos
+
+    # Use pre-computed FOV + enemies if available (Phase 8F-2), else compute
+    if precomputed_visible_tiles is not None and precomputed_enemies is not None:
+        enemies = list(precomputed_enemies)
+    else:
+        own_fov = compute_fov(
+            ai.position.x, ai.position.y, ai.vision_range,
+            grid_width, grid_height, obstacles,
+        )
+        visible_tiles = (own_fov | team_fov) if team_fov else own_fov
+
+        enemies: list[PlayerState] = []
+        for unit in all_units.values():
+            if not unit.is_alive or unit.player_id == ai_id or unit.team == ai.team:
+                continue
+            if (unit.position.x, unit.position.y) in visible_tiles:
+                enemies.append(unit)
+
+    _update_enemy_memory(ai_id, enemies, all_units)
+    # Phase 8K-2b: Reuse pre-computed occupied set if available
+    occupied = precomputed_occupied if precomputed_occupied is not None else _build_occupied_set(all_units, ai_id, pending_moves)
+
+    dist_to_owner = _chebyshev(ai_pos, owner_pos) if owner else 0
+
+    # If enemies visible, fight aggressively
+    if enemies:
+        _patrol_targets.pop(ai_id, None)
+        target = _pick_best_target(ai, enemies, all_units)
+        target_pos = Position(x=target.position.x, y=target.position.y)
+
+        dist_to_target = _chebyshev(ai_pos, (target.position.x, target.position.y))
+        ranged_cd = ai.cooldowns.get("ranged_attack", 0)
+        role = _get_role_for_class(ai.class_id) if ai.class_id else None
+        is_ranged_role = role in ("ranged_dps", "scout") if role else False
+
+        # --- Phase 8K-3: Ranged kiting ---
+        # Ranged roles (Ranger, Inquisitor) step back when too close to enemy
+        # instead of staying in melee. Kiting preserves ranged advantage.
+        if is_ranged_role and dist_to_target <= 2:
+            retreat_tile = _find_retreat_tile(
+                ai_pos, (target.position.x, target.position.y),
+                grid_width, grid_height, obstacles, occupied,
+            )
+            if retreat_tile:
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=retreat_tile[0], target_y=retreat_tile[1],
+                )
+            # Can't step back — fall through to melee as last resort
+
+        # Adjacent → melee
+        if is_adjacent(ai.position, target_pos):
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.ATTACK,
+                target_x=target.position.x, target_y=target.position.y,
+            )
+
+        # Close → rush to melee (non-ranged only)
+        if not is_ranged_role and dist_to_target <= 3:
+            next_step = get_next_step_toward(
+                ai_pos, (target.position.x, target.position.y),
+                grid_width, grid_height, obstacles, occupied, door_tiles,
+            )
+            if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=next_step[0], target_y=next_step[1],
+                )
+
+        # Ranged if available
+        if ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
+            if has_line_of_sight(
+                ai.position.x, ai.position.y,
+                target.position.x, target.position.y, obstacles,
+            ):
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
+                    target_x=target.position.x, target_y=target.position.y,
+                )
+
+        # Move toward target
+        next_step = get_next_step_toward(
+            ai_pos, (target.position.x, target.position.y),
+            grid_width, grid_height, obstacles, occupied, door_tiles,
+        )
+        if next_step:
+            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if door_action:
+                return door_action
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.MOVE,
+                target_x=next_step[0], target_y=next_step[1],
+            )
+
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+    # No enemies — check distance to owner
+    if dist_to_owner > 5:
+        # Too far from owner — path back
+        next_step = get_next_step_toward(
+            ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
+        )
+        if next_step:
+            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if door_action:
+                return door_action
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.MOVE,
+                target_x=next_step[0], target_y=next_step[1],
+            )
+
+    # Within range — try to reinforce allies or pursue memory
+    memory_action = _pursue_memory_target(ai, all_units, grid_width, grid_height, obstacles, pending_moves)
+    if memory_action:
+        return memory_action
+
+    reinforce = _reinforce_ally(ai, all_units, grid_width, grid_height, obstacles, pending_moves)
+    if reinforce:
+        return reinforce
+
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+
+# ---------------------------------------------------------------------------
+# Defensive Stance (Phase 7C)
+# ---------------------------------------------------------------------------
+
+def _decide_defensive_action(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov: set[tuple[int, int]] | None = None,
+    match_id: str | None = None,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+    precomputed_visible_tiles: set[tuple[int, int]] | None = None,
+    precomputed_enemies: list[PlayerState] | None = None,
+    precomputed_occupied: set[tuple[int, int]] | None = None,
+) -> PlayerAction | None:
+    """Defensive stance: stay within 2 tiles of owner, only attack nearby enemies.
+
+    Behavior:
+      1. If distance to owner > 2: path toward owner (prioritize staying close)
+      2. If enemies within 2 tiles: attack (melee or ranged if adjacent/close)
+      3. Otherwise: wait near owner
+
+    Phase 7D-1: Uses door-aware A* so hero allies can path through closed doors.
+
+    Phase 8F-2: Accepts pre-computed visible_tiles and enemies from
+    _decide_stance_action() to avoid redundant FOV computation.
+    """
+    ai_id = ai.player_id
+    ai_pos = (ai.position.x, ai.position.y)
+    config = get_combat_config()
+    ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
+
+    owner = _find_owner(ai, all_units)
+    if not owner:
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+    owner_pos = (owner.position.x, owner.position.y)
+    dist_to_owner = _chebyshev(ai_pos, owner_pos)
+
+    # Use pre-computed FOV + enemies if available (Phase 8F-2), else compute
+    if precomputed_visible_tiles is not None and precomputed_enemies is not None:
+        enemies = list(precomputed_enemies)
+    else:
+        own_fov = compute_fov(
+            ai.position.x, ai.position.y, ai.vision_range,
+            grid_width, grid_height, obstacles,
+        )
+        visible_tiles = (own_fov | team_fov) if team_fov else own_fov
+
+        enemies: list[PlayerState] = []
+        for unit in all_units.values():
+            if not unit.is_alive or unit.player_id == ai_id or unit.team == ai.team:
+                continue
+            if (unit.position.x, unit.position.y) in visible_tiles:
+                enemies.append(unit)
+
+    _update_enemy_memory(ai_id, enemies, all_units)
+    # Phase 8K-2b: Reuse pre-computed occupied set if available
+    occupied = precomputed_occupied if precomputed_occupied is not None else _build_occupied_set(all_units, ai_id, pending_moves)
+
+    # Priority 1: If too far from owner, move back
+    if dist_to_owner > 2:
+        next_step = get_next_step_toward(
+            ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
+        )
+        if next_step:
+            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if door_action:
+                return door_action
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.MOVE,
+                target_x=next_step[0], target_y=next_step[1],
+            )
+
+    # Priority 2: Only engage enemies within 2 tiles of this unit
+    nearby_enemies = [
+        e for e in enemies
+        if _chebyshev(ai_pos, (e.position.x, e.position.y)) <= 2
+    ]
+
+    if nearby_enemies:
+        target = _pick_best_target(ai, nearby_enemies, all_units)
+        target_pos = Position(x=target.position.x, y=target.position.y)
+
+        # Adjacent → melee
+        if is_adjacent(ai.position, target_pos):
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.ATTACK,
+                target_x=target.position.x, target_y=target.position.y,
+            )
+
+        # Ranged if available and in range
+        ranged_cd = ai.cooldowns.get("ranged_attack", 0)
+        if ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
+            if has_line_of_sight(
+                ai.position.x, ai.position.y,
+                target.position.x, target.position.y, obstacles,
+            ):
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
+                    target_x=target.position.x, target_y=target.position.y,
+                )
+
+        # Move toward nearby enemy (but only if staying within 2 of owner)
+        next_step = get_next_step_toward(
+            ai_pos, (target.position.x, target.position.y),
+            grid_width, grid_height, obstacles, occupied, door_tiles,
+        )
+        if next_step:
+            new_dist = _chebyshev(next_step, owner_pos)
+            if new_dist <= 2:
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=next_step[0], target_y=next_step[1],
+                )
+
+    # No nearby threats — wait near owner
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+
+# ---------------------------------------------------------------------------
+# Hold Position Stance (Phase 7C)
+# ---------------------------------------------------------------------------
+
+def _decide_hold_action(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov: set[tuple[int, int]] | None = None,
+    match_id: str | None = None,
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    precomputed_visible_tiles: set[tuple[int, int]] | None = None,
+    precomputed_enemies: list[PlayerState] | None = None,
+) -> PlayerAction | None:
+    """Hold Position stance: never move, attack enemies in range.
+
+    Behavior:
+      1. Never moves from current tile
+      2. If adjacent enemy: melee attack
+      3. If enemy in ranged range + LOS + cooldown ready: ranged attack
+      4. Otherwise: wait
+
+    Phase 8F-2: Accepts pre-computed visible_tiles and enemies from
+    _decide_stance_action() to avoid redundant FOV computation.
+    """
+    ai_id = ai.player_id
+    config = get_combat_config()
+    ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
+
+    # Use pre-computed FOV + enemies if available (Phase 8F-2), else compute
+    if precomputed_visible_tiles is not None and precomputed_enemies is not None:
+        enemies = list(precomputed_enemies)
+    else:
+        own_fov = compute_fov(
+            ai.position.x, ai.position.y, ai.vision_range,
+            grid_width, grid_height, obstacles,
+        )
+        visible_tiles = (own_fov | team_fov) if team_fov else own_fov
+
+        enemies: list[PlayerState] = []
+        for unit in all_units.values():
+            if not unit.is_alive or unit.player_id == ai_id or unit.team == ai.team:
+                continue
+            if (unit.position.x, unit.position.y) in visible_tiles:
+                enemies.append(unit)
+
+    if not enemies:
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+    # Check for adjacent enemies → melee
+    for enemy in enemies:
+        target_pos = Position(x=enemy.position.x, y=enemy.position.y)
+        if is_adjacent(ai.position, target_pos):
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.ATTACK,
+                target_x=enemy.position.x, target_y=enemy.position.y,
+            )
+
+    # Check for ranged targets
+    ranged_cd = ai.cooldowns.get("ranged_attack", 0)
+    if ranged_cd == 0:
+        for enemy in enemies:
+            target_pos = Position(x=enemy.position.x, y=enemy.position.y)
+            if is_in_range(ai.position, target_pos, ranged_range):
+                if has_line_of_sight(
+                    ai.position.x, ai.position.y,
+                    enemy.position.x, enemy.position.y, obstacles,
+                ):
+                    return PlayerAction(
+                        player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
+                        target_x=enemy.position.x, target_y=enemy.position.y,
+                    )
+
+    # No targets in range — hold position
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+
+# ---------------------------------------------------------------------------
+# Enemy Memory Helpers
+# ---------------------------------------------------------------------------
+
+def _update_enemy_memory(
+    ai_id: str,
+    visible_enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+) -> None:
+    """Update the last-known position memory for enemies.
+
+    - Enemies currently visible: store/refresh their position (age = 0)
+    - Enemies not visible: increment age by 1
+    - Enemies dead or expired: remove from memory
+    """
+    if ai_id not in _enemy_memory:
+        _enemy_memory[ai_id] = {}
+
+    mem = _enemy_memory[ai_id]
+
+    # Refresh positions of currently visible enemies
+    visible_ids = {e.player_id for e in visible_enemies}
+    for enemy in visible_enemies:
+        mem[enemy.player_id] = (enemy.position.x, enemy.position.y, 0)
+
+    # Age and prune entries for enemies we can't see
+    for eid in list(mem.keys()):
+        if eid in visible_ids:
+            continue
+        # Check if enemy is dead — remove immediately
+        enemy_unit = all_units.get(eid)
+        if not enemy_unit or not enemy_unit.is_alive:
+            del mem[eid]
+            continue
+        # Age the memory
+        x, y, age = mem[eid]
+        if age + 1 > _MEMORY_EXPIRY_TURNS:
+            del mem[eid]
+        else:
+            mem[eid] = (x, y, age + 1)
+
+
+def _pursue_memory_target(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+) -> PlayerAction | None:
+    """If AI remembers where an enemy was last seen, path toward that spot.
+
+    Returns a MOVE action toward the freshest memory target, or None if
+    memory is empty or all targets are expired.
+    """
+    ai_id = ai.player_id
+    mem = _enemy_memory.get(ai_id, {})
+    if not mem:
+        return None
+
+    ai_pos = (ai.position.x, ai.position.y)
+    # Phase 7A-3: Use _build_occupied_set with pending_moves prediction
+    occupied = _build_occupied_set(all_units, ai_id, pending_moves)
+
+    # Pick the freshest (lowest age) memory target, break ties by distance
+    best_eid = min(
+        mem.keys(),
+        key=lambda eid: (mem[eid][2], abs(mem[eid][0] - ai_pos[0]) + abs(mem[eid][1] - ai_pos[1])),
+    )
+    tx, ty, _age = mem[best_eid]
+
+    # If we've reached the last-known position and enemy isn't there, clear it
+    if ai_pos == (tx, ty):
+        del mem[best_eid]
+        return None
+
+    next_step = get_next_step_toward(
+        ai_pos, (tx, ty), grid_width, grid_height, obstacles, occupied
+    )
+    if next_step:
+        return PlayerAction(
+            player_id=ai_id,
+            action_type=ActionType.MOVE,
+            target_x=next_step[0],
+            target_y=next_step[1],
+        )
+
+    # Can't path there — clear this memory entry
+    del mem[best_eid]
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Ally Reinforcement
+# ---------------------------------------------------------------------------
+
+def _reinforce_ally(
+    ai: PlayerState,
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+) -> PlayerAction | None:
+    """If a teammate is in combat (adjacent to an enemy), path toward them.
+
+    This makes AI feel cooperative — idle AI rush to help allies in fights
+    instead of wandering aimlessly.
+
+    Returns a MOVE action toward the embattled ally, or None if no ally
+    needs help.
+    """
+    ai_id = ai.player_id
+    ai_pos = (ai.position.x, ai.position.y)
+
+    # Find allies that are adjacent to at least one enemy
+    allies_in_combat: list[PlayerState] = []
+    for unit in all_units.values():
+        if not unit.is_alive:
+            continue
+        if unit.player_id == ai_id:
+            continue
+        if unit.team != ai.team:
+            continue  # Not an ally
+        # Check if this ally is adjacent to any enemy
+        ally_pos = Position(x=unit.position.x, y=unit.position.y)
+        for other in all_units.values():
+            if not other.is_alive:
+                continue
+            if other.team == ai.team:
+                continue  # Same team, skip
+            if is_adjacent(ally_pos, Position(x=other.position.x, y=other.position.y)):
+                allies_in_combat.append(unit)
+                break  # This ally is confirmed in combat
+
+    if not allies_in_combat:
+        return None
+
+    # Pick the nearest embattled ally
+    nearest_ally = min(
+        allies_in_combat,
+        key=lambda a: abs(a.position.x - ai_pos[0]) + abs(a.position.y - ai_pos[1]),
+    )
+
+    occupied = _build_occupied_set(all_units, ai_id, pending_moves)
+
+    next_step = get_next_step_toward(
+        ai_pos,
+        (nearest_ally.position.x, nearest_ally.position.y),
+        grid_width, grid_height,
+        obstacles, occupied,
+    )
+    if next_step:
+        return PlayerAction(
+            player_id=ai_id,
+            action_type=ActionType.MOVE,
+            target_x=next_step[0],
+            target_y=next_step[1],
+        )
+
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Weighted Target Selection
+# ---------------------------------------------------------------------------
+
+def _pick_best_target(
+    ai: PlayerState,
+    enemies: list[PlayerState],
+    all_units: dict[str, PlayerState],
+) -> PlayerState:
+    """Pick the best enemy target using weighted scoring.
+
+    Scoring factors:
+      - Low HP bonus: +5 if target is below 30% max HP (focus fire wounded)
+      - Threat bonus: +3 if target is adjacent to a teammate (protect allies)
+      - Distance penalty: -1 per Chebyshev tile of distance
+
+    Returns the highest-scored enemy.
+    """
+    ai_pos = (ai.position.x, ai.position.y)
+
+    def target_score(enemy: PlayerState) -> float:
+        score = 0.0
+        dist = max(
+            abs(enemy.position.x - ai_pos[0]),
+            abs(enemy.position.y - ai_pos[1]),
+        )
+        # Distance penalty
+        score -= dist
+
+        # Low HP bonus — focus fire on wounded targets
+        if enemy.max_hp > 0 and (enemy.hp / enemy.max_hp) < 0.30:
+            score += 5.0
+
+        # Threat bonus — enemy is adjacent to one of our allies (protect them)
+        enemy_pos = Position(x=enemy.position.x, y=enemy.position.y)
+        for unit in all_units.values():
+            if not unit.is_alive:
+                continue
+            if unit.player_id == ai.player_id:
+                continue
+            if unit.team != ai.team:
+                continue  # Not an ally
+            if is_adjacent(Position(x=unit.position.x, y=unit.position.y), enemy_pos):
+                score += 3.0
+                break  # Only count once
+
+        return score
+
+    return max(enemies, key=target_score)
+
+
+# ---------------------------------------------------------------------------
+# Patrol / Scouting
+# ---------------------------------------------------------------------------
+
+def _patrol_action(
+    ai: PlayerState,
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    all_units: dict[str, PlayerState],
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+) -> PlayerAction:
+    """Generate a scouting/patrol movement for an idle AI.
+
+    Strategy:
+      1. If AI has a patrol waypoint and hasn't reached it, continue toward it
+         via A*.
+      2. If AI has reached its waypoint (or has none), pick a new one:
+         - Prefer tiles near the map center and away from AI's current area
+         - Penalize recently visited tiles
+         - Use A* to ensure the waypoint is reachable
+      3. If completely stuck, fall back to a random adjacent move.
+
+    This creates purposeful exploration where AI units sweep toward the
+    center and contested areas instead of wandering near their spawn.
+    """
+    ai_id = ai.player_id
+    ai_pos = (ai.position.x, ai.position.y)
+
+    # Track that we visited this tile
+    if ai_id not in _visited_history:
+        _visited_history[ai_id] = []
+    _visited_history[ai_id].append(ai_pos)
+    if len(_visited_history[ai_id]) > _MAX_VISIT_HISTORY:
+        _visited_history[ai_id] = _visited_history[ai_id][-_MAX_VISIT_HISTORY:]
+
+    occupied = _build_occupied_set(all_units, ai_id, pending_moves)
+
+    # Check if we have an existing waypoint and whether we've reached it
+    current_target = _patrol_targets.get(ai_id)
+    need_new_target = False
+
+    if current_target is None:
+        need_new_target = True
+    elif ai_pos == current_target:
+        need_new_target = True
+    elif current_target in obstacles:
+        need_new_target = True
+    else:
+        # Check if our existing target is still reachable
+        path = a_star(ai_pos, current_target, grid_width, grid_height, obstacles, occupied)
+        if path is None:
+            need_new_target = True
+
+    if need_new_target:
+        new_target = _pick_patrol_waypoint(
+            ai_id, ai_pos, grid_width, grid_height, obstacles, occupied
+        )
+        if new_target:
+            _patrol_targets[ai_id] = new_target
+            current_target = new_target
+        else:
+            # No valid waypoint found — fallback to random adjacent move
+            return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied)
+
+    # Move toward the waypoint using A*
+    next_step = get_next_step_toward(
+        ai_pos, current_target,
+        grid_width, grid_height,
+        obstacles, occupied,
+    )
+
+    if next_step:
+        return PlayerAction(
+            player_id=ai_id,
+            action_type=ActionType.MOVE,
+            target_x=next_step[0],
+            target_y=next_step[1],
+        )
+
+    # A* couldn't find a path — pick a new target next tick, random move now
+    _patrol_targets.pop(ai_id, None)
+    return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied)
+
+
+def _pick_patrol_waypoint(
+    ai_id: str,
+    ai_pos: tuple[int, int],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+) -> tuple[int, int] | None:
+    """Pick a patrol waypoint that encourages map exploration.
+
+    Prefers tiles that:
+      - Are near the map center (pushes AI toward contested areas)
+      - Are far from the AI's current position (avoid local shuffle)
+      - Have not been recently visited
+      - Are walkable (not obstacles or occupied)
+
+    Falls back to closer tiles if no distant ones are available.
+    """
+    visited_set = set(_visited_history.get(ai_id, []))
+    center_x = grid_width / 2.0
+    center_y = grid_height / 2.0
+
+    # Generate candidate waypoints spread across the map
+    candidates: list[tuple[int, int]] = []
+    for x in range(grid_width):
+        for y in range(grid_height):
+            if (x, y) in obstacles or (x, y) in occupied:
+                continue
+            if (x, y) == ai_pos:
+                continue
+            candidates.append((x, y))
+
+    if not candidates:
+        return None
+
+    # Score candidates: prefer center-biased + far from self + unvisited
+    def score(tile: tuple[int, int]) -> float:
+        # Distance from AI — want to move away from current spot
+        dist_from_self = abs(tile[0] - ai_pos[0]) + abs(tile[1] - ai_pos[1])
+        # Closeness to map center — want to patrol toward center/contested areas
+        dist_to_center = abs(tile[0] - center_x) + abs(tile[1] - center_y)
+        center_bonus = max(0, (grid_width - dist_to_center))  # Higher when closer to center
+        # Visited penalty
+        visited_penalty = -5.0 if tile in visited_set else 0.0
+        return dist_from_self + center_bonus * 0.5 + visited_penalty
+
+    # Sort by score descending, then pick from the top candidates with some
+    # randomness to avoid all AI converging on the same tile
+    candidates.sort(key=score, reverse=True)
+    top_n = min(8, len(candidates))
+    return random.choice(candidates[:top_n])
+
+
+def _random_adjacent_move(
+    ai: PlayerState,
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+) -> PlayerAction:
+    """Fallback: pick a random walkable adjacent tile."""
+    directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+    random.shuffle(directions)
+
+    for dx, dy in directions:
+        nx, ny = ai.position.x + dx, ai.position.y + dy
+        if 0 <= nx < grid_width and 0 <= ny < grid_height:
+            if (nx, ny) not in obstacles and (nx, ny) not in occupied:
+                return PlayerAction(
+                    player_id=ai.player_id,
+                    action_type=ActionType.MOVE,
+                    target_x=nx,
+                    target_y=ny,
+                )
+
+    # Completely surrounded — wait
+    return PlayerAction(
+        player_id=ai.player_id,
+        action_type=ActionType.WAIT,
+    )
+
+
+def run_ai_decisions(
+    ai_ids: list[str],
+    all_units: dict[str, PlayerState],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    team_fov_map: dict[str, set[tuple[int, int]]] | None = None,
+    match_id: str | None = None,
+    controlled_ids: set[str] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+) -> list[PlayerAction]:
+    """Run AI decision logic for all AI units and return their actions.
+
+    This should be called during tick processing, before action resolution.
+
+    Phase 7A-3: Tracks pending MOVE decisions as each AI is processed
+    sequentially.  Later AI units see earlier movers' current positions as
+    "vacating" and their targets as "claimed", preventing hallway gridlock
+    when multiple allies are pathing through the same corridor.
+
+    Args:
+        team_fov_map: Optional dict mapping team letter ("a", "b", etc.)
+                      to the combined team FOV set. AI will use its team's
+                      shared vision to spot enemies.
+        match_id: Match ID for room bounds lookup (Phase 4C dungeon leashing).
+        controlled_ids: Set of AI unit IDs currently being player-controlled.
+                        These units will be skipped (player queued their actions).
+        door_tiles: Phase 7D-1 — set of closed-door positions for door-aware
+                    A*.  Passed through to ``decide_ai_action()`` so AI can
+                    plan paths through closed doors at elevated cost.
+    """
+    actions: list[PlayerAction] = []
+
+    # Phase 7A-3: Track pending moves — {unit_id: (from_pos, to_pos)}
+    # Each AI decision sees the pending moves of all previously-decided AI units
+    # this tick, preventing sequential pathfinding from causing gridlock.
+    pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] = {}
+
+    for ai_id in ai_ids:
+        ai = all_units.get(ai_id)
+        if not ai or not ai.is_alive:
+            # Clean up patrol + memory state for dead AI
+            _patrol_targets.pop(ai_id, None)
+            _visited_history.pop(ai_id, None)
+            _enemy_memory.pop(ai_id, None)
+            continue
+
+        # Skip AI units that are player-controlled and have queued actions
+        if controlled_ids and ai_id in controlled_ids:
+            continue
+
+        # Look up this AI's team FOV from the pre-computed map
+        ai_team_fov = None
+        if team_fov_map:
+            ai_team_fov = team_fov_map.get(ai.team)
+
+        action = decide_ai_action(
+            ai, all_units, grid_width, grid_height, obstacles,
+            team_fov=ai_team_fov,
+            match_id=match_id,
+            pending_moves=pending_moves if pending_moves else None,
+            door_tiles=door_tiles,
+        )
+        if action:
+            actions.append(action)
+            # Phase 7A-3: Record this action if it's a MOVE so later AI
+            # units know this tile is being vacated.
+            if action.action_type == ActionType.MOVE and action.target_x is not None:
+                from_pos = (ai.position.x, ai.position.y)
+                to_pos = (action.target_x, action.target_y)
+                if from_pos != to_pos:
+                    pending_moves[ai_id] = (from_pos, to_pos)
+
+    return actions
+
+
+def clear_ai_patrol_state(ai_id: str | None = None) -> None:
+    """Clear patrol + memory state for a specific AI or all AI units.
+
+    Call this when a match ends to prevent stale state.
+    """
+    if ai_id:
+        _patrol_targets.pop(ai_id, None)
+        _visited_history.pop(ai_id, None)
+        _enemy_memory.pop(ai_id, None)
+    else:
+        _patrol_targets.clear()
+        _visited_history.clear()
+        _enemy_memory.clear()

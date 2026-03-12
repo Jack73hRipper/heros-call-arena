@@ -1,0 +1,48 @@
+{
+  "id": "ashen_undercroft",
+  "name": "Ashen Undercroft",
+  "description": "Scorched ruins where fire once raged. Charred brickwork glows with dormant embers, and ash blankets every surface.",
+  "palette": {
+    "primary": "#1a1612",
+    "secondary": "#2a2218",
+    "accent": "#cc6a20",
+    "mortar": "#3a2a18",
+    "highlight": "#ff8830",
+    "floor": "#443a2c",
+    "floorAlt": "#473d2f",
+    "grout": "#121010"
+  },
+  "wall": {
+    "style": "scorched_brick",
+    "brickRows": 3,
+    "brickCols": 2,
+    "mortarWidth": 2,
+    "crackDensity": 0.05,
+    "emberChance": 0.06,
+    "scorchChance": 0.10,
+    "edgeVignette": true
+  },
+  "floor": {
+    "style": "ash_covered",
+    "slabGrid": 2,
+    "groutWidth": 1,
+    "ashDensity": 0.08,
+    "emberChance": 0.0,
+    "stainChance": 0.0,
+    "stainColor": "rgba(60, 40, 20, 0.15)",
+    "debrisChance": 0.0,
+    "debrisColor": "#3a3025"
+  },
+  "corridor": {
+    "style": "ash_trail",
+    "ashDensity": 0.15
+  },
+  "fog": {
+    "exploredTint": "rgba(25, 18, 10, 0.6)",
+    "unexploredColor": "#0a0805"
+  },
+  "ambient": {
+    "vignetteStrength": 0.14,
+    "vignetteColor": "rgba(80, 50, 10, 0.08)"
+  }
+}

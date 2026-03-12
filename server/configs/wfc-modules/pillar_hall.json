@@ -1,0 +1,32 @@
+{
+  "id": "pillar_hall",
+  "name": "Pillar Hall",
+  "version": 1,
+  "tags": ["atmospheric", "large"],
+  "width": 7,
+  "height": 5,
+  "difficulty": 2,
+  "frequency": 1.0,
+  "maxCount": 2,
+  "minCount": 0,
+  "sockets": {
+    "north": "wall",
+    "south": "wall",
+    "east": "corridor_2",
+    "west": "corridor_2"
+  },
+  "tiles": [
+    ["W", "W", "W", "W", "W", "W", "W"],
+    ["W", "F", "W", "F", "W", "F", "W"],
+    ["F", "F", "F", "F", "F", "F", "F"],
+    ["W", "F", "W", "F", "W", "F", "W"],
+    ["W", "W", "W", "W", "W", "W", "W"]
+  ],
+  "variants": [],
+  "metadata": {
+    "description": "Atmospheric hall with pillars, connects two corridors",
+    "enemySpawns": [],
+    "chestSlots": [],
+    "doorPositions": []
+  }
+}

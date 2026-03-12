@@ -1,0 +1,269 @@
+/* ===== Hiring Hall — Phase 15 Chunk 4 ===== */
+/* Ornate tavern hero cards with grim-frame styling, */
+/* stat-block dotted leaders, and enhanced buttons.   */
+
+.hiring-hall-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.hiring-hall-header h3 {
+  font-family: var(--font-heading);
+  color: var(--accent-ember);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.btn-refresh-tavern {
+  padding: 0.4rem 0.8rem;
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.08) 0%, rgba(138, 106, 40, 0.04) 100%);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.btn-refresh-tavern:hover {
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.15) 0%, rgba(138, 106, 40, 0.08) 100%);
+  color: var(--text-primary);
+  border-color: var(--accent-ember-dim);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 8px rgba(196, 151, 58, 0.08);
+}
+
+.btn-refresh-tavern:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tavern-hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* --- Grim-frame tavern card --- */
+.tavern-hero-card {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-medium);
+  border-left: 3px solid var(--border-medium);
+  border-radius: 2px;
+  padding: 0.75rem;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  /* Layered depth — grim-frame */
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015) 0%,
+    transparent 40%
+  );
+}
+
+/* Inner border line */
+.tavern-hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--border-dark);
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 1px;
+}
+
+/* Corner accents */
+.tavern-hero-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 1px 10px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 1px 10px,
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 1px 10px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 1px 10px;
+}
+
+.tavern-hero-card:hover {
+  border-color: var(--border-medium);
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 0 16px rgba(196, 151, 58, 0.06);
+}
+
+/* Shared hero card styles */
+.hero-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 3;
+}
+
+.hero-class-icon {
+  font-size: 1.3rem;
+}
+
+.hero-card-name-block {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Hero name — larger Cinzel with text-shadow glow */
+.hero-name {
+  font-size: 1.05rem;
+  color: var(--text-bright);
+  font-family: var(--font-heading);
+  text-shadow: 0 0 8px rgba(212, 197, 160, 0.15);
+  letter-spacing: 0.03em;
+}
+
+.hero-class-label {
+  font-size: 0.75rem;
+  font-family: var(--font-flavor);
+  font-style: italic;
+}
+
+/* Stat block — D&D character-sheet style with dotted leaders */
+.hero-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.15rem 0.5rem;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: var(--bg-deep);
+  border-radius: 2px;
+  border: 1px solid var(--border-dark);
+  position: relative;
+  z-index: 3;
+  /* Recessed slot feel */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.hero-stat-row {
+  display: flex;
+  align-items: baseline;
+  font-size: 0.8rem;
+  gap: 0.15rem;
+}
+
+.hero-stat-label {
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* Dotted leader between label and value */
+.hero-stat-label::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px dotted var(--border-subtle);
+  margin: 0 0.25rem;
+  position: relative;
+  top: -2px;
+}
+
+.hero-stat-row {
+  display: flex;
+  align-items: baseline;
+  font-size: 0.8rem;
+}
+
+.hero-stat-value {
+  color: var(--text-primary);
+  font-weight: bold;
+  font-family: var(--font-mono);
+  margin-left: auto;
+}
+
+.hero-stat-diff {
+  font-size: 0.7rem;
+  margin-left: 0.25rem;
+  font-family: var(--font-mono);
+}
+
+.stat-bonus {
+  color: var(--accent-sickly-green);
+}
+
+.stat-penalty {
+  color: #c05050;
+}
+
+.hero-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  position: relative;
+  z-index: 3;
+}
+
+.hero-hire-cost {
+  color: var(--accent-ember-bright);
+  font-weight: bold;
+  font-size: 0.95rem;
+  font-family: var(--font-heading);
+  text-shadow: 0 0 6px rgba(196, 151, 58, 0.15);
+}
+
+/* Hire button — hammered-metal style */
+.btn-hire {
+  padding: 0.4rem 0.9rem;
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.2) 0%, rgba(45, 74, 26, 0.12) 100%);
+  color: #8cb860;
+  border: 1px solid var(--accent-sickly-green);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.btn-hire:hover {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.3) 0%, rgba(45, 74, 26, 0.18) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 10px rgba(74, 122, 42, 0.15);
+}
+
+.btn-hire:active {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.btn-hire:disabled,
+.btn-hire-disabled {
+  background: var(--bg-surface);
+  color: var(--text-dim);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+  box-shadow: none;
+}

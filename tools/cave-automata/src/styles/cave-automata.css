@@ -1,0 +1,612 @@
+/* ─────────────────────────────────────────────────────────
+ * cave-automata.css — Cave Automata Lab styles
+ *
+ * Grimdark dark theme matching the Arena project aesthetic.
+ * ───────────────────────────────────────────────────────── */
+
+/* ─── Layout ──────────────────────────────────────────── */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #12121f;
+  color: #d0d0d0;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: #1a1a2e;
+  border-bottom: 1px solid #2a2a4a;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  min-height: 48px;
+}
+
+.toolbar-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #8a8aff;
+  white-space: nowrap;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.toolbar-group label {
+  font-size: 12px;
+  color: #999;
+}
+
+.main-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── Sidebars ────────────────────────────────────────── */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: #16162a;
+  border-right: 1px solid #2a2a4a;
+  overflow: hidden;
+}
+
+.sidebar-left {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.sidebar-right {
+  width: 200px;
+  flex-shrink: 0;
+  border-right: none;
+  border-left: 1px solid #2a2a4a;
+  overflow-y: auto;
+}
+
+.sidebar-tabs {
+  display: flex;
+  border-bottom: 1px solid #2a2a4a;
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 8px 4px;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.tab-btn:hover {
+  color: #bbb;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tab-btn.active {
+  color: #8a8aff;
+  border-bottom: 2px solid #8a8aff;
+  background: rgba(138, 138, 255, 0.05);
+}
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ─── Canvas Area ─────────────────────────────────────── */
+
+.canvas-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #0e0e1a;
+}
+
+.cave-canvas-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.cave-canvas {
+  display: block;
+  cursor: crosshair;
+}
+
+.canvas-overlay-info {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: monospace;
+  color: #999;
+  pointer-events: none;
+}
+
+/* ─── Panels ──────────────────────────────────────────── */
+
+.panel {
+  padding: 12px;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: bold;
+  color: #8a8aff;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.panel-empty {
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+/* ─── Parameter Controls ──────────────────────────────── */
+
+.param-group {
+  margin-bottom: 10px;
+}
+
+.param-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #bbb;
+}
+
+.param-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.param-hint {
+  font-size: 10px;
+  color: #666;
+  margin-top: 2px;
+}
+
+.checkbox-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  accent-color: #8a8aff;
+}
+
+/* ─── Connectivity ────────────────────────────────────── */
+
+.connectivity-status {
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.connectivity-status.connected {
+  background: rgba(80, 200, 120, 0.15);
+  color: #50c878;
+  border: 1px solid rgba(80, 200, 120, 0.3);
+}
+
+.connectivity-status.disconnected {
+  background: rgba(255, 99, 71, 0.15);
+  color: #ff6347;
+  border: 1px solid rgba(255, 99, 71, 0.3);
+}
+
+/* ─── Inputs ──────────────────────────────────────────── */
+
+.input-text,
+.input-number,
+.input-select {
+  background: #1e1e36;
+  border: 1px solid #3a3a5a;
+  color: #d0d0d0;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.input-text:focus,
+.input-number:focus,
+.input-select:focus {
+  outline: none;
+  border-color: #8a8aff;
+}
+
+.input-number {
+  width: 56px;
+  text-align: center;
+}
+
+.input-wide {
+  width: 120px;
+  flex: 1;
+}
+
+.input-small {
+  font-size: 11px;
+  padding: 3px 6px;
+}
+
+.input-range {
+  width: 100%;
+  accent-color: #8a8aff;
+  background: transparent;
+  height: 18px;
+  cursor: pointer;
+}
+
+.input-select {
+  cursor: pointer;
+}
+
+/* ─── Buttons ─────────────────────────────────────────── */
+
+.btn {
+  padding: 6px 14px;
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #4a4aaa;
+  border-color: #6a6acc;
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #5a5abb;
+}
+
+.btn-secondary {
+  background: #2a2a44;
+  border-color: #3a3a5a;
+  color: #ccc;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #3a3a55;
+  color: #fff;
+}
+
+.btn-small {
+  padding: 3px 8px;
+  font-size: 11px;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-danger {
+  background: #4a2a2a;
+  border-color: #6a3a3a;
+  color: #ff8888;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #5a3a3a;
+}
+
+.btn-row {
+  display: flex;
+  gap: 6px;
+}
+
+/* ─── Paint Palette ───────────────────────────────────── */
+
+.paint-palette {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.paint-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: #1e1e36;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  color: #ccc;
+  font-size: 11px;
+}
+
+.paint-btn:hover {
+  background: #2a2a44;
+}
+
+.paint-btn.active {
+  border-color: #8a8aff;
+  background: #2a2a55;
+}
+
+.paint-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.paint-label {
+  font-size: 11px;
+}
+
+/* ─── Room List ───────────────────────────────────────── */
+
+.room-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.room-item {
+  padding: 6px 8px;
+  background: #1a1a30;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.room-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.room-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.room-size {
+  font-size: 10px;
+  color: #777;
+  margin-left: auto;
+}
+
+.room-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-percent {
+  font-size: 10px;
+  color: #777;
+  margin-left: auto;
+}
+
+/* ─── Stats Panel ─────────────────────────────────────── */
+
+.stat-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  padding: 2px 0;
+}
+
+.stat-label {
+  color: #888;
+}
+
+.stat-value {
+  color: #ccc;
+  font-weight: bold;
+  font-family: monospace;
+}
+
+.stat-good {
+  color: #50c878;
+}
+
+.stat-warn {
+  color: #ff6347;
+}
+
+/* ─── Gallery ─────────────────────────────────────────── */
+
+.gallery-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.gallery-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #1a1a30;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.gallery-item:hover {
+  background: #2a2a44;
+}
+
+.gallery-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.gallery-name {
+  display: block;
+  font-size: 12px;
+  color: #ccc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gallery-meta {
+  display: block;
+  font-size: 10px;
+  color: #666;
+}
+
+/* ─── Batch Modal ─────────────────────────────────────── */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: #1a1a2e;
+  border: 1px solid #3a3a5a;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 90vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  min-width: 600px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.modal-header h3 {
+  color: #8a8aff;
+  font-size: 16px;
+}
+
+.modal-subtitle {
+  color: #888;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.batch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.batch-item {
+  background: #12121f;
+  border: 2px solid #2a2a4a;
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  text-align: center;
+}
+
+.batch-item:hover {
+  border-color: #8a8aff;
+}
+
+.batch-rank {
+  font-size: 14px;
+  font-weight: bold;
+  color: #8a8aff;
+  margin-bottom: 6px;
+}
+
+.batch-canvas {
+  display: block;
+  margin: 0 auto 6px;
+  border-radius: 3px;
+}
+
+.batch-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 10px;
+  color: #888;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #12121f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a3a5a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4a4a6a;
+}

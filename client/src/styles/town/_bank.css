@@ -1,0 +1,460 @@
+/* ===== Bank — Phase 15 Chunk 4 ===== */
+/* Vault/chest themed UI with grim-framed panels, */
+/* dark recessed item slots, and atmospheric feel. */
+
+.bank-panel {
+  width: 100%;
+}
+
+.bank-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.bank-header h3 {
+  font-family: var(--font-heading);
+  color: var(--accent-ember);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+}
+
+.bank-capacity {
+  font-size: 0.9rem;
+  font-weight: bold;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  /* Subtle slot counter styling */
+  padding: 0.15rem 0.5rem;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  border-radius: 2px;
+}
+
+.bank-error {
+  color: #c05050;
+  background: rgba(139, 32, 32, 0.1);
+  padding: 0.4rem 0.6rem;
+  border-radius: 2px;
+  border: 1px solid var(--accent-crimson);
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  font-family: var(--font-flavor);
+}
+
+.bank-success {
+  color: #8cb860;
+  background: rgba(74, 122, 42, 0.1);
+  padding: 0.4rem 0.6rem;
+  border-radius: 2px;
+  border: 1px solid var(--accent-sickly-green);
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  font-family: var(--font-flavor);
+}
+
+/* Hero selector */
+.bank-hero-select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.bank-label {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.bank-hero-tabs {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.bank-hero-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: var(--font-heading);
+  transition: all 0.15s;
+}
+
+.bank-hero-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.bank-hero-active {
+  background: var(--bg-surface);
+  color: var(--accent-ember);
+  font-weight: 600;
+}
+
+.bank-hero-inv {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  margin-left: 0.2rem;
+}
+
+/* Info banner — parchment-scroll style */
+.bank-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(
+    90deg,
+    rgba(196, 151, 58, 0.06) 0%,
+    rgba(196, 151, 58, 0.03) 50%,
+    rgba(196, 151, 58, 0.06) 100%
+  );
+  border: 1px solid rgba(196, 151, 58, 0.2);
+  border-radius: 2px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.bank-info-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.bank-info-text {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-family: var(--font-flavor);
+  font-style: italic;
+}
+
+/* Two-column layout */
+.bank-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  min-height: 250px;
+}
+
+@media (max-width: 800px) {
+  .bank-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Vault/Hero panels — grim-frame styled with thematic colors */
+.bank-vault-panel,
+.bank-hero-panel {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  padding: 0.75rem;
+  overflow-y: auto;
+  max-height: 55vh;
+  /* Grim-frame layered depth */
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-medium) transparent;
+}
+
+/* Inner border line */
+.bank-vault-panel::before,
+.bank-hero-panel::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--border-dark);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 1px;
+}
+
+/* Corner accents */
+.bank-vault-panel::after,
+.bank-hero-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 1px 10px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 1px 10px,
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 1px 10px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 1px 10px;
+}
+
+/* Vault — warm ember thematic gradient */
+.bank-vault-panel {
+  border-color: rgba(196, 151, 58, 0.25);
+  background-image: linear-gradient(
+    180deg,
+    rgba(196, 151, 58, 0.04) 0%,
+    transparent 40%
+  );
+}
+
+.bank-vault-panel::after {
+  background:
+    linear-gradient(90deg, var(--accent-ember) 0%, transparent 100%) no-repeat 0 0 / 12px 1px,
+    linear-gradient(180deg, var(--accent-ember) 0%, transparent 100%) no-repeat 0 0 / 1px 12px,
+    linear-gradient(270deg, var(--accent-ember) 0%, transparent 100%) no-repeat 100% 0 / 12px 1px,
+    linear-gradient(180deg, var(--accent-ember) 0%, transparent 100%) no-repeat 100% 0 / 1px 12px,
+    linear-gradient(90deg, var(--accent-ember) 0%, transparent 100%) no-repeat 0 100% / 12px 1px,
+    linear-gradient(0deg, var(--accent-ember) 0%, transparent 100%) no-repeat 0 100% / 1px 12px,
+    linear-gradient(270deg, var(--accent-ember) 0%, transparent 100%) no-repeat 100% 100% / 12px 1px,
+    linear-gradient(0deg, var(--accent-ember) 0%, transparent 100%) no-repeat 100% 100% / 1px 12px;
+}
+
+/* Hero panel — cool blue-steel thematic gradient */
+.bank-hero-panel {
+  border-color: rgba(58, 90, 139, 0.25);
+  background-image: linear-gradient(
+    180deg,
+    rgba(58, 90, 139, 0.04) 0%,
+    transparent 40%
+  );
+}
+
+.bank-hero-panel::after {
+  background:
+    linear-gradient(90deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 0 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 0 0 / 1px 10px,
+    linear-gradient(270deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 100% 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 100% 0 / 1px 10px,
+    linear-gradient(90deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 0 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 0 100% / 1px 10px,
+    linear-gradient(270deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 100% 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-blue-steel) 0%, transparent 100%) no-repeat 100% 100% / 1px 10px;
+}
+
+.bank-panel-icon {
+  margin-right: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.bank-title-hero {
+  color: #7ab0e0;
+}
+
+.bank-title-vault {
+  color: var(--accent-ember);
+}
+
+.bank-section-title {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.bank-slot-count {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Item rows — dark recessed slot backgrounds */
+.bank-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bank-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.5rem;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  border-left: 3px solid var(--border-subtle);
+  border-radius: 2px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+  z-index: 1;
+  /* Recessed slot feel */
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.bank-item:hover {
+  border-color: var(--border-medium);
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.25),
+    0 0 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Rarity border accent for bank items */
+.bank-item:has(.bank-item-name[style*="#5a9a3a"]) {
+  border-left-color: var(--accent-sickly-green);
+}
+
+.bank-item:has(.bank-item-name[style*="#999"]) {
+  border-left-color: var(--text-dim);
+}
+
+.bank-item-disabled {
+  opacity: 0.5;
+}
+
+.bank-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.bank-item-name {
+  font-size: 0.85rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.bank-item-stats {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.bank-item-desc {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-family: var(--font-flavor);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bank-item-action {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+/* Withdraw button — hammered-metal with arrow icon */
+.btn-bank-withdraw {
+  padding: 0.25rem 0.6rem;
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.15) 0%, rgba(45, 74, 26, 0.08) 100%);
+  color: #8cb860;
+  border: 1px solid var(--accent-sickly-green);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.btn-bank-withdraw:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.25) 0%, rgba(45, 74, 26, 0.14) 100%);
+  border-color: #5a9a3a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 8px rgba(74, 122, 42, 0.12);
+}
+
+.btn-bank-withdraw:active:not(:disabled) {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.btn-bank-withdraw:disabled {
+  background: var(--bg-deep);
+  color: var(--text-dim);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Deposit button — hammered-metal with ember accent */
+.btn-bank-deposit {
+  padding: 0.25rem 0.6rem;
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.15) 0%, rgba(138, 106, 40, 0.08) 100%);
+  color: var(--accent-ember);
+  border: 1px solid var(--accent-ember-dim);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.btn-bank-deposit:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.25) 0%, rgba(138, 106, 40, 0.14) 100%);
+  border-color: var(--accent-ember);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 8px rgba(196, 151, 58, 0.12);
+}
+
+.btn-bank-deposit:active:not(:disabled) {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.btn-bank-deposit:disabled {
+  background: var(--bg-deep);
+  color: var(--text-dim);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Empty state — atmospheric vault flavor */
+.bank-empty {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-family: var(--font-flavor);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem 0.75rem;
+  position: relative;
+  z-index: 1;
+  /* Faint recessed warmth */
+  background: linear-gradient(
+    180deg,
+    rgba(196, 151, 58, 0.02) 0%,
+    transparent 100%
+  );
+  border-radius: 2px;
+}

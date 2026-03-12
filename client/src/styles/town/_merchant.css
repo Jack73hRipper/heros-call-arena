@@ -1,0 +1,527 @@
+/* ===== Merchant — Phase 15 Chunk 4 ===== */
+/* Grim-framed buy/sell panels with rarity-colored   */
+/* item borders, coin icons, and atmospheric text.    */
+
+.merchant-panel {
+  width: 100%;
+}
+
+.merchant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.merchant-header h3 {
+  font-family: var(--font-heading);
+  color: var(--accent-ember);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.95rem;
+}
+
+.merchant-gold {
+  font-size: 1.1rem;
+  font-weight: bold;
+  font-family: var(--font-heading);
+  color: var(--accent-ember-bright);
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 8px rgba(196, 151, 58, 0.2);
+}
+
+.merchant-error {
+  color: #c05050;
+  background: rgba(139, 32, 32, 0.1);
+  padding: 0.4rem 0.6rem;
+  border-radius: 2px;
+  border: 1px solid var(--accent-crimson);
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  font-family: var(--font-flavor);
+}
+
+.merchant-success {
+  color: #8cb860;
+  background: rgba(74, 122, 42, 0.1);
+  padding: 0.4rem 0.6rem;
+  border-radius: 2px;
+  border: 1px solid var(--accent-sickly-green);
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+  font-family: var(--font-flavor);
+}
+
+/* Hero selector */
+.merchant-hero-select {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.merchant-label {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.merchant-hero-tabs {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.merchant-hero-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  background: var(--bg-panel);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: var(--font-heading);
+  transition: all 0.15s;
+}
+
+.merchant-hero-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.merchant-hero-active {
+  background: var(--bg-surface);
+  color: var(--accent-ember);
+  font-weight: 600;
+}
+
+.merchant-hero-inv {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  margin-left: 0.2rem;
+}
+
+/* Two-column layout */
+.merchant-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  min-height: 250px;
+}
+
+@media (max-width: 800px) {
+  .merchant-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Buy/sell panels — grim-frame styled */
+.merchant-buy-panel,
+.merchant-sell-panel {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  padding: 0.75rem;
+  overflow-y: auto;
+  max-height: 55vh;
+  /* Layered grim-frame depth */
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 0 12px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015) 0%,
+    transparent 40%
+  );
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-medium) transparent;
+}
+
+/* Inner border line */
+.merchant-buy-panel::before,
+.merchant-sell-panel::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid var(--border-dark);
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 1px;
+}
+
+/* Corner accents */
+.merchant-buy-panel::after,
+.merchant-sell-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 1px 10px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 10px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 1px 10px,
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 1px 10px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 10px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 1px 10px;
+}
+
+.merchant-section-title {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.merchant-inv-count {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Category headers */
+.merchant-category {
+  margin-bottom: 0.5rem;
+}
+
+.merchant-category-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+  padding: 0.15rem 0;
+}
+
+/* Item rows — rarity-colored left border */
+.merchant-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-dark);
+  border-left: 3px solid var(--border-subtle);
+  border-radius: 2px;
+  margin-bottom: 0.3rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+  z-index: 1;
+}
+
+.merchant-item:hover {
+  border-color: var(--border-medium);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Rarity border colors for items */
+.merchant-item[data-rarity="uncommon"],
+.merchant-item:has(.merchant-item-name[style*="#5a9a3a"]) {
+  border-left-color: var(--accent-sickly-green);
+}
+
+.merchant-item[data-rarity="rare"] {
+  border-left-color: var(--accent-blue-steel);
+}
+
+.merchant-item-disabled {
+  opacity: 0.5;
+}
+
+.merchant-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.merchant-item-name {
+  font-size: 0.85rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.merchant-item-stats {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.merchant-item-desc {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-family: var(--font-flavor);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.merchant-item-action {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.merchant-price {
+  font-size: 0.85rem;
+  font-weight: bold;
+  font-family: var(--font-heading);
+  white-space: nowrap;
+}
+
+.merchant-price-buy {
+  color: var(--accent-ember-bright);
+}
+
+.merchant-price-sell {
+  color: #8cb860;
+}
+
+/* Buy button — coin icon treatment, hammered-metal */
+.btn-merchant-buy {
+  padding: 0.25rem 0.6rem;
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.15) 0%, rgba(138, 106, 40, 0.08) 100%);
+  color: var(--accent-ember);
+  border: 1px solid var(--accent-ember-dim);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.btn-merchant-buy::before {
+  content: '🪙 ';
+  font-size: 0.7rem;
+}
+
+.btn-merchant-buy:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.25) 0%, rgba(138, 106, 40, 0.14) 100%);
+  border-color: var(--accent-ember);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 10px rgba(196, 151, 58, 0.12);
+}
+
+.btn-merchant-buy:active:not(:disabled) {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.btn-merchant-buy:disabled {
+  background: var(--bg-deep);
+  color: var(--text-dim);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-merchant-buy:disabled::before {
+  opacity: 0.4;
+}
+
+/* Sell button — coin icon treatment */
+.btn-merchant-sell {
+  padding: 0.25rem 0.6rem;
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.15) 0%, rgba(45, 74, 26, 0.08) 100%);
+  color: #8cb860;
+  border: 1px solid var(--accent-sickly-green);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.btn-merchant-sell::before {
+  content: '🪙 ';
+  font-size: 0.7rem;
+}
+
+.btn-merchant-sell:hover {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.25) 0%, rgba(45, 74, 26, 0.14) 100%);
+  border-color: #5a9a3a;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 10px rgba(74, 122, 42, 0.12);
+}
+
+.btn-merchant-sell:active {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Empty state — atmospheric flavor text */
+.merchant-empty {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-family: var(--font-flavor);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem 0.75rem;
+  position: relative;
+  z-index: 1;
+  /* Subtle parchment warmth */
+  background: linear-gradient(
+    180deg,
+    rgba(196, 151, 58, 0.02) 0%,
+    transparent 100%
+  );
+  border-radius: 2px;
+}
+
+.merchant-sell-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Confirmation modal — grim-framed */
+.merchant-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.merchant-confirm-modal {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  padding: 1.25rem 1.5rem;
+  max-width: 360px;
+  width: 90%;
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(196, 151, 58, 0.06);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015) 0%,
+    transparent 40%
+  );
+}
+
+/* Corner accents on confirm modal */
+.merchant-confirm-modal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 12px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 0 / 1px 12px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 12px 1px,
+    linear-gradient(180deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 0 / 1px 12px,
+    linear-gradient(90deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 12px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 0 100% / 1px 12px,
+    linear-gradient(270deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 12px 1px,
+    linear-gradient(0deg, var(--accent-ember-dim) 0%, transparent 100%) no-repeat 100% 100% / 1px 12px;
+}
+
+.merchant-confirm-modal h4 {
+  font-family: var(--font-heading);
+  color: var(--accent-ember);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.merchant-confirm-text {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.merchant-confirm-hero {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-flavor);
+}
+
+.merchant-confirm-hero strong {
+  color: var(--accent-ember);
+  font-family: var(--font-heading);
+  font-style: normal;
+}
+
+.merchant-confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.btn-confirm-yes {
+  padding: 0.4rem 1rem;
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.2) 0%, rgba(45, 74, 26, 0.12) 100%);
+  color: #8cb860;
+  border: 1px solid var(--accent-sickly-green);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+
+.btn-confirm-yes:hover {
+  background: linear-gradient(180deg, rgba(74, 122, 42, 0.3) 0%, rgba(45, 74, 26, 0.18) 100%);
+  box-shadow: 0 0 10px rgba(74, 122, 42, 0.12);
+}
+
+.btn-confirm-no {
+  padding: 0.4rem 1rem;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.15s;
+}
+
+.btn-confirm-no:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}

@@ -1,0 +1,56 @@
+{
+  "name": "heros-call-launcher",
+  "version": "1.0.0",
+  "description": "Hero's Call Arena — Game Launcher",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "build:dir": "electron-builder --dir",
+    "publish": "electron-builder --win --publish always"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "electron": "^40.6.0",
+    "electron-builder": "^26.8.1"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "electron-updater": "^6.8.3"
+  },
+  "build": {
+    "appId": "com.heroscall.launcher",
+    "productName": "Hero's Call Arena Launcher",
+    "directories": {
+      "output": "../build/launcher"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "styles.css",
+      "renderer.js",
+      "lib/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "Jack73hRipper",
+      "repo": "heros-call-arena"
+    }
+  }
+}

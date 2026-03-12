@@ -1,0 +1,32 @@
+{
+  "id": "corridor_L",
+  "name": "Corridor L-Turn",
+  "version": 1,
+  "tags": ["corridor", "turn"],
+  "width": 5,
+  "height": 5,
+  "difficulty": 0,
+  "frequency": 2.0,
+  "maxCount": -1,
+  "minCount": 0,
+  "sockets": {
+    "north": "corridor_1",
+    "south": "wall",
+    "east": "corridor_1",
+    "west": "wall"
+  },
+  "tiles": [
+    ["W", "W", "C", "W", "W"],
+    ["W", "W", "C", "W", "W"],
+    ["W", "W", "C", "C", "C"],
+    ["W", "W", "W", "W", "W"],
+    ["W", "W", "W", "W", "W"]
+  ],
+  "variants": [],
+  "metadata": {
+    "description": "90-degree turn corridor (north to east)",
+    "enemySpawns": [],
+    "chestSlots": [],
+    "doorPositions": []
+  }
+}

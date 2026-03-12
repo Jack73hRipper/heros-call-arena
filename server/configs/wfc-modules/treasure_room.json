@@ -1,0 +1,48 @@
+{
+  "id": "treasure_room",
+  "name": "Treasure Room",
+  "version": 1,
+  "tags": ["loot", "treasure"],
+  "width": 5,
+  "height": 5,
+  "difficulty": 1,
+  "frequency": 1.0,
+  "maxCount": 2,
+  "minCount": 1,
+  "sockets": {
+    "north": "wall",
+    "south": "wall",
+    "east": "wall",
+    "west": "corridor_2"
+  },
+  "tiles": [
+    ["W", "W", "W", "W", "W"],
+    ["W", "F", "X", "F", "W"],
+    ["F", "F", "F", "F", "W"],
+    ["W", "F", "X", "F", "W"],
+    ["W", "W", "W", "W", "W"]
+  ],
+  "variants": [
+    {
+      "id": "treasure_room_v2",
+      "tiles": [
+        ["W", "W", "W", "W", "W"],
+        ["W", "X", "F", "X", "W"],
+        ["F", "F", "F", "F", "W"],
+        ["W", "F", "F", "F", "W"],
+        ["W", "W", "W", "W", "W"]
+      ]
+    }
+  ],
+  "metadata": {
+    "description": "Dead-end room with treasure chests",
+    "enemySpawns": [],
+    "chestSlots": [
+      { "localX": 2, "localY": 1 },
+      { "localX": 2, "localY": 3 }
+    ],
+    "doorPositions": [
+      { "localX": 0, "localY": 2 }
+    ]
+  }
+}

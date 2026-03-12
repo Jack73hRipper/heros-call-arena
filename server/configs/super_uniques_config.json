@@ -1,0 +1,145 @@
+{
+  "super_uniques": {
+    "malgris_the_defiler": {
+      "id": "malgris_the_defiler",
+      "base_enemy": "demon",
+      "name": "Malgris the Defiler",
+      "title": "Pit Lord of the Lower Catacombs",
+      "flavor_text": "The stench of brimstone precedes him. None who enter his domain leave unscathed.",
+      "floor_range": [3, 5],
+      "room_type": "boss",
+      "base_hp": 420,
+      "base_melee_damage": 30,
+      "base_armor": 10,
+      "affixes": ["extra_strong", "fire_enchanted"],
+      "retinue": [
+        { "enemy_type": "imp", "count": 3 },
+        { "enemy_type": "acolyte", "count": 1 }
+      ],
+      "loot_table": {
+        "drop_chance": 1.0,
+        "min_items": 3,
+        "max_items": 4,
+        "guaranteed_rarity": "rare",
+        "unique_item_chance": 0.15,
+        "pools": [
+          { "weight": 30, "items": ["uncommon_greatsword", "uncommon_warhammer"] },
+          { "weight": 25, "items": ["uncommon_plate_armor", "uncommon_shadow_cloak"] },
+          { "weight": 20, "items": ["uncommon_sigil_ring", "uncommon_skull_pendant"] },
+          { "weight": 15, "items": ["greater_health_potion"] },
+          { "weight": 10, "items": ["portal_scroll"] }
+        ]
+      },
+      "tags": ["demon"],
+      "color": "#ff2200",
+      "shape": "star"
+    },
+    "serelith_bonequeen": {
+      "id": "serelith_bonequeen",
+      "base_enemy": "necromancer",
+      "name": "Serelith, Bonequeen",
+      "title": "Mistress of the Ossuary",
+      "flavor_text": "She was a healer once. Now she raises the dead and binds them with sinew and spite.",
+      "floor_range": [5, 7],
+      "room_type": "boss",
+      "base_hp": 480,
+      "base_melee_damage": 10,
+      "base_ranged_damage": 20,
+      "base_armor": 8,
+      "affixes": ["regenerating", "might_aura", "cold_enchanted"],
+      "retinue": [
+        { "enemy_type": "skeleton", "count": 4 },
+        { "enemy_type": "undead_caster", "count": 1 }
+      ],
+      "loot_table": {
+        "drop_chance": 1.0,
+        "min_items": 3,
+        "max_items": 5,
+        "guaranteed_rarity": "rare",
+        "unique_item_chance": 0.20,
+        "pools": [
+          { "weight": 30, "items": ["uncommon_arcanist_staff", "uncommon_flail"] },
+          { "weight": 25, "items": ["uncommon_mage_robes", "uncommon_vestments"] },
+          { "weight": 25, "items": ["uncommon_skull_pendant", "uncommon_sigil_ring"] },
+          { "weight": 20, "items": ["greater_health_potion", "portal_scroll"] }
+        ]
+      },
+      "tags": ["undead"],
+      "color": "#bb44ff",
+      "shape": "star"
+    },
+    "gorvek_ironhide": {
+      "id": "gorvek_ironhide",
+      "base_enemy": "construct",
+      "name": "Gorvek Ironhide",
+      "title": "Eternal Sentinel of the Vault",
+      "flavor_text": "Forged in an age before memory. Its makers are dust but their guardian endures.",
+      "floor_range": [7, 9],
+      "room_type": "boss",
+      "base_hp": 700,
+      "base_melee_damage": 28,
+      "base_armor": 18,
+      "affixes": ["stone_skin", "thorns", "shielded"],
+      "retinue": [
+        { "enemy_type": "construct", "count": 2 }
+      ],
+      "loot_table": {
+        "drop_chance": 1.0,
+        "min_items": 4,
+        "max_items": 5,
+        "guaranteed_rarity": "rare",
+        "unique_item_chance": 0.25,
+        "pools": [
+          { "weight": 30, "items": ["uncommon_plate_armor", "uncommon_brigandine"] },
+          { "weight": 25, "items": ["uncommon_greatsword", "uncommon_warhammer"] },
+          { "weight": 25, "items": ["uncommon_sigil_ring", "uncommon_crit_charm"] },
+          { "weight": 20, "items": ["greater_health_potion", "portal_scroll"] }
+        ]
+      },
+      "tags": ["construct"],
+      "color": "#556677",
+      "shape": "star"
+    },
+    "the_hollow_king": {
+      "id": "the_hollow_king",
+      "base_enemy": "undead_knight",
+      "name": "The Hollow King",
+      "title": "Usurper of the Throne Eternal",
+      "flavor_text": "A crown of black iron sits upon a skull that remembers its coronation. He will not yield his throne.",
+      "floor_range": [9, 99],
+      "room_type": "boss",
+      "base_hp": 800,
+      "base_melee_damage": 35,
+      "base_armor": 16,
+      "affixes": ["extra_strong", "cursed", "stone_skin", "conviction_aura"],
+      "retinue": [
+        { "enemy_type": "demon_knight", "count": 2 },
+        { "enemy_type": "dark_priest", "count": 1 }
+      ],
+      "loot_table": {
+        "drop_chance": 1.0,
+        "min_items": 4,
+        "max_items": 6,
+        "guaranteed_rarity": "rare",
+        "unique_item_chance": 0.35,
+        "pools": [
+          { "weight": 25, "items": ["uncommon_greatsword", "uncommon_warhammer", "uncommon_flail"] },
+          { "weight": 25, "items": ["uncommon_plate_armor", "uncommon_shadow_cloak"] },
+          { "weight": 20, "items": ["uncommon_sigil_ring", "uncommon_skull_pendant", "uncommon_crit_charm"] },
+          { "weight": 15, "items": ["greater_health_potion"] },
+          { "weight": 15, "items": ["portal_scroll"] }
+        ]
+      },
+      "tags": ["undead"],
+      "color": "#220044",
+      "shape": "star"
+    }
+  },
+
+  "spawn_rules": {
+    "_comment": "Super uniques have a chance to replace the normal boss on eligible floors.",
+    "per_floor_chance": 0.25,
+    "max_per_run": 1,
+    "min_floor": 3
+  }
+}

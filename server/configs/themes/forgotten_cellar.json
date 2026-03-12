@@ -1,0 +1,45 @@
+{
+  "id": "forgotten_cellar",
+  "name": "Forgotten Cellar",
+  "description": "A plain stone cellar beneath a ruined keep. Quiet, bare, and long abandoned — only dust remains.",
+  "palette": {
+    "primary": "#18160f",
+    "secondary": "#2c2820",
+    "accent": "#4a4035",
+    "mortar": "#1e1c15",
+    "highlight": "#6a6050",
+    "floor": "#443c30",
+    "floorAlt": "#473f33",
+    "grout": "#100e0a"
+  },
+  "wall": {
+    "style": "cracked_stone",
+    "brickRows": 3,
+    "brickCols": 2,
+    "mortarWidth": 2,
+    "crackDensity": 0.03,
+    "bleedChance": 0.0,
+    "edgeVignette": false
+  },
+  "floor": {
+    "style": "flagstone",
+    "slabGrid": 2,
+    "groutWidth": 1,
+    "stainChance": 0.0,
+    "stainColor": "rgba(60, 50, 40, 0.12)",
+    "debrisChance": 0.0,
+    "debrisColor": "#3a3530"
+  },
+  "corridor": {
+    "style": "worn_stone",
+    "streakChance": 0.0
+  },
+  "fog": {
+    "exploredTint": "rgba(20, 18, 12, 0.55)",
+    "unexploredColor": "#0a0908"
+  },
+  "ambient": {
+    "vignetteStrength": 0.08,
+    "vignetteColor": "rgba(30, 25, 15, 0.05)"
+  }
+}

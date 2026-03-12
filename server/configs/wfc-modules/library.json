@@ -1,0 +1,6093 @@
+{
+  "version": 2,
+  "module_size": 8,
+  "generated_from": "server/app/core/wfc/presets.py",
+  "modules": [
+    {
+      "id": "preset_solid",
+      "name": "Solid Wall",
+      "purpose": "empty",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 3.0,
+      "allowRotation": false,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_corridor_h",
+      "name": "Corridor Straight",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 2.0,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_corridor_l",
+      "name": "Corridor L-Turn",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 1.5,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_corridor_t",
+      "name": "Corridor T-Junction",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 1.0,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_corridor_cross",
+      "name": "Corridor Crossroads",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.5,
+      "allowRotation": false,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_dead_end",
+      "name": "Dead End Room",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 1.0,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn",
+            "boss"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 2,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_straight",
+      "name": "Room Passthrough",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 1.2,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_corner",
+      "name": "Room Corner",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 1.0,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn",
+            "boss"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 2,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_three",
+      "name": "Room Three-Way",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.8,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 2,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_hub",
+      "name": "Room Hub",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.4,
+      "allowRotation": false,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_spawn_room",
+      "name": "Spawn Room",
+      "purpose": "spawn",
+      "contentRole": "fixed",
+      "width": 8,
+      "height": 8,
+      "weight": 0.3,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "S",
+          "S",
+          "S",
+          "S",
+          "S",
+          "S",
+          "W"
+        ],
+        [
+          "W",
+          "S",
+          "S",
+          "S",
+          "S",
+          "S",
+          "S",
+          "W"
+        ],
+        [
+          "W",
+          "S",
+          "S",
+          "F",
+          "F",
+          "S",
+          "S",
+          "W"
+        ],
+        [
+          "W",
+          "S",
+          "F",
+          "F",
+          "F",
+          "F",
+          "S",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_enemy_room",
+      "name": "Enemy Den",
+      "purpose": "enemy",
+      "contentRole": "fixed",
+      "width": 8,
+      "height": 8,
+      "weight": 1.5,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "E",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "E",
+          "F",
+          "F",
+          "F",
+          "E",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "E",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_enemy_room_2",
+      "name": "Skeleton Hall",
+      "purpose": "enemy",
+      "contentRole": "fixed",
+      "width": 8,
+      "height": 8,
+      "weight": 1.2,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "E",
+          "F",
+          "F",
+          "E",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "E",
+          "F",
+          "F",
+          "E",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_loot_room",
+      "name": "Treasury",
+      "purpose": "loot",
+      "contentRole": "fixed",
+      "width": 8,
+      "height": 8,
+      "weight": 0.5,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "X",
+          "F",
+          "F",
+          "X",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "X",
+          "F",
+          "F",
+          "X",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_boss_room",
+      "name": "Boss Chamber",
+      "purpose": "boss",
+      "contentRole": "fixed",
+      "width": 8,
+      "height": 8,
+      "weight": 0.2,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "B",
+          "B",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "B",
+          "B",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_door_corridor_h",
+      "name": "Doored Corridor",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.8,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "C",
+          "C",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "C",
+          "C",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_hall",
+      "name": "Grand Hall",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.5,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 2,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_hall_pillared",
+      "name": "Grand Hall Pillared",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.4,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_end",
+      "name": "Grand End",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.4,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_corner_closed",
+      "name": "Grand Corner Closed",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.3,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn",
+            "boss"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_corner_open",
+      "name": "Grand Corner Open",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.4,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_corner_double",
+      "name": "Grand Corner Double",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.3,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 5,
+      "maxChests": 3,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_corner_pillared",
+      "name": "Grand Corner Pillared",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.35,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_enemy_den",
+      "name": "Grand Enemy Den",
+      "purpose": "enemy",
+      "contentRole": "fixed",
+      "width": 8,
+      "height": 8,
+      "weight": 0.4,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "E",
+          "F",
+          "F",
+          "F",
+          "F",
+          "E",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "E",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "E",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "E",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_boss_arena",
+      "name": "Grand Boss Arena",
+      "purpose": "boss",
+      "contentRole": "fixed",
+      "width": 8,
+      "height": 8,
+      "weight": 0.1,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "B",
+          "B",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "B",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_treasury",
+      "name": "Grand Treasury",
+      "purpose": "loot",
+      "contentRole": "fixed",
+      "width": 8,
+      "height": 8,
+      "weight": 0.2,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "X",
+          "F",
+          "F",
+          "X",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "X",
+          "F",
+          "F",
+          "X",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_spawn",
+      "name": "Grand Spawn Hall",
+      "purpose": "spawn",
+      "contentRole": "fixed",
+      "width": 8,
+      "height": 8,
+      "weight": 0.15,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "S",
+          "S",
+          "S",
+          "S",
+          "S",
+          "S",
+          "F"
+        ],
+        [
+          "F",
+          "S",
+          "S",
+          "S",
+          "S",
+          "S",
+          "S",
+          "F"
+        ],
+        [
+          "F",
+          "S",
+          "S",
+          "F",
+          "F",
+          "S",
+          "S",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_center",
+      "name": "Grand Center",
+      "purpose": "empty",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.2,
+      "allowRotation": false,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_grand_edge",
+      "name": "Grand Edge",
+      "purpose": "empty",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.25,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_narrow_corridor_h",
+      "name": "Narrow Corridor Straight",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 1.2,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_narrow_corridor_l",
+      "name": "Narrow Corridor L-Turn",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.9,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_narrow_corridor_t",
+      "name": "Narrow Corridor T-Junction",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.6,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_narrow_crossroads",
+      "name": "Narrow Crossroads",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.3,
+      "allowRotation": false,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_narrow_door_corridor",
+      "name": "Narrow Doored Corridor",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.5,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "C",
+          "C",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "C",
+          "C",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_narrow_to_standard",
+      "name": "Narrow-to-Standard Widener",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 1.0,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_standard_to_wide",
+      "name": "Standard-to-Wide Vestibule",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.6,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_alcove",
+      "name": "Alcove Room",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.8,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn",
+            "boss"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_side_passage",
+      "name": "Side Passage Room",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.7,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_narrow_dead_end",
+      "name": "Narrow Dead End",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.7,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 3,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn",
+            "boss"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 3,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_antechamber",
+      "name": "Antechamber",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.5,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_wide_dead_end",
+      "name": "Wide Dead End Room",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.4,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "W",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_pillar",
+      "name": "Pillar Room",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.8,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 5,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "W",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_ring",
+      "name": "Ring Room",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.7,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": false,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "W",
+          "W",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_crypt_niche",
+      "name": "Crypt Niche Room",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.6,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_guard_post",
+      "name": "Guard Post",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.6,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 5,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_room_gatehouse",
+      "name": "Gatehouse",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.7,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "types": [
+            "enemy",
+            "loot",
+            "spawn"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "types": [
+            "enemy",
+            "loot",
+            "boss"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 4,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        }
+      ],
+      "maxEnemies": 4,
+      "maxChests": 2,
+      "canBeBoss": true,
+      "canBeSpawn": true,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_corridor_ambush",
+      "name": "Ambush Corridor",
+      "purpose": "empty",
+      "contentRole": "flexible",
+      "width": 8,
+      "height": 8,
+      "weight": 0.8,
+      "allowRotation": true,
+      "spawnSlots": [
+        {
+          "x": 1,
+          "y": 6,
+          "types": [
+            "enemy"
+          ]
+        },
+        {
+          "x": 3,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 4,
+          "y": 6,
+          "types": [
+            "enemy",
+            "loot"
+          ]
+        },
+        {
+          "x": 6,
+          "y": 6,
+          "types": [
+            "enemy"
+          ]
+        }
+      ],
+      "maxEnemies": 3,
+      "maxChests": 1,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_corridor_zigzag",
+      "name": "Zigzag Corridor",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.7,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F",
+          "W",
+          "W"
+        ]
+      ]
+    },
+    {
+      "id": "preset_corridor_collapsed",
+      "name": "Collapsed Corridor",
+      "purpose": "corridor",
+      "contentRole": "structural",
+      "width": 8,
+      "height": 8,
+      "weight": 0.7,
+      "allowRotation": true,
+      "spawnSlots": [],
+      "maxEnemies": 0,
+      "maxChests": 0,
+      "canBeBoss": false,
+      "canBeSpawn": false,
+      "tiles": [
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "W",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F",
+          "F"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ]
+      ]
+    }
+  ],
+  "size_presets": [
+    {
+      "name": "Tiny",
+      "gridRows": 2,
+      "gridCols": 2,
+      "label": "2\u00d72 (16\u00d716 tiles)"
+    },
+    {
+      "name": "Small",
+      "gridRows": 3,
+      "gridCols": 3,
+      "label": "3\u00d73 (24\u00d724 tiles)"
+    },
+    {
+      "name": "Medium",
+      "gridRows": 4,
+      "gridCols": 4,
+      "label": "4\u00d74 (32\u00d732 tiles)"
+    },
+    {
+      "name": "Large",
+      "gridRows": 5,
+      "gridCols": 5,
+      "label": "5\u00d75 (40\u00d740 tiles)"
+    }
+  ]
+}

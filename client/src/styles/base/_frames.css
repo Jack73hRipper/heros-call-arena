@@ -1,0 +1,307 @@
+/* ===== Phase 15 — Grim Frame System ===== */
+/* Reusable ornate panel/frame system       */
+/* Replaces flat bordered boxes everywhere  */
+
+/* -----------------------------------------------
+   .grim-frame — Ornate Panel
+   Double-border with corner accents & inner glow.
+   Use on any container to give it game-UI depth.
+   ----------------------------------------------- */
+.grim-frame {
+  position: relative;
+  background: var(--bg-panel);
+  border: var(--frame-border-outer);
+  box-shadow: var(--frame-shadow);
+  /* Subtle inner gradient — top-down lighter to panel color */
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.015) 0%,
+    transparent 40%
+  );
+}
+
+/* Inner border line via inset box-shadow (double-border effect) */
+.grim-frame::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: var(--frame-border-inner);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Corner accents — all 4 corners via gradients on ::after */
+.grim-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  /* Top-left corner */
+  background:
+    /* Top-left horizontal */
+    linear-gradient(90deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 0 0 / var(--frame-corner-size) 1px,
+    /* Top-left vertical */
+    linear-gradient(180deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 0 0 / 1px var(--frame-corner-size),
+    /* Top-right horizontal */
+    linear-gradient(270deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 100% 0 / var(--frame-corner-size) 1px,
+    /* Top-right vertical */
+    linear-gradient(180deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 100% 0 / 1px var(--frame-corner-size),
+    /* Bottom-left horizontal */
+    linear-gradient(90deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 0 100% / var(--frame-corner-size) 1px,
+    /* Bottom-left vertical */
+    linear-gradient(0deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 0 100% / 1px var(--frame-corner-size),
+    /* Bottom-right horizontal */
+    linear-gradient(270deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 100% 100% / var(--frame-corner-size) 1px,
+    /* Bottom-right vertical */
+    linear-gradient(0deg, var(--frame-corner-color) 0%, transparent 100%) no-repeat 100% 100% / 1px var(--frame-corner-size);
+}
+
+/* Glow modifier variants */
+.grim-frame--ember {
+  box-shadow: var(--frame-shadow), var(--frame-glow-ember);
+}
+
+.grim-frame--crimson {
+  box-shadow: var(--frame-shadow), var(--frame-glow-crimson);
+}
+
+.grim-frame--verdant {
+  box-shadow: var(--frame-shadow), var(--frame-glow-verdant);
+}
+
+/* Recessed variant — darker, sunken panel (for content areas, slots) */
+.grim-frame--recessed {
+  background: var(--bg-deep);
+  box-shadow:
+    0 0 0 1px var(--border-dark),
+    inset 0 2px 6px rgba(0, 0, 0, 0.5);
+  background-image: none;
+}
+
+.grim-frame--recessed::before {
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Elevated variant — lighter, raised panel */
+.grim-frame--elevated {
+  background: var(--bg-surface);
+}
+
+/* -----------------------------------------------
+   .grim-separator — Ornamental Horizontal Rule
+   Centered ornament between two ruled lines.
+   Variants: --ember, --crimson, --subtle
+   ----------------------------------------------- */
+.grim-separator {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+.grim-separator::before,
+.grim-separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--border-medium) 20%,
+    var(--border-medium) 80%,
+    transparent 100%
+  );
+}
+
+/* Ornament symbol — centered diamond */
+.grim-separator::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--border-medium) 40%,
+    var(--border-medium) 100%
+  );
+}
+
+.grim-separator::after {
+  background: linear-gradient(
+    270deg,
+    transparent 0%,
+    var(--border-medium) 40%,
+    var(--border-medium) 100%
+  );
+}
+
+/* Default ornament text — use as <div class="grim-separator">◆</div> */
+/* Or with custom: <div class="grim-separator">⬥</div>               */
+
+/* Color variants */
+.grim-separator--ember {
+  color: var(--accent-ember-dim);
+}
+
+.grim-separator--ember::before,
+.grim-separator--ember::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(196, 151, 58, 0.3) 50%,
+    transparent 100%
+  );
+}
+
+.grim-separator--crimson {
+  color: var(--accent-crimson);
+}
+
+.grim-separator--crimson::before,
+.grim-separator--crimson::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(139, 32, 32, 0.3) 50%,
+    transparent 100%
+  );
+}
+
+.grim-separator--subtle {
+  color: var(--border-subtle);
+}
+
+.grim-separator--subtle::before,
+.grim-separator--subtle::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--border-subtle) 50%,
+    transparent 100%
+  );
+}
+
+
+/* -----------------------------------------------
+   .grim-header — Section Header
+   Ornamental underline with flanking decorations.
+   Uses Cinzel font with tracked uppercase.
+   ----------------------------------------------- */
+.grim-header {
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-align: center;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+/* Ornamental underline — centered gradient with ember accent */
+.grim-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-ember-dim) 30%,
+    var(--accent-ember) 50%,
+    var(--accent-ember-dim) 70%,
+    transparent 100%
+  );
+}
+
+/* Flanking decorative dots via box-shadow on a center pseudo */
+.grim-header::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background: var(--accent-ember);
+  border-radius: 50%;
+  box-shadow:
+    -12px 0 0 0 var(--accent-ember-dim),
+     12px 0 0 0 var(--accent-ember-dim);
+  z-index: 1;
+}
+
+/* Size variants */
+.grim-header--sm {
+  font-size: 0.8rem;
+  letter-spacing: 0.10em;
+  padding-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.grim-header--sm::after {
+  width: 40%;
+}
+
+.grim-header--lg {
+  font-size: 1.3rem;
+  letter-spacing: 0.15em;
+  padding-bottom: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.grim-header--lg::before {
+  width: 6px;
+  height: 6px;
+  box-shadow:
+    -16px 0 0 0 var(--accent-ember-dim),
+     16px 0 0 0 var(--accent-ember-dim);
+}
+
+/* Left-aligned variant (for sidebar/content headers) */
+.grim-header--left {
+  text-align: left;
+}
+
+.grim-header--left::after {
+  left: 0;
+  transform: none;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--accent-ember) 0%,
+    var(--accent-ember-dim) 30%,
+    transparent 80%
+  );
+}
+
+.grim-header--left::before {
+  left: 0;
+  transform: none;
+  box-shadow: 12px 0 0 0 var(--accent-ember-dim);
+}
+
+/* Color variants */
+.grim-header--crimson::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-crimson) 30%,
+    var(--accent-crimson-bright) 50%,
+    var(--accent-crimson) 70%,
+    transparent 100%
+  );
+}
+
+.grim-header--crimson::before {
+  background: var(--accent-crimson-bright);
+  box-shadow:
+    -12px 0 0 0 var(--accent-crimson),
+     12px 0 0 0 var(--accent-crimson);
+}

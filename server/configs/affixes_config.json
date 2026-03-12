@@ -1,0 +1,347 @@
+{
+  "prefixes": {
+    "cruel": {
+      "affix_id": "cruel",
+      "name": "Cruel",
+      "stat": "attack_damage",
+      "min_value": 3,
+      "max_value": 12,
+      "ilvl_scaling": 0.5,
+      "weight": 100,
+      "allowed_slots": ["weapon"],
+      "description": "Increases melee damage"
+    },
+    "piercing": {
+      "affix_id": "piercing",
+      "name": "Piercing",
+      "stat": "ranged_damage",
+      "min_value": 3,
+      "max_value": 12,
+      "ilvl_scaling": 0.5,
+      "weight": 100,
+      "allowed_slots": ["weapon"],
+      "description": "Increases ranged damage"
+    },
+    "deadly": {
+      "affix_id": "deadly",
+      "name": "Deadly",
+      "stat": "crit_chance",
+      "min_value": 0.02,
+      "max_value": 0.10,
+      "ilvl_scaling": 0.003,
+      "weight": 70,
+      "allowed_slots": ["weapon", "accessory"],
+      "description": "Increases critical hit chance"
+    },
+    "savage": {
+      "affix_id": "savage",
+      "name": "Savage",
+      "stat": "crit_damage",
+      "min_value": 0.10,
+      "max_value": 0.50,
+      "ilvl_scaling": 0.02,
+      "weight": 60,
+      "allowed_slots": ["weapon", "accessory"],
+      "description": "Increases critical hit damage"
+    },
+    "vampiric": {
+      "affix_id": "vampiric",
+      "name": "Vampiric",
+      "stat": "life_on_hit",
+      "min_value": 1,
+      "max_value": 5,
+      "ilvl_scaling": 0.3,
+      "weight": 50,
+      "allowed_slots": ["weapon"],
+      "description": "Heals on hit"
+    },
+    "thorned": {
+      "affix_id": "thorned",
+      "name": "Thorned",
+      "stat": "thorns",
+      "min_value": 2,
+      "max_value": 8,
+      "ilvl_scaling": 0.4,
+      "weight": 40,
+      "allowed_slots": ["armor"],
+      "description": "Reflects damage to attackers"
+    },
+    "armored": {
+      "affix_id": "armored",
+      "name": "Armored",
+      "stat": "armor",
+      "min_value": 1,
+      "max_value": 6,
+      "ilvl_scaling": 0.3,
+      "weight": 80,
+      "allowed_slots": ["weapon", "armor", "accessory"],
+      "description": "Increases armor"
+    },
+    "empowered": {
+      "affix_id": "empowered",
+      "name": "Empowered",
+      "stat": "skill_damage_pct",
+      "min_value": 0.05,
+      "max_value": 0.20,
+      "ilvl_scaling": 0.01,
+      "weight": 50,
+      "allowed_slots": ["weapon", "accessory"],
+      "description": "Increases skill damage"
+    },
+    "penetrating": {
+      "affix_id": "penetrating",
+      "name": "Penetrating",
+      "stat": "armor_pen",
+      "min_value": 1,
+      "max_value": 5,
+      "ilvl_scaling": 0.2,
+      "weight": 40,
+      "allowed_slots": ["weapon"],
+      "description": "Ignores target armor"
+    },
+    "venomous": {
+      "affix_id": "venomous",
+      "name": "Venomous",
+      "stat": "dot_damage_pct",
+      "min_value": 0.05,
+      "max_value": 0.20,
+      "ilvl_scaling": 0.01,
+      "weight": 35,
+      "allowed_slots": ["weapon", "accessory"],
+      "description": "Increases damage over time effects"
+    },
+    "holy": {
+      "affix_id": "holy",
+      "name": "Holy",
+      "stat": "holy_damage_pct",
+      "min_value": 0.05,
+      "max_value": 0.20,
+      "ilvl_scaling": 0.01,
+      "weight": 35,
+      "allowed_slots": ["weapon", "accessory"],
+      "description": "Increases holy damage"
+    },
+    "sturdy": {
+      "affix_id": "sturdy",
+      "name": "Sturdy",
+      "stat": "max_hp",
+      "min_value": 8,
+      "max_value": 40,
+      "ilvl_scaling": 2.0,
+      "weight": 80,
+      "allowed_slots": ["armor", "accessory"],
+      "description": "Increases maximum HP"
+    },
+    "precise": {
+      "affix_id": "precise",
+      "name": "Precise",
+      "stat": "ranged_damage",
+      "min_value": 2,
+      "max_value": 8,
+      "ilvl_scaling": 0.4,
+      "weight": 70,
+      "allowed_slots": ["accessory"],
+      "description": "Increases ranged damage"
+    },
+    "blessed": {
+      "affix_id": "blessed",
+      "name": "Blessed",
+      "stat": "heal_power_pct",
+      "min_value": 0.05,
+      "max_value": 0.15,
+      "ilvl_scaling": 0.008,
+      "weight": 40,
+      "allowed_slots": ["weapon", "armor"],
+      "description": "Increases healing done"
+    },
+    "resilient": {
+      "affix_id": "resilient",
+      "name": "Resilient",
+      "stat": "damage_reduction_pct",
+      "min_value": 0.02,
+      "max_value": 0.08,
+      "ilvl_scaling": 0.004,
+      "weight": 45,
+      "allowed_slots": ["armor"],
+      "description": "Reduces incoming damage by a percentage"
+    },
+    "regenerating": {
+      "affix_id": "regenerating",
+      "name": "Regenerating",
+      "stat": "hp_regen",
+      "min_value": 1,
+      "max_value": 5,
+      "ilvl_scaling": 0.3,
+      "weight": 45,
+      "allowed_slots": ["armor"],
+      "description": "Regenerates HP each turn"
+    }
+  },
+  "suffixes": {
+    "of_the_bear": {
+      "affix_id": "of_the_bear",
+      "name": "of the Bear",
+      "stat": "max_hp",
+      "min_value": 10,
+      "max_value": 60,
+      "ilvl_scaling": 3.0,
+      "weight": 100,
+      "allowed_slots": ["weapon", "armor", "accessory"],
+      "description": "Increases maximum HP"
+    },
+    "of_iron": {
+      "affix_id": "of_iron",
+      "name": "of Iron",
+      "stat": "armor",
+      "min_value": 2,
+      "max_value": 8,
+      "ilvl_scaling": 0.4,
+      "weight": 90,
+      "allowed_slots": ["armor", "accessory"],
+      "description": "Increases armor"
+    },
+    "of_evasion": {
+      "affix_id": "of_evasion",
+      "name": "of Evasion",
+      "stat": "dodge_chance",
+      "min_value": 0.02,
+      "max_value": 0.10,
+      "ilvl_scaling": 0.004,
+      "weight": 60,
+      "allowed_slots": ["armor", "accessory"],
+      "description": "Increases dodge chance"
+    },
+    "of_haste": {
+      "affix_id": "of_haste",
+      "name": "of Haste",
+      "stat": "cooldown_reduction_pct",
+      "min_value": 0.03,
+      "max_value": 0.12,
+      "ilvl_scaling": 0.005,
+      "weight": 50,
+      "allowed_slots": ["weapon", "armor", "accessory"],
+      "description": "Reduces skill cooldowns"
+    },
+    "of_greed": {
+      "affix_id": "of_greed",
+      "name": "of Greed",
+      "stat": "gold_find_pct",
+      "min_value": 0.05,
+      "max_value": 0.30,
+      "ilvl_scaling": 0.015,
+      "weight": 30,
+      "allowed_slots": ["armor", "accessory"],
+      "description": "Increases gold from kills"
+    },
+    "of_fortune": {
+      "affix_id": "of_fortune",
+      "name": "of Fortune",
+      "stat": "magic_find_pct",
+      "min_value": 0.03,
+      "max_value": 0.20,
+      "ilvl_scaling": 0.01,
+      "weight": 30,
+      "allowed_slots": ["armor", "accessory"],
+      "description": "Increases item rarity chance"
+    },
+    "of_the_leech": {
+      "affix_id": "of_the_leech",
+      "name": "of the Leech",
+      "stat": "life_on_hit",
+      "min_value": 1,
+      "max_value": 4,
+      "ilvl_scaling": 0.2,
+      "weight": 45,
+      "allowed_slots": ["armor", "accessory"],
+      "description": "Heals on hit"
+    },
+    "of_regeneration": {
+      "affix_id": "of_regeneration",
+      "name": "of Regeneration",
+      "stat": "hp_regen",
+      "min_value": 1,
+      "max_value": 8,
+      "ilvl_scaling": 0.5,
+      "weight": 55,
+      "allowed_slots": ["armor", "accessory"],
+      "description": "Regenerates HP each turn"
+    },
+    "of_resilience": {
+      "affix_id": "of_resilience",
+      "name": "of Resilience",
+      "stat": "damage_reduction_pct",
+      "min_value": 0.02,
+      "max_value": 0.12,
+      "ilvl_scaling": 0.005,
+      "weight": 50,
+      "allowed_slots": ["armor", "accessory"],
+      "description": "Reduces incoming damage by a percentage"
+    },
+    "of_mending": {
+      "affix_id": "of_mending",
+      "name": "of Mending",
+      "stat": "heal_power_pct",
+      "min_value": 0.05,
+      "max_value": 0.20,
+      "ilvl_scaling": 0.01,
+      "weight": 35,
+      "allowed_slots": ["weapon", "accessory"],
+      "description": "Increases healing done"
+    },
+    "of_the_hawk": {
+      "affix_id": "of_the_hawk",
+      "name": "of the Hawk",
+      "stat": "ranged_damage",
+      "min_value": 2,
+      "max_value": 8,
+      "ilvl_scaling": 0.4,
+      "weight": 70,
+      "allowed_slots": ["weapon", "accessory"],
+      "description": "Increases ranged damage"
+    },
+    "of_the_wolf": {
+      "affix_id": "of_the_wolf",
+      "name": "of the Wolf",
+      "stat": "attack_damage",
+      "min_value": 2,
+      "max_value": 8,
+      "ilvl_scaling": 0.4,
+      "weight": 70,
+      "allowed_slots": ["weapon", "accessory"],
+      "description": "Increases melee damage"
+    },
+    "of_precision": {
+      "affix_id": "of_precision",
+      "name": "of Precision",
+      "stat": "crit_chance",
+      "min_value": 0.01,
+      "max_value": 0.06,
+      "ilvl_scaling": 0.003,
+      "weight": 50,
+      "allowed_slots": ["weapon", "armor"],
+      "description": "Increases critical hit chance"
+    },
+    "of_thorns": {
+      "affix_id": "of_thorns",
+      "name": "of Thorns",
+      "stat": "thorns",
+      "min_value": 1,
+      "max_value": 6,
+      "ilvl_scaling": 0.3,
+      "weight": 40,
+      "allowed_slots": ["armor", "accessory"],
+      "description": "Reflects damage to attackers"
+    },
+    "of_the_sage": {
+      "affix_id": "of_the_sage",
+      "name": "of the Sage",
+      "stat": "skill_damage_pct",
+      "min_value": 0.03,
+      "max_value": 0.12,
+      "ilvl_scaling": 0.008,
+      "weight": 45,
+      "allowed_slots": ["armor"],
+      "description": "Increases skill damage"
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "id": "iron_depths",
+  "name": "Iron Depths",
+  "description": "Abandoned industrial undercity. Riveted metal plates and rust-streaked panels line the walls. Grated floors reveal pitch-black voids below.",
+  "palette": {
+    "primary": "#151518",
+    "secondary": "#2a2a30",
+    "accent": "#7a5a3a",
+    "mortar": "#1a1a20",
+    "highlight": "#aa7a4a",
+    "floor": "#3e3e48",
+    "floorAlt": "#41414b",
+    "grout": "#0a0a10"
+  },
+  "wall": {
+    "style": "iron_plate",
+    "brickRows": 2,
+    "brickCols": 2,
+    "mortarWidth": 1,
+    "crackDensity": 0.03,
+    "rivetChance": 0.40,
+    "rustChance": 0.08,
+    "pipeChance": 0.0,
+    "edgeVignette": true
+  },
+  "floor": {
+    "style": "metal_grate",
+    "slabGrid": 2,
+    "groutWidth": 2,
+    "grateLineSpacing": 10,
+    "oilChance": 0.0,
+    "stainChance": 0.0,
+    "stainColor": "rgba(90, 60, 30, 0.15)",
+    "debrisChance": 0.0,
+    "debrisColor": "#3a3530"
+  },
+  "corridor": {
+    "style": "walkway",
+    "railHint": true
+  },
+  "fog": {
+    "exploredTint": "rgba(15, 15, 20, 0.6)",
+    "unexploredColor": "#050508"
+  },
+  "ambient": {
+    "vignetteStrength": 0.14,
+    "vignetteColor": "rgba(40, 40, 50, 0.08)"
+  }
+}

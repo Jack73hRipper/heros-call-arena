@@ -1,0 +1,449 @@
+/* ===== Phase 15 Chunk 8 — Polish, Animation & Ambient Details ===== */
+/* Screen transitions, micro-animations, ambient effects             */
+/* GPU-composited: uses only transform/opacity for performance       */
+
+/* -----------------------------------------------
+   1. Screen Transition Framework
+   .screen-enter / .screen-exit applied to screen
+   wrappers during mount/unmount transitions.
+   Fade + slight vertical shift over 250ms.
+   ----------------------------------------------- */
+.screen-enter {
+  animation: screen-fade-in 0.25s ease-out both;
+}
+
+.screen-exit {
+  animation: screen-fade-out 0.2s ease-in both;
+}
+
+@keyframes screen-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes screen-fade-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* -----------------------------------------------
+   2. Panel Hover — Standardised border-brighten
+   Applied to .grim-frame on hover for consistent
+   interactive feedback across all panels.
+   ----------------------------------------------- */
+.grim-frame {
+  transition: border-color 0.25s ease, box-shadow 0.3s ease;
+}
+
+.grim-frame:hover {
+  border-color: var(--border-medium);
+}
+
+/* Interactive panels (buttons inside, clickable) — stronger hover */
+.grim-frame--interactive:hover {
+  border-color: var(--accent-ember-dim);
+  box-shadow:
+    var(--frame-shadow),
+    0 0 8px rgba(196, 151, 58, 0.06);
+}
+
+/* -----------------------------------------------
+   3. Glow Pulse — Important CTA buttons
+   Slow, subtle pulse for primary action buttons.
+   ----------------------------------------------- */
+.grim-btn-pulse {
+  animation: cta-glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes cta-glow-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 12px rgba(196, 151, 58, 0.08);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 20px rgba(196, 151, 58, 0.18),
+      0 0 40px rgba(196, 151, 58, 0.06);
+  }
+}
+
+/* Verdant variant (dungeon enter) */
+.grim-btn-pulse--verdant {
+  animation: cta-glow-pulse-verdant 3s ease-in-out infinite;
+}
+
+@keyframes cta-glow-pulse-verdant {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 12px rgba(74, 122, 42, 0.08);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 20px rgba(74, 122, 42, 0.18),
+      0 0 40px rgba(74, 122, 42, 0.06);
+  }
+}
+
+/* Crimson variant (arena enter / danger) */
+.grim-btn-pulse--crimson {
+  animation: cta-glow-pulse-crimson 3s ease-in-out infinite;
+}
+
+@keyframes cta-glow-pulse-crimson {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 12px rgba(139, 32, 32, 0.08);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 0 20px rgba(139, 32, 32, 0.18),
+      0 0 40px rgba(139, 32, 32, 0.06);
+  }
+}
+
+/* -----------------------------------------------
+   4. Gold Counter Flash
+   Brief highlight animation when gold value changes.
+   Applied via JS by toggling .gold-flash class.
+   ----------------------------------------------- */
+.gold-flash {
+  animation: gold-value-flash 0.6s ease-out;
+}
+
+@keyframes gold-value-flash {
+  0% {
+    color: var(--text-bright);
+    text-shadow:
+      0 0 14px rgba(196, 151, 58, 0.6),
+      0 0 28px rgba(196, 151, 58, 0.3);
+    transform: scale(1.15);
+  }
+  40% {
+    color: var(--accent-ember-bright);
+    text-shadow:
+      0 0 10px rgba(196, 151, 58, 0.4),
+      0 0 20px rgba(196, 151, 58, 0.15);
+    transform: scale(1.05);
+  }
+  100% {
+    color: var(--accent-ember-bright);
+    text-shadow: 0 0 8px rgba(196, 151, 58, 0.15);
+    transform: scale(1);
+  }
+}
+
+/* -----------------------------------------------
+   5. Match List — Fade-in slide-down
+   New matches appearing in the notice board.
+   ----------------------------------------------- */
+.town-match-item {
+  animation: match-slide-in 0.35s ease-out both;
+}
+
+/* Stagger effect for multiple items */
+.town-match-item:nth-child(1) { animation-delay: 0s; }
+.town-match-item:nth-child(2) { animation-delay: 0.04s; }
+.town-match-item:nth-child(3) { animation-delay: 0.08s; }
+.town-match-item:nth-child(4) { animation-delay: 0.12s; }
+.town-match-item:nth-child(5) { animation-delay: 0.16s; }
+.town-match-item:nth-child(6) { animation-delay: 0.2s; }
+.town-match-item:nth-child(n+7) { animation-delay: 0.24s; }
+
+@keyframes match-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) rotate(0deg);
+  }
+  to {
+    opacity: 1;
+    /* Final rotation handled by nth-child rules in _town-hub.css */
+  }
+}
+
+/* -----------------------------------------------
+   6. Ambient — Login Screen Ember Particles
+   Subtle floating ember dots rising upward.
+   CSS-only via multiple pseudo-element box-shadows.
+   Applied to .lobby-landing via ::after.
+   ----------------------------------------------- */
+.lobby-landing::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  /* Multiple floating ember dots as box-shadows positioned across viewport */
+  background-image:
+    radial-gradient(1.5px 1.5px at 10% 80%, rgba(196, 151, 58, 0.35) 50%, transparent 100%),
+    radial-gradient(1px 1px at 25% 70%, rgba(196, 151, 58, 0.25) 50%, transparent 100%),
+    radial-gradient(2px 2px at 40% 90%, rgba(196, 151, 58, 0.3) 50%, transparent 100%),
+    radial-gradient(1px 1px at 55% 75%, rgba(196, 151, 58, 0.2) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 70% 85%, rgba(196, 151, 58, 0.3) 50%, transparent 100%),
+    radial-gradient(1px 1px at 85% 65%, rgba(196, 151, 58, 0.25) 50%, transparent 100%),
+    radial-gradient(2px 2px at 15% 60%, rgba(196, 151, 58, 0.2) 50%, transparent 100%),
+    radial-gradient(1px 1px at 60% 95%, rgba(196, 151, 58, 0.3) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 90% 80%, rgba(196, 151, 58, 0.25) 50%, transparent 100%),
+    radial-gradient(1px 1px at 35% 55%, rgba(196, 151, 58, 0.2) 50%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 50% 70%, rgba(196, 151, 58, 0.15) 50%, transparent 100%),
+    radial-gradient(1px 1px at 75% 55%, rgba(196, 151, 58, 0.2) 50%, transparent 100%);
+  /* Tile sizes must be large enough that individual dots are visible as
+     distinct floating particles, not a dense solid-looking block. Vary
+     sizes across layers so the repeating pattern looks organic. */
+  background-size:
+    300px 300px,
+    250px 250px,
+    400px 400px,
+    200px 200px,
+    350px 350px,
+    220px 220px,
+    380px 380px,
+    260px 260px,
+    320px 320px,
+    180px 180px,
+    280px 280px,
+    240px 240px;
+  animation: ember-float 12s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes ember-float {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100vh);
+  }
+}
+
+/* -----------------------------------------------
+   7. Ambient — Town Hub Sidebar Torch Flicker
+   Animated warm glow at top of sidebar via ::before
+   pseudo-element with flickering box-shadow.
+   ----------------------------------------------- */
+/* Torch glow overlay — uses .town-sidebar-header pseudo-elements
+   to avoid conflicting with grim-frame pseudo-elements on the sidebar */
+.town-sidebar-header::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 3px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(196, 151, 58, 0.4) 0%,
+    rgba(196, 151, 58, 0.1) 50%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  animation: torch-flicker 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Torch glow halo beneath the header */
+.town-sidebar-header::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 20px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(196, 151, 58, 0.06) 0%,
+    transparent 70%
+  );
+  animation: torch-flicker 4s ease-in-out infinite;
+  animation-delay: -1.5s;
+  pointer-events: none;
+}
+
+@keyframes torch-flicker {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateX(-50%) scaleX(1);
+  }
+  15% {
+    opacity: 0.85;
+    transform: translateX(-50%) scaleX(1.05);
+  }
+  30% {
+    opacity: 0.5;
+    transform: translateX(-50%) scaleX(0.95);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateX(-50%) scaleX(1.08);
+  }
+  70% {
+    opacity: 0.55;
+    transform: translateX(-50%) scaleX(0.98);
+  }
+  85% {
+    opacity: 0.8;
+    transform: translateX(-50%) scaleX(1.02);
+  }
+}
+
+/* -----------------------------------------------
+   8. Ambient — Low-Opacity Noise/Grain Texture
+   Subtle SVG data-URI noise overlay on all panels.
+   Uses a tiny repeating pattern for film-grain feel.
+   ----------------------------------------------- */
+.grim-frame::before {
+  /* The grim-frame ::before already exists (inner border).
+     We layer the noise texture onto its background. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='4'%3E%3Crect width='4' height='4' fill='transparent'/%3E%3Crect x='0' y='0' width='1' height='1' fill='rgba(255,255,255,0.008)'/%3E%3Crect x='2' y='3' width='1' height='1' fill='rgba(255,255,255,0.012)'/%3E%3Crect x='3' y='1' width='1' height='1' fill='rgba(255,255,255,0.006)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* -----------------------------------------------
+   9. Nav Item Slide-In (Town Sidebar)
+   Stagger animation when town hub mounts.
+   ----------------------------------------------- */
+.town-nav-item {
+  animation: nav-item-slide-in 0.3s ease-out both;
+}
+
+.town-nav-item:nth-child(1) { animation-delay: 0.05s; }
+.town-nav-item:nth-child(2) { animation-delay: 0.1s; }
+.town-nav-item:nth-child(3) { animation-delay: 0.15s; }
+.town-nav-item:nth-child(4) { animation-delay: 0.2s; }
+.town-nav-item:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes nav-item-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* -----------------------------------------------
+   10. War Room Unit Cards — Stagger entrance
+   ----------------------------------------------- */
+.war-unit-card {
+  animation: unit-card-enter 0.3s ease-out both;
+}
+
+.war-unit-card:nth-child(1) { animation-delay: 0s; }
+.war-unit-card:nth-child(2) { animation-delay: 0.06s; }
+.war-unit-card:nth-child(3) { animation-delay: 0.12s; }
+.war-unit-card:nth-child(4) { animation-delay: 0.18s; }
+.war-unit-card:nth-child(5) { animation-delay: 0.24s; }
+.war-unit-card:nth-child(n+6) { animation-delay: 0.3s; }
+
+@keyframes unit-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* -----------------------------------------------
+   11. Post-Match Roster Cards — Stagger entrance
+   ----------------------------------------------- */
+.post-match-roster .roster-card {
+  animation: roster-card-reveal 0.4s ease-out both;
+}
+
+.post-match-roster .roster-card:nth-child(1) { animation-delay: 0.1s; }
+.post-match-roster .roster-card:nth-child(2) { animation-delay: 0.2s; }
+.post-match-roster .roster-card:nth-child(3) { animation-delay: 0.3s; }
+.post-match-roster .roster-card:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes roster-card-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* -----------------------------------------------
+   12. Hero Cards (Town) — Hover lift
+   Standardised hover micro-interaction.
+   ----------------------------------------------- */
+.roster-hero-card,
+.tavern-hero-card {
+  transition: transform 0.2s ease, box-shadow 0.3s ease, border-color 0.25s ease;
+}
+
+.roster-hero-card:hover,
+.tavern-hero-card:hover {
+  transform: translateY(-2px);
+}
+
+/* -----------------------------------------------
+   13. Reduced Motion — Accessibility
+   Disable all non-essential animations for users
+   who prefer reduced motion.
+   ----------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .screen-enter,
+  .screen-exit {
+    animation: none;
+  }
+
+  .lobby-landing::after {
+    animation: none;
+    opacity: 0.3;
+  }
+
+  .town-sidebar-header::before,
+  .town-sidebar-header::after {
+    animation: none;
+  }
+
+  .grim-btn-pulse,
+  .grim-btn-pulse--verdant,
+  .grim-btn-pulse--crimson {
+    animation: none;
+  }
+
+  .gold-flash {
+    animation: none;
+  }
+
+  .town-match-item,
+  .town-nav-item,
+  .war-unit-card,
+  .post-match-roster .roster-card {
+    animation: none;
+  }
+
+  .roster-hero-card:hover,
+  .tavern-hero-card:hover {
+    transform: none;
+  }
+}

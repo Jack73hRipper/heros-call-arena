@@ -1,0 +1,1262 @@
+"""
+WebSocket Manager — Handles player connections and message broadcasting.
+Includes the tick callback that drives the turn system.
+Supports FOV-filtered broadcasts and AI integration (Phase 2).
+"""
+
+from __future__ import annotations
+
+import json
+
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from starlette.websockets import WebSocketState
+
+from app.models.actions import PlayerAction, ActionType
+from app.core.match_manager import (
+    set_player_ready,
+    start_match,
+    end_match,
+    remove_player,
+    get_match,
+    get_match_players,
+    get_match_start_payload,
+    get_match_start_payload_for_player,
+    get_lobby_players_payload,
+    get_players_snapshot,
+    queue_action,
+    pop_next_actions,
+    increment_turn,
+    get_alive_count,
+    clear_player_queue,
+    remove_last_action,
+    get_player_queue,
+    get_match_teams,
+    get_ai_ids,
+    set_fov_cache,
+    get_fov_cache,
+    get_team_fov,
+    change_player_team,
+    get_player_username,
+    add_lobby_message,
+    update_match_config,
+    get_match_config_payload,
+    select_class,
+    get_dungeon_state,
+    equip_item,
+    unequip_item,
+    select_hero,
+    select_heroes,
+    get_hero_selection,
+    validate_dungeon_hero_selections,
+    get_match_end_payload,
+    is_party_member,
+    set_party_control,
+    release_party_control,
+    get_controlled_unit_ids,
+    get_party_members,
+    transfer_item_in_match,
+    get_party_member_inventory,
+    select_all_party,
+    release_all_party,
+    queue_group_action,
+    queue_group_batch_actions,
+    set_unit_stance,
+    set_all_stances,
+    advance_wave_if_cleared,
+    is_wave_map,
+    all_waves_complete,
+    get_wave_state,
+    generate_auto_target_action,
+    clear_auto_target,
+    set_auto_target,
+    get_auto_target,
+)
+from app.core.turn_resolver import resolve_turn
+from app.core.map_loader import get_obstacles, get_obstacles_with_door_states, load_map
+from app.core.fov import compute_fov
+from app.core.ai_behavior import run_ai_decisions, clear_ai_patrol_state
+from app.services.scheduler import scheduler_manager
+
+router = APIRouter()
+
+
+class ConnectionManager:
+    """Tracks active WebSocket connections per match."""
+
+    def __init__(self):
+        # match_id -> {player_id -> WebSocket}
+        self._connections: dict[str, dict[str, WebSocket]] = {}
+
+    async def connect(self, match_id: str, player_id: str, websocket: WebSocket) -> None:
+        await websocket.accept()
+        if match_id not in self._connections:
+            self._connections[match_id] = {}
+        self._connections[match_id][player_id] = websocket
+        print(f"[WS] Player {player_id} connected to match {match_id}")
+
+    def disconnect(self, match_id: str, player_id: str) -> None:
+        if match_id in self._connections:
+            self._connections[match_id].pop(player_id, None)
+            if not self._connections[match_id]:
+                del self._connections[match_id]
+        print(f"[WS] Player {player_id} disconnected from match {match_id}")
+
+    async def send_to_player(self, match_id: str, player_id: str, data: dict) -> None:
+        ws = self._connections.get(match_id, {}).get(player_id)
+        if ws and ws.client_state == WebSocketState.CONNECTED:
+            try:
+                await ws.send_json(data)
+            except Exception:
+                pass
+
+    async def broadcast_to_match(self, match_id: str, data: dict, exclude: str | None = None) -> None:
+        """Broadcast to all players in a match. Optionally exclude one player_id."""
+        connections = self._connections.get(match_id, {})
+        for pid, ws in list(connections.items()):
+            if pid == exclude:
+                continue
+            try:
+                if ws.client_state == WebSocketState.CONNECTED:
+                    await ws.send_json(data)
+            except Exception:
+                pass  # Handle stale connections gracefully
+
+    def get_match_connections(self, match_id: str) -> dict[str, WebSocket]:
+        return self._connections.get(match_id, {})
+
+    def get_connection_count(self, match_id: str) -> int:
+        return len(self._connections.get(match_id, {}))
+
+
+ws_manager = ConnectionManager()
+
+
+# ---------- Tick Callback ----------
+
+async def match_tick(match_id: str) -> None:
+    """
+    Called by APScheduler every tick_rate seconds for an active match.
+    Computes FOV, runs AI decisions, collects queued actions, resolves the turn,
+    and broadcasts FOV-filtered results to each player.
+    """
+    match = get_match(match_id)
+    if not match or match.status != "in_progress":
+        scheduler_manager.remove_match_tick(match_id)
+        return
+
+    # Increment turn
+    turn_number = increment_turn(match_id)
+    print(f"[Tick] Match {match_id} — Turn {turn_number}")
+
+    # Load map data
+    map_id = match.config.map_id
+    map_data = load_map(map_id)
+    grid_width = map_data.get("width", 15)
+    grid_height = map_data.get("height", 15)
+
+    # Get dungeon state (door/chest/ground_items states) — None for arena maps
+    dungeon_state = get_dungeon_state(match_id)
+    door_states = dungeon_state["door_states"] if dungeon_state else None
+    chest_states = dungeon_state["chest_states"] if dungeon_state else None
+    ground_items = dungeon_state["ground_items"] if dungeon_state else None
+
+    # Compute obstacles honouring current door states (open doors passable)
+    obstacles = get_obstacles_with_door_states(map_id, door_states)
+
+    # Phase 7D-1: Build a set of closed-door tiles for door-aware A*.
+    # AI pathfinding uses this to plan paths *through* closed doors at
+    # elevated cost.  The obstacles set still contains closed doors for
+    # movement validation (turn_resolver blocks MOVE onto closed doors).
+    door_tiles: set[tuple[int, int]] | None = None
+    if door_states:
+        door_tiles = set()
+        for key, state in door_states.items():
+            if state == "closed":
+                parts = key.split(",")
+                if len(parts) == 2:
+                    door_tiles.add((int(parts[0]), int(parts[1])))
+        if not door_tiles:
+            door_tiles = None
+
+    # Get all units (players + AI)
+    all_units = get_match_players(match_id)
+    team_a, team_b, team_c, team_d = get_match_teams(match_id)
+    ai_ids = get_ai_ids(match_id)
+
+    # --- Step 1: Compute FOV for all alive units ---
+    for uid, unit in all_units.items():
+        if unit.is_alive:
+            fov = compute_fov(
+                unit.position.x, unit.position.y,
+                unit.vision_range,
+                grid_width, grid_height,
+                obstacles,
+            )
+            set_fov_cache(match_id, uid, fov)
+
+    # --- Step 2: Run AI decisions (with shared team FOV) ---
+    # Pre-compute team FOV so AI can use shared ally vision
+    pre_team_a_fov = get_team_fov(match_id, team_a) if team_a else set()
+    pre_team_b_fov = get_team_fov(match_id, team_b) if team_b else set()
+    pre_team_c_fov = get_team_fov(match_id, team_c) if team_c else set()
+    pre_team_d_fov = get_team_fov(match_id, team_d) if team_d else set()
+    ai_team_fov_map = {
+        "a": pre_team_a_fov,
+        "b": pre_team_b_fov,
+        "c": pre_team_c_fov,
+        "d": pre_team_d_fov,
+    }
+
+    ai_actions = run_ai_decisions(
+        ai_ids, all_units, grid_width, grid_height, obstacles,
+        team_fov_map=ai_team_fov_map,
+        match_id=match_id,
+        controlled_ids=get_controlled_unit_ids(match_id),
+        door_tiles=door_tiles,
+    )
+
+    # --- Step 3: Pop first action from each human player's queue ---
+    raw_actions = pop_next_actions(match_id)
+
+    # Clear queues for dead players
+    for pid, p in all_units.items():
+        if not p.is_alive:
+            clear_player_queue(match_id, pid)
+
+    # Convert popped player actions dict to list
+    action_list = []
+    for pid, action in raw_actions.items():
+        player = all_units.get(pid)
+        if player and player.is_alive:
+            action_list.append(action)
+
+    # Add AI actions
+    action_list.extend(ai_actions)
+
+    # --- Step 3.5: Generate auto-target actions for players with empty queues ---
+    # Human-controlled units (and controlled party members) with an active
+    # auto_target_id but no queued action get a chase/attack action generated
+    # server-side using the target's *current* position.  This is the core of
+    # the Phase 10 persistent melee pursuit system.
+    submitted_ids = {a.player_id for a in action_list}
+    for pid, unit in all_units.items():
+        if not unit.is_alive:
+            continue
+        if pid in submitted_ids or pid in raw_actions:
+            continue
+        # Only process human players and controlled party members
+        is_human = unit.unit_type == "human"
+        is_controlled = bool(unit.controlled_by)
+        if not (is_human or is_controlled):
+            continue
+        if unit.auto_target_id:
+            prev_target = unit.auto_target_id
+            auto_action = generate_auto_target_action(
+                match_id, pid, all_units,
+                grid_width, grid_height, obstacles,
+                door_tiles=door_tiles,
+            )
+            if auto_action:
+                action_list.append(auto_action)
+                submitted_ids.add(pid)
+            elif prev_target and not unit.auto_target_id:
+                # Auto-target was cleared by generate_auto_target_action
+                # (target died or unreachable) — notify the controlling player
+                notify_pid = unit.controlled_by or pid
+                if notify_pid in connections:
+                    # Determine reason: target dead or unreachable
+                    target_unit = all_units.get(prev_target)
+                    reason = "target_died" if (not target_unit or not target_unit.is_alive) else "unreachable"
+                    await ws_manager.send_to_player(match_id, notify_pid, {
+                        "type": "auto_target_cleared",
+                        "unit_id": pid,
+                        "reason": reason,
+                    })
+
+    # Add implicit "wait" for human players who didn't submit an action
+    for pid, p in all_units.items():
+        if p.is_alive and pid not in submitted_ids and p.unit_type == "human":
+            action_list.append(PlayerAction(
+                player_id=pid,
+                action_type=ActionType.WAIT,
+            ))
+
+    # --- Step 4: Resolve the turn ---
+    use_teams = bool(team_a or team_b or team_c or team_d)
+    turn_result = resolve_turn(
+        match_id=match_id,
+        turn_number=turn_number,
+        players=all_units,
+        actions=action_list,
+        grid_width=grid_width,
+        grid_height=grid_height,
+        obstacles=obstacles,
+        team_a=team_a if use_teams else None,
+        team_b=team_b if use_teams else None,
+        team_c=team_c if use_teams else None,
+        team_d=team_d if use_teams else None,
+        door_states=door_states,
+        chest_states=chest_states,
+        ground_items=ground_items,
+    )
+
+    # --- Step 5: Recompute FOV after movement ---
+    for uid, unit in all_units.items():
+        if unit.is_alive:
+            fov = compute_fov(
+                unit.position.x, unit.position.y,
+                unit.vision_range,
+                grid_width, grid_height,
+                obstacles,
+            )
+            set_fov_cache(match_id, uid, fov)
+
+    # --- Step 6: Build and send FOV-filtered payloads to each human player ---
+    # Use shared team FOV: each player sees the combined vision of all teammates
+    full_snapshot = get_players_snapshot(match_id)
+
+    # Pre-compute team FOV for each team (all alive members, including AI)
+    team_a_fov = get_team_fov(match_id, team_a) if team_a else set()
+    team_b_fov = get_team_fov(match_id, team_b) if team_b else set()
+    team_c_fov = get_team_fov(match_id, team_c) if team_c else set()
+    team_d_fov = get_team_fov(match_id, team_d) if team_d else set()
+
+    # Map team letter to precomputed FOV
+    team_fov_map = {
+        "a": team_a_fov,
+        "b": team_b_fov,
+        "c": team_c_fov,
+        "d": team_d_fov,
+    }
+
+    connections = ws_manager.get_match_connections(match_id)
+    for pid in connections:
+        # Determine which team this player is on and use the team's combined FOV
+        player_data = full_snapshot.get(pid, {})
+        player_team = player_data.get("team", "")
+
+        player_fov = team_fov_map.get(player_team)
+        if not player_fov:
+            # Fallback to individual FOV (e.g. FFA mode with no teams)
+            player_fov = get_fov_cache(match_id, pid)
+
+        # Filter players snapshot: only include units visible in this player's FOV
+        # Always include the player themselves
+        filtered_players = {}
+        for uid, data in full_snapshot.items():
+            if uid == pid:
+                filtered_players[uid] = data
+                continue
+            pos = data["position"]
+            if (pos["x"], pos["y"]) in player_fov:
+                filtered_players[uid] = data
+            elif data["team"] == full_snapshot.get(pid, {}).get("team"):
+                # Allies are always visible (show position even out of FOV)
+                filtered_players[uid] = data
+
+        # Filter actions: only include actions involving visible units
+        filtered_actions = []
+        for a in turn_result.actions:
+            action_dict = a.model_dump()
+            # Show action if actor is visible or player is the target
+            actor_unit = all_units.get(a.player_id)
+            if actor_unit and (actor_unit.position.x, actor_unit.position.y) in player_fov:
+                filtered_actions.append(action_dict)
+            elif a.target_id == pid:
+                # Player was attacked from outside FOV
+                action_dict["message"] = "You were attacked from the shadows!"
+                filtered_actions.append(action_dict)
+
+        payload = {
+            "type": "turn_result",
+            "match_id": match_id,
+            "turn_number": turn_number,
+            "actions": filtered_actions,
+            "deaths": turn_result.deaths,
+            "winner": turn_result.winner,
+            "players": filtered_players,
+            "visible_tiles": list(player_fov) if player_fov else [],
+        }
+
+        # Include door changes for dungeon matches
+        if turn_result.door_changes:
+            payload["door_changes"] = turn_result.door_changes
+        if dungeon_state:
+            payload["door_states"] = dungeon_state["door_states"]
+            payload["chest_states"] = dungeon_state["chest_states"]
+            payload["ground_items"] = dungeon_state["ground_items"]
+
+        # Include loot events (Phase 4D-2)
+        if turn_result.loot_drops:
+            # Filter loot drops to only visible tiles
+            visible_drops = [
+                drop for drop in turn_result.loot_drops
+                if (drop["x"], drop["y"]) in player_fov
+            ] if player_fov else turn_result.loot_drops
+            if visible_drops:
+                payload["loot_drops"] = visible_drops
+        if turn_result.chest_opened:
+            payload["chest_opened"] = turn_result.chest_opened
+        if turn_result.items_picked_up:
+            payload["items_picked_up"] = turn_result.items_picked_up
+        if turn_result.items_used:
+            payload["items_used"] = turn_result.items_used
+
+        # Include hero death events (Phase 4E-2: permadeath)
+        if turn_result.hero_deaths:
+            payload["hero_deaths"] = turn_result.hero_deaths
+
+        # Include player's own inventory/equipment for private state
+        player_unit = all_units.get(pid)
+        if player_unit:
+            payload["my_inventory"] = player_unit.inventory
+            payload["my_equipment"] = player_unit.equipment
+
+        # Include party member inventories so controlled unit inventory stays synced
+        party = get_party_members(match_id, pid)
+        if party:
+            party_invs = {}
+            for pm in party:
+                pm_unit = all_units.get(pm["unit_id"])
+                if pm_unit:
+                    party_invs[pm["unit_id"]] = {
+                        "inventory": list(pm_unit.inventory),
+                        "equipment": dict(pm_unit.equipment),
+                    }
+            if party_invs:
+                payload["party_inventories"] = party_invs
+
+        # Phase 10C-4 / 10G-3: Include auto-target + skill state so client stays in sync
+        auto_targets = {}
+        player_unit_at = all_units.get(pid)
+        if player_unit_at and player_unit_at.auto_target_id:
+            auto_targets[pid] = {
+                "target_id": player_unit_at.auto_target_id,
+                "skill_id": player_unit_at.auto_skill_id,
+            }
+        if party:
+            for pm in party:
+                pm_unit = all_units.get(pm["unit_id"])
+                if pm_unit and pm_unit.auto_target_id:
+                    auto_targets[pm["unit_id"]] = {
+                        "target_id": pm_unit.auto_target_id,
+                        "skill_id": pm_unit.auto_skill_id,
+                    }
+        if auto_targets:
+            payload["auto_targets"] = auto_targets
+
+        await ws_manager.send_to_player(match_id, pid, payload)
+
+    # After turn broadcast, send each human player their remaining queue + party info
+    for pid in connections:
+        queue = get_player_queue(match_id, pid)
+        queue_payload = {
+            "type": "queue_updated",
+            "queue": [{"action_type": a.action_type.value,
+                        "target_x": a.target_x, "target_y": a.target_y,
+                        "skill_id": a.skill_id}
+                       for a in queue],
+        }
+        # Include party member info for players with allies
+        party = get_party_members(match_id, pid)
+        if party:
+            queue_payload["party"] = party
+        await ws_manager.send_to_player(match_id, pid, queue_payload)
+
+    # Clear dead players' queues and auto-targets after broadcasting
+    for death_pid in turn_result.deaths:
+        clear_player_queue(match_id, death_pid)
+        clear_auto_target(match_id, death_pid)
+        # Also clear any other unit's auto-target if it was targeting this dead unit
+        # and notify the owning player (Phase 10C-3)
+        for uid, unit in all_units.items():
+            if unit.auto_target_id == death_pid:
+                clear_auto_target(match_id, uid)
+                # Determine who to notify: the human player controlling this unit
+                notify_pid = unit.controlled_by or uid
+                if notify_pid in connections:
+                    await ws_manager.send_to_player(match_id, notify_pid, {
+                        "type": "auto_target_cleared",
+                        "unit_id": uid,
+                        "reason": "target_died",
+                    })
+
+    # --- Wave Spawner: advance wave if current wave is cleared ---
+    wave_info = advance_wave_if_cleared(match_id)
+    if wave_info:
+        # A new wave just spawned — broadcast to all players
+        wave_payload = {
+            "type": "wave_started",
+            "match_id": match_id,
+            "wave_number": wave_info["wave_number"],
+            "wave_name": wave_info["wave_name"],
+            "enemy_count": wave_info["enemy_count"],
+            "total_waves": wave_info["total_waves"],
+        }
+        await ws_manager.broadcast_to_match(match_id, wave_payload)
+        print(f"[Wave] Match {match_id} — Wave {wave_info['wave_number']}/{wave_info['total_waves']}: {wave_info['wave_name']} ({wave_info['enemy_count']} enemies)")
+
+    # Suppress victory for wave maps until all waves are cleared
+    if turn_result.winner and is_wave_map(match_id) and not all_waves_complete(match_id):
+        turn_result.winner = None  # More waves to go — suppress victory
+
+    # Check for match end
+    if turn_result.winner:
+        winner_display = ""
+        team_labels = {
+            "team_a": "Team A wins!",
+            "team_b": "Team B wins!",
+            "team_c": "Team C wins!",
+            "team_d": "Team D wins!",
+            "draw": "Draw!",
+        }
+        if turn_result.winner in team_labels:
+            winner_display = team_labels[turn_result.winner]
+        else:
+            # FFA — winner is a player_id
+            winner_player = all_units.get(turn_result.winner)
+            if winner_player:
+                winner_display = winner_player.username
+
+        end_payload = {
+            "type": "match_end",
+            "match_id": match_id,
+            "winner": turn_result.winner,
+            "winner_username": winner_display,
+            "final_turn": turn_number,
+        }
+
+        # Include per-hero outcomes (Phase 4E-2)
+        hero_outcomes = get_match_end_payload(match_id)
+        end_payload.update(hero_outcomes)
+
+        await ws_manager.broadcast_to_match(match_id, end_payload)
+        end_match(match_id)
+        clear_ai_patrol_state()  # Clean up AI scouting memory
+        scheduler_manager.remove_match_tick(match_id)
+        print(f"[Match] Match {match_id} ended — winner: {winner_display}")
+
+
+@router.websocket("/ws/{match_id}/{player_id}")
+async def websocket_endpoint(websocket: WebSocket, match_id: str, player_id: str):
+    """
+    WebSocket endpoint for a player in a match.
+
+    Messages from client:
+      {"type": "action", "action_type": "move", "target_x": 5, "target_y": 3}
+      {"type": "action", "action_type": "attack", "target_x": 5, "target_y": 3}
+      {"type": "action", "action_type": "ranged_attack", "target_x": 5, "target_y": 3}
+      {"type": "action", "action_type": "wait"}
+      {"type": "ready"}
+
+    Messages from server:
+      {"type": "turn_result", ...}
+      {"type": "match_start", ...}
+      {"type": "match_end", ...}
+      {"type": "player_joined", ...}
+      {"type": "error", "message": "..."}
+    """
+    await ws_manager.connect(match_id, player_id, websocket)
+
+    try:
+        while True:
+            # Receive raw text first so we can handle malformed JSON
+            raw = await websocket.receive_text()
+            try:
+                data = json.loads(raw)
+            except (json.JSONDecodeError, ValueError):
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "error",
+                    "message": "Invalid JSON",
+                })
+                continue
+
+            if not isinstance(data, dict) or "type" not in data:
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "error",
+                    "message": "Message must be a JSON object with a 'type' field",
+                })
+                continue
+
+            msg_type = data.get("type")
+
+            if msg_type == "action":
+                action_type = data.get("action_type")
+                if action_type not in ("move", "attack", "ranged_attack", "wait", "interact", "loot", "use_item", "skill"):
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": f"Unknown action_type: {action_type}",
+                    })
+                    continue
+
+                # Phase 6C: Validate skill_id when action_type is "skill"
+                if action_type == "skill":
+                    skill_id = data.get("skill_id")
+                    if not skill_id:
+                        await ws_manager.send_to_player(match_id, player_id, {
+                            "type": "error",
+                            "message": "Missing skill_id for skill action",
+                        })
+                        continue
+                    from app.core.skills import get_skill as _ws_get_skill
+                    if _ws_get_skill(skill_id) is None:
+                        await ws_manager.send_to_player(match_id, player_id, {
+                            "type": "error",
+                            "message": f"Unknown skill_id: {skill_id}",
+                        })
+                        continue
+
+                # Party control: if unit_id is specified, queue for that allied unit
+                unit_id = data.get("unit_id", player_id)
+                if unit_id != player_id:
+                    if not is_party_member(match_id, player_id, unit_id):
+                        await ws_manager.send_to_player(match_id, player_id, {
+                            "type": "error",
+                            "message": f"Cannot control unit: {unit_id}",
+                        })
+                        continue
+
+                # Build PlayerAction and queue it (append to persistent queue)
+                action = PlayerAction(
+                    player_id=unit_id,
+                    action_type=ActionType(action_type),
+                    target_x=data.get("target_x"),
+                    target_y=data.get("target_y"),
+                    skill_id=data.get("skill_id"),  # Phase 6A: pass skill_id for SKILL actions
+                )
+                result = queue_action(match_id, unit_id, action)
+
+                if result is True:
+                    # Send back the full updated queue
+                    queue = get_player_queue(match_id, unit_id)
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "action_queued",
+                        "unit_id": unit_id,
+                        "action_type": action_type,
+                        "target_x": data.get("target_x"),
+                        "target_y": data.get("target_y"),
+                        "skill_id": data.get("skill_id"),
+                        "queue": [{"action_type": a.action_type.value,
+                                    "target_x": a.target_x, "target_y": a.target_y,
+                                    "skill_id": a.skill_id}
+                                   for a in queue],
+                        "queue_length": len(queue),
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": result if isinstance(result, str)
+                            else "Cannot queue action",
+                    })
+
+            elif msg_type == "batch_actions":
+                # Smart right-click: clear queue then queue multiple actions at once
+                actions_data = data.get("actions", [])
+                valid_types = ("move", "attack", "ranged_attack", "wait", "interact", "loot", "use_item", "skill")
+
+                # Party control: if unit_id is specified, queue for that allied unit
+                unit_id = data.get("unit_id", player_id)
+                if unit_id != player_id:
+                    if not is_party_member(match_id, player_id, unit_id):
+                        await ws_manager.send_to_player(match_id, player_id, {
+                            "type": "error",
+                            "message": f"Cannot control unit: {unit_id}",
+                        })
+                        continue
+
+                # Clear existing queue first (replace mode)
+                clear_player_queue(match_id, unit_id)
+                # Phase 10B: batch_actions clears auto-target (new commands override pursuit)
+                clear_auto_target(match_id, unit_id)
+
+                queued_count = 0
+                error_msg = None
+                for act in actions_data:
+                    at = act.get("action_type")
+                    if at not in valid_types:
+                        error_msg = f"Unknown action_type in batch: {at}"
+                        break
+                    pa = PlayerAction(
+                        player_id=unit_id,
+                        action_type=ActionType(at),
+                        target_x=act.get("target_x"),
+                        target_y=act.get("target_y"),
+                        skill_id=act.get("skill_id"),  # Phase 6A
+                    )
+                    result = queue_action(match_id, unit_id, pa)
+                    if result is True:
+                        queued_count += 1
+                    else:
+                        error_msg = result if isinstance(result, str) else "Cannot queue action"
+                        break
+
+                queue = get_player_queue(match_id, unit_id)
+                if error_msg and queued_count == 0:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": error_msg,
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "queue_updated",
+                        "unit_id": unit_id,
+                        "batch": True,
+                        "queued_count": queued_count,
+                        "queue": [{"action_type": a.action_type.value,
+                                    "target_x": a.target_x, "target_y": a.target_y,
+                                    "skill_id": a.skill_id}
+                                   for a in queue],
+                    })
+
+            elif msg_type == "clear_queue":
+                unit_id = data.get("unit_id", player_id)
+                if unit_id != player_id and not is_party_member(match_id, player_id, unit_id):
+                    unit_id = player_id
+                count = clear_player_queue(match_id, unit_id)
+                # Phase 10B: clear_queue also cancels auto-target pursuit
+                clear_auto_target(match_id, unit_id)
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "queue_cleared",
+                    "unit_id": unit_id,
+                    "cleared_count": count,
+                    "queue": [],
+                })
+
+            elif msg_type == "remove_last":
+                unit_id = data.get("unit_id", player_id)
+                if unit_id != player_id and not is_party_member(match_id, player_id, unit_id):
+                    unit_id = player_id
+                removed = remove_last_action(match_id, unit_id)
+                queue = get_player_queue(match_id, unit_id)
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "queue_updated",
+                    "unit_id": unit_id,
+                    "removed": removed,
+                    "queue": [{"action_type": a.action_type.value,
+                                "target_x": a.target_x, "target_y": a.target_y,
+                                "skill_id": a.skill_id}
+                               for a in queue],
+                })
+
+            elif msg_type == "select_party_member":
+                # Player selects a party member to control
+                unit_id = data.get("unit_id")
+                if not unit_id:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing unit_id",
+                    })
+                    continue
+                success = set_party_control(match_id, player_id, unit_id)
+                if success:
+                    party = get_party_members(match_id, player_id)
+                    unit_queue = get_player_queue(match_id, unit_id)
+                    # Include inventory data for the selected unit
+                    unit_inv = get_party_member_inventory(match_id, player_id, unit_id)
+                    response = {
+                        "type": "party_member_selected",
+                        "unit_id": unit_id,
+                        "party": party,
+                        "unit_queue": [{"action_type": a.action_type.value,
+                                        "target_x": a.target_x, "target_y": a.target_y,
+                                        "skill_id": a.skill_id}
+                                       for a in unit_queue],
+                    }
+                    if unit_inv:
+                        response["unit_inventory"] = unit_inv["inventory"]
+                        response["unit_equipment"] = unit_inv["equipment"]
+                    await ws_manager.send_to_player(match_id, player_id, response)
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": f"Cannot select party member: {unit_id}",
+                    })
+
+            elif msg_type == "release_party_member":
+                # Player releases control of a party member (back to AI)
+                unit_id = data.get("unit_id")
+                release_party_control(match_id, player_id, unit_id)
+                party = get_party_members(match_id, player_id)
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "party_member_released",
+                    "unit_id": unit_id,
+                    "party": party,
+                })
+
+            elif msg_type == "select_all_party":
+                # Select all alive party members for control
+                selected = select_all_party(match_id, player_id)
+                party = get_party_members(match_id, player_id)
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "all_party_selected",
+                    "selected_ids": selected,
+                    "party": party,
+                })
+
+            elif msg_type == "release_all_party":
+                # Release all units controlled by this player back to AI
+                released = release_all_party(match_id, player_id)
+                party = get_party_members(match_id, player_id)
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "all_party_released",
+                    "released_ids": released,
+                    "party": party,
+                })
+
+            elif msg_type == "group_action":
+                # Queue the same action for all controlled units (+ player)
+                action_type = data.get("action_type")
+                valid_types = ("move", "attack", "ranged_attack", "wait", "interact", "loot", "use_item", "skill")
+                if action_type not in valid_types:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": f"Unknown action_type: {action_type}",
+                    })
+                    continue
+                unit_ids = data.get("unit_ids")  # optional — defaults to all controlled
+                result = queue_group_action(
+                    match_id, player_id,
+                    action_type=action_type,
+                    target_x=data.get("target_x"),
+                    target_y=data.get("target_y"),
+                    skill_id=data.get("skill_id"),
+                    unit_ids=unit_ids,
+                )
+                # Return per-unit queue state
+                all_queues = {}
+                for uid in result["queued"]:
+                    q = get_player_queue(match_id, uid)
+                    all_queues[uid] = [{"action_type": a.action_type.value,
+                                        "target_x": a.target_x, "target_y": a.target_y,
+                                        "skill_id": a.skill_id} for a in q]
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "group_action_queued",
+                    "queued": result["queued"],
+                    "failed": result["failed"],
+                    "queues": all_queues,
+                })
+
+            elif msg_type == "group_batch_actions":
+                # Queue per-unit batch paths for multiple units at once
+                unit_actions = data.get("unit_actions", [])
+                result = queue_group_batch_actions(match_id, player_id, unit_actions)
+                # Return per-unit queue state
+                all_queues = {}
+                for entry in result["queued"]:
+                    uid = entry["unit_id"]
+                    q = get_player_queue(match_id, uid)
+                    all_queues[uid] = [{"action_type": a.action_type.value,
+                                        "target_x": a.target_x, "target_y": a.target_y,
+                                        "skill_id": a.skill_id} for a in q]
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "group_batch_queued",
+                    "queued": result["queued"],
+                    "failed": result["failed"],
+                    "queues": all_queues,
+                })
+
+            elif msg_type == "set_stance":
+                # Set AI stance for a single hero ally unit
+                unit_id = data.get("unit_id")
+                stance = data.get("stance")
+                if not unit_id or not stance:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing unit_id or stance",
+                    })
+                    continue
+                success = set_unit_stance(match_id, player_id, unit_id, stance)
+                if success:
+                    party = get_party_members(match_id, player_id)
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "stance_updated",
+                        "unit_id": unit_id,
+                        "stance": stance,
+                        "party": party,
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": f"Cannot set stance for unit: {unit_id}",
+                    })
+
+            elif msg_type == "set_all_stances":
+                # Set AI stance for ALL hero allies owned by the player
+                stance = data.get("stance")
+                if not stance:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing stance",
+                    })
+                    continue
+                updated = set_all_stances(match_id, player_id, stance)
+                party = get_party_members(match_id, player_id)
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "all_stances_updated",
+                    "stance": stance,
+                    "updated_ids": updated,
+                    "party": party,
+                })
+
+            elif msg_type == "ready":
+                # Wire to match manager — toggle ready status
+                all_ready = set_player_ready(match_id, player_id, True)
+
+                # Broadcast player_ready with current lobby state
+                await ws_manager.broadcast_to_match(match_id, {
+                    "type": "player_ready",
+                    "player_id": player_id,
+                    "players": get_lobby_players_payload(match_id),
+                })
+
+                # If all players ready, validate hero selections then start
+                if all_ready:
+                    # Validate dungeon hero selections (4E-2)
+                    hero_valid, hero_error, offending_pid = validate_dungeon_hero_selections(match_id)
+                    if not hero_valid:
+                        # Un-ready the offending player (not the sender)
+                        # so the player who hasn't selected heroes must fix the issue
+                        if offending_pid:
+                            set_player_ready(match_id, offending_pid, False)
+                        else:
+                            set_player_ready(match_id, player_id, False)
+                        await ws_manager.broadcast_to_match(match_id, {
+                            "type": "error",
+                            "message": f"Cannot start: {hero_error}",
+                        })
+                        # Broadcast updated ready state so client resets
+                        await ws_manager.broadcast_to_match(match_id, {
+                            "type": "player_ready",
+                            "player_id": offending_pid or player_id,
+                            "players": get_lobby_players_payload(match_id),
+                        })
+                        continue
+
+                    start_match(match_id)
+                    # Send per-player match_start with FOV-filtered data
+                    connections = ws_manager.get_match_connections(match_id)
+                    started = False
+                    for pid in connections:
+                        player_payload = get_match_start_payload_for_player(match_id, pid)
+                        if player_payload:
+                            await ws_manager.send_to_player(match_id, pid, player_payload)
+                            started = True
+                    if started:
+                        # Schedule recurring tick
+                        match = get_match(match_id)
+                        tick_rate = match.config.tick_rate if match else 10.0
+                        scheduler_manager.add_match_tick(match_id, match_tick, tick_rate)
+                        print(f"[Match] Match {match_id} started! Tick every {tick_rate}s")
+
+            elif msg_type == "team_select":
+                # Player wants to switch teams in lobby
+                new_team = data.get("team")
+                if new_team not in ("a", "b", "c", "d"):
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Invalid team — must be 'a', 'b', 'c', or 'd'",
+                    })
+                    continue
+                success = change_player_team(match_id, player_id, new_team)
+                if success:
+                    username = get_player_username(match_id, player_id)
+                    await ws_manager.broadcast_to_match(match_id, {
+                        "type": "team_changed",
+                        "player_id": player_id,
+                        "username": username,
+                        "team": new_team,
+                        "players": get_lobby_players_payload(match_id),
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Cannot change team — match may have started or invalid request",
+                    })
+
+            elif msg_type == "lobby_chat":
+                # Player sends a chat message in lobby
+                message_text = data.get("message", "").strip()
+                if not message_text:
+                    continue
+                msg = add_lobby_message(match_id, player_id, message_text)
+                if msg:
+                    await ws_manager.broadcast_to_match(match_id, {
+                        "type": "chat_message",
+                        "sender": msg["sender"],
+                        "sender_id": msg["sender_id"],
+                        "message": msg["message"],
+                        "timestamp": msg["timestamp"],
+                    })
+
+            elif msg_type == "lobby_config":
+                # Host updates match config in lobby
+                updates = data.get("config", {})
+                result = update_match_config(match_id, player_id, updates)
+                if result:
+                    await ws_manager.broadcast_to_match(match_id, {
+                        "type": "config_changed",
+                        "config": result,
+                        "players": get_lobby_players_payload(match_id),
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Cannot update config — not host or match already started",
+                    })
+
+            elif msg_type == "class_select":
+                # Player selects a class in lobby
+                class_id = data.get("class_id")
+                if not class_id:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing class_id",
+                    })
+                    continue
+                success = select_class(match_id, player_id, class_id)
+                if success:
+                    username = get_player_username(match_id, player_id)
+                    await ws_manager.broadcast_to_match(match_id, {
+                        "type": "class_changed",
+                        "player_id": player_id,
+                        "username": username,
+                        "class_id": class_id,
+                        "players": get_lobby_players_payload(match_id),
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": f"Invalid class selection: {class_id}",
+                    })
+
+            elif msg_type == "hero_select":
+                # Player selects persistent heroes for dungeon match (4E-2, multi-hero support)
+                hero_ids = data.get("hero_ids")
+                # Backward compat: accept single hero_id too
+                if not hero_ids:
+                    single_id = data.get("hero_id")
+                    if single_id:
+                        hero_ids = [single_id]
+                if not hero_ids or len(hero_ids) == 0:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing hero_ids",
+                    })
+                    continue
+                results = select_heroes(match_id, player_id, hero_ids)
+                if results:
+                    username = get_player_username(match_id, player_id)
+                    await ws_manager.broadcast_to_match(match_id, {
+                        "type": "hero_selected",
+                        "player_id": player_id,
+                        "username": username,
+                        "hero_ids": [r["hero_id"] for r in results],
+                        "heroes": results,
+                        # Backward compat: include first hero's info at top level
+                        "hero_id": results[0]["hero_id"],
+                        "hero_name": results[0]["hero_name"],
+                        "class_id": results[0]["class_id"],
+                        "stats": results[0]["stats"],
+                        "players": get_lobby_players_payload(match_id),
+                    })
+                    # Heroes are now spawned as AI allies — human keeps their own class
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": f"Cannot select heroes: one or more heroes not found, dead, or not yours",
+                    })
+
+            elif msg_type == "transfer_item":
+                # Transfer item between party members' inventories (in-match)
+                from_unit_id = data.get("from_unit_id")
+                to_unit_id = data.get("to_unit_id")
+                item_index = data.get("item_index")
+                if from_unit_id is None or to_unit_id is None or item_index is None:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing from_unit_id, to_unit_id, or item_index",
+                    })
+                    continue
+                result = transfer_item_in_match(
+                    match_id, player_id, from_unit_id, to_unit_id, int(item_index)
+                )
+                if result:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "item_transferred",
+                        **result,
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Cannot transfer item — invalid units, full inventory, or item not found",
+                    })
+
+            elif msg_type == "get_party_inventory":
+                # Request a party member's inventory/equipment
+                unit_id = data.get("unit_id")
+                if not unit_id:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing unit_id",
+                    })
+                    continue
+                inv_data = get_party_member_inventory(match_id, player_id, unit_id)
+                if inv_data:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "party_inventory",
+                        **inv_data,
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": f"Cannot access inventory for: {unit_id}",
+                    })
+
+            elif msg_type == "equip_item":
+                # Player equips an item from inventory to equipment slot
+                item_id = data.get("item_id")
+                if not item_id:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing item_id",
+                    })
+                    continue
+                result = equip_item(match_id, player_id, item_id)
+                if result:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "item_equipped",
+                        **result,
+                    })
+                    # Broadcast updated player stats to all clients
+                    await ws_manager.broadcast_to_match(match_id, {
+                        "type": "player_stats_updated",
+                        "player_id": player_id,
+                        "stats": result["player_stats"],
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": f"Cannot equip item: {item_id}",
+                    })
+
+            # --- Phase 10C: Auto-Target WS Handlers ---
+            elif msg_type == "set_auto_target":
+                # Player right-clicked an enemy or pressed skill with selected target
+                target_id = data.get("target_id")
+                unit_id = data.get("unit_id", player_id)
+                skill_id = data.get("skill_id")  # Phase 10G: optional skill for auto-cast
+                if not target_id:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing target_id for set_auto_target",
+                    })
+                    continue
+                # Validate party control if targeting for a party member
+                if unit_id != player_id:
+                    if not is_party_member(match_id, player_id, unit_id):
+                        await ws_manager.send_to_player(match_id, player_id, {
+                            "type": "error",
+                            "message": f"Cannot control unit: {unit_id}",
+                        })
+                        continue
+                result = set_auto_target(match_id, unit_id, target_id, skill_id=skill_id)
+                if result is True:
+                    # Look up target username for client display
+                    target_username = get_player_username(match_id, target_id) or target_id
+                    response = {
+                        "type": "auto_target_set",
+                        "unit_id": unit_id,
+                        "target_id": target_id,
+                        "target_username": target_username,
+                    }
+                    # Phase 10G: Include skill info when a skill was specified
+                    if skill_id:
+                        from app.core.skills import get_skill
+                        skill_def = get_skill(skill_id)
+                        response["skill_id"] = skill_id
+                        response["skill_name"] = skill_def["name"] if skill_def else skill_id
+                    await ws_manager.send_to_player(match_id, player_id, response)
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": result if isinstance(result, str) else "Cannot set auto-target",
+                    })
+
+            elif msg_type == "clear_auto_target":
+                # Player explicitly cancels auto-target pursuit
+                unit_id = data.get("unit_id", player_id)
+                if unit_id != player_id:
+                    if not is_party_member(match_id, player_id, unit_id):
+                        unit_id = player_id
+                clear_auto_target(match_id, unit_id)
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "auto_target_cleared",
+                    "unit_id": unit_id,
+                    "reason": "cancelled",
+                })
+
+            elif msg_type == "unequip_item":
+                # Player unequips an item from equipment slot back to inventory
+                slot = data.get("slot")
+                if not slot:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": "Missing slot",
+                    })
+                    continue
+                result = unequip_item(match_id, player_id, slot)
+                if result:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "item_unequipped",
+                        **result,
+                    })
+                    # Broadcast updated player stats to all clients
+                    await ws_manager.broadcast_to_match(match_id, {
+                        "type": "player_stats_updated",
+                        "player_id": player_id,
+                        "stats": result["player_stats"],
+                    })
+                else:
+                    await ws_manager.send_to_player(match_id, player_id, {
+                        "type": "error",
+                        "message": f"Cannot unequip from slot: {slot}",
+                    })
+
+            else:
+                await ws_manager.send_to_player(match_id, player_id, {
+                    "type": "error",
+                    "message": f"Unknown message type: {msg_type}",
+                })
+
+    except WebSocketDisconnect:
+        ws_manager.disconnect(match_id, player_id)
+
+        # Get username before removing (for broadcast)
+        username = get_player_username(match_id, player_id)
+
+        # Always broadcast disconnect so other clients aren't left waiting
+        await ws_manager.broadcast_to_match(match_id, {
+            "type": "player_disconnected",
+            "player_id": player_id,
+            "username": username or "Unknown",
+        })
+
+        match = get_match(match_id)
+        if not match:
+            # Match was already cleaned up (e.g., REST leave removed last player)
+            return
+
+        if match.status == "in_progress":
+            # Mid-match disconnect: mark dead, clean up
+            removed_name = remove_player(match_id, player_id)
+            if removed_name is None:
+                return  # Already removed by REST leave endpoint
+            # If only 0-1 alive players remain, the tick will resolve victory
+            alive = get_alive_count(match_id)
+            if alive <= 1:
+                print(f"[Match] Match {match_id} — not enough players, will resolve on next tick")
+        else:
+            # Lobby-phase disconnect: clean up ghost player
+            removed_name = remove_player(match_id, player_id)
+            if removed_name is None:
+                return  # Already removed by REST leave endpoint

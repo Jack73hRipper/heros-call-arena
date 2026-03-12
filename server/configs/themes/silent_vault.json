@@ -1,0 +1,49 @@
+{
+  "id": "silent_vault",
+  "name": "Silent Vault",
+  "description": "A sealed stone archive deep underground. Cold, orderly, and utterly still.",
+  "palette": {
+    "primary": "#101520",
+    "secondary": "#1e2535",
+    "accent": "#3a4a5a",
+    "mortar": "#151a28",
+    "highlight": "#5a6a80",
+    "floor": "#2e3c50",
+    "floorAlt": "#313f53",
+    "grout": "#0a0e15"
+  },
+  "wall": {
+    "style": "mossy_stone",
+    "brickRows": 2,
+    "brickCols": 2,
+    "mortarWidth": 2,
+    "crackDensity": 0.02,
+    "mossChance": 0.0,
+    "waterStainChance": 0.0,
+    "veinChance": 0.0,
+    "edgeVignette": false
+  },
+  "floor": {
+    "style": "flooded",
+    "slabGrid": 2,
+    "groutWidth": 1,
+    "waterDepth": 0.04,
+    "rippleChance": 0.0,
+    "stainChance": 0.0,
+    "stainColor": "rgba(30, 40, 55, 0.10)",
+    "debrisChance": 0.0,
+    "debrisColor": "#1a2530"
+  },
+  "corridor": {
+    "style": "shallow_water",
+    "waterDepth": 0.04
+  },
+  "fog": {
+    "exploredTint": "rgba(10, 15, 25, 0.55)",
+    "unexploredColor": "#060810"
+  },
+  "ambient": {
+    "vignetteStrength": 0.06,
+    "vignetteColor": "rgba(20, 30, 50, 0.04)"
+  }
+}

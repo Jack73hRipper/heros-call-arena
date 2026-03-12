@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pro Thought Mapper</title>
+    <style>
+        :root { --bg: #f4f7f6; --accent: #007bff; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Infinite Canvas */
+        #viewport { width: 100vw; height: 100vh; cursor: grab; perspective: 1000px; }
+        #canvas { 
+            position: absolute; width: 5000px; height: 5000px; 
+            top: -2000px; left: -2000px; transform-origin: 0 0;
+        }
+        #viewport:active { cursor: grabbing; }
+
+        /* Bubbles */
+        .bubble {
+            position: absolute; min-width: 80px; min-height: 40px; padding: 12px;
+            background: white; border: 2px solid #333; border-radius: 15px;
+            text-align: center; cursor: pointer; box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+            z-index: 2; outline: none; display: flex; align-items: center; justify-content: center;
+            overflow: hidden; resize: both; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .bubble.selected { border: 3px solid var(--accent); box-shadow: 0 0 15px rgba(0,123,255,0.4); }
+        .bubble:focus { background: #fff; }
+
+        /* Lines */
+        .connection {
+            position: absolute; height: 2px; background: #999;
+            transform-origin: 0 0; z-index: 1; pointer-events: none;
+        }
+
+        /* UI Panels */
+        .ui-panel {
+            position: fixed; background: white; padding: 15px; border-radius: 12px;
+            border: 1px solid #ddd; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 100;
+        }
+        #controls { top: 20px; left: 20px; width: 220px; }
+        #colors { bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
+        
+        .color-dot { width: 25px; height: 25px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .color-dot:hover { transform: scale(1.1); }
+        
+        button { 
+            width: 100%; margin-top: 5px; padding: 8px; cursor: pointer;
+            background: #333; color: white; border: none; border-radius: 6px;
+        }
+        kbd { background: #eee; padding: 2px 4px; border-radius: 3px; font-size: 0.8em; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<div id="controls" class="ui-panel">
+    <strong>Brainstorm Pro</strong>
+    <p style="font-size: 11px; color: #666;">
+        • <kbd>Dbl-Click</kbd> New Bubble<br>
+        • <kbd>Shift+Click</kbd> Multi-select/Link<br>
+        • <kbd>Space+Drag</kbd> Pan Canvas<br>
+        • <kbd>Del</kbd> Remove Selected
+    </p>
+    <button onclick="exportData()">💾 Export JSON</button>
+    <button onclick="document.getElementById('fileInput').click()">📂 Import JSON</button>
+    <input type="file" id="fileInput" style="display:none" onchange="importData(event)">
+</div>
+
+<div id="colors" class="ui-panel">
+    <div class="color-dot" style="background: #ffffff;" onclick="applyColor('#ffffff')"></div>
+    <div class="color-dot" style="background: #ffcfcf;" onclick="applyColor('#ffcfcf')"></div>
+    <div class="color-dot" style="background: #cfffd1;" onclick="applyColor('#cfffd1')"></div>
+    <div class="color-dot" style="background: #cfd9ff;" onclick="applyColor('#cfd9ff')"></div>
+    <div class="color-dot" style="background: #fdfccf;" onclick="applyColor('#fdfccf')"></div>
+</div>
+
+<div id="viewport">
+    <div id="canvas"></div>
+</div>
+
+<script>
+    const viewport = document.getElementById('viewport');
+    const canvas = document.getElementById('canvas');
+    let connections = [];
+    let selectedBubbles = new Set();
+    
+    // Panning state
+    let isPanning = false;
+    let panX = 0, panY = 0;
+    let startX, startY;
+
+    // --- INFINITE CANVAS PANNING ---
+    window.addEventListener('keydown', (e) => { if(e.code === 'Space') viewport.style.cursor = 'grabbing'; });
+    window.addEventListener('keyup', (e) => { if(e.code === 'Space') viewport.style.cursor = 'grab'; });
+
+    viewport.addEventListener('mousedown', (e) => {
+        if (e.target === viewport || e.target === canvas) {
+            if (e.shiftKey) return; 
+            isPanning = true;
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+            clearSelection();
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (isPanning) {
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            canvas.style.transform = `translate(${panX}px, ${panY}px)`;
+        }
+    });
+
+    window.addEventListener('mouseup', () => isPanning = false);
+
+    // --- BUBBLE CORE ---
+    canvas.addEventListener('dblclick', (e) => {
+        if (e.target !== canvas) return;
+        const rect = canvas.getBoundingClientRect();
+        createBubble(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    function createBubble(x, y, text = "", color = "#ffffff", w = "120px", h = "auto") {
+        const b = document.createElement('div');
+        b.className = 'bubble';
+        b.contentEditable = true;
+        b.style.left = x + 'px';
+        b.style.top = y + 'px';
+        b.style.background = color;
+        b.style.width = w;
+        b.style.height = h;
+        b.innerText = text;
+
+        canvas.appendChild(b);
+        if(!text) setTimeout(() => b.focus(), 0);
+
+        // Selection & Dragging
+        let isDragging = false;
+        let dragOffX, dragOffY;
+
+        b.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            if (e.shiftKey) {
+                toggleSelection(b);
+                if (selectedBubbles.size === 2) {
+                    const [first, second] = Array.from(selectedBubbles);
+                    addConnection(first, second);
+                    clearSelection();
+                }
+                return;
+            }
+
+            if (!selectedBubbles.has(b)) {
+                clearSelection();
+                toggleSelection(b);
+            }
+
+            isDragging = true;
+            const rect = b.getBoundingClientRect();
+            dragOffX = e.clientX;
+            dragOffY = e.clientY;
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging && selectedBubbles.has(b)) {
+                const dx = e.clientX - dragOffX;
+                const dy = e.clientY - dragOffY;
+                
+                selectedBubbles.forEach(bubble => {
+                    bubble.style.left = (parseInt(bubble.style.left) + dx) + 'px';
+                    bubble.style.top = (parseInt(bubble.style.top) + dy) + 'px';
+                });
+
+                dragOffX = e.clientX;
+                dragOffY = e.clientY;
+                updateLines();
+            }
+        });
+
+        new ResizeObserver(() => updateLines()).observe(b);
+        window.addEventListener('mouseup', () => isDragging = false);
+        
+        saveLocal(); // Persist
+        return b;
+    }
+
+    // --- SELECTION & CONNECTIONS ---
+    function toggleSelection(el) {
+        if (selectedBubbles.has(el)) {
+            selectedBubbles.delete(el);
+            el.classList.remove('selected');
+        } else {
+            selectedBubbles.add(el);
+            el.classList.add('selected');
+        }
+    }
+
+    function clearSelection() {
+        selectedBubbles.forEach(b => b.classList.remove('selected'));
+        selectedBubbles.clear();
+    }
+
+    function addConnection(a, b) {
+        if (a === b) return;
+        if (!connections.some(c => (c.a === a && c.b === b) || (c.a === b && c.b === a))) {
+            connections.push({ a, b });
+            updateLines();
+            saveLocal();
+        }
+    }
+
+    function updateLines() {
+        document.querySelectorAll('.connection').forEach(l => l.remove());
+        connections.forEach(conn => {
+            const rA = conn.a.getBoundingClientRect();
+            const rB = conn.b.getBoundingClientRect();
+            const c = canvas.getBoundingClientRect();
+            
+            const x1 = (rA.left + rA.width / 2) - c.left;
+            const y1 = (rA.top + rA.height / 2) - c.top;
+            const x2 = (rB.left + rB.width / 2) - c.left;
+            const y2 = (rB.top + rB.height / 2) - c.top;
+
+            const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+            const line = document.createElement('div');
+            line.className = 'connection';
+            line.style.width = length + 'px';
+            line.style.left = x1 + 'px';
+            line.style.top = y1 + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            canvas.appendChild(line);
+        });
+    }
+
+    // --- KEYBOARD SHORTCUTS ---
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+            if (document.activeElement.classList.contains('bubble') && document.activeElement.innerText !== "") return;
+            selectedBubbles.forEach(b => {
+                connections = connections.filter(c => c.a !== b && c.b !== b);
+                b.remove();
+            });
+            selectedBubbles.clear();
+            updateLines();
+            saveLocal();
+        }
+    });
+
+    // --- COLORS & PERSISTENCE ---
+    function applyColor(color) {
+        selectedBubbles.forEach(b => b.style.background = color);
+        saveLocal();
+    }
+
+    function saveLocal() {
+        const bubbles = Array.from(document.querySelectorAll('.bubble'));
+        const data = {
+            bubbles: bubbles.map(b => ({
+                x: parseInt(b.style.left), y: parseInt(b.style.top),
+                w: b.style.width, h: b.style.height,
+                text: b.innerText, color: b.style.background
+            })),
+            connections: connections.map(c => ({ aIdx: bubbles.indexOf(c.a), bIdx: bubbles.indexOf(c.b) }))
+        };
+        localStorage.setItem('thoughtMap', JSON.stringify(data));
+    }
+
+    function exportData() {
+        const data = localStorage.getItem('thoughtMap');
+        const blob = new Blob([data], {type: 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'my-thoughts.json';
+        a.click();
+    }
+
+    function importData(event) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const data = JSON.parse(e.target.result);
+            renderFromData(data);
+        };
+        reader.readAsText(event.target.files[0]);
+    }
+
+    function renderFromData(data) {
+        canvas.innerHTML = '';
+        connections = [];
+        const newBubbles = data.bubbles.map(b => createBubble(b.x, b.y, b.text, b.color, b.w, b.h));
+        data.connections.forEach(c => {
+            if(newBubbles[c.aIdx] && newBubbles[c.bIdx]) connections.push({ a: newBubbles[c.aIdx], b: newBubbles[c.bIdx] });
+        });
+        updateLines();
+    }
+
+    // Auto-load on start
+    const saved = localStorage.getItem('thoughtMap');
+    if (saved) renderFromData(JSON.parse(saved));
+
+</script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+[
+  {
+    "name": "affix-fire-enchanted",
+    "version": 1,
+    "duration": 2,
+    "loop": true,
+    "tags": ["affix", "fire", "ambient", "monster-rarity"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 6,
+      "spawnShape": "ring",
+      "spawnRadius": 14,
+      "angle": { "min": 220, "max": 320 },
+      "speed": { "min": 8, "max": 22 },
+      "gravity": { "x": 0, "y": -18 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.3, "max": 0.7 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1, "max": 3 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.2, "color": "#ffcc33" },
+          { "stop": 0.5, "color": "#ff6600" },
+          { "stop": 0.8, "color": "#cc2200" },
+          { "stop": 1, "color": "#330000" }
+        ]
+      },
+      "alpha": { "start": 0.6, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "affix-cold-enchanted",
+    "version": 1,
+    "duration": 2,
+    "loop": true,
+    "tags": ["affix", "ice", "ambient", "monster-rarity"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 5,
+      "spawnShape": "ring",
+      "spawnRadius": 12,
+      "angle": { "min": 230, "max": 310 },
+      "speed": { "min": 5, "max": 15 },
+      "gravity": { "x": 0, "y": -8 },
+      "friction": 0.03
+    },
+    "particle": {
+      "lifetime": { "min": 0.4, "max": 0.8 },
+      "shape": "triangle",
+      "size": {
+        "start": { "min": 1.5, "max": 3.5 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.3, "color": "#ccddff" },
+          { "stop": 0.6, "color": "#6699ff" },
+          { "stop": 1, "color": "#223366" }
+        ]
+      },
+      "alpha": { "start": 0.5, "end": 0, "easing": "easeOutCubic" },
+      "rotation": {
+        "min": 0, "max": 360,
+        "speed": { "min": 30, "max": 90 }
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "affix-thorns",
+    "version": 1,
+    "duration": 1.5,
+    "loop": true,
+    "tags": ["affix", "physical", "ambient", "monster-rarity"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 4,
+      "spawnShape": "ring",
+      "spawnRadius": 16,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 2, "max": 6 },
+      "gravity": { "x": 0, "y": 0 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.5, "max": 1.0 },
+      "shape": "triangle",
+      "size": {
+        "start": { "min": 2, "max": 4 },
+        "end": { "min": 1, "max": 2 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#bbaa88" },
+          { "stop": 0.4, "color": "#887755" },
+          { "stop": 1, "color": "#554433" }
+        ]
+      },
+      "alpha": { "start": 0.5, "end": 0, "easing": "easeInOutQuad" },
+      "rotation": {
+        "min": 0, "max": 360,
+        "speed": { "min": 0, "max": 20 }
+      },
+      "blendMode": "normal"
+    }
+  },
+  {
+    "name": "affix-might-aura",
+    "version": 1,
+    "duration": 2,
+    "loop": true,
+    "tags": ["affix", "aura", "ambient", "monster-rarity"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 8,
+      "spawnShape": "ring",
+      "spawnRadius": 20,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 4, "max": 12 },
+      "gravity": { "x": 0, "y": -6 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.6, "max": 1.2 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1, "max": 2 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ff8866" },
+          { "stop": 0.5, "color": "#cc3322" },
+          { "stop": 1, "color": "#441100" }
+        ]
+      },
+      "alpha": { "start": 0.35, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "affix-conviction-aura",
+    "version": 1,
+    "duration": 2,
+    "loop": true,
+    "tags": ["affix", "aura", "ambient", "monster-rarity"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 8,
+      "spawnShape": "ring",
+      "spawnRadius": 20,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 4, "max": 12 },
+      "gravity": { "x": 0, "y": -6 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.6, "max": 1.2 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1, "max": 2 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#9966bb" },
+          { "stop": 0.5, "color": "#553377" },
+          { "stop": 1, "color": "#220033" }
+        ]
+      },
+      "alpha": { "start": 0.35, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "affix-teleporter",
+    "version": 1,
+    "duration": 3,
+    "loop": true,
+    "tags": ["affix", "magic", "ambient", "monster-rarity"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 3,
+      "spawnShape": "circle",
+      "spawnRadius": 10,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 15, "max": 40 },
+      "gravity": { "x": 0, "y": 0 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.1, "max": 0.3 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 5 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.3, "color": "#aaddff" },
+          { "stop": 1, "color": "#4488cc" }
+        ]
+      },
+      "alpha": { "start": 0.7, "end": 0, "easing": "easeOutQuad" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "affix-regenerating",
+    "version": 1,
+    "duration": 2,
+    "loop": true,
+    "tags": ["affix", "heal", "ambient", "monster-rarity"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 4,
+      "spawnShape": "ring",
+      "spawnRadius": 10,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 6, "max": 16 },
+      "gravity": { "x": 0, "y": -12 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.4, "max": 0.9 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1, "max": 2.5 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#aaffaa" },
+          { "stop": 0.4, "color": "#44dd44" },
+          { "stop": 1, "color": "#116611" }
+        ]
+      },
+      "alpha": { "start": 0.45, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "affix-shielded",
+    "version": 1,
+    "duration": 2,
+    "loop": true,
+    "tags": ["affix", "shield", "ambient", "monster-rarity"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 5,
+      "spawnShape": "ring",
+      "spawnRadius": 15,
+      "angle": { "min": 240, "max": 300 },
+      "speed": { "min": 4, "max": 10 },
+      "gravity": { "x": 0, "y": -5 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.5, "max": 1.0 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1, "max": 2 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#88ccff" },
+          { "stop": 0.5, "color": "#4488dd" },
+          { "stop": 1, "color": "#113366" }
+        ]
+      },
+      "alpha": { "start": 0.4, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "affix-fire-death-explosion",
+    "version": 1,
+    "duration": 0.5,
+    "loop": false,
+    "tags": ["affix", "fire", "death", "explosion", "monster-rarity"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 35,
+      "spawnShape": "point",
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 80, "max": 200 },
+      "gravity": { "x": 0, "y": 50 },
+      "friction": 0.03
+    },
+    "particle": {
+      "lifetime": { "min": 0.2, "max": 0.6 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 3, "max": 8 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.15, "color": "#ffee44" },
+          { "stop": 0.4, "color": "#ff6600" },
+          { "stop": 0.7, "color": "#cc2200" },
+          { "stop": 1, "color": "#220000" }
+        ]
+      },
+      "alpha": { "start": 1, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "affix-possessed-death-explosion",
+    "version": 1,
+    "duration": 0.4,
+    "loop": false,
+    "tags": ["affix", "shadow", "death", "explosion", "monster-rarity"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 25,
+      "spawnShape": "point",
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 60, "max": 150 },
+      "gravity": { "x": 0, "y": 30 },
+      "friction": 0.02
+    },
+    "particle": {
+      "lifetime": { "min": 0.2, "max": 0.5 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 6 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ddaaff" },
+          { "stop": 0.3, "color": "#9944cc" },
+          { "stop": 0.7, "color": "#552288" },
+          { "stop": 1, "color": "#110022" }
+        ]
+      },
+      "alpha": { "start": 0.9, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "rare-death-celebration",
+    "version": 1,
+    "duration": 0.7,
+    "loop": false,
+    "tags": ["death", "celebration", "monster-rarity", "rare"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 30,
+      "spawnShape": "point",
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 50, "max": 140 },
+      "gravity": { "x": 0, "y": 40 },
+      "friction": 0.02
+    },
+    "particle": {
+      "lifetime": { "min": 0.3, "max": 0.8 },
+      "shape": "star",
+      "size": {
+        "start": { "min": 2, "max": 6 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.2, "color": "#ffee55" },
+          { "stop": 0.5, "color": "#ffcc00" },
+          { "stop": 0.8, "color": "#cc8800" },
+          { "stop": 1, "color": "#442200" }
+        ]
+      },
+      "alpha": { "start": 1, "end": 0, "easing": "easeOutCubic" },
+      "rotation": {
+        "min": 0, "max": 360,
+        "speed": { "min": 60, "max": 180 }
+      },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "super-unique-death-celebration",
+    "version": 1,
+    "duration": 1.0,
+    "loop": false,
+    "tags": ["death", "celebration", "monster-rarity", "super-unique"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 50,
+      "spawnShape": "point",
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 60, "max": 180 },
+      "gravity": { "x": 0, "y": 35 },
+      "friction": 0.02
+    },
+    "particle": {
+      "lifetime": { "min": 0.4, "max": 1.0 },
+      "shape": "star",
+      "size": {
+        "start": { "min": 3, "max": 8 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.15, "color": "#eebbff" },
+          { "stop": 0.35, "color": "#cc66ff" },
+          { "stop": 0.6, "color": "#ffcc00" },
+          { "stop": 0.8, "color": "#cc66ff" },
+          { "stop": 1, "color": "#220044" }
+        ]
+      },
+      "alpha": { "start": 1, "end": 0, "easing": "easeOutCubic" },
+      "rotation": {
+        "min": 0, "max": 360,
+        "speed": { "min": 90, "max": 240 }
+      },
+      "blendMode": "lighter"
+    }
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "id": "hollowed_cathedral",
+  "name": "Hollowed Cathedral",
+  "description": "Grand halls of a fallen church, where carved stone crumbles and faded icons whisper of lost devotion. Cracked marble floors and root intrusions.",
+  "palette": {
+    "primary": "#1a1525",
+    "secondary": "#2a2035",
+    "accent": "#6a4a7a",
+    "mortar": "#1e1528",
+    "highlight": "#aa7a55",
+    "floor": "#3d3555",
+    "floorAlt": "#403858",
+    "grout": "#100e18"
+  },
+  "wall": {
+    "style": "carved_stone",
+    "brickRows": 2,
+    "brickCols": 2,
+    "mortarWidth": 3,
+    "crackDensity": 0.05,
+    "iconChance": 0.0,
+    "crumbleChance": 0.05,
+    "goldTrimChance": 0.04,
+    "edgeVignette": true
+  },
+  "floor": {
+    "style": "cracked_marble",
+    "slabGrid": 3,
+    "groutWidth": 1,
+    "crackChance": 0.0,
+    "veinChance": 0.0,
+    "rootChance": 0.0,
+    "stainChance": 0.0,
+    "stainColor": "rgba(60, 40, 70, 0.12)",
+    "debrisChance": 0.0,
+    "debrisColor": "#3a3045"
+  },
+  "corridor": {
+    "style": "worn_carpet",
+    "carpetColor": "rgba(80, 40, 50, 0.12)"
+  },
+  "fog": {
+    "exploredTint": "rgba(20, 15, 30, 0.6)",
+    "unexploredColor": "#08050e"
+  },
+  "ambient": {
+    "vignetteStrength": 0.15,
+    "vignetteColor": "rgba(50, 30, 60, 0.08)"
+  }
+}

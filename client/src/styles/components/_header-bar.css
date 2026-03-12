@@ -1,0 +1,204 @@
+/* ===== HeaderBar (6E-2) ===== */
+
+.header-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.35rem 0.75rem;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  min-height: 36px;
+}
+
+.header-section {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.header-turn-info {
+  gap: 0.5rem;
+}
+
+.header-turn {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+}
+
+.header-mode-badge {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  background: rgba(196, 151, 58, 0.15);
+  border: 1px solid rgba(196, 151, 58, 0.3);
+  color: var(--accent-ember);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: var(--font-heading);
+}
+
+.header-match-type {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* Phase 27E: PVPVE mode badge */
+.header-mode-badge--pvpve {
+  background: linear-gradient(135deg, rgba(58, 90, 139, 0.2), rgba(139, 58, 58, 0.2));
+  border-color: rgba(160, 80, 200, 0.4);
+  color: #c080d0;
+}
+
+.header-team-indicator {
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.header-teams-remaining {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 2px;
+  background: rgba(200, 200, 200, 0.08);
+  border: 1px solid rgba(200, 200, 200, 0.15);
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+}
+
+/* Header Timer */
+.header-timer {
+  min-width: 120px;
+}
+
+.header-timer-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  min-width: 32px;
+}
+
+.header-timer-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-deep);
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--border-dark);
+  min-width: 60px;
+}
+
+.header-timer-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+.header-timer-value {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  min-width: 20px;
+  text-align: right;
+}
+
+/* Header HP */
+.header-hp {
+  min-width: 140px;
+}
+
+.header-hp-label {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  min-width: 20px;
+}
+
+.header-hp-bar-bg {
+  flex: 1;
+  height: 8px;
+  background: var(--bg-deep);
+  border-radius: 2px;
+  overflow: hidden;
+  border: 1px solid var(--border-dark);
+  min-width: 70px;
+}
+
+.header-hp-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.header-hp-value {
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-weight: bold;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Header Class */
+.header-class-name {
+  font-size: 0.8rem;
+  font-weight: bold;
+  font-family: var(--font-heading);
+  letter-spacing: 0.05em;
+}
+
+/* Header Buffs */
+.header-buffs {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.header-buff-pill {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 2px;
+  background: rgba(144, 202, 249, 0.1);
+  border: 1px solid rgba(144, 202, 249, 0.3);
+  color: #90caf9;
+  white-space: nowrap;
+}
+
+/* Phase 11: Per-type buff pill variants */
+.header-buff-pill.buff-dot {
+  color: #ff6666;
+  border-color: rgba(255, 102, 102, 0.4);
+  background: rgba(255, 102, 102, 0.1);
+}
+.header-buff-pill.buff-hot {
+  color: #66dd66;
+  border-color: rgba(102, 221, 102, 0.4);
+  background: rgba(102, 221, 102, 0.1);
+}
+.header-buff-pill.buff-shield {
+  color: #66aaff;
+  border-color: rgba(102, 170, 255, 0.4);
+  background: rgba(102, 170, 255, 0.1);
+}
+.header-buff-pill.buff-detection {
+  color: #dd88ff;
+  border-color: rgba(221, 136, 255, 0.4);
+  background: rgba(221, 136, 255, 0.1);
+}
+.header-buff-pill.buff-armor {
+  color: #ffd700;
+  border-color: rgba(255, 215, 0, 0.4);
+  background: rgba(255, 215, 0, 0.1);
+}
+
+/* Header Dead Status */
+.header-status-dead {
+  color: var(--accent-crimson-bright);
+  font-family: var(--font-heading);
+  font-weight: bold;
+  font-size: 0.8rem;
+}

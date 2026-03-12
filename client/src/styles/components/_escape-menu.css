@@ -1,0 +1,142 @@
+/* ===== Escape Menu — In-Game Overlay ===== */
+/* Phase 15: Menu Overhaul                    */
+
+/* ── Backdrop ── */
+.esc-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 6, 11, 0.75);
+  backdrop-filter: blur(3px);
+  animation: esc-menu-fade-in 0.15s ease-out;
+}
+
+@keyframes esc-menu-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Panel ── */
+.esc-menu-panel {
+  width: 340px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 1.8rem 2rem 1.4rem;
+  animation: esc-menu-slide-in 0.18s ease-out;
+}
+
+@keyframes esc-menu-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ── Title ── */
+.esc-menu-title {
+  margin-bottom: 0.6rem;
+}
+
+/* ── Button stack ── */
+.esc-menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+/* ── Settings placeholder ── */
+.esc-menu-settings-placeholder {
+  padding: 1.5rem 0.5rem;
+  text-align: center;
+}
+
+.esc-menu-coming-soon {
+  font-family: var(--font-flavor);
+  font-style: italic;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ── Keybinds reference ── */
+.esc-menu-keybinds {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+/* Scrollbar styling for keybinds list */
+.esc-menu-keybinds::-webkit-scrollbar {
+  width: 6px;
+}
+.esc-menu-keybinds::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+  border-radius: 3px;
+}
+.esc-menu-keybinds::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 3px;
+}
+
+.esc-menu-keybind-section {
+  margin-bottom: 1rem;
+}
+
+.esc-menu-keybind-section:last-child {
+  margin-bottom: 0.5rem;
+}
+
+.esc-menu-keybind-section-title {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-ember);
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.esc-menu-keybind-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.esc-menu-keybind-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.2rem 0;
+}
+
+.esc-menu-kbd {
+  display: inline-block;
+  min-width: 7rem;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-bright);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-medium);
+  border-radius: 3px;
+  padding: 0.15rem 0.45rem;
+  text-align: center;
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.esc-menu-keybind-desc {
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-body);
+  line-height: 1.3;
+}

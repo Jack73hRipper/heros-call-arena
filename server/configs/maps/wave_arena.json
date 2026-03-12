@@ -1,0 +1,188 @@
+{
+  "name": "Wave Arena",
+  "width": 20,
+  "height": 20,
+  "map_type": "dungeon",
+  "spawn_points": [
+    { "x": 2, "y": 16 },
+    { "x": 3, "y": 16 },
+    { "x": 4, "y": 16 },
+    { "x": 2, "y": 17 },
+    { "x": 3, "y": 17 }
+  ],
+  "spawn_zones": {
+    "a": { "x_min": 1, "y_min": 15, "x_max": 5, "y_max": 18 }
+  },
+  "ffa_points": [
+    { "x": 2, "y": 16 },
+    { "x": 3, "y": 16 },
+    { "x": 4, "y": 16 },
+    { "x": 2, "y": 17 },
+    { "x": 3, "y": 17 }
+  ],
+  "rooms": [
+    {
+      "id": "player_camp",
+      "name": "Player Camp",
+      "purpose": "spawn",
+      "bounds": { "x_min": 1, "y_min": 14, "x_max": 6, "y_max": 18 }
+    },
+    {
+      "id": "wave_spawner",
+      "name": "Wave Spawner",
+      "purpose": "wave_spawner",
+      "bounds": { "x_min": 14, "y_min": 1, "x_max": 18, "y_max": 5 }
+    }
+  ],
+  "wave_spawner": {
+    "spawner_room_id": "wave_spawner",
+    "spawn_points": [
+      { "x": 15, "y": 2 },
+      { "x": 17, "y": 2 },
+      { "x": 15, "y": 4 },
+      { "x": 17, "y": 4 },
+      { "x": 16, "y": 3 }
+    ],
+    "waves": [
+      {
+        "wave_number": 1,
+        "name": "Crawler Swarm",
+        "max_rarity": "normal",
+        "enemies": [
+          { "enemy_type": "insectoid" },
+          { "enemy_type": "insectoid" },
+          { "enemy_type": "insectoid" },
+          { "enemy_type": "evil_snail" },
+          { "enemy_type": "evil_snail" }
+        ]
+      },
+      {
+        "wave_number": 2,
+        "name": "Goblin Raid",
+        "max_rarity": "normal",
+        "enemies": [
+          { "enemy_type": "goblin_spearman" },
+          { "enemy_type": "goblin_spearman" },
+          { "enemy_type": "goblin_spearman" },
+          { "enemy_type": "imp" }
+        ]
+      },
+      {
+        "wave_number": 3,
+        "name": "Grave Crawlers",
+        "max_rarity": "normal",
+        "enemies": [
+          { "enemy_type": "ghoul" },
+          { "enemy_type": "ghoul" },
+          { "enemy_type": "ghoul" },
+          { "enemy_type": "skeleton" },
+          { "enemy_type": "shade" }
+        ]
+      },
+      {
+        "wave_number": 4,
+        "name": "Dark Assembly",
+        "max_rarity": "champion",
+        "enemies": [
+          { "enemy_type": "imp_lord" },
+          { "enemy_type": "imp" },
+          { "enemy_type": "imp" },
+          { "enemy_type": "caster" }
+        ]
+      },
+      {
+        "wave_number": 5,
+        "name": "Venom Den",
+        "max_rarity": "champion",
+        "enemies": [
+          { "enemy_type": "medusa" },
+          { "enemy_type": "insectoid" },
+          { "enemy_type": "insectoid" },
+          { "enemy_type": "insectoid" },
+          { "enemy_type": "undead_caster" }
+        ]
+      },
+      {
+        "wave_number": 6,
+        "name": "Spectral Court",
+        "enemies": [
+          { "enemy_type": "wraith" },
+          { "enemy_type": "wraith" },
+          { "enemy_type": "shade" },
+          { "enemy_type": "dark_priest" }
+        ]
+      },
+      {
+        "wave_number": 7,
+        "name": "Demon Vanguard",
+        "enemies": [
+          { "enemy_type": "demon_knight" },
+          { "enemy_type": "demon" },
+          { "enemy_type": "acolyte" },
+          { "enemy_type": "imp_lord" }
+        ]
+      },
+      {
+        "wave_number": 8,
+        "name": "Eldritch Nightmares",
+        "enemies": [
+          { "enemy_type": "horror" },
+          { "enemy_type": "construct" },
+          { "enemy_type": "werewolf" },
+          { "enemy_type": "undead_caster" }
+        ]
+      },
+      {
+        "wave_number": 9,
+        "name": "The Bone Throne",
+        "enemies": [
+          { "enemy_type": "necromancer", "is_boss": true },
+          { "enemy_type": "skeleton" },
+          { "enemy_type": "skeleton" },
+          { "enemy_type": "ghoul" },
+          { "enemy_type": "shade" }
+        ]
+      },
+      {
+        "wave_number": 10,
+        "name": "The Final Reckoning",
+        "enemies": [
+          { "enemy_type": "demon_boss", "is_boss": true },
+          { "enemy_type": "construct_boss", "is_boss": true },
+          { "enemy_type": "dark_priest" },
+          { "enemy_type": "wraith" },
+          { "enemy_type": "demon_knight" }
+        ]
+      }
+    ]
+  },
+  "doors": [],
+  "chests": [],
+  "tiles": [
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","W","F","F","F","F","F","F","F","F","W","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","W","W","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","W","F","F","W","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","W","F","F","W","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","W","W","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","W","F","F","F","F","F","F","F","F","W","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","S","S","S","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","S","S","S","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","F","W"],
+    ["W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W","W"]
+  ],
+  "tile_legend": {
+    "W": "wall",
+    "F": "floor",
+    "S": "spawn"
+  }
+}

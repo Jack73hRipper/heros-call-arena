@@ -1,0 +1,331 @@
+/* ===== Buttons — Grim Dark Redesign ===== */
+
+button {
+  padding: 0.6rem 1.2rem;
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+button:hover {
+  background: var(--bg-hover);
+  border-color: var(--accent-ember-dim);
+  color: var(--text-bright);
+}
+
+button:active {
+  background: var(--bg-panel);
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}
+
+/* Primary CTA button — ember gold */
+.btn-primary,
+.btn-enter-name {
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.2) 0%, rgba(138, 106, 40, 0.15) 100%);
+  border: 1px solid var(--accent-ember-dim);
+  color: var(--accent-ember-bright);
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.7rem 1.5rem;
+  box-shadow: 0 0 12px rgba(196, 151, 58, 0.08);
+}
+
+.btn-primary:hover,
+.btn-enter-name:hover {
+  background: linear-gradient(180deg, rgba(196, 151, 58, 0.3) 0%, rgba(138, 106, 40, 0.2) 100%);
+  border-color: var(--accent-ember);
+  box-shadow: 0 0 20px rgba(196, 151, 58, 0.15);
+  color: var(--text-bright);
+}
+
+.btn-leave {
+  background: linear-gradient(180deg, rgba(139, 32, 32, 0.15) 0%, rgba(107, 21, 21, 0.1) 100%);
+  border-color: var(--accent-crimson);
+  color: #c05050;
+  margin-top: auto;
+}
+
+.btn-leave:hover {
+  background: linear-gradient(180deg, rgba(139, 32, 32, 0.25) 0%, rgba(107, 21, 21, 0.15) 100%);
+  border-color: var(--accent-crimson-bright);
+  color: #e06060;
+}
+
+
+/* ===================================================
+   Phase 15 — .grim-btn System
+   Hammered-metal game buttons with bevel, glow, sizes.
+   =================================================== */
+
+/* --- Ember glow pulse keyframes --- */
+@keyframes grim-btn-ember-pulse {
+  0%, 100% { box-shadow: var(--btn-bevel-highlight), 0 0 8px rgba(196, 151, 58, 0.08); }
+  50%      { box-shadow: var(--btn-bevel-highlight), 0 0 16px rgba(196, 151, 58, 0.18); }
+}
+
+@keyframes grim-btn-crimson-pulse {
+  0%, 100% { box-shadow: var(--btn-bevel-highlight), 0 0 8px rgba(139, 32, 32, 0.1); }
+  50%      { box-shadow: var(--btn-bevel-highlight), 0 0 16px rgba(139, 32, 32, 0.22); }
+}
+
+@keyframes grim-btn-verdant-pulse {
+  0%, 100% { box-shadow: var(--btn-bevel-highlight), 0 0 8px rgba(74, 122, 42, 0.1); }
+  50%      { box-shadow: var(--btn-bevel-highlight), 0 0 16px rgba(74, 122, 42, 0.22); }
+}
+
+/* --- Base .grim-btn --- */
+.grim-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0.6rem 1.4rem;
+  background: linear-gradient(
+    180deg,
+    var(--bg-elevated) 0%,
+    var(--bg-panel) 100%
+  );
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-top-color: var(--border-subtle);
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  transition: all 0.2s ease;
+  box-shadow: var(--btn-bevel-highlight);
+  position: relative;
+}
+
+/* Hammered-metal border — subtle double-line via box-shadow */
+.grim-btn::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom-color: rgba(0, 0, 0, 0.15);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.grim-btn:hover {
+  background: linear-gradient(
+    180deg,
+    var(--bg-hover) 0%,
+    var(--bg-elevated) 100%
+  );
+  border-color: var(--accent-ember-dim);
+  color: var(--text-bright);
+  box-shadow: var(--btn-bevel-highlight), 0 0 12px rgba(196, 151, 58, 0.1);
+}
+
+.grim-btn:active {
+  background: linear-gradient(
+    180deg,
+    var(--bg-panel) 0%,
+    var(--bg-deep) 100%
+  );
+  box-shadow: var(--btn-bevel-pressed);
+  transform: translateY(1px);
+  border-top-color: var(--border-dark);
+}
+
+.grim-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+  box-shadow: none;
+  animation: none;
+}
+
+.grim-btn:disabled:hover {
+  background: linear-gradient(
+    180deg,
+    var(--bg-elevated) 0%,
+    var(--bg-panel) 100%
+  );
+  border-color: var(--border-medium);
+  color: var(--text-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+/* --- Size variants --- */
+.grim-btn--sm {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
+
+.grim-btn--md {
+  /* Default size — included for explicitness */
+  padding: 0.6rem 1.4rem;
+  font-size: 0.85rem;
+}
+
+.grim-btn--lg {
+  padding: 0.85rem 2rem;
+  font-size: 1rem;
+  letter-spacing: 0.10em;
+}
+
+/* --- Color variants --- */
+
+/* Ember (primary) — gold/amber accent */
+.grim-btn--ember {
+  background: linear-gradient(
+    180deg,
+    rgba(196, 151, 58, 0.18) 0%,
+    rgba(138, 106, 40, 0.12) 100%
+  );
+  border-color: var(--accent-ember-dim);
+  color: var(--accent-ember-bright);
+  box-shadow: var(--btn-bevel-highlight), 0 0 8px rgba(196, 151, 58, 0.08);
+}
+
+.grim-btn--ember:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(196, 151, 58, 0.28) 0%,
+    rgba(138, 106, 40, 0.18) 100%
+  );
+  border-color: var(--accent-ember);
+  color: var(--text-bright);
+  animation: grim-btn-ember-pulse 2s ease-in-out infinite;
+}
+
+.grim-btn--ember:active {
+  background: linear-gradient(
+    180deg,
+    rgba(138, 106, 40, 0.15) 0%,
+    rgba(100, 75, 25, 0.1) 100%
+  );
+  animation: none;
+}
+
+/* Crimson (danger / PvP) */
+.grim-btn--crimson {
+  background: linear-gradient(
+    180deg,
+    rgba(139, 32, 32, 0.18) 0%,
+    rgba(107, 21, 21, 0.12) 100%
+  );
+  border-color: var(--accent-crimson);
+  color: #c05050;
+  box-shadow: var(--btn-bevel-highlight), 0 0 8px rgba(139, 32, 32, 0.1);
+}
+
+.grim-btn--crimson:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(139, 32, 32, 0.28) 0%,
+    rgba(107, 21, 21, 0.18) 100%
+  );
+  border-color: var(--accent-crimson-bright);
+  color: #e06060;
+  animation: grim-btn-crimson-pulse 2s ease-in-out infinite;
+}
+
+.grim-btn--crimson:active {
+  background: linear-gradient(
+    180deg,
+    rgba(107, 21, 21, 0.15) 0%,
+    rgba(80, 15, 15, 0.1) 100%
+  );
+  animation: none;
+}
+
+/* Verdant (confirm / dungeon) */
+.grim-btn--verdant {
+  background: linear-gradient(
+    180deg,
+    rgba(74, 122, 42, 0.18) 0%,
+    rgba(50, 90, 25, 0.12) 100%
+  );
+  border-color: var(--accent-sickly-green);
+  color: #6a9a4a;
+  box-shadow: var(--btn-bevel-highlight), 0 0 8px rgba(74, 122, 42, 0.1);
+}
+
+.grim-btn--verdant:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(74, 122, 42, 0.28) 0%,
+    rgba(50, 90, 25, 0.18) 100%
+  );
+  border-color: #5a9a3a;
+  color: #8aba6a;
+  animation: grim-btn-verdant-pulse 2s ease-in-out infinite;
+}
+
+.grim-btn--verdant:active {
+  background: linear-gradient(
+    180deg,
+    rgba(50, 90, 25, 0.15) 0%,
+    rgba(35, 65, 15, 0.1) 100%
+  );
+  animation: none;
+}
+
+/* Steel (neutral) */
+.grim-btn--steel {
+  background: linear-gradient(
+    180deg,
+    rgba(58, 90, 139, 0.15) 0%,
+    rgba(40, 65, 107, 0.1) 100%
+  );
+  border-color: var(--accent-blue-steel);
+  color: #6a8ab0;
+}
+
+.grim-btn--steel:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(58, 90, 139, 0.25) 0%,
+    rgba(40, 65, 107, 0.18) 100%
+  );
+  border-color: #5a7aab;
+  color: #8aaad0;
+  box-shadow: var(--btn-bevel-highlight), 0 0 12px rgba(58, 90, 139, 0.15);
+}
+
+.grim-btn--steel:active {
+  background: linear-gradient(
+    180deg,
+    rgba(40, 65, 107, 0.12) 0%,
+    rgba(25, 45, 80, 0.08) 100%
+  );
+}
+
+/* --- Full-width modifier --- */
+.grim-btn--full {
+  width: 100%;
+}
+
+/* --- Icon-only modifier (square button) --- */
+.grim-btn--icon {
+  padding: 0.5rem;
+  min-width: 2.2rem;
+  min-height: 2.2rem;
+}

@@ -1,0 +1,747 @@
+{
+  "rarity_config": {
+    "_comment": "Phase 16C: Base drop rates and floor scaling for the rarity system",
+    "base_rates": {
+      "common":  60.0,
+      "magic":   25.0,
+      "rare":    12.0,
+      "epic":     2.5,
+      "unique":   0.5
+    },
+    "floor_bonuses": {
+      "1-2":  0.0,
+      "3-4":  0.15,
+      "5-6":  0.35,
+      "7-8":  0.60,
+      "9+":   1.00
+    },
+    "boss_guaranteed_rarity": {
+      "1-4":  "magic",
+      "5-7":  "rare",
+      "8+":   "epic"
+    },
+    "boss_drop_counts": {
+      "1-4":  { "min": 2, "max": 3 },
+      "5-7":  { "min": 2, "max": 4 },
+      "8+":   { "min": 3, "max": 4 }
+    },
+    "boss_unique_chance_floor8": 0.10
+  },
+  "enemy_loot_tables": {
+    "demon": {
+      "drop_chance": 0.6,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 35,
+          "items": ["common_sword", "common_mace", "common_flail", "common_throwing_axes"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_chain_armor", "common_leather_armor", "common_plate_armor", "common_bone_armor"]
+        },
+        {
+          "weight": 20,
+          "items": ["health_potion", "iron_skin_potion"]
+        },
+        {
+          "weight": 12,
+          "items": ["common_ring", "common_amulet", "common_talisman", "common_fetish"]
+        },
+        {
+          "weight": 8,
+          "items": ["whetstone"]
+        }
+      ]
+    },
+    "skeleton": {
+      "drop_chance": 0.5,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 35,
+          "items": ["common_bow", "common_sword", "common_crossbow"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_leather_armor", "common_hide_armor", "common_bone_armor"]
+        },
+        {
+          "weight": 25,
+          "items": ["health_potion"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_ring", "common_amulet", "common_charm"]
+        }
+      ]
+    },
+    "undead_knight": {
+      "drop_chance": 1.0,
+      "min_items": 2,
+      "max_items": 3,
+      "guaranteed_rarity": "magic",
+      "guaranteed_items": ["portal_scroll"],
+      "pools": [
+        {
+          "weight": 25,
+          "items": ["uncommon_greatsword", "uncommon_warhammer", "uncommon_flail"]
+        },
+        {
+          "weight": 22,
+          "items": ["uncommon_plate_armor", "uncommon_shadow_cloak", "uncommon_brigandine"]
+        },
+        {
+          "weight": 20,
+          "items": ["uncommon_sigil_ring", "uncommon_skull_pendant", "uncommon_crit_charm"]
+        },
+        {
+          "weight": 15,
+          "items": ["greater_health_potion"]
+        },
+        {
+          "weight": 10,
+          "items": ["portal_scroll"]
+        },
+        {
+          "weight": 8,
+          "items": ["uncommon_stiletto", "uncommon_heavy_crossbow"]
+        }
+      ]
+    },
+    "imp": {
+      "drop_chance": 0.4,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 50,
+          "items": ["health_potion", "greater_health_potion", "iron_skin_potion"]
+        },
+        {
+          "weight": 35,
+          "items": ["common_ring", "common_amulet", "common_trophy", "common_charm"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_dagger"]
+        }
+      ]
+    },
+    "dark_priest": {
+      "drop_chance": 0.55,
+      "min_items": 1,
+      "max_items": 2,
+      "pools": [
+        {
+          "weight": 30,
+          "items": ["health_potion", "greater_health_potion"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_staff", "common_flail"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_amulet", "common_relic", "common_idol"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_robes", "common_vestments"]
+        },
+        {
+          "weight": 10,
+          "items": ["uncommon_sigil_ring", "uncommon_holy_relic", "uncommon_idol"]
+        }
+      ]
+    },
+    "wraith": {
+      "drop_chance": 0.55,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 25,
+          "items": ["common_amulet", "common_ring", "common_fetish"]
+        },
+        {
+          "weight": 25,
+          "items": ["health_potion"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_dagger", "common_staff"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_robes", "common_hide_armor"]
+        },
+        {
+          "weight": 15,
+          "items": ["uncommon_shadow_cloak", "uncommon_skull_pendant", "uncommon_venom_fetish"]
+        }
+      ]
+    },
+    "medusa": {
+      "drop_chance": 0.6,
+      "min_items": 1,
+      "max_items": 2,
+      "pools": [
+        {
+          "weight": 28,
+          "items": ["common_bow", "common_crossbow"]
+        },
+        {
+          "weight": 22,
+          "items": ["common_leather_armor", "common_hide_armor"]
+        },
+        {
+          "weight": 20,
+          "items": ["health_potion"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_ring", "common_amulet", "common_charm"]
+        },
+        {
+          "weight": 15,
+          "items": ["uncommon_longbow", "uncommon_sigil_ring", "uncommon_heavy_crossbow"]
+        }
+      ]
+    },
+    "acolyte": {
+      "drop_chance": 0.5,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 30,
+          "items": ["health_potion", "greater_health_potion"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_amulet", "common_relic", "common_idol"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_staff", "common_mace"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_vestments", "common_robes"]
+        },
+        {
+          "weight": 10,
+          "items": ["uncommon_skull_pendant", "uncommon_holy_relic"]
+        }
+      ]
+    },
+    "werewolf": {
+      "drop_chance": 0.65,
+      "min_items": 1,
+      "max_items": 2,
+      "pools": [
+        {
+          "weight": 30,
+          "items": ["common_sword", "common_mace", "common_dagger"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_leather_armor", "common_chain_armor", "common_hide_armor"]
+        },
+        {
+          "weight": 15,
+          "items": ["health_potion", "whetstone"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_charm", "common_fetish"]
+        },
+        {
+          "weight": 15,
+          "items": ["uncommon_greatsword", "uncommon_warhammer", "uncommon_stiletto"]
+        }
+      ]
+    },
+    "reaper": {
+      "drop_chance": 1.0,
+      "min_items": 2,
+      "max_items": 3,
+      "guaranteed_rarity": "magic",
+      "pools": [
+        {
+          "weight": 22,
+          "items": ["uncommon_greatsword", "uncommon_warhammer", "uncommon_longbow", "uncommon_stiletto", "uncommon_arcanist_staff"]
+        },
+        {
+          "weight": 22,
+          "items": ["uncommon_shadow_cloak", "uncommon_plate_armor", "uncommon_hide_armor", "uncommon_bone_plate"]
+        },
+        {
+          "weight": 22,
+          "items": ["uncommon_skull_pendant", "uncommon_sigil_ring", "uncommon_crit_charm", "uncommon_venom_fetish"]
+        },
+        {
+          "weight": 15,
+          "items": ["greater_health_potion"]
+        },
+        {
+          "weight": 10,
+          "items": ["portal_scroll"]
+        },
+        {
+          "weight": 9,
+          "items": ["uncommon_fortune_trophy"]
+        }
+      ]
+    },
+    "construct": {
+      "drop_chance": 0.6,
+      "min_items": 1,
+      "max_items": 2,
+      "pools": [
+        {
+          "weight": 30,
+          "items": ["common_plate_armor", "common_chain_armor", "common_brigandine", "common_bone_armor"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_mace", "common_sword", "common_flail"]
+        },
+        {
+          "weight": 20,
+          "items": ["health_potion", "iron_skin_potion"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_talisman", "common_ring"]
+        },
+        {
+          "weight": 10,
+          "items": ["uncommon_plate_armor", "uncommon_warhammer", "uncommon_brigandine"]
+        }
+      ]
+    },
+    "imp_lord": {
+      "drop_chance": 0.65,
+      "min_items": 1,
+      "max_items": 2,
+      "pools": [
+        {
+          "weight": 30,
+          "items": ["common_sword", "common_mace", "common_dagger", "common_staff"]
+        },
+        {
+          "weight": 25,
+          "items": ["health_potion", "greater_health_potion", "whetstone"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_ring", "common_amulet", "common_idol", "common_trophy"]
+        },
+        {
+          "weight": 25,
+          "items": ["uncommon_sigil_ring", "uncommon_skull_pendant", "uncommon_idol", "uncommon_fortune_trophy"]
+        }
+      ]
+    },
+    "demon_boss": {
+      "drop_chance": 1.0,
+      "min_items": 2,
+      "max_items": 3,
+      "guaranteed_rarity": "magic",
+      "pools": [
+        {
+          "weight": 25,
+          "items": ["uncommon_greatsword", "uncommon_warhammer", "uncommon_flail", "uncommon_war_axes"]
+        },
+        {
+          "weight": 22,
+          "items": ["uncommon_plate_armor", "uncommon_shadow_cloak", "uncommon_bone_plate", "uncommon_brigandine"]
+        },
+        {
+          "weight": 20,
+          "items": ["uncommon_sigil_ring", "uncommon_skull_pendant", "uncommon_crit_charm", "uncommon_venom_fetish"]
+        },
+        {
+          "weight": 15,
+          "items": ["greater_health_potion"]
+        },
+        {
+          "weight": 10,
+          "items": ["portal_scroll"]
+        },
+        {
+          "weight": 8,
+          "items": ["uncommon_arcanist_staff", "uncommon_stiletto"]
+        }
+      ]
+    },
+    "demon_knight": {
+      "drop_chance": 0.65,
+      "min_items": 1,
+      "max_items": 2,
+      "pools": [
+        {
+          "weight": 30,
+          "items": ["common_sword", "common_mace", "common_flail", "common_plate_armor"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_chain_armor", "common_plate_armor", "common_brigandine"]
+        },
+        {
+          "weight": 20,
+          "items": ["health_potion", "iron_skin_potion"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_talisman", "common_ring"]
+        },
+        {
+          "weight": 10,
+          "items": ["uncommon_greatsword", "uncommon_plate_armor", "uncommon_flail"]
+        }
+      ]
+    },
+    "construct_boss": {
+      "drop_chance": 1.0,
+      "min_items": 2,
+      "max_items": 3,
+      "guaranteed_rarity": "magic",
+      "pools": [
+        {
+          "weight": 27,
+          "items": ["uncommon_plate_armor", "uncommon_warhammer", "uncommon_brigandine", "uncommon_bone_plate"]
+        },
+        {
+          "weight": 23,
+          "items": ["uncommon_greatsword", "uncommon_heavy_crossbow", "uncommon_flail"]
+        },
+        {
+          "weight": 20,
+          "items": ["uncommon_skull_pendant", "uncommon_sigil_ring", "uncommon_crit_charm"]
+        },
+        {
+          "weight": 15,
+          "items": ["greater_health_potion"]
+        },
+        {
+          "weight": 10,
+          "items": ["portal_scroll"]
+        },
+        {
+          "weight": 5,
+          "items": ["uncommon_fortune_trophy"]
+        }
+      ]
+    },
+    "ghoul": {
+      "drop_chance": 0.45,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 35,
+          "items": ["health_potion"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_ring", "common_amulet", "common_fetish"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_leather_armor", "common_bone_armor"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_dagger", "common_throwing_axes"]
+        }
+      ]
+    },
+    "necromancer": {
+      "drop_chance": 1.0,
+      "min_items": 2,
+      "max_items": 3,
+      "guaranteed_rarity": "magic",
+      "pools": [
+        {
+          "weight": 22,
+          "items": ["uncommon_shadow_cloak", "uncommon_skull_pendant", "uncommon_mage_robes"]
+        },
+        {
+          "weight": 22,
+          "items": ["uncommon_sigil_ring", "uncommon_idol", "uncommon_venom_fetish"]
+        },
+        {
+          "weight": 20,
+          "items": ["uncommon_arcanist_staff", "uncommon_stiletto"]
+        },
+        {
+          "weight": 15,
+          "items": ["greater_health_potion"]
+        },
+        {
+          "weight": 12,
+          "items": ["portal_scroll"]
+        },
+        {
+          "weight": 9,
+          "items": ["uncommon_fortune_trophy"]
+        }
+      ]
+    },
+    "undead_caster": {
+      "drop_chance": 0.5,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 30,
+          "items": ["common_staff", "common_bow", "common_mace"]
+        },
+        {
+          "weight": 25,
+          "items": ["health_potion"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_amulet", "common_idol", "common_fetish"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_robes", "common_vestments"]
+        },
+        {
+          "weight": 10,
+          "items": ["uncommon_skull_pendant", "uncommon_arcanist_staff"]
+        }
+      ]
+    },
+    "horror": {
+      "drop_chance": 0.6,
+      "min_items": 1,
+      "max_items": 2,
+      "pools": [
+        {
+          "weight": 25,
+          "items": ["common_sword", "common_mace", "common_flail"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_chain_armor", "common_plate_armor", "common_bone_armor"]
+        },
+        {
+          "weight": 20,
+          "items": ["health_potion", "iron_skin_potion"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_talisman", "common_fetish"]
+        },
+        {
+          "weight": 15,
+          "items": ["uncommon_shadow_cloak", "uncommon_skull_pendant", "uncommon_bone_plate"]
+        }
+      ]
+    },
+    "insectoid": {
+      "drop_chance": 0.4,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 40,
+          "items": ["health_potion", "iron_skin_potion"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_ring", "common_amulet", "common_trophy"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_leather_armor", "common_hide_armor"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_dagger", "common_crossbow"]
+        }
+      ]
+    },
+    "caster": {
+      "drop_chance": 0.5,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 30,
+          "items": ["common_staff", "common_bow", "common_mace"]
+        },
+        {
+          "weight": 25,
+          "items": ["health_potion"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_idol", "common_relic", "common_amulet"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_robes"]
+        },
+        {
+          "weight": 10,
+          "items": ["uncommon_sigil_ring", "uncommon_idol", "uncommon_arcanist_staff"]
+        }
+      ]
+    },
+    "evil_snail": {
+      "drop_chance": 0.35,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 40,
+          "items": ["health_potion"]
+        },
+        {
+          "weight": 30,
+          "items": ["common_ring", "common_amulet", "common_trophy"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_leather_armor", "common_bone_armor"]
+        },
+        {
+          "weight": 10,
+          "items": ["iron_skin_potion"]
+        }
+      ]
+    },
+    "goblin_spearman": {
+      "drop_chance": 0.45,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 30,
+          "items": ["common_sword", "common_mace", "common_dagger", "common_throwing_axes"]
+        },
+        {
+          "weight": 25,
+          "items": ["common_leather_armor", "common_chain_armor", "common_hide_armor"]
+        },
+        {
+          "weight": 20,
+          "items": ["health_potion", "whetstone"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_ring", "common_charm", "common_trophy"]
+        },
+        {
+          "weight": 10,
+          "items": ["common_crossbow"]
+        }
+      ]
+    },
+    "shade": {
+      "drop_chance": 0.5,
+      "min_items": 1,
+      "max_items": 1,
+      "pools": [
+        {
+          "weight": 25,
+          "items": ["common_amulet", "common_ring", "common_fetish", "common_idol"]
+        },
+        {
+          "weight": 25,
+          "items": ["health_potion"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_dagger", "common_staff"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_robes", "common_hide_armor"]
+        },
+        {
+          "weight": 15,
+          "items": ["uncommon_shadow_cloak", "uncommon_skull_pendant", "uncommon_venom_fetish"]
+        }
+      ]
+    },
+    "training_dummy": {
+      "drop_chance": 0.0,
+      "min_items": 0,
+      "max_items": 0,
+      "pools": []
+    }
+  },
+  "chest_loot_tables": {
+    "default": {
+      "min_items": 1,
+      "max_items": 2,
+      "pools": [
+        {
+          "weight": 20,
+          "items": ["common_sword", "common_bow", "common_mace", "common_dagger", "common_staff", "common_crossbow", "common_flail", "common_throwing_axes"]
+        },
+        {
+          "weight": 20,
+          "items": ["common_chain_armor", "common_leather_armor", "common_plate_armor", "common_robes", "common_hide_armor", "common_brigandine", "common_bone_armor", "common_vestments"]
+        },
+        {
+          "weight": 15,
+          "items": ["common_ring", "common_amulet", "common_talisman", "common_charm", "common_idol", "common_relic", "common_trophy", "common_fetish"]
+        },
+        {
+          "weight": 20,
+          "items": ["health_potion", "iron_skin_potion", "whetstone"]
+        },
+        {
+          "weight": 13,
+          "items": ["uncommon_greatsword", "uncommon_longbow", "uncommon_warhammer", "uncommon_stiletto", "uncommon_arcanist_staff", "uncommon_heavy_crossbow", "uncommon_flail", "uncommon_war_axes"]
+        },
+        {
+          "weight": 12,
+          "items": ["uncommon_plate_armor", "uncommon_shadow_cloak", "uncommon_sigil_ring", "uncommon_skull_pendant", "uncommon_mage_robes", "uncommon_hide_armor", "uncommon_bone_plate", "uncommon_vestments", "uncommon_brigandine", "uncommon_crit_charm", "uncommon_idol", "uncommon_holy_relic", "uncommon_fortune_trophy", "uncommon_venom_fetish"]
+        }
+      ]
+    },
+    "boss_chest": {
+      "min_items": 2,
+      "max_items": 3,
+      "guaranteed_rarity": "magic",
+      "pools": [
+        {
+          "weight": 25,
+          "items": ["uncommon_greatsword", "uncommon_longbow", "uncommon_warhammer", "uncommon_stiletto", "uncommon_arcanist_staff", "uncommon_heavy_crossbow", "uncommon_flail", "uncommon_war_axes"]
+        },
+        {
+          "weight": 22,
+          "items": ["uncommon_plate_armor", "uncommon_shadow_cloak", "uncommon_mage_robes", "uncommon_hide_armor", "uncommon_bone_plate", "uncommon_vestments", "uncommon_brigandine"]
+        },
+        {
+          "weight": 20,
+          "items": ["uncommon_sigil_ring", "uncommon_skull_pendant", "uncommon_crit_charm", "uncommon_idol", "uncommon_holy_relic", "uncommon_venom_fetish"]
+        },
+        {
+          "weight": 15,
+          "items": ["greater_health_potion"]
+        },
+        {
+          "weight": 10,
+          "items": ["portal_scroll"]
+        },
+        {
+          "weight": 8,
+          "items": ["uncommon_fortune_trophy"]
+        }
+      ]
+    }
+  }
+}

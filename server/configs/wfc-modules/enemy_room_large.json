@@ -1,0 +1,42 @@
+{
+  "id": "enemy_room_large",
+  "name": "Large Enemy Room",
+  "version": 1,
+  "tags": ["enemy", "combat", "large"],
+  "width": 7,
+  "height": 5,
+  "difficulty": 6,
+  "frequency": 1.5,
+  "maxCount": 3,
+  "minCount": 0,
+  "sockets": {
+    "north": "corridor_2",
+    "south": "corridor_2",
+    "east": "corridor_2",
+    "west": "wall"
+  },
+  "tiles": [
+    ["W", "W", "W", "F", "W", "W", "W"],
+    ["W", "F", "F", "F", "F", "F", "W"],
+    ["W", "F", "W", "F", "W", "F", "F"],
+    ["W", "F", "F", "F", "F", "F", "W"],
+    ["W", "W", "W", "F", "W", "W", "W"]
+  ],
+  "variants": [],
+  "metadata": {
+    "description": "Large combat room with pillars and multiple exits",
+    "enemySpawns": [
+      { "localX": 2, "localY": 1, "enemyType": "demon" },
+      { "localX": 4, "localY": 1, "enemyType": "skeleton" },
+      { "localX": 3, "localY": 3, "enemyType": "demon" },
+      { "localX": 5, "localY": 3, "enemyType": "skeleton" }
+    ],
+    "chestSlots": [
+      { "localX": 1, "localY": 3 }
+    ],
+    "doorPositions": [
+      { "localX": 3, "localY": 0 },
+      { "localX": 3, "localY": 4 }
+    ]
+  }
+}

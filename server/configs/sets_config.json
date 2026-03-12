@@ -1,0 +1,427 @@
+{
+  "sets": {
+    "crusaders_oath": {
+      "set_id": "crusaders_oath",
+      "name": "Crusader's Oath",
+      "class_affinity": "crusader",
+      "pieces": [
+        {
+          "piece_id": "crusaders_oath_weapon",
+          "name": "Crusader's Oath Warhammer",
+          "equip_slot": "weapon",
+          "item_type": "weapon",
+          "weapon_category": "melee",
+          "stat_bonuses": {
+            "attack_damage": 14,
+            "max_hp": 20
+          },
+          "description": "A blessed warhammer forged in the crucible of faith.",
+          "sell_value": 85,
+          "item_level": 14
+        },
+        {
+          "piece_id": "crusaders_oath_armor",
+          "name": "Crusader's Oath Plate",
+          "equip_slot": "armor",
+          "item_type": "armor",
+          "stat_bonuses": {
+            "armor": 10,
+            "max_hp": 30
+          },
+          "description": "Plate armor inscribed with the tenets of an ancient crusading order.",
+          "sell_value": 90,
+          "item_level": 14
+        },
+        {
+          "piece_id": "crusaders_oath_accessory",
+          "name": "Crusader's Oath Signet",
+          "equip_slot": "accessory",
+          "item_type": "accessory",
+          "stat_bonuses": {
+            "armor": 4,
+            "max_hp": 40
+          },
+          "description": "A signet ring bearing the seal of the oath-bound.",
+          "sell_value": 80,
+          "item_level": 14
+        }
+      ],
+      "bonuses": [
+        {
+          "pieces_required": 2,
+          "description": "+4 armor, +30 HP, Taunt duration +1 turn",
+          "stat_bonuses": {
+            "armor": 4,
+            "max_hp": 30
+          },
+          "skill_modifiers": {
+            "taunt": {
+              "duration_bonus": 1
+            }
+          }
+        },
+        {
+          "pieces_required": 3,
+          "description": "+8 armor, +80 HP, Taunt duration +1 turn, Bulwark also grants +4 thorns",
+          "stat_bonuses": {
+            "armor": 8,
+            "max_hp": 80
+          },
+          "skill_modifiers": {
+            "taunt": {
+              "duration_bonus": 1
+            },
+            "bulwark": {
+              "thorns_bonus": 4
+            }
+          }
+        }
+      ]
+    },
+    "voidwalkers_regalia": {
+      "set_id": "voidwalkers_regalia",
+      "name": "Voidwalker's Regalia",
+      "class_affinity": "hexblade",
+      "pieces": [
+        {
+          "piece_id": "voidwalkers_regalia_weapon",
+          "name": "Voidwalker Blade",
+          "equip_slot": "weapon",
+          "item_type": "weapon",
+          "weapon_category": "hybrid",
+          "stat_bonuses": {
+            "attack_damage": 12,
+            "ranged_damage": 10,
+            "crit_chance": 0.03
+          },
+          "description": "A blade that cuts through the membrane between worlds.",
+          "sell_value": 90,
+          "item_level": 14
+        },
+        {
+          "piece_id": "voidwalkers_regalia_armor",
+          "name": "Voidwalker Cloak",
+          "equip_slot": "armor",
+          "item_type": "armor",
+          "stat_bonuses": {
+            "armor": 6,
+            "dodge_chance": 0.05,
+            "max_hp": 20
+          },
+          "description": "A shimmering cloak woven from threads of the void.",
+          "sell_value": 85,
+          "item_level": 14
+        },
+        {
+          "piece_id": "voidwalkers_regalia_accessory",
+          "name": "Voidwalker Seal",
+          "equip_slot": "accessory",
+          "item_type": "accessory",
+          "stat_bonuses": {
+            "dot_damage_pct": 0.15,
+            "max_hp": 30
+          },
+          "description": "A seal that pulses with entropic energy.",
+          "sell_value": 80,
+          "item_level": 14
+        }
+      ],
+      "bonuses": [
+        {
+          "pieces_required": 2,
+          "description": "+10% skill damage, Wither duration +1 turn",
+          "stat_bonuses": {
+            "skill_damage_pct": 0.10
+          },
+          "skill_modifiers": {
+            "wither": {
+              "duration_bonus": 1
+            }
+          }
+        },
+        {
+          "pieces_required": 3,
+          "description": "+20% skill damage, Wither duration +2 turns, Ward reflects +4 per charge",
+          "stat_bonuses": {
+            "skill_damage_pct": 0.20
+          },
+          "skill_modifiers": {
+            "wither": {
+              "duration_bonus": 2
+            },
+            "ward": {
+              "reflect_bonus": 4
+            }
+          }
+        }
+      ]
+    },
+    "deadeyes_arsenal": {
+      "set_id": "deadeyes_arsenal",
+      "name": "Deadeye's Arsenal",
+      "class_affinity": "ranger",
+      "pieces": [
+        {
+          "piece_id": "deadeyes_arsenal_weapon",
+          "name": "Deadeye Longbow",
+          "equip_slot": "weapon",
+          "item_type": "weapon",
+          "weapon_category": "ranged",
+          "stat_bonuses": {
+            "ranged_damage": 16,
+            "crit_chance": 0.05
+          },
+          "description": "A longbow that finds the gap in any armor.",
+          "sell_value": 90,
+          "item_level": 14
+        },
+        {
+          "piece_id": "deadeyes_arsenal_armor",
+          "name": "Deadeye Leathers",
+          "equip_slot": "armor",
+          "item_type": "armor",
+          "stat_bonuses": {
+            "armor": 5,
+            "dodge_chance": 0.08,
+            "max_hp": 20
+          },
+          "description": "Supple leathers that move like a second skin.",
+          "sell_value": 85,
+          "item_level": 14
+        },
+        {
+          "piece_id": "deadeyes_arsenal_accessory",
+          "name": "Deadeye Scope",
+          "equip_slot": "accessory",
+          "item_type": "accessory",
+          "stat_bonuses": {
+            "crit_damage": 0.30,
+            "max_hp": 20
+          },
+          "description": "An enchanted lens that reveals lethal weaknesses.",
+          "sell_value": 80,
+          "item_level": 14
+        }
+      ],
+      "bonuses": [
+        {
+          "pieces_required": 2,
+          "description": "+10% crit chance, Power Shot cooldown −1",
+          "stat_bonuses": {
+            "crit_chance": 0.10
+          },
+          "skill_modifiers": {
+            "power_shot": {
+              "cooldown_reduction": 1
+            }
+          }
+        },
+        {
+          "pieces_required": 3,
+          "description": "+15% crit chance, +50% crit damage, critical ranged hits pierce to 1 adjacent enemy",
+          "stat_bonuses": {
+            "crit_chance": 0.15,
+            "crit_damage": 0.50
+          },
+          "skill_modifiers": {},
+          "special_effects": {
+            "ranged_crit_pierce": {
+              "description": "Critical ranged hits pierce to 1 adjacent enemy",
+              "pierce_count": 1
+            }
+          }
+        }
+      ]
+    },
+    "faiths_radiance": {
+      "set_id": "faiths_radiance",
+      "name": "Faith's Radiance",
+      "class_affinity": "confessor",
+      "pieces": [
+        {
+          "piece_id": "faiths_radiance_weapon",
+          "name": "Radiant Staff",
+          "equip_slot": "weapon",
+          "item_type": "weapon",
+          "weapon_category": "caster",
+          "stat_bonuses": {
+            "attack_damage": 8,
+            "heal_power_pct": 0.25
+          },
+          "description": "A staff that channels divine radiance into healing light.",
+          "sell_value": 85,
+          "item_level": 14
+        },
+        {
+          "piece_id": "faiths_radiance_armor",
+          "name": "Radiant Vestments",
+          "equip_slot": "armor",
+          "item_type": "armor",
+          "stat_bonuses": {
+            "armor": 6,
+            "max_hp": 50
+          },
+          "description": "Holy vestments that glow softly in darkness.",
+          "sell_value": 90,
+          "item_level": 14
+        },
+        {
+          "piece_id": "faiths_radiance_accessory",
+          "name": "Radiant Halo",
+          "equip_slot": "accessory",
+          "item_type": "accessory",
+          "stat_bonuses": {
+            "holy_damage_pct": 0.15,
+            "max_hp": 40
+          },
+          "description": "A circlet of pure light that burns the profane.",
+          "sell_value": 80,
+          "item_level": 14
+        }
+      ],
+      "bonuses": [
+        {
+          "pieces_required": 2,
+          "description": "+15% heal power, Heal cooldown −1 turn",
+          "stat_bonuses": {
+            "heal_power_pct": 0.15
+          },
+          "skill_modifiers": {
+            "heal": {
+              "cooldown_reduction": 1
+            }
+          }
+        },
+        {
+          "pieces_required": 3,
+          "description": "+30% heal power, Heal cooldown −1, Exorcism applies 1-turn stun vs tagged",
+          "stat_bonuses": {
+            "heal_power_pct": 0.30
+          },
+          "skill_modifiers": {
+            "heal": {
+              "cooldown_reduction": 1
+            },
+            "exorcism": {
+              "stun_tagged_duration": 1
+            }
+          }
+        }
+      ]
+    },
+    "seekers_judgment": {
+      "set_id": "seekers_judgment",
+      "name": "Seeker's Judgment",
+      "class_affinity": "inquisitor",
+      "pieces": [
+        {
+          "piece_id": "seekers_judgment_weapon",
+          "name": "Seeker's Crossbow",
+          "equip_slot": "weapon",
+          "item_type": "weapon",
+          "weapon_category": "ranged",
+          "stat_bonuses": {
+            "attack_damage": 8,
+            "ranged_damage": 10,
+            "holy_damage_pct": 0.10
+          },
+          "description": "A crossbow blessed to seek out heresy.",
+          "sell_value": 90,
+          "item_level": 14
+        },
+        {
+          "piece_id": "seekers_judgment_armor",
+          "name": "Seeker's Coat",
+          "equip_slot": "armor",
+          "item_type": "armor",
+          "stat_bonuses": {
+            "armor": 5,
+            "cooldown_reduction_pct": 0.06,
+            "max_hp": 30
+          },
+          "description": "A heavy coat reinforced with judgment's weight.",
+          "sell_value": 85,
+          "item_level": 14
+        },
+        {
+          "piece_id": "seekers_judgment_accessory",
+          "name": "Seeker's Eye",
+          "equip_slot": "accessory",
+          "item_type": "accessory",
+          "stat_bonuses": {
+            "crit_chance": 0.06,
+            "skill_damage_pct": 0.20
+          },
+          "description": "An eye that sees through deception and shadow.",
+          "sell_value": 80,
+          "item_level": 14
+        }
+      ],
+      "bonuses": [
+        {
+          "pieces_required": 2,
+          "description": "Rebuke cooldown −2, Divine Sense also reveals non-tagged enemies",
+          "stat_bonuses": {},
+          "skill_modifiers": {
+            "rebuke": {
+              "cooldown_reduction": 2
+            },
+            "divine_sense": {
+              "reveal_all": true
+            }
+          }
+        },
+        {
+          "pieces_required": 3,
+          "description": "Rebuke cooldown −2, Divine Sense reveals all + grants +10% damage vs revealed, Shadow Step range +1",
+          "stat_bonuses": {},
+          "skill_modifiers": {
+            "rebuke": {
+              "cooldown_reduction": 2
+            },
+            "divine_sense": {
+              "reveal_all": true,
+              "damage_bonus_pct": 0.10
+            },
+            "shadow_step": {
+              "range_bonus": 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "drop_rules": {
+    "base_drop_chance": 0.003,
+    "allowed_tiers": ["elite", "boss"],
+    "floor_scaling": {
+      "1": 1.0,
+      "3": 1.5,
+      "5": 2.0,
+      "7": 2.5,
+      "10": 3.0
+    }
+  },
+  "class_affinity_weights": {
+    "crusader": {
+      "crusaders_oath": 3.0,
+      "faiths_radiance": 1.5
+    },
+    "confessor": {
+      "faiths_radiance": 3.0,
+      "crusaders_oath": 1.5
+    },
+    "hexblade": {
+      "voidwalkers_regalia": 3.0,
+      "seekers_judgment": 1.5
+    },
+    "ranger": {
+      "deadeyes_arsenal": 3.0,
+      "voidwalkers_regalia": 1.5
+    },
+    "inquisitor": {
+      "seekers_judgment": 3.0,
+      "deadeyes_arsenal": 1.5
+    }
+  }
+}
