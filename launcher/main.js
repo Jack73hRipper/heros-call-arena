@@ -25,10 +25,10 @@ let mainWindow = null;
 let tray = null;
 
 /* ── Manifest URL configuration ── */
-// For local testing, serve latest.json via a simple HTTP server.
-// For production, replace with your CDN / R2 / B2 / GitHub URL.
+// Production: GitHub Pages hosts latest.json for both game and launcher.
+// Override via env var for local testing: set LAUNCHER_MANIFEST_URL=http://localhost:8088/latest.json
 const MANIFEST_URL = process.env.LAUNCHER_MANIFEST_URL
-  || 'http://localhost:8088/latest.json';
+  || 'https://jack73hripper.github.io/heros-call-arena/latest.json';
 
 versionChecker.setManifestUrl(MANIFEST_URL);
 

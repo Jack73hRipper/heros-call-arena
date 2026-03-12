@@ -228,10 +228,29 @@ REM ── GitHub Release ──────────────────
         )
     )
 
-    REM For GitHub hosting, latest.json goes to GitHub Pages or a gist
-    echo [INFO] latest.json generated at build\publish\latest.json
-    echo [NOTE] Upload latest.json to your GitHub Pages site or update your gist manually.
-    echo        See: https://pages.github.com/
+    REM Push latest.json to gh-pages branch for GitHub Pages hosting
+    echo [INFO] Deploying latest.json to GitHub Pages...
+    
+    REM Create a temp directory for gh-pages content
+    if exist "build\gh-pages-temp" rmdir /s /q "build\gh-pages-temp"
+    mkdir "build\gh-pages-temp"
+    copy "build\publish\latest.json" "build\gh-pages-temp\latest.json"
+    
+    REM Use git to push to gh-pages branch
+    pushd "build\gh-pages-temp"
+    git init
+    git checkout -b gh-pages
+    git add latest.json
+    git commit -m "Update latest.json to v%VERSION%"
+    git remote add origin "https://github.com/%GH_REPO%.git"
+    git push origin gh-pages --force
+    popd
+    
+    REM Clean up temp directory
+    rmdir /s /q "build\gh-pages-temp"
+    
+    echo [OK] latest.json deployed to GitHub Pages.
+    echo [INFO] Manifest URL: https://%GH_REPO:~0,14%.github.io/%GH_REPO:~15%/latest.json
 
     echo [OK] GitHub release created.
     goto :upload_done
