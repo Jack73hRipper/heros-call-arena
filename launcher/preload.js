@@ -30,6 +30,9 @@ contextBridge.exposeInMainWorld('launcherAPI', {
   onInstallStatus: (callback) => {
     ipcRenderer.on('install-status', (_e, status) => callback(status));
   },
+  onExtractProgress: (callback) => {
+    ipcRenderer.on('extract-progress', (_e, data) => callback(data));
+  },
   onGameExited: (callback) => {
     ipcRenderer.on('game-exited', (_e, code) => callback(code));
   },

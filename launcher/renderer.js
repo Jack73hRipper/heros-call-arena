@@ -61,8 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Remove all state classes, then add the active one
     btnPlay.classList.remove('play-btn--install', 'play-btn--update', 'play-btn--offline', 'play-btn--disabled');
 
-    // Hide progress bar by default; shown only during download
-    if (state !== 'downloading') {
+    // Hide progress bar by default; shown during download and install
+    if (state !== 'downloading' && state !== 'installing') {
       progressWrapper.style.display = 'none';
     }
 
@@ -137,6 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btnPlay.classList.add('play-btn--disabled');
         btnPlay.disabled = true;
         statusMessage.textContent = 'Installing…';
+        progressWrapper.style.display = 'flex';
+        displayedProgress = 0;
+        targetProgress = 0;
+        progressFill.style.width = '0%';
+        progressText.textContent = '0%';
         break;
 
       case 'launching':
@@ -268,6 +273,17 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       const receivedMB = (received / 1_000_000).toFixed(1);
       progressText.textContent = `${receivedMB} MB`;
+    }
+  });
+
+  /* ──────────────────────────────────────────────
+     Extract progress callback (from main process)
+     ────────────────────────────────────────────── */
+  window.launcherAPI.onExtractProgress(({ extracted, total }) => {
+    if (total > 0) {
+      const pct = Math.min(100, (extracted / total) * 100);
+      setProgress(pct);
+      progressText.textContent = `${Math.round(pct)}% — ${extracted} / ${total} files`;
     }
   });
 

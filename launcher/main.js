@@ -204,7 +204,12 @@ ipcMain.handle('start-install', async (_event, manifest) => {
     /* 4 — Extract */
     sendToRenderer('install-status', 'installing');
     logger.info('Extracting…');
-    await extractor.extract(zipPath, installDir, { isUpdate });
+    await extractor.extract(zipPath, installDir, {
+      isUpdate,
+      onProgress: (extracted, total) => {
+        sendToRenderer('extract-progress', { extracted, total });
+      },
+    });
     extractor.cleanupZip(zipPath);
     logger.info('Extraction complete');
 

@@ -5,7 +5,32 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [Bugfix] — 2026-03-12 — Town Hub Hero Portraits Missing (v0.1.3)
+## [Feature] - 2026-03-12 - Launcher Install Progress Bar (Launcher v1.1.0)
+
+**Summary:** Added a real-time progress bar during the game extraction/install phase. Previously the launcher showed "INSTALLING..." with no visual feedback, making it look frozen. Now reuses the same smooth animated progress bar from the download phase, showing file-by-file extraction progress.
+
+### Changed - `launcher/lib/extractor.js`
+
+- **`extract()`** - Added `onProgress` callback option
+- **`extractWithProgress()`** - New helper that extracts entries one at a time via `extractEntryTo()` instead of `extractAllTo()`, calling `onProgress(extracted, total)` after each file
+
+### Changed - `launcher/main.js`
+
+- **start-install handler** - Extract step now passes `onProgress` callback that sends `extract-progress` IPC events to the renderer with `{extracted, total}` counts
+
+### Changed - `launcher/preload.js`
+
+- **`onExtractProgress`** - New IPC bridge method exposing the `extract-progress` event to the renderer
+
+### Changed - `launcher/renderer.js`
+
+- **`applyState('installing')`** - Now shows the progress bar (reset to 0%) instead of hiding it
+- **`onExtractProgress` listener** - Updates progress bar with smooth animation showing file count (e.g. "45% - 230 / 512 files")
+- **Progress bar visibility** - Now stays visible during both `downloading` and `installing` states
+
+---
+
+## [Bugfix] - 2026-03-12 - Town Hub Hero Portraits Missing (v0.1.3)
 
 **Summary:** Fixed hero portraits not displaying in Town Hub screens (Hero Roster, Hiring Hall, Merchant). Same root cause as v0.1.2 — absolute asset path under Electron's `file://` protocol.
 

@@ -20,9 +20,10 @@ const path = require('path');
  * @param {string} installDir — Target installation directory
  * @param {Object} opts
  * @param {boolean} opts.isUpdate — Whether this is an update (atomic swap)
+ * @param {function} opts.onProgress — Progress callback (extracted, total)
  * @returns {Promise<void>}
  */
-async function extract(zipPath, installDir, { isUpdate = false } = {}) {
+async function extract(zipPath, installDir, { isUpdate = false, onProgress } = {}) {
   const parentDir = path.dirname(installDir);
   fs.mkdirSync(parentDir, { recursive: true });
 
@@ -40,7 +41,7 @@ async function extract(zipPath, installDir, { isUpdate = false } = {}) {
       try {
         // Extract to staging
         const zip = new AdmZip(zipPath);
-        zip.extractAllTo(stagingDir, true);
+        extractWithProgress(zip, stagingDir, onProgress);
 
         // Remove old install
         const backupDir = installDir + '-old-' + Date.now();
@@ -64,10 +65,27 @@ async function extract(zipPath, installDir, { isUpdate = false } = {}) {
         removeDir(installDir);
       }
       const zip = new AdmZip(zipPath);
-      zip.extractAllTo(installDir, true);
+      extractWithProgress(zip, installDir, onProgress);
     }
   } finally {
     process.noAsar = prevNoAsar;
+  }
+}
+
+/**
+ * Extract zip entries one at a time, calling onProgress after each.
+ */
+function extractWithProgress(zip, targetDir, onProgress) {
+  const entries = zip.getEntries();
+  const total = entries.length;
+  let extracted = 0;
+
+  fs.mkdirSync(targetDir, { recursive: true });
+
+  for (const entry of entries) {
+    zip.extractEntryTo(entry, targetDir, true, true);
+    extracted++;
+    if (onProgress) onProgress(extracted, total);
   }
 }
 
