@@ -1,9 +1,9 @@
 {
-    "sha256":  "67c0072a8fec48c5e0941f2b8ca5b655ae716e2292af3dff81992e96fbe3d095",
-    "version":  "0.1.6",
-    "minLauncherVersion":  "1.0.0",
-    "downloadUrl":  "https://github.com/Jack73hRipper/heros-call-arena/releases/download/v0.1.6/arena-v0.1.6.zip",
+    "version":  "0.1.4",
     "releaseDate":  "2026-03-13",
-    "downloadSize":  322840588,
-    "patchNotes":  "## v0.1.6 â€” War Room Diagnostic Logging \u0026 stderr Fix\r\n\r\n**Bug Fixes**\r\n- Fixed `start-server-online.bat` silently suppressing all server error/warning output (`2\u003enul` on uvicorn), which made v0.1.5 diagnostics invisible\r\n\r\n**Diagnostics**\r\n- Added `print()` diagnostics to WebSocket connect, match creation, hero selection, class selection, and profile loading â€” all visible in server console\r\n- Added client-side `console.log` tracing for match creation and hero_select dispatch\r\n- Server now prints `âœ“ Connect OK` or `âœ— Connect MISMATCH` on every WebSocket connection with full active-match state"
+    "downloadUrl":  "https://github.com/Jack73hRipper/heros-call-arena/releases/download/v0.1.4/arena-v0.1.4.zip",
+    "downloadSize":  322837956,
+    "sha256":  "fdd3d57a3021ae37d952c7d6cd9fc287fa3d1521264b79f35801f4de893fdbdc",
+    "patchNotes":  "## v0.1.4 — Stance Overhaul \u0026 Inventory QoL\r\n\r\n**New Features**\r\n- **Stance System Overhaul** — All 4 stances (Follow, Aggressive, Defensive, Hold) are now role-aware. Ranged and support classes no longer lose their intelligence when switching stances. Mages, Rangers, and Plague Doctors on Defensive now kite instead of walking into melee. Confessors, Bards, and Shamans on Aggressive/Defensive position near allies instead of charging enemies. Hold stance now picks the smartest target instead of attacking randomly.\r\n- **Destroy Item** — New trash button on each bag slot lets you permanently destroy unwanted items during dungeon runs. Two-click confirmation prevents accidents.\r\n\r\n**Bug Fixes**\r\n- Fixed Bard not kiting in Aggressive stance\r\n- Replaced abrasive Hexblade Wither and Shaman Healing Totem sound effects with softer alternatives",
+    "minLauncherVersion":  "1.0.0"
 }
