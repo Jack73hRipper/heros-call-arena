@@ -10,9 +10,11 @@
 |-----------|----------|---------|
 | **Source code** | [Jack73hRipper/heros-call-arena](https://github.com/Jack73hRipper/heros-call-arena) (public) | All game + launcher source |
 | **Game releases** | GitHub Releases on the same repo | Hosts `arena-v{VERSION}.zip` (~300–600 MB) |
-| **Manifest** | GitHub Pages (`gh-pages` branch) | Hosts `latest.json` — the launcher reads this to detect updates |
+| **Manifest** | GitHub Pages (`gh-pages` branch) | Hosts `latest.json` (launcher update check) and `server-url.json` (remote server discovery) |
 | **Manifest URL** | `https://jack73hripper.github.io/heros-call-arena/latest.json` | Hardcoded in `launcher/main.js` |
+| **Server URL** | `https://jack73hripper.github.io/heros-call-arena/server-url.json` | Fetched by game client to find the remote server |
 | **GitHub CLI** | `C:\Program Files\GitHub CLI\gh.exe` | Used by publish scripts (not on PATH — scripts add it automatically) |
+| **Cloudflared** | `C:\Program Files (x86)\cloudflared\cloudflared.exe` | Creates free Cloudflare quick tunnels for online play |
 
 ---
 
@@ -134,6 +136,53 @@ start-publish.bat ──────────────►  GitHub Release 
 
 ---
 
+## Hosting Online (Remote Server)
+
+The game supports remote multiplayer via Cloudflare quick tunnels — no domain, no account setup required.
+
+### Starting the server for online play
+
+```
+start-server-online.bat
+```
+
+This script does 4 things:
+1. Starts the FastAPI server on `localhost:8000` with CORS set to `*`
+2. Opens a Cloudflare quick tunnel (free, anonymous — gives you a random `https://xxx.trycloudflare.com` URL)
+3. Publishes `server-url.json` to GitHub Pages so players' game clients can find the server
+4. Keeps running — press Ctrl+C to stop
+
+### Stopping the server
+
+Close the terminal, then run:
+
+```
+stop-server-online.bat
+```
+
+This publishes `server-url.json` with `"status": "offline"` so player clients fall back to localhost.
+
+### How players connect
+
+The game client (`serverUrl.js`) automatically:
+1. Fetches `server-url.json` from GitHub Pages on startup
+2. If `status: "online"` and the URL is reachable → routes all API/WebSocket traffic through the tunnel
+3. If offline or unreachable → falls back to `http://localhost:8000` (local play)
+
+No player configuration needed — it's fully automatic.
+
+### Key files for online play
+
+| File | Purpose |
+|------|---------|
+| `start-server-online.bat` | Start server + tunnel + publish URL |
+| `stop-server-online.bat` | Publish offline status |
+| `client/src/utils/serverUrl.js` | Client-side server discovery (`getServerUrl()`, `getWsUrl()`, `apiFetch()`) |
+| `client/src/utils/fetchWithRetry.js` | Resilient fetch wrapper — auto-prepends server base URL |
+| `client/src/hooks/useWebSocket.js` | WebSocket hook — uses dynamic server URL |
+
+---
+
 ## Key Files
 
 | File | Purpose |
@@ -183,6 +232,9 @@ start-publish.bat ──────────────►  GitHub Release 
 | electron-builder symlink warnings | Harmless — those are macOS code-signing files, doesn't affect Windows builds |
 | Tester can't download (private repo) | Repo must be **public** for unauthenticated downloads |
 | Need to change hosting later | Edit `scripts/publish-config.json` — change `"host"` to `"r2"` or `"local"` |
+| Tunnel URL not found | `start-server-online.bat` waits 30s. Check `%TEMP%\cloudflared-tunnel.log` for errors |
+| Players can't connect remotely | Verify `server-url.json` on GitHub Pages shows `"status": "online"`. Run `stop-server-online.bat` then `start-server-online.bat` to refresh |
+| `cloudflared` not found | Install via `winget install Cloudflare.cloudflared` |
 
 ---
 

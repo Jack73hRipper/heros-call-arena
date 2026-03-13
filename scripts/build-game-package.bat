@@ -74,10 +74,11 @@ echo [OK] Server bundled successfully.
 echo.
 
 REM ── Step 2: Vite — Build Frontend ──────────────────────────
-echo [2/5] Building frontend with Vite...
+echo [2/5] Building frontend with Vite (Electron mode)...
 echo.
 
 cd client
+set ELECTRON_BUILD=true
 call npm run build
 if errorlevel 1 (
     echo [ERROR] Vite build failed!

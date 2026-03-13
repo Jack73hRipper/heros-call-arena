@@ -5,6 +5,39 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [Bugfix] — 2026-03-12 — Missing Sprites, Audio & Particles in Deployed Build
+
+**Summary:** Fixed all static asset paths that broke when the game was loaded via Electron's `file://` protocol in deployed (installed) builds. Sprites, tiles, skill icons, audio, and particle effects were all missing for testers despite being correctly included in the build zip. Dev mode via `start-game.bat` was unaffected because Vite's dev server resolves `/` paths to the project root.
+
+**Root cause:** All static asset paths in the codebase used absolute root-relative paths (e.g. `/spritesheet.png`, `/audio/combat/swing.wav`). In development, Vite's dev server maps `/` to the project's `public/` folder, so these work. In production Electron builds, the app loads via `file://` protocol from `dist/index.html`. Under `file://`, a leading `/` resolves to the **filesystem root** (e.g. `C:\spritesheet.png`), not the app's `dist/` folder. The Vite config already sets `base: './'` for Electron builds, which fixes JS/CSS bundle paths, but hardcoded asset constants in source code are not affected by Vite's `base` setting.
+
+**Impact:** This was the cause of missing sprites and sounds reported during the first online test. All game logic, UI components, API calls, and WebSocket connections were unaffected (those use full HTTP URLs from `serverUrl.js`).
+
+### Changed — `client/src/canvas/SpriteLoader.js`
+
+- **`SPRITESHEET_PATH`** — Changed from `'/spritesheet.png'` to `` `${import.meta.env.BASE_URL}spritesheet.png` `` — resolves to `./spritesheet.png` in Electron builds, `/spritesheet.png` in dev
+
+### Changed — `client/src/canvas/TileLoader.js`
+
+- **`TILESHEET_PATH`** — Changed from `'/tilesheet.png'` to `` `${import.meta.env.BASE_URL}tilesheet.png` ``
+
+### Changed — `client/src/components/BottomBar/SkillIconMap.js`
+
+- **`SKILL_ICON_SHEET`** — Changed from `'/skill-icons.png'` to `` `${import.meta.env.BASE_URL}skill-icons.png` ``
+
+### Changed — `client/src/audio/AudioManager.js`
+
+- **`init()`** — Audio effects JSON fetch now uses `${baseUrl}audio-effects.json` instead of `/audio-effects.json`
+- **`_preloadBuffer()`** — Sound file URLs from `audio-effects.json` (e.g. `/audio/combat/swing.wav`) are now normalized: leading `/` is replaced with `import.meta.env.BASE_URL`
+- **`_playTrack()`** — Music track paths from `audio-effects.json` receive the same normalization
+
+### Changed — `client/src/canvas/particles/ParticleManager.js`
+
+- **`init()`** — Particle presets and effects JSON fetches now use `${baseUrl}particle-presets.json` and `${baseUrl}particle-effects.json` instead of absolute paths
+- **Category file fetches** — Individual preset category files (e.g. `particle-presets/combat.json`) now use `${baseUrl}${file}` instead of `/${file}`
+
+---
+
 ## [Bugfix] — 2026-03-12 — Batch PVP Team A Frozen AI
 
 **Summary:** Fixed a bug where Team A units in batch PVP matches would return WAIT every turn instead of fighting, causing most matches to hit the max turn limit (200) and end as draws. Skills, attacks, and movement were all working correctly — the root cause was an AI ownership lookup failure.

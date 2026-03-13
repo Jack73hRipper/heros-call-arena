@@ -7,6 +7,7 @@
       "hero_id": "d8dc40eb",
       "name": "Wilhelm Heavenshield",
       "class_id": "crusader",
+      "sprite_variant": 1,
       "stats": {
         "hp": 158,
         "max_hp": 158,
@@ -27,6 +28,7 @@
       "hero_id": "4e0fae43",
       "name": "Maren the Relentless",
       "class_id": "inquisitor",
+      "sprite_variant": 1,
       "stats": {
         "hp": 80,
         "max_hp": 80,
@@ -47,6 +49,7 @@
       "hero_id": "474429c1",
       "name": "Mother Mirael",
       "class_id": "confessor",
+      "sprite_variant": 1,
       "stats": {
         "hp": 95,
         "max_hp": 95,
@@ -66,37 +69,207 @@
   ],
   "tavern_pool": [
     {
-      "hero_id": "e014391b",
-      "name": "Faelin the Marksman",
-      "class_id": "ranger",
+      "hero_id": "60ba55e2",
+      "name": "Godfrey Hammerhand",
+      "class_id": "crusader",
+      "sprite_variant": 5,
       "stats": {
-        "hp": 82,
-        "max_hp": 82,
+        "hp": 136,
+        "max_hp": 136,
+        "attack_damage": 13,
+        "ranged_damage": 0,
+        "armor": 5,
+        "vision_range": 6,
+        "ranged_range": 1
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 61,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "03fd6357",
+      "name": "Father Jorvyn",
+      "class_id": "confessor",
+      "sprite_variant": 5,
+      "stats": {
+        "hp": 103,
+        "max_hp": 103,
+        "attack_damage": 8,
+        "ranged_damage": 0,
+        "armor": 2,
+        "vision_range": 6,
+        "ranged_range": 1
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 52,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "25cbc2c0",
+      "name": "Fenris the Watcher",
+      "class_id": "inquisitor",
+      "sprite_variant": 6,
+      "stats": {
+        "hp": 96,
+        "max_hp": 96,
+        "attack_damage": 11,
+        "ranged_damage": 13,
+        "armor": 4,
+        "vision_range": 9,
+        "ranged_range": 5
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 60,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "a5917ade",
+      "name": "Mira Stormflight",
+      "class_id": "ranger",
+      "sprite_variant": 4,
+      "stats": {
+        "hp": 74,
+        "max_hp": 74,
         "attack_damage": 9,
         "ranged_damage": 19,
-        "armor": 2,
-        "vision_range": 8,
+        "armor": 1,
+        "vision_range": 7,
         "ranged_range": 6
       },
       "equipment": {},
       "inventory": [],
       "is_alive": true,
-      "hire_cost": 58,
+      "hire_cost": 56,
       "matches_survived": 0,
       "enemies_killed": 0
     },
     {
-      "hero_id": "54d1d3b3",
-      "name": "Grimshaw the Branded",
+      "hero_id": "1f13018b",
+      "name": "Dusk Fellblade",
       "class_id": "hexblade",
+      "sprite_variant": 8,
       "stats": {
-        "hp": 106,
-        "max_hp": 106,
-        "attack_damage": 14,
-        "ranged_damage": 12,
-        "armor": 4,
+        "hp": 117,
+        "max_hp": 117,
+        "attack_damage": 15,
+        "ranged_damage": 13,
+        "armor": 5,
         "vision_range": 6,
         "ranged_range": 4
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 65,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "c4301335",
+      "name": "Grimald Hexflame",
+      "class_id": "mage",
+      "sprite_variant": 5,
+      "stats": {
+        "hp": 74,
+        "max_hp": 74,
+        "attack_damage": 6,
+        "ranged_damage": 13,
+        "armor": 3,
+        "vision_range": 6,
+        "ranged_range": 5
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 53,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "dcc6dc12",
+      "name": "Isolde Ashsong",
+      "class_id": "bard",
+      "sprite_variant": 1,
+      "stats": {
+        "hp": 118,
+        "max_hp": 118,
+        "attack_damage": 9,
+        "ranged_damage": 11,
+        "armor": 3,
+        "vision_range": 8,
+        "ranged_range": 4
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 61,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "0fc384dc",
+      "name": "Serana Crimsonpact",
+      "class_id": "blood_knight",
+      "sprite_variant": 1,
+      "stats": {
+        "hp": 102,
+        "max_hp": 102,
+        "attack_damage": 15,
+        "ranged_damage": 0,
+        "armor": 3,
+        "vision_range": 7,
+        "ranged_range": 0
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 56,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "c707e60f",
+      "name": "Aldric Bonesaw",
+      "class_id": "plague_doctor",
+      "sprite_variant": 3,
+      "stats": {
+        "hp": 98,
+        "max_hp": 98,
+        "attack_damage": 7,
+        "ranged_damage": 12,
+        "armor": 3,
+        "vision_range": 6,
+        "ranged_range": 5
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 57,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "d0b3775e",
+      "name": "Vesper Deathrattle",
+      "class_id": "revenant",
+      "sprite_variant": 1,
+      "stats": {
+        "hp": 127,
+        "max_hp": 127,
+        "attack_damage": 15,
+        "ranged_damage": 0,
+        "armor": 6,
+        "vision_range": 6,
+        "ranged_range": 0
       },
       "equipment": {},
       "inventory": [],
@@ -104,7 +277,29 @@
       "hire_cost": 62,
       "matches_survived": 0,
       "enemies_killed": 0
+    },
+    {
+      "hero_id": "80a05646",
+      "name": "Eshka the Spiritbound",
+      "class_id": "shaman",
+      "sprite_variant": 1,
+      "stats": {
+        "hp": 95,
+        "max_hp": 95,
+        "attack_damage": 7,
+        "ranged_damage": 9,
+        "armor": 3,
+        "vision_range": 6,
+        "ranged_range": 4
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 55,
+      "matches_survived": 0,
+      "enemies_killed": 0
     }
   ],
+  "tavern_class_count": 11,
   "bank": []
 }

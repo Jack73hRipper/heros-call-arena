@@ -129,8 +129,9 @@ export class AudioManager {
       this._applyVolumes();
 
       // ── Load effect mapping ──
+      const baseUrl = import.meta.env.BASE_URL;
       const cacheBust = `?t=${Date.now()}`;
-      const mapRes = await fetch(`/audio-effects.json${cacheBust}`);
+      const mapRes = await fetch(`${baseUrl}audio-effects.json${cacheBust}`);
       if (mapRes.ok) {
         this.effectMap = await mapRes.json();
 
@@ -574,7 +575,10 @@ export class AudioManager {
       this._musicAudio.load();
     }
 
-    const audio = new Audio(track.path);
+    // Normalize absolute paths for Electron file:// protocol
+    const baseUrl = import.meta.env.BASE_URL;
+    const resolvedPath = track.path.startsWith('/') ? `${baseUrl}${track.path.slice(1)}` : track.path;
+    const audio = new Audio(resolvedPath);
     audio.volume = this.muted ? 0 : this.musicVolume * this.masterVolume;
     audio.loop = false;
 
@@ -727,7 +731,10 @@ export class AudioManager {
    */
   async _preloadBuffer(key, url) {
     try {
-      const response = await fetch(url);
+      // Normalize absolute paths for Electron file:// protocol
+      const baseUrl = import.meta.env.BASE_URL;
+      const resolvedUrl = url.startsWith('/') ? `${baseUrl}${url.slice(1)}` : url;
+      const response = await fetch(resolvedUrl);
       if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
       const arrayBuffer = await response.arrayBuffer();
       const audioBuffer = await this.context.decodeAudioData(arrayBuffer);

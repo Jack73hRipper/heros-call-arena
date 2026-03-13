@@ -6,7 +6,7 @@
  * Source tiles are 16×16 and get scaled up to TILE_SIZE (40×40).
  */
 
-const TILESHEET_PATH = '/tilesheet.png';
+const TILESHEET_PATH = `${import.meta.env.BASE_URL}tilesheet.png`;
 
 // Tile regions from the atlas (x, y, w, h on the 1024×640 sheet)
 // Only includes named/cataloged tiles.

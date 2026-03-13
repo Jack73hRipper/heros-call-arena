@@ -109,10 +109,11 @@ export class ParticleManager {
     try {
       // Cache-bust with timestamp so edits to public/ JSON files take effect
       // immediately without requiring a hard-refresh.
+      const baseUrl = import.meta.env.BASE_URL;
       const cacheBust = `?t=${Date.now()}`;
       const [presetsRes, mapRes] = await Promise.all([
-        fetch(`/particle-presets.json${cacheBust}`),
-        fetch(`/particle-effects.json${cacheBust}`),
+        fetch(`${baseUrl}particle-presets.json${cacheBust}`),
+        fetch(`${baseUrl}particle-effects.json${cacheBust}`),
       ]);
       if (presetsRes.ok) {
         const data = await presetsRes.json();
@@ -123,7 +124,7 @@ export class ParticleManager {
         } else if (data.files) {
           // New: index file pointing to category files
           const fetches = data.files.map(f =>
-            fetch(`/${f}${cacheBust}`).then(r => r.json())
+            fetch(`${baseUrl}${f}${cacheBust}`).then(r => r.json())
           );
           const arrays = await Promise.all(fetches);
           presets = arrays.flat();

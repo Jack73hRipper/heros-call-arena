@@ -1,7 +1,7 @@
 {
   "name": "arena-client",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.2",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -51,7 +51,8 @@
         "nsis",
         "portable"
       ],
-      "icon": "public/favicon.ico"
+      "icon": "public/favicon.ico",
+      "signAndEditExecutable": false
     },
     "mac": {
       "target": "dmg",

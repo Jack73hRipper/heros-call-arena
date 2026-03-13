@@ -7,7 +7,7 @@
  * Skills without atlas entries fall back to their emoji icon from skills_config.
  */
 
-const SKILL_ICON_SHEET = '/skill-icons.png';
+const SKILL_ICON_SHEET = `${import.meta.env.BASE_URL}skill-icons.png`;
 
 /**
  * Sprite regions: { x, y, w, h } on the skill-icons.png sheet.

@@ -70,7 +70,8 @@ REM ── Update client/package.json ──────────────
 powershell -NoProfile -Command ^
   "$content = Get-Content 'client\package.json' -Raw; " ^
   "$updated = $content -replace '\"version\":\s*\"%OLD_VERSION%\"', '\"version\": \"%NEW_VERSION%\"'; " ^
-  "$updated | Set-Content 'client\package.json' -Encoding UTF8 -NoNewline"
+  "$utf8 = New-Object System.Text.UTF8Encoding($false); " ^
+  "[System.IO.File]::WriteAllText((Resolve-Path 'client\package.json').Path, $updated, $utf8)"
 
 if errorlevel 1 (
     echo [ERROR] Failed to update client\package.json

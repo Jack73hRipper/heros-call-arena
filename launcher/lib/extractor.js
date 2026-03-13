@@ -26,38 +26,48 @@ async function extract(zipPath, installDir, { isUpdate = false } = {}) {
   const parentDir = path.dirname(installDir);
   fs.mkdirSync(parentDir, { recursive: true });
 
-  if (isUpdate) {
-    // Atomic-ish update: extract to staging dir, then swap
-    const stagingDir = installDir + '-staging-' + Date.now();
+  // Disable Electron's ASAR interception so adm-zip can extract
+  // files with ".asar" in the path (e.g. resources/app.asar) as
+  // real files instead of virtual archives.
+  const prevNoAsar = process.noAsar;
+  process.noAsar = true;
 
-    try {
-      // Extract to staging
-      const zip = new AdmZip(zipPath);
-      zip.extractAllTo(stagingDir, true);
+  try {
+    if (isUpdate) {
+      // Atomic-ish update: extract to staging dir, then swap
+      const stagingDir = installDir + '-staging-' + Date.now();
 
-      // Remove old install
-      const backupDir = installDir + '-old-' + Date.now();
-      if (fs.existsSync(installDir)) {
-        fs.renameSync(installDir, backupDir);
+      try {
+        // Extract to staging
+        const zip = new AdmZip(zipPath);
+        zip.extractAllTo(stagingDir, true);
+
+        // Remove old install
+        const backupDir = installDir + '-old-' + Date.now();
+        if (fs.existsSync(installDir)) {
+          fs.renameSync(installDir, backupDir);
+        }
+
+        // Promote staging to install dir
+        fs.renameSync(stagingDir, installDir);
+
+        // Clean up backup
+        removeDir(backupDir);
+      } catch (err) {
+        // Clean up staging on failure
+        removeDir(stagingDir);
+        throw err;
       }
-
-      // Promote staging to install dir
-      fs.renameSync(stagingDir, installDir);
-
-      // Clean up backup
-      removeDir(backupDir);
-    } catch (err) {
-      // Clean up staging on failure
-      removeDir(stagingDir);
-      throw err;
+    } else {
+      // Fresh install: extract directly
+      if (fs.existsSync(installDir)) {
+        removeDir(installDir);
+      }
+      const zip = new AdmZip(zipPath);
+      zip.extractAllTo(installDir, true);
     }
-  } else {
-    // Fresh install: extract directly
-    if (fs.existsSync(installDir)) {
-      removeDir(installDir);
-    }
-    const zip = new AdmZip(zipPath);
-    zip.extractAllTo(installDir, true);
+  } finally {
+    process.noAsar = prevNoAsar;
   }
 }
 

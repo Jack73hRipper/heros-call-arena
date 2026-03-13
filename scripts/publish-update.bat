@@ -149,7 +149,8 @@ powershell -NoProfile -Command ^
   "if (Test-Path $patchFile) { $notes = (Get-Content $patchFile -Raw) -replace '\\', '\\\\' -replace '\"', '\\"' -replace \"`r`n\", '\n' -replace \"`n\", '\n' } " ^
   "else { $notes = '### v%VERSION%\n- Bug fixes and improvements' }; " ^
   "$json = @{ version = '%VERSION%'; releaseDate = '%RELEASE_DATE%'; downloadUrl = '%DOWNLOAD_URL%'; downloadSize = [long]%FILE_SIZE%; sha256 = '%SHA256%'; patchNotes = $notes; minLauncherVersion = '1.0.0' }; " ^
-  "$json | ConvertTo-Json -Depth 3 | Set-Content 'build\publish\latest.json' -Encoding UTF8"
+  "$text = ($json | ConvertTo-Json -Depth 3); " ^
+  "[System.IO.File]::WriteAllText('build\publish\latest.json', $text, (New-Object System.Text.UTF8Encoding($false)))"
 
 if errorlevel 1 (
     echo [ERROR] Failed to generate latest.json

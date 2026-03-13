@@ -7,7 +7,7 @@
  * Enemy types with named sprites get sprite rendering; others fall back to shapes.
  */
 
-const SPRITESHEET_PATH = '/spritesheet.png';
+const SPRITESHEET_PATH = `${import.meta.env.BASE_URL}spritesheet.png`;
 
 // Sprite regions from the atlas (x, y, w, h on the 4096×3072 sheet)
 // Only includes named/cataloged sprites mapped to game entities.
