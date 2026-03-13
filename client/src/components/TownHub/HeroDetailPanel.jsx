@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
+import { apiFetch } from '../../utils/serverUrl';
 import HeroSprite from './HeroSprite';
 import { formatStatBonuses } from '../../utils/itemUtils';
 
@@ -125,7 +126,7 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose, onSel
     if (loading) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/town/equip', {
+      const res = await apiFetch('/api/town/equip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -161,7 +162,7 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose, onSel
     if (loading) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/town/unequip', {
+      const res = await apiFetch('/api/town/unequip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -197,7 +198,7 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose, onSel
     if (loading || !transferItem) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/town/transfer', {
+      const res = await apiFetch('/api/town/transfer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -236,7 +237,7 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose, onSel
     if (loading) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/town/bank/deposit', {
+      const res = await apiFetch('/api/town/bank/deposit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -280,7 +281,7 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose, onSel
     if (loading) return;
     setLoading(true);
     try {
-      const res = await fetch('/api/town/dismiss', {
+      const res = await apiFetch('/api/town/dismiss', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

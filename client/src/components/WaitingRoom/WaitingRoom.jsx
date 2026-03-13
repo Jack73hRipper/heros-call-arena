@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
+import { apiFetch } from '../../utils/serverUrl';
 
 // Fallback if server unreachable
 const FALLBACK_MAPS = [
@@ -77,7 +78,7 @@ export default function WaitingRoom({ sendAction, onLeave, wsReady }) {
 
   // Fetch available maps from server on mount
   useEffect(() => {
-    fetch('/api/maps/')
+    apiFetch('/api/maps/')
       .then(res => res.ok ? res.json() : Promise.reject('Failed'))
       .then(data => { if (data.length > 0) setMaps([...data, ...VIRTUAL_MAPS]); })
       .catch(() => console.warn('[WaitingRoom] Could not fetch maps, using fallback'));
@@ -118,7 +119,7 @@ export default function WaitingRoom({ sendAction, onLeave, wsReady }) {
   const handleLeave = async () => {
     setLeaving(true);
     try {
-      await fetch(`/api/lobby/leave/${gameState.matchId}`, {
+      await apiFetch(`/api/lobby/leave/${gameState.matchId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: gameState.username }),

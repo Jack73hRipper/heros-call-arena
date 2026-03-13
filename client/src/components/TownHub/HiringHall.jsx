@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
+import { apiFetch } from '../../utils/serverUrl';
 import HeroSprite from './HeroSprite';
 
 /**
@@ -22,7 +23,7 @@ export default function HiringHall({ availableClasses }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/town/hire', {
+      const res = await apiFetch('/api/town/hire', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: gameState.username, hero_id: heroId }),
@@ -44,7 +45,7 @@ export default function HiringHall({ availableClasses }) {
     setRefreshing(true);
     setError(null);
     try {
-      const res = await fetch('/api/town/tavern/refresh', {
+      const res = await apiFetch('/api/town/tavern/refresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: gameState.username }),

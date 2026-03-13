@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
+import { apiFetch } from '../../utils/serverUrl';
 import HeroSprite from './HeroSprite';
 import { formatStatBonuses } from '../../utils/itemUtils';
 
@@ -112,7 +113,7 @@ export default function Bank({ availableClasses }) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/town/bank/deposit', {
+      const res = await apiFetch('/api/town/bank/deposit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -149,7 +150,7 @@ export default function Bank({ availableClasses }) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/town/bank/withdraw', {
+      const res = await apiFetch('/api/town/bank/withdraw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

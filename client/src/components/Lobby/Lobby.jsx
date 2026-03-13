@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
 import { fetchWithRetry } from '../../utils/fetchWithRetry';
+import { apiFetch } from '../../utils/serverUrl';
 
 // Fallback if server unreachable
 const FALLBACK_MAPS = [
@@ -38,7 +39,7 @@ export default function Lobby({ onEnterWaiting, onEnterTown }) {
   // Fetch match list from server
   const fetchMatches = useCallback(async () => {
     try {
-      const res = await fetch('/api/lobby/matches');
+      const res = await apiFetch('/api/lobby/matches');
       if (res.ok) {
         const data = await res.json();
         setMatches(data);
@@ -82,7 +83,7 @@ export default function Lobby({ onEnterWaiting, onEnterTown }) {
           ai_allies: matchType === 'pvp' ? 0 : aiAllies,
         },
       };
-      const res = await fetch('/api/lobby/create', {
+      const res = await apiFetch('/api/lobby/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -121,7 +122,7 @@ export default function Lobby({ onEnterWaiting, onEnterTown }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/lobby/join/${matchId}`, {
+      const res = await apiFetch(`/api/lobby/join/${matchId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: gameState.username }),

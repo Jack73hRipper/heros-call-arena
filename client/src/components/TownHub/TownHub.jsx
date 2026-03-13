@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
 import { fetchWithRetry } from '../../utils/fetchWithRetry';
+import { apiFetch } from '../../utils/serverUrl';
 import HiringHall from './HiringHall';
 import HeroRoster from './HeroRoster';
 import Merchant from './Merchant';
@@ -120,7 +121,7 @@ export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
   // Poll for joinable matches every 3 seconds
   const fetchMatches = useCallback(async () => {
     try {
-      const res = await fetch('/api/lobby/matches');
+      const res = await apiFetch('/api/lobby/matches');
       if (res.ok) {
         const data = await res.json();
         setMatches(data);

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { GameStateProvider, useGameState, useGameDispatch } from './context/GameStateContext';
 import { fetchWithRetry } from './utils/fetchWithRetry';
+import { apiFetch } from './utils/serverUrl';
 import useWebSocket from './hooks/useWebSocket';
 import { useAudio, useAmbientAudio, AudioProvider } from './audio';
 import VolumeSettings from './components/VolumeSettings/VolumeSettings';
@@ -292,7 +293,7 @@ function AppInner() {
           ai_allies: 0,
         },
       };
-      const res = await fetch('/api/lobby/create', {
+      const res = await apiFetch('/api/lobby/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -330,7 +331,7 @@ function AppInner() {
           ai_allies: 0,
         },
       };
-      const res = await fetch('/api/lobby/create', {
+      const res = await apiFetch('/api/lobby/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -358,7 +359,7 @@ function AppInner() {
   const handleJoinMatch = async (matchId) => {
     // Join an existing match from TownHub browse panel
     try {
-      const res = await fetch(`/api/lobby/join/${matchId}`, {
+      const res = await apiFetch(`/api/lobby/join/${matchId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: gameState.username }),

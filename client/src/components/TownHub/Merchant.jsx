@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
+import { apiFetch } from '../../utils/serverUrl';
 import HeroSprite from './HeroSprite';
 
 /**
@@ -50,7 +51,7 @@ export default function Merchant({ availableClasses }) {
   const fetchStock = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/town/merchant/stock');
+      const res = await apiFetch('/api/town/merchant/stock');
       if (res.ok) {
         const data = await res.json();
         setStock(data.stock || []);
@@ -107,7 +108,7 @@ export default function Merchant({ availableClasses }) {
 
     try {
       if (confirmAction.type === 'buy') {
-        const res = await fetch('/api/town/merchant/buy', {
+        const res = await apiFetch('/api/town/merchant/buy', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -131,7 +132,7 @@ export default function Merchant({ availableClasses }) {
           setError(data.detail || 'Purchase failed');
         }
       } else if (confirmAction.type === 'sell') {
-        const res = await fetch('/api/town/merchant/sell', {
+        const res = await apiFetch('/api/town/merchant/sell', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

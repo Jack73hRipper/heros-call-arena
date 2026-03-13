@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { getWsUrl } from '../utils/serverUrl';
 
 export default function useWebSocket(matchId, playerId, onMessage) {
   const wsRef = useRef(null);
@@ -22,45 +23,52 @@ export default function useWebSocket(matchId, playerId, onMessage) {
     setWsReady(false);
     pendingQueueRef.current = [];
 
-    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const url = `${protocol}://${window.location.host}/ws/${matchId}/${playerId}`;
+    let ws = null;
+    let cancelled = false;
 
-    console.log(`[WS] Connecting to ${url}`);
-    const ws = new WebSocket(url);
-    wsRef.current = ws;
+    (async () => {
+      const wsBase = await getWsUrl();
+      if (cancelled) return;
+      const url = `${wsBase}/ws/${matchId}/${playerId}`;
 
-    ws.onopen = () => {
-      console.log(`[WS] Connected to match ${matchId}`);
-      // Flush any messages that were queued while connecting
-      const pending = pendingQueueRef.current;
-      pendingQueueRef.current = [];
-      for (const msg of pending) {
-        console.log('[WS] Flushing queued message:', msg.type || msg);
-        ws.send(JSON.stringify(msg));
-      }
-      setWsReady(true);
-    };
+      console.log(`[WS] Connecting to ${url}`);
+      ws = new WebSocket(url);
+      wsRef.current = ws;
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (onMessageRef.current) onMessageRef.current(data);
-      } catch (err) {
-        console.error('[WS] Failed to parse message:', err);
-      }
-    };
+      ws.onopen = () => {
+        console.log(`[WS] Connected to match ${matchId}`);
+        // Flush any messages that were queued while connecting
+        const pending = pendingQueueRef.current;
+        pendingQueueRef.current = [];
+        for (const msg of pending) {
+          console.log('[WS] Flushing queued message:', msg.type || msg);
+          ws.send(JSON.stringify(msg));
+        }
+        setWsReady(true);
+      };
 
-    ws.onclose = () => {
-      console.log(`[WS] Disconnected from match ${matchId}`);
-      setWsReady(false);
-    };
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (onMessageRef.current) onMessageRef.current(data);
+        } catch (err) {
+          console.error('[WS] Failed to parse message:', err);
+        }
+      };
 
-    ws.onerror = (err) => {
-      console.error('[WS] Error:', err);
-    };
+      ws.onclose = () => {
+        console.log(`[WS] Disconnected from match ${matchId}`);
+        setWsReady(false);
+      };
+
+      ws.onerror = (err) => {
+        console.error('[WS] Error:', err);
+      };
+    })();
 
     return () => {
-      ws.close();
+      cancelled = true;
+      if (ws) ws.close();
       setWsReady(false);
     };
   }, [matchId, playerId]);
