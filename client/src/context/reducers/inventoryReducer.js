@@ -2,7 +2,7 @@
  * Inventory sub-reducer — handles in-match inventory & equipment operations.
  *
  * Action types handled:
- *   ITEM_EQUIPPED, ITEM_UNEQUIPPED, ITEM_TRANSFERRED, PARTY_INVENTORY
+ *   ITEM_EQUIPPED, ITEM_UNEQUIPPED, ITEM_TRANSFERRED, ITEM_DESTROYED, PARTY_INVENTORY
  */
 
 export function inventoryReducer(state, action) {
@@ -48,6 +48,27 @@ export function inventoryReducer(state, action) {
         ...state,
         inventory: action.payload.inventory ?? state.inventory,
         equipment: action.payload.equipment ?? state.equipment,
+      };
+    }
+
+    case 'ITEM_DESTROYED': {
+      const destroyUnitId = action.payload.player_id;
+      const isPartyMemberDestroy = destroyUnitId && destroyUnitId !== state.playerId;
+      if (isPartyMemberDestroy) {
+        return {
+          ...state,
+          partyInventories: {
+            ...state.partyInventories,
+            [destroyUnitId]: {
+              inventory: action.payload.inventory ?? state.partyInventories[destroyUnitId]?.inventory ?? [],
+              equipment: state.partyInventories[destroyUnitId]?.equipment ?? {},
+            },
+          },
+        };
+      }
+      return {
+        ...state,
+        inventory: action.payload.inventory ?? state.inventory,
       };
     }
 

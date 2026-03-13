@@ -180,6 +180,7 @@ export default function Inventory({ sendAction, onClose }) {
   const [transferItem, setTransferItem] = useState(null); // { index, item } — item being transferred
   const [showAdvancedStats, setShowAdvancedStats] = useState(false);
   const [bagSortMode, setBagSortMode] = useState(null); // null | 'type' | 'rarity' | 'name'
+  const [confirmDestroyId, setConfirmDestroyId] = useState(null); // item_id awaiting confirm
   const panelRef = useRef(null);
 
   // Determine which unit's inventory to show
@@ -263,6 +264,19 @@ export default function Inventory({ sendAction, onClose }) {
     });
     setTransferItem(null);
   }, [transferItem, effectiveUnitId, sendAction]);
+
+  const handleDestroyItem = useCallback((item) => {
+    if (!isAlive || !item) return;
+    const itemKey = item.instance_id || item.item_id;
+    if (confirmDestroyId === itemKey) {
+      const msg = { type: 'destroy_item', item_id: itemKey };
+      if (isViewingPartyMember) msg.unit_id = activeUnitId;
+      sendAction(msg);
+      setConfirmDestroyId(null);
+    } else {
+      setConfirmDestroyId(itemKey);
+    }
+  }, [isAlive, sendAction, confirmDestroyId, isViewingPartyMember, activeUnitId]);
 
   const handleSlotMouseEnter = (e, item, source, slotKey) => {
     if (!item) return;
@@ -725,17 +739,31 @@ export default function Inventory({ sendAction, onClose }) {
                     <span className={`bag-item-type-badge badge-${item.item_type}`}>{ITEM_ICONS[item.item_type] || '?'}</span>
                     <span className={`bag-item-name rarity-${rarity}`}>{item.name}</span>
                   </div>
-                  {canTransfer && isAlive && (
-                    <button
-                      className="bag-transfer-btn"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setTransferItem({ index: origIndex, item });
-                      }}
-                      title="Transfer to another party member"
-                    >
-                      ↗
-                    </button>
+                  {isAlive && (
+                    <div className="bag-slot-actions">
+                      {canTransfer && (
+                        <button
+                          className="bag-transfer-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTransferItem({ index: origIndex, item });
+                          }}
+                          title="Transfer to another party member"
+                        >
+                          ↗
+                        </button>
+                      )}
+                      <button
+                        className={`bag-destroy-btn ${confirmDestroyId === (item.instance_id || item.item_id) ? 'destroy-confirm' : ''}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDestroyItem(item);
+                        }}
+                        title={confirmDestroyId === (item.instance_id || item.item_id) ? 'Click again to confirm destroy' : 'Destroy item'}
+                      >
+                        {confirmDestroyId === (item.instance_id || item.item_id) ? '✕' : '🗑'}
+                      </button>
+                    </div>
                   )}
                 </div>
               ) : (

@@ -67,7 +67,7 @@
     "skill_prayer":         "/audio/skills/prayer_casting-buff.wav",
     "skill_shield_of_faith":"/audio/skills/shield-of-faith_shimmering-winds.wav",
     "skill_shadow_step":    "/audio/skills/shadow-step_teleport-downer.wav",
-    "skill_wither":         "/audio/skills/wither_dark-energy-sphere.wav",
+    "skill_wither":         "/audio/skills/shadow-step_teleport-downer.wav",
     "skill_ward":           "/audio/skills/ward_bubble-deflect.wav",
     "skill_soul_reap":      "/audio/skills/soul-reap_gore-pierce.wav",
     "skill_venom_gaze":     "/audio/skills/venom-gaze_slime-ball.wav",
@@ -83,6 +83,7 @@
     "regen":                "/audio/buffs/regen_bonus-regen-rate.wav",
     "debuff_enemy":         "/audio/buffs/debuff_enemy-debuff.wav",
     "debuff_speed":         "/audio/buffs/debuff_speed-debuff.wav",
+    "heal_alt":             "/audio/skills/heal-alt_healing-gusts.wav",
 
     "potion_use":           "/audio/items/potion_generic-consume.wav",
     "loot_pickup":          "/audio/items/loot_coin-toss.wav",
@@ -122,7 +123,10 @@
     "skill_searing_totem":  "/audio/skills/cast_strong-energy.wav",
     "skill_soul_anchor":    "/audio/skills/cast_hollow-spell.wav",
     "skill_soul_anchor_save":"/audio/events/portal-open_flare-nova.wav",
-    "skill_earthgrasp":     "/audio/skills/cast_strong-energy.wav"
+    "skill_earthgrasp":     "/audio/skills/cast_strong-energy.wav",
+
+    "wither_tick":          "/audio/buffs/debuff_speed-debuff.wav",
+    "healing_totem_tick":   "/audio/skills/heal-alt_healing-gusts.wav"
   },
 
   "combat": {
@@ -284,9 +288,16 @@
       "pitchVariance": 0.1
     },
     "wither": {
+      "_comment": "Hexblade — dark descending tone for Wither curse cast",
       "key": "skill_wither",
-      "volume": 0.7,
+      "volume": 0.55,
       "pitchVariance": 0.08
+    },
+    "wither_tick": {
+      "_comment": "Hexblade — subtle speed-debuff pulse for Wither DoT ticks",
+      "key": "wither_tick",
+      "volume": 0.25,
+      "pitchVariance": 0.12
     },
     "ward": {
       "key": "skill_ward",
@@ -412,7 +423,13 @@
     "healing_totem": {
       "_comment": "Shaman — bone cracking + spirit hum, totem rising from earth",
       "key": "skill_healing_totem",
-      "volume": 0.7,
+      "volume": 0.6,
+      "pitchVariance": 0.1
+    },
+    "healing_totem_tick": {
+      "_comment": "Shaman — gentle healing gusts for totem pulse ticks",
+      "key": "healing_totem_tick",
+      "volume": 0.25,
       "pitchVariance": 0.1
     },
     "searing_totem": {

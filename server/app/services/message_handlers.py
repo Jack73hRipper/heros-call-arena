@@ -30,6 +30,7 @@ from app.core.match_manager import (
     select_class,
     equip_item,
     unequip_item,
+    destroy_item,
     select_heroes,
     validate_dungeon_hero_selections,
     is_party_member,
@@ -710,6 +711,30 @@ async def handle_unequip_item(ws_manager, match_id: str, player_id: str, data: d
         })
 
 
+async def handle_destroy_item(ws_manager, match_id: str, player_id: str, data: dict):
+    """Player permanently destroys an item from their inventory.
+    Supports party members via optional unit_id field."""
+    item_id = data.get("item_id")
+    unit_id = data.get("unit_id", player_id)
+    if not item_id:
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "error",
+            "message": "Missing item_id",
+        })
+        return SKIP
+    result = destroy_item(match_id, unit_id, item_id)
+    if result:
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "item_destroyed",
+            **result,
+        })
+    else:
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "error",
+            "message": f"Cannot destroy item: {item_id}",
+        })
+
+
 # ---------------------------------------------------------------------------
 # Auto-Target handlers (Phase 10C)
 # ---------------------------------------------------------------------------
@@ -798,6 +823,7 @@ MESSAGE_HANDLERS = {
     "get_party_inventory": handle_get_party_inventory,
     "equip_item": handle_equip_item,
     "unequip_item": handle_unequip_item,
+    "destroy_item": handle_destroy_item,
     "set_auto_target": handle_set_auto_target,
     "clear_auto_target": handle_clear_auto_target,
 }

@@ -183,6 +183,9 @@ function AppInner() {
       case 'item_transferred':
         dispatch({ type: 'ITEM_TRANSFERRED', payload: data });
         break;
+      case 'item_destroyed':
+        dispatch({ type: 'ITEM_DESTROYED', payload: data });
+        break;
       case 'party_inventory':
         dispatch({ type: 'PARTY_INVENTORY', payload: data });
         break;

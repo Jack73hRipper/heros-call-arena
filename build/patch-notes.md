@@ -1,6 +1,9 @@
-## Launcher v1.1.0 - Install Progress Bar
+## v0.1.4 — Stance Overhaul & Inventory QoL
 
 **New Features**
-- Added a progress bar during game installation so you can see exactly how far along the install is
-- Shows percentage and file count (e.g. "45% - 230 / 512 files")
-- Uses the same smooth animated progress bar you already see during downloads
+- **Stance System Overhaul** — All 4 stances (Follow, Aggressive, Defensive, Hold) are now role-aware. Ranged and support classes no longer lose their intelligence when switching stances. Mages, Rangers, and Plague Doctors on Defensive now kite instead of walking into melee. Confessors, Bards, and Shamans on Aggressive/Defensive position near allies instead of charging enemies. Hold stance now picks the smartest target instead of attacking randomly.
+- **Destroy Item** — New trash button (🗑) on each bag slot lets you permanently destroy unwanted items during dungeon runs. Two-click confirmation prevents accidents.
+
+**Bug Fixes**
+- Fixed Bard not kiting in Aggressive stance
+- Replaced abrasive Hexblade Wither and Shaman Healing Totem sound effects with softer alternatives

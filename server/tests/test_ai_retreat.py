@@ -1235,8 +1235,8 @@ class TestRangerKitingAggressiveStance:
 class TestKitingDefensiveHold:
     """Verify kiting behavior in defensive and hold stances."""
 
-    def test_ranger_no_kiting_defensive_stance(self):
-        """Defensive stance: Ranger adjacent attacks in melee (owner-leash priority)."""
+    def test_ranger_kites_defensive_stance(self):
+        """Defensive stance (S2-B): Ranger kites adjacent enemies while staying within 2 of owner."""
         ranger = make_ranger(x=5, y=5, ai_stance="defensive")
         enemy = make_enemy(x=6, y=5)
         owner = make_owner(x=4, y=5)  # Owner close by
@@ -1251,8 +1251,8 @@ class TestKitingDefensiveHold:
             ranger, all_units, GRID_W, GRID_H, OBSTACLES,
         )
         assert action is not None
-        # Defensive stance: should attack, not kite (leash takes priority)
-        assert action.action_type == ActionType.ATTACK
+        # S2-B: Ranged classes on Defensive kite when tether allows
+        assert action.action_type == ActionType.MOVE
 
     def test_ranger_no_kiting_hold_stance(self):
         """Hold stance: Ranger never moves — attacks if adjacent, ranged if in range."""

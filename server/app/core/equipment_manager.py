@@ -377,6 +377,38 @@ def transfer_item_in_match(
     }
 
 
+def destroy_item(match_id: str, player_id: str, item_id: str) -> dict | None:
+    """Permanently destroy an item from a player's inventory.
+
+    Returns a dict with the updated inventory on success, or None on failure.
+    """
+    players = _player_states.get(match_id, {})
+    player = players.get(player_id)
+    if not player or not player.is_alive:
+        return None
+
+    # Find and remove the item — try instance_id first, then item_id
+    removed = None
+    for idx, it in enumerate(player.inventory):
+        if it.get("instance_id") and it.get("instance_id") == item_id:
+            removed = player.inventory.pop(idx)
+            break
+    if removed is None:
+        for idx, it in enumerate(player.inventory):
+            if it.get("item_id") == item_id:
+                removed = player.inventory.pop(idx)
+                break
+    if removed is None:
+        return None
+
+    return {
+        "player_id": player_id,
+        "item_id": item_id,
+        "item_name": removed.get("name", item_id),
+        "inventory": list(player.inventory),
+    }
+
+
 def get_party_member_inventory(match_id: str, player_id: str, unit_id: str) -> dict | None:
     """Get inventory and equipment for a party member (or self).
 

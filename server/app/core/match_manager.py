@@ -2660,6 +2660,7 @@ from app.core.hero_manager import (  # noqa: E402, F401
 from app.core.equipment_manager import (  # noqa: E402, F401
     equip_item,
     unequip_item,
+    destroy_item,
     _apply_equipment_stats,
     _remove_equipment_stats,
     transfer_item_in_match,

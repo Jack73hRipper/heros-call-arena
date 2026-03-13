@@ -806,13 +806,25 @@ export class AudioManager {
       return;
     }
 
-    // Check for a skill-specific sound mapping first
-    const skillMapping = skills[act.skill_id];
-    if (skillMapping) {
-      this._playCombatSound(skillMapping, act);
+    // Tick actions (DoT/HoT pulses) use a softer tick-specific sound if mapped
+    if (act.is_tick) {
+      const tickMapping = skills[act.skill_id + '_tick'];
+      if (tickMapping) {
+        this._playCombatSound(tickMapping, act);
+      } else {
+        // No tick-specific mapping — fall back to generic buff/debuff
+        const fallback = act.damage_dealt ? combat.debuff_apply : combat.heal;
+        if (fallback) this._playCombatSound(fallback, act);
+      }
     } else {
-      // Fallback: generic skill cast sound
-      this._playCombatSound(combat.skill_cast, act);
+      // Check for a skill-specific sound mapping first
+      const skillMapping = skills[act.skill_id];
+      if (skillMapping) {
+        this._playCombatSound(skillMapping, act);
+      } else {
+        // Fallback: generic skill cast sound
+        this._playCombatSound(combat.skill_cast, act);
+      }
     }
 
     // Additional sounds for skill side-effects

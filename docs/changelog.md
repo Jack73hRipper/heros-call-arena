@@ -5,6 +5,78 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.4] - 2026-03-13 - Stance System Overhaul, Destroy Item & Audio Fixes
+
+**Summary:** Major AI stance overhaul making all 4 stances (Follow, Aggressive, Defensive, Hold) role-aware so class identity is preserved regardless of stance choice. New inventory destroy-item feature. Audio polish fixes.
+
+### Stance System Overhaul (Phases S1–S3) — `server/app/core/ai_stances.py`, `server/tests/test_stances.py`
+
+- **S1-A: Bard Aggressive kiting fix** — Added `offensive_support` to `is_ranged_role` set in `_decide_aggressive_stance_action()` so Bards kite in Aggressive (was already working in Follow). Added `ally_positions` calculation for Bard kiting direction to stay near ally centroid.
+- **S1-B: Hold stance smart targeting** — Replaced naive `for enemy in enemies` iteration with `_pick_best_target()` for both melee (adjacent enemies) and ranged (in-range + LOS enemies) target selection in `_decide_hold_action()`.
+- **S2-A: Defensive match_state** — Added `match_state=None` parameter to `_decide_defensive_action()` for totem awareness.
+- **S2-B: Defensive ranged kiting** — Ranged classes (Mage, Ranger, Inquisitor, Plague Doctor, Bard, Shaman) now kite in Defensive stance with role-specific thresholds (controller ≤ 3, totemic_support ≤ 1, others ≤ 2). Kite moves tethered within 2 tiles of owner.
+- **S2-C: Defensive ranged engagement** — Ranged roles now engage enemies at their full attack range instead of hardcoded 2-tile limit. Melee classes unchanged.
+- **S2-D: Defensive support positioning** — Support classes (Confessor, Bard, Shaman) on Defensive now position near allies using role-specific move preference functions instead of charging enemies.
+- **S2-E: Defensive totem-biased movement** — Added `_totem_biased_step` to Defensive movement paths and controller hold-position logic. Re-checks tether after totem bias.
+- **S3-A: Aggressive support positioning** — Support classes on Aggressive now use ally positioning instead of charging enemies. Added `is_support` detection, excluded support from melee rush block.
+- **S3-B: Bard ally-proximity kiting** — Already handled by S1-A.
+
+### Audio Fixes — `client/public/audio-effects.json`, `client/src/audio/AudioManager.js`
+
+- Wither cast sound → `shadow-step_teleport-downer.wav` (softer dark tone, vol 0.55)
+- Wither DoT tick → `debuff_speed-debuff.wav` (subtler pulse, vol 0.25)
+- Healing Totem pulse → `heal-alt_healing-gusts.wav` (gentle nature sound, vol 0.25)
+- Registered `heal_alt` in `_soundFiles` for preloading
+
+### 3747 tests passing, 0 regressions.
+
+---
+
+## [Feature] - 2026-03-13 - Destroy Item from Inventory
+
+**Summary:** Players can now permanently destroy unwanted items from their bag during dungeon runs. Previously, once a player's 10-slot inventory filled up, there was no way to discard items to make room for better loot. Each bag slot now has a destroy button (🗑) with a two-click confirmation to prevent accidents.
+
+### Added — `server/app/core/equipment_manager.py`
+
+- **`destroy_item()`** — New function that removes an item from a player's inventory by instance_id or item_id. Returns the updated inventory list. Validates player exists and is alive.
+
+### Changed — `server/app/core/match_manager.py`
+
+- **Re-export block** — Added `destroy_item` to the equipment_manager re-exports so existing importers can access it via match_manager
+
+### Changed — `server/app/services/message_handlers.py`
+
+- **`handle_destroy_item()`** — New async WS handler accepting `{ type: "destroy_item", item_id, unit_id? }`. Calls `destroy_item()` and responds with `item_destroyed` message containing the updated inventory
+- **`MESSAGE_HANDLERS`** — Added `"destroy_item": handle_destroy_item` entry
+- **Imports** — Added `destroy_item` to the match_manager import block
+
+### Changed — `client/src/App.jsx`
+
+- **WS message dispatch** — Added `case 'item_destroyed'` that dispatches `ITEM_DESTROYED` action to the reducer
+
+### Changed — `client/src/context/GameStateContext.jsx`
+
+- **`INVENTORY_ACTIONS`** — Added `'ITEM_DESTROYED'` to the action routing set so it reaches the inventory reducer
+
+### Changed — `client/src/context/reducers/inventoryReducer.js`
+
+- **`case 'ITEM_DESTROYED'`** — New reducer case that updates `state.inventory` (or `partyInventories` for party members) with the server-provided updated inventory array
+
+### Changed — `client/src/components/Inventory/Inventory.jsx`
+
+- **`confirmDestroyId` state** — New state variable tracking which item is awaiting destruction confirmation
+- **`handleDestroyItem()`** — New callback implementing two-click confirm: first click sets confirm state (button turns red), second click sends the `destroy_item` WS message
+- **Bag slot actions** — Wrapped transfer and new destroy buttons in a `.bag-slot-actions` container. Destroy button (🗑/✕) shown on all items when alive, not just when transfer is available
+
+### Changed — `client/src/styles/components/_inventory.css`
+
+- **`.bag-slot-actions`** — Flex container for the action button group
+- **`.bag-destroy-btn`** — Styled to match the existing transfer button aesthetic with red hover state
+- **`.bag-destroy-btn.destroy-confirm`** — Red filled background with pulse animation for the confirmation state
+- **`@keyframes pulse-destroy`** — Subtle pulsing animation to draw attention to the confirm state
+
+---
+
 ## [Feature] - 2026-03-12 - Launcher Install Progress Bar (Launcher v1.1.0)
 
 **Summary:** Added a real-time progress bar during the game extraction/install phase. Previously the launcher showed "INSTALLING..." with no visual feedback, making it look frozen. Now reuses the same smooth animated progress bar from the download phase, showing file-by-file extraction progress.

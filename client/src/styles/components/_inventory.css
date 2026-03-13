@@ -1483,6 +1483,43 @@
   background: var(--bg-hover);
 }
 
+.bag-slot-actions {
+  display: flex;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.bag-destroy-btn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  cursor: pointer;
+  padding: 0.1rem 0.25rem;
+  border-radius: 2px;
+  transition: all 0.15s;
+  line-height: 1;
+}
+
+.bag-destroy-btn:hover {
+  border-color: #b33;
+  color: #e55;
+  background: rgba(180, 40, 40, 0.1);
+}
+
+.bag-destroy-btn.destroy-confirm {
+  border-color: #c44;
+  color: #fff;
+  background: #b33;
+  animation: pulse-destroy 0.6s ease infinite;
+}
+
+@keyframes pulse-destroy {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 /* Dungeon transfer modal (sits above inventory overlay) */
 .dungeon-transfer-modal-overlay {
   position: fixed;

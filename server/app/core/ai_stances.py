@@ -728,7 +728,7 @@ def _decide_stance_action(
     if stance == "hold":
         return _decide_hold_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies)
     elif stance == "defensive":
-        return _decide_defensive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied)
+        return _decide_defensive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied, match_state=match_state)
     elif stance == "aggressive":
         return _decide_aggressive_stance_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied, match_state=match_state)
     else:
@@ -1095,7 +1095,10 @@ def _decide_aggressive_stance_action(
         role = _get_role_for_class(ai.class_id) if ai.class_id else None
         # Phase 23 fix: controller (Plague Doctor) kites like ranged — should never rush melee.
         # Phase 26 fix: totemic_support (Shaman) also kites — backline support class.
-        is_ranged_role = role in ("ranged_dps", "scout", "caster_dps", "controller", "totemic_support") if role else False
+        # Phase S1-A fix: offensive_support (Bard) also kites — was missing from Aggressive.
+        is_ranged_role = role in ("ranged_dps", "scout", "caster_dps", "controller", "totemic_support", "offensive_support") if role else False
+        # Phase S3-A: Support roles position near allies instead of charging enemies.
+        is_support = role in ("support", "offensive_support", "controller", "totemic_support") if role else False
 
         # --- Phase 8K-3: Ranged kiting (Phase 26D: totem-biased) ---
         # Ranged roles step back when too close to enemy. Kiting preserves ranged advantage.
@@ -1106,9 +1109,19 @@ def _decide_aggressive_stance_action(
         _kite_threshold = 3 if role == "controller" else (1 if role == "totemic_support" else 2)
         if is_ranged_role and dist_to_target <= _kite_threshold:
             from app.core.ai_behavior import _find_retreat_tile
+            # Phase S1-A: Bard ally-proximity kiting — bias retreat toward
+            # ally centroid for Ballad aura coverage (mirrors Follow logic).
+            ally_positions = None
+            if role == "offensive_support":
+                ally_positions = [
+                    (u.position.x, u.position.y)
+                    for u in all_units.values()
+                    if u.is_alive and u.team == ai.team and u.player_id != ai.player_id
+                ]
             retreat_tile = _find_retreat_tile(
                 ai_pos, (target.position.x, target.position.y),
                 grid_width, grid_height, obstacles, occupied,
+                ally_positions=ally_positions,
             )
             totem = _find_nearest_healing_totem(match_state, ai.team, ai_pos) if match_state else None
             if retreat_tile and totem:
@@ -1150,8 +1163,8 @@ def _decide_aggressive_stance_action(
                 target_x=target.position.x, target_y=target.position.y,
             )
 
-        # Close → rush to melee (non-ranged only)
-        if not is_ranged_role and dist_to_target <= 3:
+        # Close → rush to melee (non-ranged, non-support only)
+        if not is_ranged_role and not is_support and dist_to_target <= 3:
             next_step = get_next_step_toward(
                 ai_pos, (target.position.x, target.position.y),
                 grid_width, grid_height, obstacles, occupied, door_tiles,
@@ -1186,8 +1199,19 @@ def _decide_aggressive_stance_action(
             if nearest_enemy_dist <= 4:
                 return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
 
-        # Move toward target
-        agg_move_target = (target.position.x, target.position.y)
+        # Phase S3-A: Support roles position near allies, not toward enemies.
+        # "Aggressive" for supports means "roam freely" not "become melee warrior."
+        if is_support:
+            if role == "totemic_support":
+                from app.core.ai_skills import _totemic_support_move_preference
+                ally_target = _totemic_support_move_preference(ai, all_units, match_state=match_state)
+            elif role == "offensive_support":
+                ally_target = _offensive_support_move_preference(ai, all_units)
+            else:
+                ally_target = _support_move_preference(ai, all_units)
+            agg_move_target = ally_target if ally_target else (target.position.x, target.position.y)
+        else:
+            agg_move_target = (target.position.x, target.position.y)
         next_step = get_next_step_toward(
             ai_pos, agg_move_target,
             grid_width, grid_height, obstacles, occupied, door_tiles,
@@ -1253,18 +1277,20 @@ def _decide_defensive_action(
     precomputed_visible_tiles: set[tuple[int, int]] | None = None,
     precomputed_enemies: list[PlayerState] | None = None,
     precomputed_occupied: set[tuple[int, int]] | None = None,
+    match_state=None,
 ) -> PlayerAction | None:
-    """Defensive stance: stay within 2 tiles of owner, only attack nearby enemies.
+    """Defensive stance: stay within 2 tiles of owner, fight conservatively.
 
-    Behavior:
+    Phase S2 overhaul — role-aware defensive behavior:
       1. If distance to owner > 2: path toward owner (prioritize staying close)
-      2. If enemies within 2 tiles: attack (melee or ranged if adjacent/close)
-      3. Otherwise: wait near owner
+      2. Ranged classes: engage at full ranged_range, kite enemies that get
+         too close (but stay within 2 of owner)
+      3. Support classes: position near allies instead of charging enemies
+      4. All movement is totem-biased when hurt (S2-E)
+      5. Melee classes: unchanged (engage within 2 tiles, stay near owner)
 
     Phase 7D-1: Uses door-aware A* so hero allies can path through closed doors.
-
-    Phase 8F-2: Accepts pre-computed visible_tiles and enemies from
-    _decide_stance_action() to avoid redundant FOV computation.
+    Phase 8F-2: Accepts pre-computed visible_tiles and enemies.
     """
     ai_id = ai.player_id
     ai_pos = (ai.position.x, ai.position.y)
@@ -1299,12 +1325,23 @@ def _decide_defensive_action(
     # Phase 8K-2b: Reuse pre-computed occupied set if available
     occupied = precomputed_occupied if precomputed_occupied is not None else _build_occupied_set(all_units, ai_id, pending_moves)
 
+    # S2-B/C/D: Role detection (mirrors Follow/Aggressive)
+    role = _get_role_for_class(ai.class_id) if ai.class_id else None
+    is_support = role in ("support", "offensive_support", "controller", "totemic_support") if role else False
+    is_ranged_role = role in ("ranged_dps", "scout", "caster_dps", "controller", "totemic_support", "offensive_support") if role else False
+
     # Priority 1: If too far from owner, move back
     if dist_to_owner > 2:
         next_step = get_next_step_toward(
             ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
         )
         if next_step:
+            # S2-E: Totem-biased step when returning to owner
+            if match_state and ai.max_hp > 0:
+                next_step = _totem_biased_step(
+                    ai_pos, next_step, owner_pos, match_state, ai.team,
+                    ai.hp / ai.max_hp, grid_width, grid_height, obstacles, occupied,
+                )
             door_action = _maybe_interact_door(ai, next_step, door_tiles)
             if door_action:
                 return door_action
@@ -1313,15 +1350,80 @@ def _decide_defensive_action(
                 target_x=next_step[0], target_y=next_step[1],
             )
 
-    # Priority 2: Only engage enemies within 2 tiles of this unit
-    nearby_enemies = [
-        e for e in enemies
-        if _chebyshev(ai_pos, (e.position.x, e.position.y)) <= 2
-    ]
+    # Priority 2: Engage enemies — role-aware
+    # S2-C: Ranged classes engage at full range; melee classes engage within 2 tiles
+    if is_ranged_role:
+        engageable_enemies = [
+            e for e in enemies
+            if _chebyshev(ai_pos, (e.position.x, e.position.y)) <= ranged_range
+        ]
+    else:
+        engageable_enemies = [
+            e for e in enemies
+            if _chebyshev(ai_pos, (e.position.x, e.position.y)) <= 2
+        ]
 
-    if nearby_enemies:
-        target = _pick_best_target(ai, nearby_enemies, all_units)
+    if engageable_enemies:
+        target = _pick_best_target(ai, engageable_enemies, all_units)
         target_pos = Position(x=target.position.x, y=target.position.y)
+        dist_to_target = _chebyshev(ai_pos, (target.position.x, target.position.y))
+        ranged_cd = ai.cooldowns.get("ranged_attack", 0)
+
+        # S2-B: Ranged kiting — step back from close enemies, tethered to owner
+        _kite_threshold = 3 if role == "controller" else (1 if role == "totemic_support" else 2)
+        if is_ranged_role and dist_to_target <= _kite_threshold:
+            from app.core.ai_behavior import _find_retreat_tile
+            # Bard ally-proximity kiting
+            ally_positions = None
+            if role == "offensive_support":
+                ally_positions = [
+                    (u.position.x, u.position.y)
+                    for u in all_units.values()
+                    if u.is_alive and u.team == ai.team and u.player_id != ai.player_id
+                ]
+            retreat_tile = _find_retreat_tile(
+                ai_pos, (target.position.x, target.position.y),
+                grid_width, grid_height, obstacles, occupied,
+                ally_positions=ally_positions,
+            )
+            # S2-E: Totem-biased kiting
+            totem = _find_nearest_healing_totem(match_state, ai.team, ai_pos) if match_state else None
+            if retreat_tile and totem:
+                totem_pos = (totem["x"], totem["y"])
+                best_tile = retreat_tile
+                best_score = -_chebyshev(retreat_tile, totem_pos)
+                for dx in (-1, 0, 1):
+                    for dy in (-1, 0, 1):
+                        if dx == 0 and dy == 0:
+                            continue
+                        nx, ny = ai_pos[0] + dx, ai_pos[1] + dy
+                        if not (0 <= nx < grid_width and 0 <= ny < grid_height):
+                            continue
+                        if (nx, ny) in obstacles or (nx, ny) in occupied:
+                            continue
+                        # Defensive tether: must stay within 2 of owner
+                        if _chebyshev((nx, ny), owner_pos) > 2:
+                            continue
+                        threat_dist = _chebyshev((nx, ny), (target.position.x, target.position.y))
+                        if threat_dist <= 1:
+                            continue  # Don't step into melee range
+                        totem_dist = _chebyshev((nx, ny), totem_pos)
+                        score = threat_dist + (_TOTEM_KITE_BIAS_WEIGHT if totem_dist <= totem.get("effect_radius", 2) else -totem_dist)
+                        if score > best_score:
+                            best_score = score
+                            best_tile = (nx, ny)
+                # Final tether check
+                if _chebyshev(best_tile, owner_pos) <= 2:
+                    return PlayerAction(
+                        player_id=ai_id, action_type=ActionType.MOVE,
+                        target_x=best_tile[0], target_y=best_tile[1],
+                    )
+            elif retreat_tile and _chebyshev(retreat_tile, owner_pos) <= 2:
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=retreat_tile[0], target_y=retreat_tile[1],
+                )
+            # Can't kite without breaking tether — fall through to ranged/melee
 
         # Adjacent → melee
         if is_adjacent(ai.position, target_pos):
@@ -1330,8 +1432,7 @@ def _decide_defensive_action(
                 target_x=target.position.x, target_y=target.position.y,
             )
 
-        # Ranged if available and in range
-        ranged_cd = ai.cooldowns.get("ranged_attack", 0)
+        # Ranged attack if available and in range + LOS
         if ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
             if has_line_of_sight(
                 ai.position.x, ai.position.y,
@@ -1342,20 +1443,55 @@ def _decide_defensive_action(
                     target_x=target.position.x, target_y=target.position.y,
                 )
 
-        # Move toward nearby enemy (but only if staying within 2 of owner)
+        # Controller hold-position when ranged on CD + enemies near
+        if role == "controller" and ranged_cd > 0:
+            nearest_enemy_dist = min(
+                (_chebyshev(ai_pos, (e.position.x, e.position.y)) for e in enemies),
+                default=999,
+            )
+            if nearest_enemy_dist <= 4:
+                return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+
+        # S2-D: Support positioning — stay near allies, not charge enemies
+        if is_support:
+            if role == "totemic_support":
+                from app.core.ai_skills import _totemic_support_move_preference
+                ally_target = _totemic_support_move_preference(ai, all_units, match_state=match_state)
+            elif role == "offensive_support":
+                ally_target = _offensive_support_move_preference(ai, all_units)
+            else:
+                ally_target = _support_move_preference(ai, all_units)
+            if ally_target:
+                move_target = ally_target
+            else:
+                move_target = (target.position.x, target.position.y)
+        else:
+            move_target = (target.position.x, target.position.y)
+
+        # Move toward target (support: toward ally; others: toward enemy)
+        # but only if staying within 2 of owner
         next_step = get_next_step_toward(
-            ai_pos, (target.position.x, target.position.y),
+            ai_pos, move_target,
             grid_width, grid_height, obstacles, occupied, door_tiles,
         )
         if next_step:
             new_dist = _chebyshev(next_step, owner_pos)
             if new_dist <= 2:
+                # S2-E: Totem-biased step
+                if match_state and ai.max_hp > 0:
+                    next_step = _totem_biased_step(
+                        ai_pos, next_step, move_target, match_state, ai.team,
+                        ai.hp / ai.max_hp, grid_width, grid_height, obstacles, occupied,
+                    )
+                    # Re-check tether after totem bias
+                    if _chebyshev(next_step, owner_pos) > 2:
+                        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=next_step[0], target_y=next_step[1],
                 )
 
-    # No nearby threats — wait near owner
+    # No engageable threats — wait near owner
     return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
 
 
@@ -1410,29 +1546,36 @@ def _decide_hold_action(
     if not enemies:
         return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
 
-    # Check for adjacent enemies → melee
-    for enemy in enemies:
-        target_pos = Position(x=enemy.position.x, y=enemy.position.y)
-        if is_adjacent(ai.position, target_pos):
-            return PlayerAction(
-                player_id=ai_id, action_type=ActionType.ATTACK,
-                target_x=enemy.position.x, target_y=enemy.position.y,
-            )
+    # Phase S1-B: Use _pick_best_target for smart melee selection
+    # (scores by HP, threat, distance instead of arbitrary iteration order)
+    adjacent_enemies = [
+        e for e in enemies
+        if is_adjacent(ai.position, Position(x=e.position.x, y=e.position.y))
+    ]
+    if adjacent_enemies:
+        target = _pick_best_target(ai, adjacent_enemies, all_units)
+        return PlayerAction(
+            player_id=ai_id, action_type=ActionType.ATTACK,
+            target_x=target.position.x, target_y=target.position.y,
+        )
 
-    # Check for ranged targets
+    # Phase S1-B: Use _pick_best_target for smart ranged selection
     ranged_cd = ai.cooldowns.get("ranged_attack", 0)
     if ranged_cd == 0:
-        for enemy in enemies:
-            target_pos = Position(x=enemy.position.x, y=enemy.position.y)
-            if is_in_range(ai.position, target_pos, ranged_range):
-                if has_line_of_sight(
-                    ai.position.x, ai.position.y,
-                    enemy.position.x, enemy.position.y, obstacles,
-                ):
-                    return PlayerAction(
-                        player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
-                        target_x=enemy.position.x, target_y=enemy.position.y,
-                    )
+        ranged_enemies = [
+            e for e in enemies
+            if is_in_range(ai.position, Position(x=e.position.x, y=e.position.y), ranged_range)
+            and has_line_of_sight(
+                ai.position.x, ai.position.y,
+                e.position.x, e.position.y, obstacles,
+            )
+        ]
+        if ranged_enemies:
+            target = _pick_best_target(ai, ranged_enemies, all_units)
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
+                target_x=target.position.x, target_y=target.position.y,
+            )
 
     # No targets in range — hold position
     return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
