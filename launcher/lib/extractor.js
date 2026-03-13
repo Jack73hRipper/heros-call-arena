@@ -77,13 +77,20 @@ async function extract(zipPath, installDir, { isUpdate = false, onProgress } = {
  */
 function extractWithProgress(zip, targetDir, onProgress) {
   const entries = zip.getEntries();
-  const total = entries.length;
+  // Only count actual files for progress (skip directory entries)
+  const fileEntries = entries.filter(e => !e.isDirectory);
+  const total = fileEntries.length;
   let extracted = 0;
 
   fs.mkdirSync(targetDir, { recursive: true });
 
-  for (const entry of entries) {
-    zip.extractEntryTo(entry, targetDir, true, true);
+  for (const entry of fileEntries) {
+    // Ensure parent directory exists before extracting
+    const entryPath = path.join(targetDir, entry.entryName);
+    fs.mkdirSync(path.dirname(entryPath), { recursive: true });
+
+    // Write file contents directly to avoid chmod issues with .asar files
+    fs.writeFileSync(entryPath, entry.getData());
     extracted++;
     if (onProgress) onProgress(extracted, total);
   }
