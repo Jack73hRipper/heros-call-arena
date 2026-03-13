@@ -39,6 +39,8 @@ export default function HeroSprite({ classId, variant = 1, size = 32, grayscale 
   const bgX = -(region.x * scale);
   const bgY = -(region.y * scale);
 
+  const spritesheetUrl = `${import.meta.env.BASE_URL}spritesheet.png`;
+
   return (
     <span
       className={`hero-sprite ${className}`}
@@ -46,7 +48,7 @@ export default function HeroSprite({ classId, variant = 1, size = 32, grayscale 
         display: 'inline-block',
         width: size,
         height: size,
-        backgroundImage: 'url(/spritesheet.png)',
+        backgroundImage: `url(${spritesheetUrl})`,
         backgroundPosition: `${bgX}px ${bgY}px`,
         backgroundSize: `${bgWidth}px ${bgHeight}px`,
         backgroundRepeat: 'no-repeat',

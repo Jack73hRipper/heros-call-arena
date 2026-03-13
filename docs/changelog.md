@@ -5,6 +5,16 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [Bugfix] — 2026-03-12 — Town Hub Hero Portraits Missing (v0.1.3)
+
+**Summary:** Fixed hero portraits not displaying in Town Hub screens (Hero Roster, Hiring Hall, Merchant). Same root cause as v0.1.2 — absolute asset path under Electron's `file://` protocol.
+
+### Changed — `client/src/components/TownHub/HeroSprite.jsx`
+
+- **CSS `backgroundImage`** — Changed from `url(/spritesheet.png)` to `` url(${import.meta.env.BASE_URL}spritesheet.png) `` so the spritesheet resolves correctly in deployed Electron builds
+
+---
+
 ## [Bugfix] — 2026-03-12 — Missing Sprites, Audio & Particles in Deployed Build
 
 **Summary:** Fixed all static asset paths that broke when the game was loaded via Electron's `file://` protocol in deployed (installed) builds. Sprites, tiles, skill icons, audio, and particle effects were all missing for testers despite being correctly included in the build zip. Dev mode via `start-game.bat` was unaffected because Vite's dev server resolves `/` paths to the project root.
