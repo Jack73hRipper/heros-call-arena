@@ -72,6 +72,7 @@ def load_profile(username: str) -> PlayerProfile | None:
     """
     filepath = _profile_path(username)
     if not filepath.exists():
+        logger.debug(f"Profile file does not exist: {filepath}")
         return None
 
     try:
@@ -80,7 +81,10 @@ def load_profile(username: str) -> PlayerProfile | None:
         return PlayerProfile(**data)
     except (json.JSONDecodeError, Exception) as e:
         logger.warning(
-            f"Corrupt profile file for '{username}' — creating fresh profile. Error: {e}"
+            f"Failed to read profile for '{username}' (file exists but unreadable). "
+            f"Path: {filepath}, Error: {e}. "
+            f"This may be a transient file lock (OneDrive, antivirus). "
+            f"Will NOT overwrite with empty profile."
         )
         return None
 

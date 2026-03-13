@@ -89,13 +89,34 @@ export default function WaitingRoom({ sendAction, onLeave, wsReady }) {
   const availableClasses = gameState.availableClasses || {};
 
   // Auto-send hero_select when entering a dungeon waiting room with pre-selected heroes
-  // Depends on wsReady so it re-fires once the WebSocket connection is established
+  // Depends on wsReady so it re-fires once the WebSocket connection is established.
+  // Retries once after a short delay if the server rejects (transient file-lock issue).
+  const heroRetryRef = useRef(null);
   useEffect(() => {
     const heroIds = gameState.selectedHeroIds || [];
     if (heroIds.length > 0 && sendAction && wsReady) {
       sendAction({ type: 'hero_select', hero_ids: heroIds });
     }
+    return () => { if (heroRetryRef.current) clearTimeout(heroRetryRef.current); };
   }, [gameState.selectedHeroIds, sendAction, wsReady]);
+
+  // If we receive a hero_select error, retry once after a brief delay
+  useEffect(() => {
+    if (
+      gameState.lobbyError &&
+      gameState.lobbyError.includes('Cannot select heroes') &&
+      sendAction && wsReady
+    ) {
+      const heroIds = gameState.selectedHeroIds || [];
+      if (heroIds.length > 0) {
+        console.log('[WaitingRoom] hero_select failed, retrying in 500ms...');
+        heroRetryRef.current = setTimeout(() => {
+          sendAction({ type: 'hero_select', hero_ids: heroIds });
+        }, 500);
+      }
+    }
+    return () => { if (heroRetryRef.current) clearTimeout(heroRetryRef.current); };
+  }, [gameState.lobbyError, gameState.selectedHeroIds, sendAction, wsReady]);
 
   // Reset local isReady state when server un-readies us (e.g. hero validation failure)
   const lobbyPlayers = gameState.lobbyPlayers || {};

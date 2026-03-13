@@ -8,9 +8,12 @@ post-match persistence, permadeath, and match end payloads.
 
 from __future__ import annotations
 
+import logging
 import uuid
 
 from app.models.player import PlayerState, Position, get_all_classes
+
+logger = logging.getLogger(__name__)
 from app.models.match import MatchType, MatchStatus
 from app.core.map_loader import get_spawn_points, is_dungeon_map
 from app.core.combat import get_combat_config
@@ -65,15 +68,24 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
     """
     match = _active_matches.get(match_id)
     if not match or match.status != MatchStatus.WAITING:
+        logger.warning("[select_heroes] FAIL: match not found or not WAITING "
+                       f"(match_id={match_id}, found={match is not None}, "
+                       f"status={match.status if match else 'N/A'})")
         return None
 
     players = _player_states.get(match_id, {})
     player = players.get(player_id)
     if not player:
+        logger.warning(f"[select_heroes] FAIL: player {player_id} not found in match {match_id}. "
+                       f"Known player_ids: {list(players.keys())}")
         return None
 
     if not hero_ids or len(hero_ids) == 0:
+        logger.warning(f"[select_heroes] FAIL: empty hero_ids for player {player_id}")
         return None
+
+    logger.info(f"[select_heroes] player={player_id} username={player.username!r} "
+                f"hero_ids={hero_ids}")
 
     # Enforce per-player max party size
     if len(hero_ids) > MAX_PARTY_SIZE:
@@ -86,6 +98,7 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
     if len(hero_ids) > slots_available:
         hero_ids = hero_ids[:slots_available]
     if len(hero_ids) == 0:
+        logger.warning(f"[select_heroes] FAIL: no slots available (slots={slots_available})")
         return None
 
     # Deduplicate while preserving order
@@ -98,8 +111,25 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
     hero_ids = unique_ids
 
     # Load player profile to validate hero ownership
-    from app.services.persistence import load_or_create_profile
-    profile = load_or_create_profile(player.username)
+    from app.services.persistence import load_profile
+    profile = load_profile(player.username)
+
+    if profile is None:
+        logger.warning(f"[select_heroes] FAIL: profile not found for {player.username!r}. "
+                       "Retrying once after brief delay...")
+        # Retry once — file may be temporarily locked (OneDrive sync, antivirus, etc.)
+        import time
+        time.sleep(0.15)
+        profile = load_profile(player.username)
+
+    if profile is None:
+        logger.error(f"[select_heroes] FAIL: profile still not found for {player.username!r} "
+                     "after retry. NOT creating a default profile (would erase heroes).")
+        return None
+
+    profile_hero_ids = [h.hero_id for h in profile.heroes]
+    logger.info(f"[select_heroes] profile loaded: {len(profile.heroes)} heroes, "
+                f"ids={profile_hero_ids}")
 
     # Validate all heroes
     validated_heroes = []
@@ -110,8 +140,11 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
                 hero = h
                 break
         if hero is None:
+            logger.warning(f"[select_heroes] FAIL: hero {hero_id!r} not found in profile. "
+                           f"Profile hero_ids: {profile_hero_ids}")
             return None  # Hero not found in roster
         if not hero.is_alive:
+            logger.warning(f"[select_heroes] FAIL: hero {hero_id!r} ({hero.name}) is dead")
             return None  # Dead heroes cannot be selected
         validated_heroes.append(hero)
 

@@ -22,6 +22,7 @@ export function lobbyReducer(state, action) {
         lobbyPlayers: action.payload.players || {},
         lobbyConfig: action.payload.config || null,
         lobbyChat: action.payload.chat || [],
+        lobbyError: null,
       };
 
     case 'PLAYER_JOINED': {
@@ -129,6 +130,7 @@ export function lobbyReducer(state, action) {
       return {
         ...state,
         lobbyPlayers: action.payload.players || state.lobbyPlayers,
+        lobbyError: null,
       };
     }
 

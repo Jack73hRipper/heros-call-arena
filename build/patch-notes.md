@@ -1,9 +1,6 @@
-## v0.1.4 - Stance Overhaul & Inventory QoL
-
-**New Features**
-- **Stance System Overhaul** - All 4 stances (Follow, Aggressive, Defensive, Hold) are now role-aware. Ranged and support classes no longer lose their intelligence when switching stances. Mages, Rangers, and Plague Doctors on Defensive now kite instead of walking into melee. Confessors, Bards, and Shamans on Aggressive/Defensive position near allies instead of charging enemies. Hold stance now picks the smartest target instead of attacking randomly.
-- **Destroy Item** - New trash button on each bag slot lets you permanently destroy unwanted items during dungeon runs. Two-click confirmation prevents accidents.
+## v0.1.5 — Hero Select Fix (Online Mode)
 
 **Bug Fixes**
-- Fixed Bard not kiting in Aggressive stance
-- Replaced abrasive Hexblade Wither and Shaman Healing Totem sound effects with softer alternatives
+- Fixed "Cannot select heroes" error that appeared immediately when entering the War Room in online mode, preventing match start
+- Hero selection now retries automatically if the server can't read the profile file on the first attempt
+- Error banners now clear properly when entering a new War Room or when hero selection succeeds

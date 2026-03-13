@@ -5,6 +5,34 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.5] - 2026-03-13 - Hero Select Race Condition Fix (Online Mode)
+
+**Summary:** Fixed a bug where entering the War Room (dungeon waiting room) while connected to the online server would immediately show "Cannot select heroes: one or more heroes not found, dead, or not yours", preventing the player from starting a match. The issue was caused by a transient file I/O race condition when loading the player profile — the profile JSON file could be briefly locked by OneDrive sync or Windows file caching, causing the server to fail to read it. The old code would then create a brand new empty profile (erasing hero data in memory), so hero validation always failed on the first attempt. Retreating to town and re-entering worked because the file lock had resolved by then. This only manifested in online mode (Cloudflare tunnel + launcher) because local Electron dev mode has no file sync latency.
+
+### Fixed — `server/app/core/hero_manager.py`
+
+- **`select_heroes()` now uses `load_profile()` instead of `load_or_create_profile()`** — Previously, if the profile file couldn't be read (OneDrive lock, antivirus scan), `load_or_create_profile()` would silently create a fresh empty profile, causing ALL hero validation to fail. Now uses `load_profile()` which returns `None` without overwriting.
+- **Added automatic retry** — If `load_profile()` returns `None`, waits 150ms and retries once before failing. This handles transient file locks.
+- **Added detailed logging** — Every failure path in `select_heroes()` now logs the specific reason (match not found, player not found, profile not loaded, hero not in profile, hero dead) with context like player username, profile hero IDs, and match state.
+- **Added `logging` import and `logger` instance**
+
+### Fixed — `server/app/services/persistence.py`
+
+- **`load_profile()` improved error logging** — When a profile file exists but can't be read, the log message now includes the file path and notes that this may be a transient file lock (OneDrive, antivirus). Removed misleading "creating fresh profile" wording since `load_profile()` doesn't create profiles.
+
+### Fixed — `client/src/components/WaitingRoom/WaitingRoom.jsx`
+
+- **Auto-retry on `hero_select` failure** — Added a `useEffect` that watches `lobbyError`: if the error contains "Cannot select heroes", it automatically retries the `hero_select` WebSocket message after 500ms. Uses a `useRef` timeout to prevent stacking and cleans up on unmount.
+
+### Fixed — `client/src/context/reducers/lobbyReducer.js`
+
+- **`JOIN_MATCH` now clears `lobbyError`** — Stale error messages from a previous match no longer persist into a new War Room session.
+- **`HERO_SELECTED` now clears `lobbyError`** — When the server confirms hero selection succeeded, any lingering error banner is automatically dismissed.
+
+### 1765 tests passing (48 hero persistence tests), 0 regressions. 1 pre-existing unrelated failure in `test_phase16d_unique_items.py`.
+
+---
+
 ## [v0.1.4] - 2026-03-13 - Stance System Overhaul, Destroy Item & Audio Fixes
 
 **Summary:** Major AI stance overhaul making all 4 stances (Follow, Aggressive, Defensive, Hold) role-aware so class identity is preserved regardless of stance choice. New inventory destroy-item feature. Audio polish fixes.
