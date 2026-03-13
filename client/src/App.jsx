@@ -342,6 +342,8 @@ function AppInner() {
       if (!res.ok) throw new Error('Failed to create dungeon match');
       const data = await res.json();
 
+      console.log(`[App] Dungeon match created: match_id=${data.match_id} player_id=${data.player_id} server=${res.url}`);
+
       dispatch({
         type: 'JOIN_MATCH',
         payload: {

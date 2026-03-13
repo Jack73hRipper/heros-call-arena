@@ -112,6 +112,9 @@ def create_match(host_username: str, config: MatchConfig | None = None) -> tuple
     _combat_stats[match_id] = {}
     _match_timeline[match_id] = []
 
+    print(f"[create_match] OK: match_id={match_id} player_id={player_id} "
+          f"username={host_username} active_matches={list(_active_matches.keys())}")
+
     # Spawn AI units immediately so they appear in lobby player list (Bug #5)
     if match_config.ai_opponents > 0 or match_config.ai_allies > 0:
         _spawn_ai_units(match_id)
@@ -446,11 +449,17 @@ def select_class(match_id: str, player_id: str, class_id: str) -> bool:
     """Set a player's class selection in lobby. Returns True on success."""
     match = _active_matches.get(match_id)
     if not match or match.status != MatchStatus.WAITING:
+        print(f"[select_class] FAIL: match not found or not WAITING "
+              f"(match_id={match_id}, found={match is not None}, "
+              f"status={match.status if match else 'N/A'}, "
+              f"active_matches={list(_active_matches.keys())})")
         return False
 
     players = _player_states.get(match_id, {})
     player = players.get(player_id)
     if not player:
+        print(f"[select_class] FAIL: player {player_id} not found in match {match_id}. "
+              f"Known player_ids: {list(players.keys())}")
         return False
 
     # Validate the class_id exists

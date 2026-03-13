@@ -5,6 +5,42 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.6] - 2026-03-13 - War Room Diagnostic Logging & stderr Fix
+
+**Summary:** The v0.1.5 hero-select fix was insufficient — user reports that class selection ALSO fails ("Invalid class selection") and party members don't appear in the roster on first entry. Since `select_class()` never touches the filesystem (it only checks in-memory `_active_matches` and `_player_states` dicts), the root cause is NOT file I/O. This release adds comprehensive `print()` diagnostics throughout the match creation and WebSocket pipeline to pinpoint why the match/player state is missing on first attempt. Also fixes `start-server-online.bat` silently suppressing ALL stderr output (`2>nul`), which made v0.1.5's `logger.warning()` calls invisible.
+
+### Fixed — `start-server-online.bat`
+
+- **Removed `2>nul` from the uvicorn launch command** — The batch file was redirecting stderr to nul, which silenced ALL Python logging (warnings, errors, tracebacks). Every `logger.warning()` diagnostic added in v0.1.5 was invisible. Server stdout/stderr now both display in the console window.
+
+### Changed — `server/app/services/websocket.py`
+
+- **WebSocket connect diagnostics** — `websocket_endpoint()` now prints match/player state at connection time: whether the match exists in `_active_matches`, whether the player_id is in `_player_states`, and the full list of active match IDs. Prints `✓ Connect OK` or `✗ Connect MISMATCH` to make issues immediately visible in the server console.
+- **Imported `get_match_players` and `_active_matches`** from match_manager for validation.
+
+### Changed — `server/app/core/match_manager.py`
+
+- **`create_match()` now prints confirmation** — Logs `match_id`, `player_id`, `username`, and all active match IDs on creation so we can correlate with WebSocket connections.
+- **`select_class()` now prints failure reason** — Previously returned `False` silently. Now prints whether the match wasn't found, player wasn't found, or class was invalid, along with the full list of active match IDs and known player IDs.
+
+### Changed — `server/app/core/hero_manager.py`
+
+- **Converted `logger.warning/error/info` → `print()`** in `select_heroes()` — All diagnostic output now goes to stdout (not stderr) so it's visible even if stderr is redirected. Also added active match ID list to the "match not found" failure message.
+
+### Changed — `server/app/services/persistence.py`
+
+- **`load_profile()` now prints to stdout** — Prints success (username + hero count + hero IDs) and failure (file not found or unreadable) to stdout instead of using logger. Ensures profile loading is always visible in the server console.
+
+### Changed — `client/src/components/WaitingRoom/WaitingRoom.jsx`
+
+- **Added `console.log` to hero_select dispatch** — Logs `heroIds`, `wsReady`, `matchId`, and `playerId` before sending the `hero_select` WebSocket message so the browser console shows exactly what was sent.
+
+### Changed — `client/src/App.jsx`
+
+- **Added `console.log` to dungeon match creation** — Logs the `match_id`, `player_id`, and request URL from the REST response so we can verify the correct server was hit.
+
+---
+
 ## [v0.1.5] - 2026-03-13 - Hero Select Race Condition Fix (Online Mode)
 
 **Summary:** Fixed a bug where entering the War Room (dungeon waiting room) while connected to the online server would immediately show "Cannot select heroes: one or more heroes not found, dead, or not yours", preventing the player from starting a match. The issue was caused by a transient file I/O race condition when loading the player profile — the profile JSON file could be briefly locked by OneDrive sync or Windows file caching, causing the server to fail to read it. The old code would then create a brand new empty profile (erasing hero data in memory), so hero validation always failed on the first attempt. Retreating to town and re-entering worked because the file lock had resolved by then. This only manifested in online mode (Cloudflare tunnel + launcher) because local Electron dev mode has no file sync latency.

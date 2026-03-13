@@ -68,24 +68,25 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
     """
     match = _active_matches.get(match_id)
     if not match or match.status != MatchStatus.WAITING:
-        logger.warning("[select_heroes] FAIL: match not found or not WAITING "
-                       f"(match_id={match_id}, found={match is not None}, "
-                       f"status={match.status if match else 'N/A'})")
+        print(f"[select_heroes] FAIL: match not found or not WAITING "
+              f"(match_id={match_id}, found={match is not None}, "
+              f"status={match.status if match else 'N/A'}, "
+              f"active_matches={list(_active_matches.keys())})")
         return None
 
     players = _player_states.get(match_id, {})
     player = players.get(player_id)
     if not player:
-        logger.warning(f"[select_heroes] FAIL: player {player_id} not found in match {match_id}. "
-                       f"Known player_ids: {list(players.keys())}")
+        print(f"[select_heroes] FAIL: player {player_id} not found in match {match_id}. "
+              f"Known player_ids: {list(players.keys())}")
         return None
 
     if not hero_ids or len(hero_ids) == 0:
-        logger.warning(f"[select_heroes] FAIL: empty hero_ids for player {player_id}")
+        print(f"[select_heroes] FAIL: empty hero_ids for player {player_id}")
         return None
 
-    logger.info(f"[select_heroes] player={player_id} username={player.username!r} "
-                f"hero_ids={hero_ids}")
+    print(f"[select_heroes] player={player_id} username={player.username!r} "
+          f"hero_ids={hero_ids}")
 
     # Enforce per-player max party size
     if len(hero_ids) > MAX_PARTY_SIZE:
@@ -115,16 +116,16 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
     profile = load_profile(player.username)
 
     if profile is None:
-        logger.warning(f"[select_heroes] FAIL: profile not found for {player.username!r}. "
-                       "Retrying once after brief delay...")
+        print(f"[select_heroes] FAIL: profile not found for {player.username!r}. "
+              "Retrying once after brief delay...")
         # Retry once — file may be temporarily locked (OneDrive sync, antivirus, etc.)
         import time
         time.sleep(0.15)
         profile = load_profile(player.username)
 
     if profile is None:
-        logger.error(f"[select_heroes] FAIL: profile still not found for {player.username!r} "
-                     "after retry. NOT creating a default profile (would erase heroes).")
+        print(f"[select_heroes] FAIL: profile still not found for {player.username!r} "
+              "after retry. NOT creating a default profile (would erase heroes).")
         return None
 
     profile_hero_ids = [h.hero_id for h in profile.heroes]

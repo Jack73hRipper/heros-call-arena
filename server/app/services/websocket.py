@@ -16,8 +16,10 @@ from starlette.websockets import WebSocketState
 from app.core.match_manager import (
     remove_player,
     get_match,
+    get_match_players,
     get_alive_count,
     get_player_username,
+    _active_matches,
 )
 from app.services.tick_loop import match_tick  # noqa: F401 — re-export
 from app.services.message_handlers import dispatch_message
@@ -95,6 +97,19 @@ async def websocket_endpoint(websocket: WebSocket, match_id: str, player_id: str
       {"type": "player_joined", ...}
       {"type": "error", "message": "..."}
     """
+    # ── Diagnostic: log match/player state at connection time ──
+    match = get_match(match_id)
+    players = get_match_players(match_id) if match else {}
+    if match and player_id in players:
+        print(f"[WS] ✓ Connect OK: match={match_id} player={player_id} "
+              f"status={match.status} players={list(players.keys())}")
+    else:
+        print(f"[WS] ✗ Connect MISMATCH: match={match_id} player={player_id} "
+              f"match_found={match is not None} "
+              f"player_found={player_id in players} "
+              f"active_matches={list(_active_matches.keys())} "
+              f"match_players={list(players.keys())}")
+
     await ws_manager.connect(match_id, player_id, websocket)
 
     try:

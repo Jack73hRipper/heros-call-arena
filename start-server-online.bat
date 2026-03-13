@@ -30,7 +30,7 @@ if not exist "%VENV_PY%" (
 echo [1/4] Starting FastAPI server on port 8000...
 set ARENA_CORS_ORIGINS=["*"]
 pushd server
-start /b "" "%VENV_PY%" -m uvicorn app.main:app --host 0.0.0.0 --port 8000 2>nul
+start /b "" "%VENV_PY%" -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 popd
 :: Give it a moment to boot
 timeout /t 3 /nobreak >nul

@@ -1,6 +1,9 @@
-## v0.1.5 — Hero Select Fix (Online Mode)
+## v0.1.6 — War Room Diagnostic Logging & stderr Fix
 
 **Bug Fixes**
-- Fixed "Cannot select heroes" error that appeared immediately when entering the War Room in online mode, preventing match start
-- Hero selection now retries automatically if the server can't read the profile file on the first attempt
-- Error banners now clear properly when entering a new War Room or when hero selection succeeds
+- Fixed `start-server-online.bat` silently suppressing all server error/warning output (`2>nul` on uvicorn), which made v0.1.5 diagnostics invisible
+
+**Diagnostics**
+- Added `print()` diagnostics to WebSocket connect, match creation, hero selection, class selection, and profile loading — all visible in server console
+- Added client-side `console.log` tracing for match creation and hero_select dispatch
+- Server now prints `✓ Connect OK` or `✗ Connect MISMATCH` on every WebSocket connection with full active-match state

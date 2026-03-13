@@ -94,7 +94,9 @@ export default function WaitingRoom({ sendAction, onLeave, wsReady }) {
   const heroRetryRef = useRef(null);
   useEffect(() => {
     const heroIds = gameState.selectedHeroIds || [];
+    console.log(`[WaitingRoom] hero_select useEffect: heroIds=${JSON.stringify(heroIds)} wsReady=${wsReady} matchId=${gameState.matchId} playerId=${gameState.playerId}`);
     if (heroIds.length > 0 && sendAction && wsReady) {
+      console.log('[WaitingRoom] Sending hero_select:', heroIds);
       sendAction({ type: 'hero_select', hero_ids: heroIds });
     }
     return () => { if (heroRetryRef.current) clearTimeout(heroRetryRef.current); };

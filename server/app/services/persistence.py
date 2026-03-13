@@ -72,20 +72,19 @@ def load_profile(username: str) -> PlayerProfile | None:
     """
     filepath = _profile_path(username)
     if not filepath.exists():
-        logger.debug(f"Profile file does not exist: {filepath}")
+        print(f"[load_profile] File not found: {filepath}")
         return None
 
     try:
         with open(filepath, "r") as f:
             data = json.load(f)
-        return PlayerProfile(**data)
+        profile = PlayerProfile(**data)
+        print(f"[load_profile] OK: {username} — {len(profile.heroes)} heroes, "
+              f"hero_ids={[h.hero_id for h in profile.heroes]}")
+        return profile
     except (json.JSONDecodeError, Exception) as e:
-        logger.warning(
-            f"Failed to read profile for '{username}' (file exists but unreadable). "
-            f"Path: {filepath}, Error: {e}. "
-            f"This may be a transient file lock (OneDrive, antivirus). "
-            f"Will NOT overwrite with empty profile."
-        )
+        print(f"[load_profile] FAIL: '{username}' file exists but unreadable. "
+              f"Path: {filepath}, Error: {e}")
         return None
 
 
