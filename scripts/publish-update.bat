@@ -116,9 +116,8 @@ REM ── Step 4: Generate latest.json ─────────────�
 echo [4/5] Generating latest.json manifest...
 echo.
 
-REM Get today's date in YYYY-MM-DD format
-for /f "tokens=2 delims==" %%d in ('wmic os get localdatetime /value 2^>nul') do set "DT=%%d"
-set "RELEASE_DATE=%DT:~0,4%-%DT:~4,2%-%DT:~6,2%"
+REM Get today's date in YYYY-MM-DD format (use PowerShell — wmic can produce garbled dates)
+for /f "tokens=*" %%d in ('powershell -NoProfile -Command "Get-Date -Format 'yyyy-MM-dd'"') do set "RELEASE_DATE=%%d"
 
 REM Determine download URL based on host
 if "%HOST%"=="r2" (
@@ -144,13 +143,14 @@ echo [INFO] Download URL: %DOWNLOAD_URL%
 REM Generate latest.json using PowerShell for proper JSON with embedded patch notes
 if not exist "build\publish" mkdir "build\publish"
 
+REM Use System.IO.File::ReadAllText for patch notes to avoid PowerShell 5.1 encoding issues with em-dashes
 powershell -NoProfile -Command ^
-  "$patchFile = 'build\patch-notes.md'; " ^
-  "if (Test-Path $patchFile) { $notes = (Get-Content $patchFile -Raw) -replace '\\', '\\\\' -replace '\"', '\\"' -replace \"`r`n\", '\n' -replace \"`n\", '\n' } " ^
-  "else { $notes = '### v%VERSION%\n- Bug fixes and improvements' }; " ^
-  "$json = @{ version = '%VERSION%'; releaseDate = '%RELEASE_DATE%'; downloadUrl = '%DOWNLOAD_URL%'; downloadSize = [long]%FILE_SIZE%; sha256 = '%SHA256%'; patchNotes = $notes; minLauncherVersion = '1.0.0' }; " ^
-  "$text = ($json | ConvertTo-Json -Depth 3); " ^
-  "[System.IO.File]::WriteAllText('build\publish\latest.json', $text, (New-Object System.Text.UTF8Encoding($false)))"
+  "$patchFile = (Resolve-Path 'build\patch-notes.md' -ErrorAction SilentlyContinue); " ^
+  "if ($patchFile) { $notes = [System.IO.File]::ReadAllText($patchFile.Path, [System.Text.UTF8Encoding]::new($false)).TrimEnd() } " ^
+  "else { $notes = '### v%VERSION% - Bug fixes and improvements' }; " ^
+  "$obj = @{ version = '%VERSION%'; releaseDate = '%RELEASE_DATE%'; downloadUrl = '%DOWNLOAD_URL%'; downloadSize = [long]%FILE_SIZE%; sha256 = '%SHA256%'; patchNotes = $notes; minLauncherVersion = '1.0.0' }; " ^
+  "$json = $obj | ConvertTo-Json -Depth 10; " ^
+  "[System.IO.File]::WriteAllText('build\publish\latest.json', $json, [System.Text.UTF8Encoding]::new($false))"
 
 if errorlevel 1 (
     echo [ERROR] Failed to generate latest.json
@@ -232,23 +232,35 @@ REM ── GitHub Release ──────────────────
     REM Push latest.json to gh-pages branch for GitHub Pages hosting
     echo [INFO] Deploying latest.json to GitHub Pages...
     
-    REM Create a temp directory for gh-pages content
-    if exist "build\gh-pages-temp" rmdir /s /q "build\gh-pages-temp"
-    mkdir "build\gh-pages-temp"
-    copy "build\publish\latest.json" "build\gh-pages-temp\latest.json"
+    REM Reuse existing gh-pages-temp clone if present; only clone fresh if missing
+    if exist "build\gh-pages-temp\.git" (
+        echo [INFO] Using existing gh-pages-temp clone...
+        pushd "build\gh-pages-temp"
+        git fetch origin gh-pages 2>nul
+        git reset --hard origin/gh-pages 2>nul
+    ) else (
+        echo [INFO] Cloning gh-pages branch...
+        if exist "build\gh-pages-temp" rmdir /s /q "build\gh-pages-temp"
+        git clone --branch gh-pages --single-branch "https://github.com/%GH_REPO%.git" "build\gh-pages-temp" 2>nul
+        if errorlevel 1 (
+            echo [INFO] gh-pages branch not found, creating fresh...
+            mkdir "build\gh-pages-temp"
+            pushd "build\gh-pages-temp"
+            git init
+            git checkout -b gh-pages
+            git remote add origin "https://github.com/%GH_REPO%.git"
+            goto :gh_pages_ready
+        )
+        pushd "build\gh-pages-temp"
+    )
+    :gh_pages_ready
     
-    REM Use git to push to gh-pages branch
-    pushd "build\gh-pages-temp"
-    git init
-    git checkout -b gh-pages
+    REM Copy updated latest.json into the clone (preserves server-url.json and other files)
+    copy /y "..\..\build\publish\latest.json" "latest.json" >nul
     git add latest.json
     git commit -m "Update latest.json to v%VERSION%"
-    git remote add origin "https://github.com/%GH_REPO%.git"
-    git push origin gh-pages --force
+    git push origin gh-pages
     popd
-    
-    REM Clean up temp directory
-    rmdir /s /q "build\gh-pages-temp"
     
     echo [OK] latest.json deployed to GitHub Pages.
     echo [INFO] Manifest URL: https://%GH_REPO:~0,14%.github.io/%GH_REPO:~15%/latest.json

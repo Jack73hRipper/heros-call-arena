@@ -134,22 +134,41 @@ echo.
 
 set "ZIP_NAME=arena-v%VERSION%.zip"
 
-REM Use PowerShell to create the zip (available on all modern Windows)
+REM Use PowerShell to create the zip — includes a brief wait to release file locks
+REM from PyInstaller/electron-builder, and validates the output exists afterward.
 if exist "build\%ZIP_NAME%" del "build\%ZIP_NAME%"
-powershell -NoProfile -Command "Compress-Archive -Path '%BUILD_DIR%\*' -DestinationPath 'build\%ZIP_NAME%' -Force"
+
+REM Wait 3 seconds for any file locks to release (PyInstaller base_library.zip)
+echo [INFO] Waiting for file locks to release...
+powershell -NoProfile -Command "Start-Sleep -Seconds 3"
+
+powershell -NoProfile -Command "Compress-Archive -Path '%BUILD_DIR%\*' -DestinationPath 'build\%ZIP_NAME%' -Force -ErrorAction Stop"
 if errorlevel 1 (
     echo [ERROR] Failed to create zip!
+    exit /b 1
+)
+
+REM Verify zip was actually created (Compress-Archive can silently fail on partial locks)
+if not exist "build\%ZIP_NAME%" (
+    echo [ERROR] Zip file was not created! A file may still be locked.
+    echo         Close any programs using files in %BUILD_DIR% and try again.
     exit /b 1
 )
 
 REM Calculate SHA-256 hash
 echo.
 echo [INFO] Calculating SHA-256 hash...
+set "SHA256="
 for /f "tokens=1" %%h in ('certutil -hashfile "build\%ZIP_NAME%" SHA256 ^| findstr /v "hash CertUtil"') do (
     set "SHA256=%%h"
     goto :got_hash
 )
 :got_hash
+
+if "%SHA256%"=="" (
+    echo [ERROR] Failed to calculate SHA-256 hash!
+    exit /b 1
+)
 
 echo.
 echo ============================================================
