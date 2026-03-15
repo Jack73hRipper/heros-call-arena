@@ -1,9 +1,9 @@
 {
-    "version":  "0.1.4",
-    "releaseDate":  "2026-03-13",
-    "downloadUrl":  "https://github.com/Jack73hRipper/heros-call-arena/releases/download/v0.1.4/arena-v0.1.4.zip",
-    "downloadSize":  322837956,
-    "sha256":  "fdd3d57a3021ae37d952c7d6cd9fc287fa3d1521264b79f35801f4de893fdbdc",
-    "patchNotes":  "## v0.1.4 — Stance Overhaul \u0026 Inventory QoL\r\n\r\n**New Features**\r\n- **Stance System Overhaul** — All 4 stances (Follow, Aggressive, Defensive, Hold) are now role-aware. Ranged and support classes no longer lose their intelligence when switching stances. Mages, Rangers, and Plague Doctors on Defensive now kite instead of walking into melee. Confessors, Bards, and Shamans on Aggressive/Defensive position near allies instead of charging enemies. Hold stance now picks the smartest target instead of attacking randomly.\r\n- **Destroy Item** — New trash button on each bag slot lets you permanently destroy unwanted items during dungeon runs. Two-click confirmation prevents accidents.\r\n\r\n**Bug Fixes**\r\n- Fixed Bard not kiting in Aggressive stance\r\n- Replaced abrasive Hexblade Wither and Shaman Healing Totem sound effects with softer alternatives",
-    "minLauncherVersion":  "1.0.0"
+    "sha256":  "0527aa425586dcc1441a1b1a649f20abfd82118a67b02c30d0d8e28f6257f0a8",
+    "version":  "0.1.6",
+    "minLauncherVersion":  "1.0.0",
+    "downloadUrl":  "https://github.com/Jack73hRipper/heros-call-arena/releases/download/v0.1.6/arena-v0.1.6.zip",
+    "releaseDate":  "2026-03-14",
+    "downloadSize":  322836679,
+    "patchNotes":  "## v0.1.6 - AI \u0026 Team Fixes\r\n\r\n**Bug Fixes**\r\n- Fixed PVPVE lobby team selection being ignored - players now spawn on the team they chose\r\n- Fixed hero allies always spawning on Team A regardless of owner\u0027s team\r\n- Fixed ground-placement skills (totems) being hijacked by the auto-target system instead of entering tile-selection mode\r\n- Fixed Confessor\u0027s Shield of Faith self-casting ~56% of the time instead of buffing allies\r\n- Fixed multi-support comps (Confessor + Shaman) clumping together instead of staying near the frontline\r\n\r\n**AI Improvements**\r\n- Confessor now tracks and moves toward tanks when they drift out of heal range\r\n- Support roles no longer gravitate toward each other - they prefer tanks/DPS as movement anchors\r\n- Shield of Faith priority adjusted so repositioning happens before buffing\r\n- Exorcism no longer suppressed at medium range (4-5 tiles), only when tank is truly far (\u003e5)"
 }
