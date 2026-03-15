@@ -670,7 +670,7 @@ class TestEarthgrasp:
         for enemy in [enemy1, enemy2]:
             rooted = [b for b in enemy.active_buffs if b.get("stat") == "rooted"]
             assert len(rooted) == 1
-            assert rooted[0]["turns_remaining"] == 2
+            assert rooted[0]["turns_remaining"] == 1
 
     def test_earthgrasp_does_not_root_allies(self, loaded_skills):
         """Earthgrasp does not root allies in the area."""
@@ -730,7 +730,7 @@ class TestEarthgrasp:
         assert buff["type"] == "aoe_root"
         assert buff["stat"] == "rooted"
         assert buff["source_id"] == "shaman1"
-        assert buff["turns_remaining"] == 2
+        assert buff["turns_remaining"] == 1
         assert buff["magnitude"] == 0
 
     def test_earthgrasp_sets_cooldown(self, loaded_skills):
@@ -810,22 +810,31 @@ class TestEarthgrasp:
 
         rooted_buffs = [b for b in enemy.active_buffs if b.get("stat") == "rooted"]
         assert len(rooted_buffs) == 1
-        assert rooted_buffs[0]["turns_remaining"] == 2  # Refreshed to full
+        assert rooted_buffs[0]["turns_remaining"] == 1  # Refreshed to full
 
     def test_earthgrasp_via_dispatcher(self, loaded_skills):
-        """Earthgrasp resolves correctly through resolve_skill_action dispatcher."""
+        """Earthgrasp resolves correctly through resolve_skill_action dispatcher as place_totem."""
         player = _make_player(x=5, y=5)
-        enemy = _make_enemy(x=7, y=5)
-        players = {"shaman1": player, "enemy1": enemy}
+        players = {"shaman1": player}
         action = _make_action(skill_id="earthgrasp", target_x=7, target_y=5)
         skill_def = get_skill("earthgrasp")
+        match_state = MatchState(match_id="test", totems=[])
 
         result = resolve_skill_action(
             player, action, skill_def, players, set(), 20, 20,
+            match_state=match_state,
         )
 
         assert result.success is True
-        assert any(b.get("stat") == "rooted" for b in enemy.active_buffs)
+        # Should have placed an earthgrasp_totem
+        assert len(match_state.totems) == 1
+        totem = match_state.totems[0]
+        assert totem["type"] == "earthgrasp_totem"
+        assert totem["x"] == 7
+        assert totem["y"] == 5
+        assert totem["hp"] == 20
+        assert totem["effect_radius"] == 2
+        assert totem["duration_remaining"] == 4
 
     def test_earthgrasp_enemy_outside_radius_not_rooted(self, loaded_skills):
         """Enemy just outside radius 2 is NOT rooted."""

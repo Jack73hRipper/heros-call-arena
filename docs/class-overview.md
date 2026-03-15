@@ -1,6 +1,6 @@
 # Arena — Class Overview (Source of Truth)
 
-> **Last updated:** March 9, 2026
+> **Last updated:** March 14, 2026
 >
 > Single reference document for all 11 playable classes — base stats, skills, roles, and design identity.
 > Values are pulled directly from `classes_config.json`, `skills_config.json`, and `combat_config.json`.
@@ -493,7 +493,7 @@ All classes have either `auto_attack_melee` (1.15× melee damage) or `auto_attac
 | 1 | Healing Totem | 🪵 | Ground AoE (r=2) | 4 | 6 | Place totem (20 HP): heals allies in radius 8 HP/turn for 4 turns. Max 1 active. |
 | 2 | Searing Totem | 🔥 | Ground AoE (r=2) | 4 | 6 | Place totem (20 HP): deals 4 damage/turn (reduced by armor) to enemies in radius for 4 turns. Max 1 active. |
 | 3 | Soul Anchor | ⚓ | Ally or Self | 4 | 10 | Mark target — if they would die within 4 turns, survive at 1 HP instead. One-time trigger. |
-| 4 | Earthgrasp | 🩸 | Ground AoE (r=2) | 4 | 7 | Root all enemies in radius for 2 turns (cannot move, can still attack) |
+| 4 | Earthgrasp Totem | 🩸 | Ground AoE (r=2) | 4 | 7 | Place totem (20 HP): roots all enemies within 2 tiles each turn for 4 turns. Rooted enemies cannot move but can still attack. Max 1 active. |
 
 #### Healing & Damage Examples
 
@@ -502,7 +502,8 @@ All classes have either `auto_attack_melee` (1.15× melee damage) or `auto_attac
 - Searing Totem vs 0 armor (3 enemies, 4 turns): 4 × 3 × 4 = **48** total
 - Searing Totem vs Crusader (6 armor): max(1, 4−6) = **1**/turn (tanks shrug it off)
 - Soul Anchor: prevents one death — game-changing on a carry
-- Earthgrasp: 2-turn root on a cluster enables free damage or retreat
+- Earthgrasp Totem (3 enemies in range, 4 turns): 1-turn root refreshed each turn — persistent CC while totem stands
+- Totem has 20 HP — enemies can destroy it to break free
 
 ---
 
@@ -614,6 +615,8 @@ All classes have either `auto_attack_melee` (1.15× melee damage) or `auto_attac
 
 All classes aim for ~50% win rate in randomized 5v5 team compositions. Recent batch PvP simulations (March 2026) show all 11 classes within the 46–54% range after tuning passes.
 
+> **Note (v0.1.5):** Pre-v0.1.5 batch PvP data is unreliable — Team A units were frozen due to a dummy-host AI ownership bug causing all matches to draw. Win rates were corrected after the fix in v0.1.5.
+
 ### Damage Type Summary
 
 | Damage Type | Armor Interaction | Used By |
@@ -624,6 +627,32 @@ All classes aim for ~50% win rate in randomized 5v5 team compositions. Recent ba
 | DoT (Wither, Plague Flask) | Ignores armor entirely | Hexblade, Plague Doctor |
 | Reflect/Thorns | Ignores armor | Hexblade (Ward), Revenant (Grave Thorns) |
 | Totem (Searing) | Reduced by armor | Shaman |
+
+---
+
+## AI Behavior Notes (v0.1.4–v0.1.5e)
+
+Recent updates introduced role-aware AI stances and support-class positioning logic. These don't change class stats or skill effects, but significantly affect how classes play in practice.
+
+### Stance System (v0.1.4)
+
+| Stance | Support Behavior | Ranged DPS Behavior |
+|--------|-----------------|--------------------|
+| **Aggressive** | Position near allies, not enemies | Kite in formation (Bard uses ally centroid) |
+| **Defensive** | Stay near allies | Range-based kiting (Controllers ≤3 tiles, others ≤2) |
+| **Follow** | Ally-aware positioning (not generic nearest-ally) | Standard follow |
+| **Hold** | Smart target selection via `_pick_best_target()` | Smart target selection |
+
+### Confessor AI (v0.1.5e)
+
+- **Shield of Faith** now fires after reposition check (priority 4.0 → 4.7), fixing ~56% self-cast rate
+- Reposition threshold raised (60% → 80% HP) — Confessor seeks injured allies earlier
+- Tank-aware movement: prioritizes most injured ally below 60% HP → tank outside heal range → nearest ally
+
+### Shaman AI (v0.1.5f)
+
+- Anti-clumping: Shaman ignores other support allies when choosing movement targets
+- Movement priority: (1) Stay near own healing totem → (2) Injured tank <70% HP → (3) Nearest tank → (4) Most injured ally → (5) Nearest ally
 
 ---
 

@@ -5,6 +5,97 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.5g] - 2026-03-14 - Earthgrasp Totem Conversion & Lobby Improvements
+
+### Changed — `server/configs/skills_config.json`, `server/app/core/skill_effects/summon.py`, `server/app/core/turn_phases/buffs_phase.py`
+
+- **Earthgrasp → Earthgrasp Totem** — Converted from an instant AoE root skill to a persistent ground totem. Now places a destructible totem (20 HP, 4-turn duration) that roots all enemies within 2 tiles each turn for 1 turn. Totem uses the shared `place_totem` handler. Buff tick phase handles `earthgrasp_totem` type with root refresh (no stacking). Cooldown remains 7 turns.
+
+### Changed — `client/src/canvas/overlayRenderer.js`
+
+- **Earthgrasp Totem visuals** — Added distinct earthy-gold color palette (`#8B6914` base) for Earthgrasp Totems on the canvas, differentiating them from Healing (green) and Searing (red) totems. Affects glow, radius circle, and totem body colors.
+
+### Changed — `client/src/context/reducers/lobbyReducer.js`
+
+- **Lobby player data** — `PLAYER_JOINED` action now destructures and stores `team`, `unit_type`, and `class_id` fields from the payload, defaulting to `'a'`, `'human'`, and `null` respectively.
+
+### Changed — `server/app/core/hero_manager.py`
+
+- **Debug logging** — Added `[HeroSelect]` print statements throughout `select_heroes()` for troubleshooting hero selection failures in PVPVE matches.
+
+---
+
+## [v0.1.5f] - 2026-03-14 - Multi-Support Anti-Clumping Fix
+
+### Improvement — `server/app/core/ai_skills.py`
+
+- **Support-role nearest-ally filtering** — `_support_move_preference()` (Confessor) and `_totemic_support_move_preference()` (Shaman) now exclude other support-role allies from their "nearest ally" movement fallback. Previously, when no allies were injured and the tank was within heal range, each support would pick the **nearest ally** as its movement anchor — which was often the other support. This caused Confessor + Shaman (and similar double-support comps) to gravitate toward each other, clump away from the frontline, and oscillate tiles as the batch movement resolver repeatedly blocked their identical move targets. Both functions now prefer non-support allies (tanks, DPS) as movement anchors, only falling back to support allies if no other teammates are alive. Added `_SUPPORT_ROLES` constant (`support`, `offensive_support`, `totemic_support`) for the filter.
+
+---
+
+## [v0.1.5e] - 2026-03-14 - Confessor AI Healing & Targeting Fixes
+
+### Bug Fix — `server/app/core/ai_skills.py`
+
+- **Shield of Faith self-cast bug** — `_support_skill_logic()` SoF candidate loop included the caster itself. Confessor has the lowest base HP (100) so it always had the lowest HP% and self-cast SoF ~56% of the time, wasting the buff on a backline unit. Added `if unit.player_id == ai.player_id: continue` to match the existing Dark Pact self-exclusion pattern. SoF now always targets an ally (typically the tank).
+
+- **SoF priority blocks repositioning** — Shield of Faith was at Priority 4, firing BEFORE the Priority 4.5 reposition check. When the tank drifted out of heal range and needed healing, the Confessor would cast SoF (often on itself) instead of repositioning toward the hurt tank. Moved SoF to Priority 4.7 so the reposition check runs first. If the tank is far and hurt, the Confessor walks toward them instead of buffing.
+
+- **Check B too aggressive** — The v0.1.5d "suppress Exorcism when tank is far" check used `_SUPPORT_HEAL_RANGE` (3 tiles) as its threshold, forcing reposition whenever the tank was >3 tiles away. This caused 64% of turns to be wasted on repositioning. Introduced `_TANK_REPOSITION_THRESHOLD = 5` so Exorcism can fire at medium range (4–5 tiles) while still triggering reposition when the tank is truly far (>5 tiles).
+
+### Tests — `server/tests/test_confessor_diagnostic.py`
+
+- 14 diagnostic tests verifying the three fixes: SoF never self-casts, reposition no longer blocks Exorcism at medium range, and SoF no longer prevents repositioning toward hurt tanks. Includes a 200-turn simulation asserting 0% SoF self-cast rate and <50% reposition rate.
+
+---
+
+## [v0.1.5d] - 2026-03-14 - Confessor AI Positioning Overhaul
+
+### Improvement — `server/app/core/ai_skills.py`
+
+- **Tank-aware support positioning** — `_support_move_preference()` now identifies tank-role allies (Crusader `tank`, Revenant `retaliation_tank`, Blood Knight `sustain_dps`) and proactively moves toward them when the Confessor is outside heal range (3 tiles). Previously the Confessor only moved toward **most injured** or **nearest** ally, causing it to drift behind the party while the tank advanced into combat. New priority order: (1) most injured ally below 60% HP, (2) tank-role ally outside heal range, (3) nearest ally.
+
+- **Raised reposition threshold from 60% → 80%** — The "Priority 4.5" reposition check in `_support_skill_logic()` now uses a dedicated `_REPOSITION_ALLY_THRESHOLD` of 0.80 instead of the heal threshold (0.60). The Confessor will start closing distance toward out-of-range allies much earlier, before they become critical. This prevents the pattern where the Confessor spams Exorcism from range 5 while the tank slowly drops from 70% → 30% HP out of heal range.
+
+- **Suppress Exorcism when tank is drifting out of range** — Added a second reposition check (Check B) that returns `None` when any tank-role ally is beyond heal range (3 tiles), regardless of their HP%. This forces the stance handler to move the Confessor toward the tank instead of casting Exorcism from the back line. Exorcism (range 5) greatly exceeds Heal (range 3), which previously created a positioning trap where the Confessor could DPS comfortably but couldn't heal.
+
+- **New constants** — Added `_REPOSITION_ALLY_THRESHOLD` (0.80), `_TANK_ROLES` set (`{"tank", "retaliation_tank", "sustain_dps"}`), and `_SUPPORT_HEAL_RANGE` (3) for tank-proximity calculations.
+
+---
+
+## [v0.1.5c] - 2026-03-13 - Ground Placement Skill Targeting Fix
+
+### Bug Fix — `client/src/components/BottomBar/BottomBar.jsx`
+
+- **Ground-placement skills (totems) hijacked by auto-target system** — Skills with `targeting: "ground_aoe"` and a `place_totem` effect (Healing Totem, Searing Totem, Earthgrasp Totem) were treated as enemy-targeting skills by the auto-target system. When enemies were in FoV, pressing a totem skill button would auto-select the nearest enemy and initiate pursuit instead of entering tile-selection mode for placement. Fixed by adding an `isPlacementSkill()` check that detects `place_totem` effects and bypasses both the target-first casting path (Phase 10G-6) and the `findNearestTarget()` auto-select. Totem skills now always enter tile-selection mode regardless of nearby enemies. Affects all classes with ground-placement skills.
+
+---
+
+## [v0.1.5b] - 2026-03-13 - PVPVE Team Assignment Fix (Upstream)
+
+### Bug Fix — `server/app/core/match_manager.py`
+
+- **`_spawn_pvpve_ai_teams()` used index-based team detection** — When determining which teams were occupied by humans, the function used player list index (`active_teams[i % team_count]`) instead of each player's actual `player.team` value. With 2 humans both on Team A in a 4-team match, it incorrectly computed `human_teams = {"a", "b"}` instead of `{"a"}`. This meant enemy AI teams would only fill C and D, leaving Team B empty — and the cascading mismatch caused Player 2 to appear on the wrong team. Fixed to read actual `player.team` from lobby selections.
+
+### Bug Fix — `server/app/core/hero_manager.py`
+
+- **`_spawn_hero_ally()` hardcoded `team="a"`** — Hero allies were always spawned with `team="a"` and appended to `match.team_a`, ignoring the owner's actual team. Fixed to read the owner player's `team` field and append to the correct team list. This ensures hero allies follow their owner to whichever team they've selected in the lobby.
+
+### Tests — `server/tests/test_pvpve_ai_teams.py`
+
+- Updated `test_ai_teams_skip_human_occupied_teams` to explicitly place humans on separate teams (A and B) before asserting AI skips those teams.
+- Added `test_ai_teams_fill_all_non_human_slots_when_same_team` — verifies that when 2 humans are both on Team A, AI enemy teams correctly fill all remaining slots (B, C, D).
+
+---
+
+## [v0.1.5] - 2026-03-13 - PVPVE Team Assignment Fix
+
+### Bug Fix — `server/app/core/match_manager.py`
+
+- **PVPVE lobby team ignored** — `_assign_pvpve_teams()` was force-distributing human players round-robin across teams, overriding whatever team they chose in the War Room lobby. If two players both picked Team A, Player 2 would be silently moved to Team B at match start and spawn in a different corner alone. Fixed to respect each player's lobby-chosen team when it's a valid active team for the match. Round-robin fallback only applies if a player's team isn't one of the active PVPVE teams (e.g., on Team D in a 2-team match).
+
+---
+
 ## [v0.1.4] - 2026-03-13 - Stance System Overhaul, Destroy Item & Audio Fixes
 
 **Summary:** Major AI stance overhaul making all 4 stances (Follow, Aggressive, Defensive, Hold) role-aware so class identity is preserved regardless of stance choice. New inventory destroy-item feature. Audio polish fixes.

@@ -202,6 +202,38 @@ def _resolve_cooldowns_and_buffs(
                         if not p.is_alive and p.player_id not in deaths:
                             deaths.append(p.player_id)
 
+            elif totem.get("type") == "earthgrasp_totem":
+                root_duration = totem.get("root_duration", 1)
+                rooted_names: list[str] = []
+                for p in players.values():
+                    if not p.is_alive or p.team == totem_team:
+                        continue
+                    dist = max(abs(p.position.x - totem_x), abs(p.position.y - totem_y))
+                    if dist <= effect_radius:
+                        # Refresh existing root (don't stack)
+                        p.active_buffs = [b for b in p.active_buffs if b.get("stat") != "rooted"]
+                        root_entry = {
+                            "buff_id": "earthgrasp",
+                            "type": "aoe_root",
+                            "stat": "rooted",
+                            "source_id": totem.get("owner_id", ""),
+                            "turns_remaining": root_duration,
+                            "magnitude": 0,
+                        }
+                        p.active_buffs.append(root_entry)
+                        rooted_names.append(p.username)
+                if rooted_names:
+                    names_str = ", ".join(rooted_names)
+                    results.append(ActionResult(
+                        player_id=totem.get("owner_id", ""),
+                        username="Earthgrasp Totem",
+                        action_type=ActionType.SKILL,
+                        skill_id="earthgrasp",
+                        success=True,
+                        message=f"Earthgrasp Totem roots {len(rooted_names)} enem{'y' if len(rooted_names) == 1 else 'ies'}: {names_str}",
+                        is_tick=True,
+                    ))
+
             # Tick down duration
             totem["duration_remaining"] = totem.get("duration_remaining", 0) - 1
             if totem["duration_remaining"] <= 0:

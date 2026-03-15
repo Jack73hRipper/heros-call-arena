@@ -1,4 +1,4 @@
-# Phase 26 — Shaman Class (Totemic Healer / Area Support)
+﻿﻿# Phase 26 — Shaman Class (Totemic Healer / Area Support)
 
 ## Pre-Implementation Checklist
 
@@ -96,7 +96,7 @@ Identical to Bard auto-attack. Lowest-tier personal DPS. The Shaman's value is e
 | 1 | Healing Totem | `place_totem` (**NEW**) | ground_aoe | 4 | 6 | Place a totem that heals all allies within 2 tiles for 8 HP/turn for 4 turns. Totem has 20 HP. |
 | 2 | Searing Totem | `place_totem` (**NEW**) | ground_aoe | 4 | 6 | Place a totem that deals 6 magic damage/turn to all enemies within 2 tiles for 4 turns. Totem has 20 HP. Max 1 of each totem type. |
 | 3 | Soul Anchor | `soul_anchor` (**NEW**) | ally_or_self | 4 | 10 | Mark an ally — if they would die within 4 turns, they survive at 1 HP instead. Consumed on trigger. |
-| 4 | Earthgrasp | `aoe_root` (**NEW**) | ground_aoe | 4 | 7 | Root all enemies within radius 2 for 2 turns — can't move, CAN still attack/use skills. |
+| 4 | Earthgrasp Totem | `place_totem` | ground_aoe | 4 | 7 | Place a totem that roots all enemies within 2 tiles each turn for 4 turns. Totem has 20 HP. |
 
 ### Skill Details
 
@@ -168,7 +168,7 @@ Effect:        Place a Searing Totem on an empty tile. The totem is a destructib
 
 **Design:** The Shaman's offensive partner to the Healing Totem. Where the Healing Totem sustains allies, the Searing Totem punishes enemies who remain in an area. This creates true battlefield zoning — the Shaman defines "safe" and "dangerous" areas of the map with their two totems. The dual-totem system is the Shaman's unique minigame: placement, timing, and deciding which totem takes priority when cooldowns align.
 
-Critically, the Searing Totem synergizes with Earthgrasp — root enemies in the damage zone and they eat 6 damage/turn with no escape. This is the Shaman's core combo.
+Critically, the Searing Totem synergizes with Earthgrasp Totem — root enemies in the damage zone and they eat 6 damage/turn with no escape. This is the Shaman's core combo.
 
 **Damage/healing/effect examples:**
 ```
@@ -184,7 +184,7 @@ Searing Totem destroyed after 2 turns by enemy:
   6 damage × 3 enemies × 2 turns = 36 total damage
   Still solid, and the enemy spent attacks on the totem instead of your party
 
-Searing Totem + Earthgrasp combo (enemies rooted for 2 turns):
+Searing Totem + Earthgrasp Totem combo (enemies rooted in zone):
   6 damage × 3 enemies × 2 guaranteed turns = 36 damage (guaranteed)
   + potential 2 more turns if enemies don't move away after root expires
 
@@ -248,60 +248,67 @@ Compare to Revenant's Undying Will:
 
 ---
 
-#### Earthgrasp 🩸 (AoE Root — New CC Type)
+#### Earthgrasp Totem 🩸 (Persistent AoE Root Zone — New CC Type)
 
 ```
-Effect Type:   aoe_root (NEW — applies root debuff to enemies in target area)
-Targeting:     ground_aoe (target a tile)
-Radius:        2 tiles
-Range:         4 tiles
+Effect Type:   place_totem (same totem entity system as Healing/Searing Totem, root variant)
+Targeting:     ground_aoe (target an empty tile)
+Radius:        2 tiles (root radius around the totem)
+Range:         4 tiles (where the totem can be placed)
 Cooldown:      7 turns
 LOS Required:  Yes
-Effect:        Spectral hands erupt from the ground. All enemies within 2 tiles of
-               the target tile are rooted for 2 turns. Rooted enemies CANNOT MOVE
-               but CAN still attack and use skills. Rooted enemies can be attacked
-               normally. Root is a new CC type distinct from slow and stun.
+Effect:        Place an Earthgrasp Totem on an empty tile. The totem is a destructible
+               entity with 20 HP. Each turn, it roots all enemies within 2 tiles
+               for 1 turn. Rooted enemies CANNOT MOVE but CAN still attack and use
+               skills. The totem lasts 4 turns, then crumbles. Enemies can attack
+               and destroy the totem. Only 1 Earthgrasp Totem can be active per Shaman.
+               Root is a new CC type distinct from slow and stun.
 ```
 
-**Design:** Introduces **root** as a new crowd control type — a middle ground between slow (reduced movement, can still act) and stun (cannot act at all). Rooted enemies are pinned in place but fully combat-capable. This is distinct from every existing CC:
+**Design:** Converted from an instant AoE debuff to a **persistent totem** to match the Shaman's core identity — every skill is now totem-based. The Earthgrasp Totem introduces **root** as a new crowd control type — a middle ground between slow (reduced movement, can still act) and stun (cannot act at all). Rooted enemies are pinned in place but fully combat-capable. This is distinct from every existing CC:
 - **Slow** (Frost Nova, Miasma, Crippling Shot) — enemies can still move, just less
 - **Stun** (Shield Bash) — enemy can't do anything for 1 turn
-- **Root** (Earthgrasp) — enemies can attack and use skills but cannot reposition
+- **Root** (Earthgrasp Totem) — enemies can attack and use skills but cannot reposition
 
-The key synergy: root enemies ON TOP of the Searing Totem. They eat 6 damage/turn for 2 turns with no escape. This is the Shaman's signature combo — Earthgrasp into Searing Totem (or vice versa) creates a kill zone.
+As a totem, the Earthgrasp Totem creates a **persistent root zone** — enemies who walk into the radius are rooted each turn, and enemies already inside can't escape. This synergizes with Searing Totem even more powerfully than the instant version: place both totems overlapping, and enemies are rooted AND taking damage every turn for up to 4 turns. The totem can be destroyed (20 HP) giving enemies a clear counterplay: focus the totem to break free.
 
 Also counters melee enemies hard — a rooted warrior can't close distance to your backline. But ranged enemies can still shoot freely, so it's not always dominant.
 
 **Damage/healing/effect examples:**
 ```
-3 melee enemies rooted 3 tiles away from your party:
-  They cannot move for 2 turns — your Ranger, Mage, and Bard have 2 free turns
+3 melee enemies inside Earthgrasp Totem radius for full 4 turns:
+  Rooted each turn — your Ranger, Mage, and Bard have 4 free turns
   of ranged attacks without taking melee damage
-  Ranger: 2 turns × ~20 damage = ~40 damage dealt freely
-  Effective value: 40+ damage enabled by denying enemy movement
+  Ranger: 4 turns × ~20 damage = ~80 damage dealt freely
+  Effective value: massive damage enabled by denying enemy movement
 
-3 enemies rooted inside Searing Totem radius:
-  6 damage × 3 enemies × 2 turns (root) = 36 guaranteed totem damage
-  + any ranged attacks from party during that time
-  The root ensures they can't walk out of the searing zone
+3 enemies inside overlapping Earthgrasp Totem + Searing Totem radius:
+  4 damage × 3 enemies × 4 turns = 48 guaranteed searing damage
+  + root prevents escape from the damage zone the entire time
+  + party ranged attacks during that time
+  The root totem ensures they can't walk out of the searing zone
 
-1 ranged enemy rooted:
-  They can still shoot — root is less effective vs ranged enemies
+Earthgrasp Totem destroyed after 2 turns by enemy:
+  2 turns of root, then enemies can move freely
+  Still valuable — the enemy spent attacks on the totem instead of your party
+
+1 ranged enemy rooted inside radius:
+  They can still shoot — root is less effective vs (pure) ranged enemies
   But they can't reposition for better LOS or to escape your melee fighters
 
 Compare to Frost Nova (Mage): 12 damage + slow, 2 tiles, self-centered, CD 6
-  Earthgrasp: 0 damage, root (stronger CC), 2 tiles, ground-targeted (range 4), CD 7
-  Earthgrasp is stronger CC but deals no damage and is longer cooldown
-  Frost Nova is self-centered (Mage in danger), Earthgrasp is remote (Shaman safe)
+  Earthgrasp Totem: 0 damage, persistent root zone, 2 tiles, ground-placed (range 4), CD 7
+  Frost Nova is instant but one-shot; Earthgrasp Totem persists for 4 turns
+  Earthgrasp Totem is stronger CC but deals no damage and is destructible
 
 Compare to Miasma (Plague Doctor): 10 damage + slow, 2 tiles, ground-targeted, CD 6
-  Earthgrasp: 0 damage, root (much stronger CC), same radius/targeting, CD 7
-  Earthgrasp trades damage for a hard CC that completely prevents movement
+  Earthgrasp Totem: 0 damage, persistent root (much stronger CC), same radius, CD 7
+  Earthgrasp Totem trades damage for hard CC that persists as a zone
 ```
 
-**Implementation:** New handler `resolve_aoe_root()`. Finds all enemies within radius of target tile and applies a `rooted` debuff to each enemy's `active_buffs`: `{"buff_id": "earthgrasp", "type": "aoe_root", "stat": "rooted", "turns_remaining": 2, "magnitude": 0}`. In `skills.py`, add a new `is_rooted()` helper (following the `is_stunned()` / `is_slowed()` pattern). In the movement phase (`movement_phase.py`), import `is_rooted` from `skills.py` and check — if present, skip the unit's movement (they stay in place). The unit can still perform combat and skill actions. ~25 lines for handler + ~5 lines for `is_rooted()` helper + ~10 lines for movement_phase.py integration.
+**Implementation:** Reuses the's `resolve_place_totem()` handler with `totem_type: "earthgrasp"`. Creates a totem entity with `root_duration: 1` (re-applied each turn). In `buffs_phase.py`, the totem tick logic finds all enemies within radius and applies a 1-turn `rooted` debuff each tick (refreshing, not stacking). The `is_rooted()` helper in `skills.py` and the movement phase check in `movement_phase.py` handle the CC enforcement. The totem renders on the client via `drawTotems()` with an earthy brown/goldenrod color scheme. ~30 lines for buffs_phase.py tick logic.
 
-**Balance lever:** Root duration (2 turns), radius (2 tiles), cooldown (7), range (4)
+**Balance lever:** Totem HP (20), root duration per tick (1 turn), root radius (2 tiles), totem duration (4 turns), cooldown (7), placement range (4), max active per type (1)
 
 ---
 
@@ -309,19 +316,19 @@ Compare to Miasma (Plague Doctor): 10 damage + slow, 2 tiles, ground-targeted, C
 
 ```
 Slot 0: Auto Attack (Ranged) — 11.5 ranged damage per hit (1.15×, range 4)
-Slot 1: Healing Totem  — Place a totem that heals allies within 2 tiles for 8 HP/turn for 4 turns (CD 6)
-Slot 2: Searing Totem  — Place a totem that deals 6 damage/turn to enemies within 2 tiles for 4 turns (CD 6)
+Slot 1: Healing Totem    — Place a totem that heals allies within 2 tiles for 8 HP/turn for 4 turns (CD 6)
+Slot 2: Searing Totem    — Place a totem that deals 4 damage/turn to enemies within 2 tiles for 4 turns (CD 6)
 Slot 3: Soul Anchor    — Mark an ally — if they’d die within 4 turns, survive at 1 HP instead (CD 10)
-Slot 4: Earthgrasp     — Root all enemies within 2 tiles of target for 2 turns (CD 7)
+Slot 4: Earthgrasp Totem — Place a totem that roots enemies within 2 tiles each turn for 4 turns (CD 7)
 ```
 
 **The Synergy Loop:**
 1. **Healing Totem** near your party → sustained healing zone
 2. **Searing Totem** in enemy territory → sustained damage zone
-3. **Earthgrasp** enemies near the Searing Totem → they’re stuck eating damage
+3. **Earthgrasp Totem** overlapping with Searing Totem → enemies rooted in the damage zone
 4. **Soul Anchor** on whoever’s in the most danger → insurance policy
 
-Every skill interacts with the others. The Shaman is a battlefield architect.
+Every skill interacts with the others. Three persistent totems create a true **battlefield architect** — the Shaman defines safe zones, damage zones, and root zones.
 
 ---
 
@@ -332,7 +339,7 @@ Every skill interacts with the others. The Shaman is a battlefield architect.
 ```
 Auto-attack:     11.5 damage per turn (vs 0 armor)
 Searing Totem:   6 damage/turn to enemies in radius (up to 4 turns)
-Earthgrasp:      0 direct damage (CC only)
+Earthgrasp Totem: 0 direct damage (CC only)
 Soul Anchor:     0 damage (utility)
 
 Total personal DPT: 11.5 auto + 6-18 totem = 17.5-29.5 (with totem active)
@@ -348,9 +355,9 @@ Healing Totem (3 allies, 4 turns):
 Searing Totem (3 enemies, 4 turns):
   72 total damage → comparable to 2.5× Fireballs
   DPT: 72 / 6 CD = 12 damage-equivalent per turn
-  With Earthgrasp combo: 36 guaranteed damage (2 rooted turns)
+  With Earthgrasp Totem combo: 36 guaranteed damage (2 rooted turns)
 
-Earthgrasp (3 melee enemies rooted, 2 turns):
+Earthgrasp Totem (3 melee enemies rooted each turn, 4 turns):
   Enables ~40-80 free ranged damage from party (enemies can't close distance)
   Denies ~30-60 melee damage against party (enemies can't reach)
   DPT equivalent: varies heavily — extremely high vs melee-heavy encounters
@@ -361,7 +368,7 @@ Soul Anchor:
   In sustained fights: roughly equivalent to a full heal on the target
 
 Full combo over 10 turns:
-  Healing Totem (96 heal) + Searing Totem (72 dmg) + Earthgrasp (40+ enabled)
+  Healing Totem (96 heal) + Searing Totem (72 dmg) + Earthgrasp Totem (40+ enabled)
   + Soul Anchor (1 death prevented) + auto-attacks (115 dmg)
   Total value: 200+ damage/healing + CC + death prevention
 
@@ -372,7 +379,7 @@ Compare to Confessor over same period:
 
 Conclusion: Much higher theoretical output than original kit, but conditional on:
   - Allies staying in range of Healing Totem
-  - Enemies staying in range of Searing Totem (Earthgrasp helps!)
+  - Enemies staying in range of Searing Totem (Earthgrasp Totem helps!)
   - Totems not being destroyed
   - Soul Anchor timing on the right target
 ```
@@ -383,14 +390,14 @@ Conclusion: Much higher theoretical output than original kit, but conditional on
 
 ### AI Role: `totemic_support`
 
-The Shaman AI is a backline support that prioritizes placing totems strategically — Healing Totem near injured allies, Searing Totem near enemy clusters — while using Earthgrasp to lock enemies in the damage zone and Soul Anchor to protect endangered frontliners. It stays behind the frontline and avoids melee combat. The Shaman AI is positioning-aware: it considers where allies and enemies are clustered to maximize totem value.
+The Shaman AI is a backline support that prioritizes placing totems strategically — Healing Totem near injured allies, Searing Totem near enemy clusters — while using Earthgrasp Totem to lock enemies in the damage zone and Soul Anchor to protect endangered frontliners. It stays behind the frontline and avoids melee combat. The Shaman AI is positioning-aware: it considers where allies and enemies are clustered to maximize totem value.
 
 ### Decision Priority
 
 ```
 1. Healing Totem → If 1+ allies within 4 tiles are below 70% HP and no active healing totem exists
 2. Searing Totem → If 1+ enemies are within range and no active searing totem exists
-3. Earthgrasp   → If 1+ enemies within range (scoring still prefers multi-target & searing totem combos)
+3. Earthgrasp Totem → If 1+ enemies within range and no active earthgrasp totem exists
 4. Soul Anchor  → If a frontline ally (Crusader/Revenant/Blood Knight) is below 30% HP and no active anchor
 5. Auto-attack  → Fallback, target nearest enemy in range
 ```
@@ -1031,8 +1038,8 @@ def _totemic_support_skill_logic(ai, enemies, all_units, grid_w, grid_h, obstacl
 - Shaman AI avoids placing totem adjacent to enemies
 - Shaman AI places Searing Totem when 2+ enemies clustered
 - Shaman AI prefers Searing Totem placement near rooted enemies (combo awareness)
-- Shaman AI uses Earthgrasp when enemies are near active Searing Totem
-- Shaman AI uses Earthgrasp to root melee enemies approaching the party
+- Shaman AI uses Earthgrasp Totem when enemies are near active Searing Totem
+- Shaman AI uses Earthgrasp Totem to root melee enemies approaching the party
 - Shaman AI uses Soul Anchor on low-HP frontline ally (below 30%)
 - Shaman AI does not waste Soul Anchor when no ally is endangered
 - Shaman AI falls back to auto-attack when all skills on cooldown
@@ -1157,12 +1164,12 @@ for (const unit of units) {
 
 ### AI Totem Usage Balance Pass (March 2026)
 
-**Problem:** Shaman AI was extremely conservative with Searing Totem and Earthgrasp. Healing Totem was used regularly but the other two offensive/CC skills were almost never cast.
+**Problem:** Shaman AI was extremely conservative with Searing Totem and Earthgrasp Totem. Healing Totem was used regularly but the other two offensive/CC skills were almost never cast.
 
 **Root causes identified:**
 1. `_SEARING_TOTEM_MIN_ENEMIES = 2` — required 2+ enemies in range to place Searing Totem, so it never fired in single-enemy fights
 2. `_EARTHGRASP_MIN_ENEMIES = 2` — required 2+ un-rooted enemies for a minimum score of 8, so it never fired against a single target
-3. Healing Totem monopolized the priority chain (fires at 1 injured ally, which is almost always true in combat), leaving Searing Totem and Earthgrasp only a chance during the 6-turn cooldown window — where they then failed due to the 2-enemy minimums
+3. Healing Totem monopolized the priority chain (fires at 1 injured ally, which is almost always true in combat), leaving Searing Totem and Earthgrasp Totem only a chance during the 6-turn cooldown window — where they then failed due to the 2-enemy minimums
 
 **Changes:**
 | File | Change |

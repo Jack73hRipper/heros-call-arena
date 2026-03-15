@@ -25,7 +25,7 @@ export function lobbyReducer(state, action) {
       };
 
     case 'PLAYER_JOINED': {
-      const { player_id, username, position } = action.payload;
+      const { player_id, username, position, team, unit_type, class_id } = action.payload;
       return {
         ...state,
         lobbyPlayers: {
@@ -37,6 +37,9 @@ export function lobbyReducer(state, action) {
             max_hp: 100,
             is_alive: true,
             is_ready: false,
+            team: team || 'a',
+            unit_type: unit_type || 'human',
+            class_id: class_id || null,
           },
         },
       };

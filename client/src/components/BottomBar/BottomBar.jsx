@@ -95,8 +95,18 @@ export default function BottomBar({ onAction, onLeave }) {
    * Mirrors the Tab-targeting sort (Euclidean distance, stable id tiebreaker).
    * Returns the target unit's ID, or null if none found.
    */
+  // Ground-AoE placement skills (totems, traps, etc.) should never auto-target an
+  // enemy — they need tile-selection mode so the player can choose WHERE to place.
+  const isPlacementSkill = useCallback((skill) => {
+    if (skill.targeting !== 'ground_aoe') return false;
+    return skill.effects?.some(e => e.type === 'place_totem') ?? false;
+  }, []);
+
   const findNearestTarget = useCallback((skill) => {
     if (!activeUnit?.position) return null;
+
+    // Placement skills (totems) target the ground, not a unit — skip auto-target
+    if (isPlacementSkill(skill)) return null;
 
     const isAllySkill = skill.targeting === 'ally_or_self';
     const isEnemySkill = skill.targeting === 'enemy_adjacent' || skill.targeting === 'enemy_ranged' || skill.targeting === 'ground_aoe';
@@ -142,7 +152,7 @@ export default function BottomBar({ onAction, onLeave }) {
     }
 
     return bestId;
-  }, [activeUnit, players, myTeam, visibleTiles, effectiveUnitId]);
+  }, [activeUnit, players, myTeam, visibleTiles, effectiveUnitId, isPlacementSkill]);
 
   // ---------- Action Handlers ----------
 
@@ -202,7 +212,8 @@ export default function BottomBar({ onAction, onLeave }) {
     }
 
     // --- Phase 10G-6: Target-first skill casting ---
-    if (selectedTargetId) {
+    // Placement skills (totems) always need tile-selection — skip target-first flow
+    if (selectedTargetId && !isPlacementSkill(skill)) {
       const targetUnit = players[selectedTargetId];
       if (targetUnit && targetUnit.is_alive !== false) {
         // Validate targeting compatibility
@@ -299,7 +310,7 @@ export default function BottomBar({ onAction, onLeave }) {
     }
   }, [isDead, queueFull, activeUnit, actionMode, dispatch, onAction,
       isControllingAlly, activeUnitId, selectedTargetId, players, myTeam, effectiveUnitId,
-      findNearestTarget]);
+      isPlacementSkill, findNearestTarget]);
 
   // ---------- Keyboard Hotkeys for Skills (1-5) ----------
   useEffect(() => {

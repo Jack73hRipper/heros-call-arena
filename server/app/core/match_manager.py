@@ -498,13 +498,14 @@ def _resolve_smart_spawns(match_id: str) -> None:
     }
 
     # Determine FFA vs team mode:
-    # FFA when only one team has players (e.g., PvP with everyone on team A)
+    # FFA only when every occupied team has at most 1 player (true free-for-all).
+    # If any team has 2+ members they should spawn together in formation.
     # Exception: Dungeon matches always use team spawning so the party
     # spawns in a compact formation together instead of being scattered.
-    active_teams = sum(1 for roster in team_rosters.values() if roster)
+    max_team_size = max((len(r) for r in team_rosters.values()), default=0)
     is_dungeon = (match.config.match_type in (MatchType.DUNGEON, MatchType.PVPVE)
                   or is_dungeon_map(match.config.map_id))
-    is_ffa = active_teams <= 1 and not is_dungeon
+    is_ffa = max_team_size <= 1 and not is_dungeon
 
     # Compute new positions
     spawn_map = assign_spawns(team_rosters, map_data, is_ffa=is_ffa)
@@ -976,6 +977,9 @@ def get_player_joined_payload(match_id: str, player_id: str) -> dict | None:
         "player_id": player_id,
         "username": player.username,
         "position": {"x": player.position.x, "y": player.position.y},
+        "team": player.team,
+        "unit_type": player.unit_type,
+        "class_id": player.class_id,
     }
 
 
@@ -1422,13 +1426,16 @@ def _spawn_pvpve_ai_teams(match_id: str) -> None:
     team_count = max(2, min(4, config.pvpve_team_count))
     active_teams = _PVPVE_TEAM_KEYS[:team_count]
 
-    # Determine which teams humans occupy.
-    # Humans fill from team A round-robin, so figure out teams needing AI fill.
+    # Determine which teams humans actually occupy (use their lobby-chosen team,
+    # not index-based round-robin — two players can both be on team A).
+    players = _player_states.get(match_id, {})
     humans = [pid for pid in match.player_ids
               if not pid.startswith(("ai-", "enemy-", "hero-", "pvpve-ai-"))]
     human_teams: set[str] = set()
-    for i in range(len(humans)):
-        human_teams.add(active_teams[i % team_count])
+    for pid in humans:
+        p = players.get(pid)
+        if p and p.team in active_teams:
+            human_teams.add(p.team)
 
     # AI hero teams fill the remaining team slots (non-human teams)
     ai_team_keys = [t for t in active_teams if t not in human_teams]
@@ -1439,7 +1446,6 @@ def _spawn_pvpve_ai_teams(match_id: str) -> None:
         logger.info("PVPVE match %s: no AI team slots available (all teams have humans)", match_id)
         return
 
-    players = _player_states.get(match_id, {})
     all_classes = get_all_classes()
     all_class_ids = list(all_classes.keys())
     if not all_class_ids:
@@ -1505,11 +1511,12 @@ def _spawn_pvpve_ai_teams(match_id: str) -> None:
 def _assign_pvpve_teams(match_id: str) -> None:
     """Distribute players across PVPVE teams.
 
-    - Host goes to team A
-    - Other humans distributed round-robin across teams
+    - Humans keep their lobby-chosen team when it's a valid active team,
+      otherwise fall back to round-robin placement.
+    - Host is guaranteed team A if they haven't explicitly changed.
     - PVPVE AI team units (pvpve-ai- prefix) placed on their pre-assigned team
     - Hero allies placed with their owner
-    - Generic AI allies distributed round-robin across teams
+    - Generic AI allies distributed with the host's team
     """
     match = _active_matches.get(match_id)
     if not match:
@@ -1541,8 +1548,7 @@ def _assign_pvpve_teams(match_id: str) -> None:
         if p:
             username_to_pid[p.username] = pid
 
-    # Distribute humans round-robin across teams (host first → team A)
-    # Move host to front of human list
+    # Move host to front of human list so they get first pick
     host_id = match.host_id
     if host_id in humans:
         humans.remove(host_id)
@@ -1558,11 +1564,20 @@ def _assign_pvpve_teams(match_id: str) -> None:
     # Track which team each player ends up on
     pid_to_team: dict[str, str] = {}
 
-    for i, pid in enumerate(humans):
-        team_key = active_teams[i % team_count]
+    # Respect lobby team assignments: use each human's current team if it's
+    # one of the active PVPVE teams; otherwise fall back to round-robin.
+    rr_index = 0  # round-robin counter for players needing reassignment
+    for pid in humans:
+        player = players.get(pid)
+        lobby_team = player.team if player else None
+        if lobby_team in active_teams:
+            team_key = lobby_team
+        else:
+            # Team not valid for this match's team count — assign round-robin
+            team_key = active_teams[rr_index % team_count]
+            rr_index += 1
         team_lists[team_key].append(pid)
         pid_to_team[pid] = team_key
-        player = players.get(pid)
         if player:
             player.team = team_key
 

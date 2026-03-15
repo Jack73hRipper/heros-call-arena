@@ -815,8 +815,8 @@
     },
     "earthgrasp": {
       "skill_id": "earthgrasp",
-      "name": "Earthgrasp",
-      "description": "Root all enemies within 2 tiles of target for 2 turns. Cannot move, can still attack.",
+      "name": "Earthgrasp Totem",
+      "description": "Place a totem that roots all enemies within 2 tiles each turn for 4 turns. Rooted enemies cannot move but can still attack. Totem has 20 HP.",
       "flavor": "Spectral hands claw up from the earth — the dead hold the living in place.",
       "icon": "🩸",
       "targeting": "ground_aoe",
@@ -824,7 +824,7 @@
       "cooldown_turns": 7,
       "mana_cost": 0,
       "effects": [
-        { "type": "aoe_root", "radius": 2, "root_duration": 2 }
+        { "type": "place_totem", "totem_type": "earthgrasp", "totem_hp": 20, "root_duration": 1, "effect_radius": 2, "duration_turns": 4 }
       ],
       "allowed_classes": ["shaman"],
       "requires_line_of_sight": true

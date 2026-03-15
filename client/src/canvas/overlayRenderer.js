@@ -792,10 +792,11 @@ export function drawTotems(ctx, totems, offsetX = 0, offsetY = 0, visibleTiles =
     const cy = py + TILE_SIZE / 2;
 
     const isHealing = totem.type === 'healing_totem';
-    const baseColor = isHealing ? '#44cc66' : '#cc4422';
-    const glowColor = isHealing ? 'rgba(68, 204, 102, 0.12)' : 'rgba(204, 68, 34, 0.12)';
-    const radiusColor = isHealing ? 'rgba(68, 204, 102, 0.08)' : 'rgba(204, 68, 34, 0.08)';
-    const radiusBorder = isHealing ? 'rgba(68, 204, 102, 0.25)' : 'rgba(204, 68, 34, 0.25)';
+    const isEarthgrasp = totem.type === 'earthgrasp_totem';
+    const baseColor = isHealing ? '#44cc66' : isEarthgrasp ? '#8B6914' : '#cc4422';
+    const glowColor = isHealing ? 'rgba(68, 204, 102, 0.12)' : isEarthgrasp ? 'rgba(139, 105, 20, 0.12)' : 'rgba(204, 68, 34, 0.12)';
+    const radiusColor = isHealing ? 'rgba(68, 204, 102, 0.08)' : isEarthgrasp ? 'rgba(139, 105, 20, 0.08)' : 'rgba(204, 68, 34, 0.08)';
+    const radiusBorder = isHealing ? 'rgba(68, 204, 102, 0.25)' : isEarthgrasp ? 'rgba(139, 105, 20, 0.25)' : 'rgba(204, 68, 34, 0.25)';
 
     // --- Effect radius indicator (pulsing circle) ---
     const effectRadius = (totem.effect_radius || 2) * TILE_SIZE;
@@ -824,7 +825,7 @@ export function drawTotems(ctx, totems, offsetX = 0, offsetY = 0, visibleTiles =
     // --- Totem body (bone totem pole icon) ---
     const tw = TILE_SIZE * 0.12;
     const th = TILE_SIZE * 0.3;
-    ctx.fillStyle = isHealing ? '#c8b87a' : '#8a4a2a';
+    ctx.fillStyle = isHealing ? '#c8b87a' : isEarthgrasp ? '#6b5a2a' : '#8a4a2a';
     ctx.strokeStyle = '#222';
     ctx.lineWidth = 1.5;
     ctx.beginPath();

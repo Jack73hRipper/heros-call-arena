@@ -279,7 +279,7 @@ class TestShamanSkillsConfig:
     def test_earthgrasp_definition(self, loaded_skills):
         s = get_skill("earthgrasp")
         assert s["skill_id"] == "earthgrasp"
-        assert s["name"] == "Earthgrasp"
+        assert s["name"] == "Earthgrasp Totem"
         assert s["targeting"] == "ground_aoe"
         assert s["range"] == 4
         assert s["cooldown_turns"] == 7
@@ -291,9 +291,12 @@ class TestShamanSkillsConfig:
         s = get_skill("earthgrasp")
         assert len(s["effects"]) == 1
         effect = s["effects"][0]
-        assert effect["type"] == "aoe_root"
-        assert effect["radius"] == 2
-        assert effect["root_duration"] == 2
+        assert effect["type"] == "place_totem"
+        assert effect["totem_type"] == "earthgrasp"
+        assert effect["totem_hp"] == 20
+        assert effect["effect_radius"] == 2
+        assert effect["duration_turns"] == 4
+        assert effect["root_duration"] == 1
 
 
 # ============================================================

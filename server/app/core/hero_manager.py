@@ -63,16 +63,21 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
     with the hero's stats, class, equipment, and inventory.
     Returns list of hero info dicts on success, or None on failure.
     """
+    print(f"[HeroSelect] select_heroes called: match_id={match_id}, player_id={player_id}, hero_ids={hero_ids}")
+
     match = _active_matches.get(match_id)
     if not match or match.status != MatchStatus.WAITING:
+        print(f"[HeroSelect] FAIL: match not found or not WAITING (match={match is not None}, status={match.status if match else 'N/A'})")
         return None
 
     players = _player_states.get(match_id, {})
     player = players.get(player_id)
     if not player:
+        print(f"[HeroSelect] FAIL: player_id={player_id} not found in _player_states. Available IDs: {list(players.keys())}")
         return None
 
     if not hero_ids or len(hero_ids) == 0:
+        print(f"[HeroSelect] FAIL: hero_ids is empty or None")
         return None
 
     # Enforce per-player max party size
@@ -86,6 +91,7 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
     if len(hero_ids) > slots_available:
         hero_ids = hero_ids[:slots_available]
     if len(hero_ids) == 0:
+        print(f"[HeroSelect] FAIL: no slots available (slots_available={slots_available})")
         return None
 
     # Deduplicate while preserving order
@@ -101,6 +107,8 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
     from app.services.persistence import load_or_create_profile
     profile = load_or_create_profile(player.username)
 
+    print(f"[HeroSelect] Loaded profile for '{player.username}': {len(profile.heroes)} heroes, hero_ids on profile: {[h.hero_id for h in profile.heroes]}")
+
     # Validate all heroes
     validated_heroes = []
     for hero_id in hero_ids:
@@ -110,10 +118,14 @@ def select_heroes(match_id: str, player_id: str, hero_ids: list[str]) -> list[di
                 hero = h
                 break
         if hero is None:
+            print(f"[HeroSelect] FAIL: hero_id='{hero_id}' not found in profile. Profile hero_ids: {[h.hero_id for h in profile.heroes]}")
             return None  # Hero not found in roster
         if not hero.is_alive:
+            print(f"[HeroSelect] FAIL: hero_id='{hero_id}' ({hero.name}) is_alive=False")
             return None  # Dead heroes cannot be selected
         validated_heroes.append(hero)
+
+    print(f"[HeroSelect] SUCCESS: validated {len(validated_heroes)} heroes")
 
     # Store hero selection for tracking (list of hero_ids)
     if match_id not in _hero_selections:
@@ -185,13 +197,17 @@ def _spawn_hero_ally(match_id: str, owner_player_id: str, owner_username: str, h
 
     ai_id = f"hero-{str(uuid.uuid4())[:6]}"
 
+    # Use owner's actual team instead of hardcoding "a"
+    owner = players.get(owner_player_id)
+    owner_team = owner.team if owner else "a"
+
     # Create AI unit with hero's stats
     ally = PlayerState(
         player_id=ai_id,
         username=hero.name,  # Display the hero's name
         position=Position(x=spawn_pos[0], y=spawn_pos[1]),
         unit_type="ai",
-        team="a",  # Same team as the human player
+        team=owner_team,  # Same team as the human player
         is_ready=True,
         # Hero stats
         hp=hero.stats.hp,
@@ -223,7 +239,8 @@ def _spawn_hero_ally(match_id: str, owner_player_id: str, owner_username: str, h
     players[ai_id] = ally
     match.player_ids.append(ai_id)
     match.ai_ids.append(ai_id)
-    match.team_a.append(ai_id)
+    team_map = {"a": match.team_a, "b": match.team_b, "c": match.team_c, "d": match.team_d}
+    team_map.get(owner_team, match.team_a).append(ai_id)
 
     # Track the hero ally for persistence (owner username needed for save/permadeath)
     if match_id not in _hero_ally_map:

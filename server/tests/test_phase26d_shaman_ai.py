@@ -461,26 +461,23 @@ class TestEarthgraspAI:
         if result is not None:
             assert result.skill_id != "earthgrasp"
 
-    def test_earthgrasp_skips_already_rooted_enemies(self):
-        """Earthgrasp has lower value for already-rooted enemies."""
+    def test_earthgrasp_skips_when_totem_already_active(self):
+        """Earthgrasp totem is NOT placed when one already exists."""
         sham = _make_shaman(cooldowns={"healing_totem": 5, "searing_totem": 4})
-        # Both enemies already rooted — lower value
-        rooted1 = _make_enemy(
-            player_id="rooted1", x=7, y=5,
-            active_buffs=[{"stat": "rooted", "turns_remaining": 2}],
-        )
-        rooted2 = _make_enemy(
-            player_id="rooted2", x=7, y=6,
-            active_buffs=[{"stat": "rooted", "turns_remaining": 2}],
-        )
-        all_units = _build_units(sham, rooted1, rooted2)
-        ms = _FakeMatchState()
+        enemy1 = _make_enemy(player_id="enemy1", x=7, y=5)
+        enemy2 = _make_enemy(player_id="enemy2", x=7, y=6)
+        all_units = _build_units(sham, enemy1, enemy2)
+        # Already have an active earthgrasp totem
+        ms = _FakeMatchState(totems=[{
+            "type": "earthgrasp_totem", "owner_id": "sham1",
+            "x": 7, "y": 5, "hp": 20, "max_hp": 20,
+            "effect_radius": 2, "duration_remaining": 3, "team": "team_1",
+        }])
 
         result = _totemic_support_skill_logic(
-            sham, [rooted1, rooted2], all_units, GRID_W, GRID_H, NO_OBSTACLES, match_state=ms,
+            sham, [enemy1, enemy2], all_units, GRID_W, GRID_H, NO_OBSTACLES, match_state=ms,
         )
-        # Already-rooted enemies score only 1 point each = 2 total,
-        # which is below the min_score threshold of 4 — so should NOT use earthgrasp
+        # Should NOT place another earthgrasp totem
         if result is not None:
             assert result.skill_id != "earthgrasp"
 

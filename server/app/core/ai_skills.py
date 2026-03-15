@@ -32,6 +32,20 @@ _HEAL_ALLY_THRESHOLD = 0.60    # Support heals allies below 60% HP
 _HEAL_SELF_OOC_THRESHOLD = 0.95   # Self-heal when below 95% HP out of combat
 _HEAL_ALLY_OOC_THRESHOLD = 0.95   # Heal allies below 95% HP out of combat
 
+# Reposition threshold — support repositions toward out-of-range allies above
+# this HP%.  Higher than _HEAL_ALLY_THRESHOLD so the support starts moving
+# BEFORE the ally drops into critical territory.
+_REPOSITION_ALLY_THRESHOLD = 0.80
+
+# Tank role set — classes the support should proactively stay near
+_TANK_ROLES: set[str] = {"tank", "retaliation_tank", "sustain_dps"}
+_SUPPORT_HEAL_RANGE = 3   # heal skill range — used for tank-proximity checks
+
+# Support role set — used to prevent supports from targeting each other as
+# movement anchors, which causes clumping and tile-swap oscillation when
+# multiple supports are in the same party.
+_SUPPORT_ROLES: set[str] = {"support", "offensive_support", "totemic_support"}
+
 # ---------------------------------------------------------------------------
 # Phase 8E-2: Scout AI — Shadow Step thresholds
 # ---------------------------------------------------------------------------
@@ -198,28 +212,9 @@ def _support_skill_logic(
             if not has_hot:
                 return _try_skill(ai, "prayer", target_x=c.position.x, target_y=c.position.y, target_id=c.player_id)
 
-    # --- Priority 4: Shield of Faith / Dark Pact / Profane Ward on ally ---
-    # Shield of Faith: standard support (Confessor) → buff lowest-HP ally with armor
-    sof_action = _try_skill(ai, "shield_of_faith")
-    if sof_action is not None:
-        sof_def = get_skill("shield_of_faith")
-        sof_range = sof_def["range"] if sof_def else 3
-        sof_candidates: list[PlayerState] = []
-        for unit in all_units.values():
-            if not unit.is_alive or unit.team != ai.team:
-                continue
-            # Don't stack — check for existing armor buff
-            has_sof = any(b.get("buff_id") == "shield_of_faith" for b in unit.active_buffs)
-            if has_sof:
-                continue
-            dist = _chebyshev(ai_pos, (unit.position.x, unit.position.y))
-            if dist <= sof_range:
-                sof_candidates.append(unit)
-        if sof_candidates:
-            # Prefer lowest HP% (most at-risk)
-            sof_candidates.sort(key=lambda u: u.hp / u.max_hp if u.max_hp > 0 else 1.0)
-            target = sof_candidates[0]
-            return _try_skill(ai, "shield_of_faith", target_x=target.position.x, target_y=target.position.y, target_id=target.player_id)
+    # --- Priority 4: Dark Pact / Profane Ward on ally ---
+    # NOTE: Shield of Faith moved AFTER reposition check (Priority 4.7)
+    # so it doesn't block repositioning when the tank needs healing.
 
     # Phase 18I: Dark Pact — buff highest-damage ally with +25% melee damage
     dp_action = _try_skill(ai, "dark_pact")
@@ -266,6 +261,73 @@ def _support_skill_logic(
             pw_candidates.sort(key=lambda u: u.hp / u.max_hp if u.max_hp > 0 else 1.0)
             target = pw_candidates[0]
             return _try_skill(ai, "profane_ward", target_x=target.position.x, target_y=target.position.y, target_id=target.player_id)
+
+    # --- Priority 4.5: Reposition check — skip offense if ally needs healing ---
+    # If an ally is injured (below reposition threshold) but out of heal/prayer
+    # range, return None so the stance handler can move the support toward them.
+    # Uses the higher _REPOSITION_ALLY_THRESHOLD (80%) so the support starts
+    # closing distance BEFORE allies become critical.
+    # Additionally, if the nearest tank-role ally is outside heal range,
+    # reposition proactively even if they're healthy — staying near the tank
+    # is more valuable than casting Exorcism from the back line.
+    if in_combat:
+        max_heal_range = 3  # heal range
+        prayer_def_check = get_skill("prayer")
+        if prayer_def_check:
+            max_heal_range = max(max_heal_range, prayer_def_check.get("range", 4))
+
+        # Check A: any ally below reposition threshold and out of heal range
+        for unit in all_units.values():
+            if not unit.is_alive or unit.player_id == ai.player_id or unit.team != ai.team:
+                continue
+            if unit.max_hp <= 0 or unit.hp / unit.max_hp >= _REPOSITION_ALLY_THRESHOLD:
+                continue
+            dist = _chebyshev(ai_pos, (unit.position.x, unit.position.y))
+            if dist > max_heal_range:
+                return None  # Ally below 80% and out of range — reposition
+
+        # Check B: tank-role ally far out of heal range — close distance proactively
+        # Softened: only suppress DPS when tank is well beyond heal range (> 5 tiles).
+        # At 4-5 tiles the support can still DPS while being close enough to
+        # reach healing range within 1-2 movement turns.  Previously this used
+        # _SUPPORT_HEAL_RANGE (3), which forced repositioning at 4+ tiles and
+        # caused the support to waste 64% of turns walking instead of casting.
+        _TANK_REPOSITION_THRESHOLD = 5  # only reposition when tank is > 5 tiles away
+        for unit in all_units.values():
+            if not unit.is_alive or unit.player_id == ai.player_id or unit.team != ai.team:
+                continue
+            unit_role = _get_role_for_class(unit.class_id) if unit.class_id else None
+            if unit_role not in _TANK_ROLES:
+                continue
+            dist = _chebyshev(ai_pos, (unit.position.x, unit.position.y))
+            if dist > _TANK_REPOSITION_THRESHOLD:
+                return None  # Tank far away — reposition instead of DPS
+
+    # --- Priority 4.7: Shield of Faith on ally (AFTER reposition check) ---
+    # Moved here from Priority 4 so SoF doesn't block repositioning when
+    # the tank is out of heal range and needs the Confessor to close distance.
+    sof_action = _try_skill(ai, "shield_of_faith")
+    if sof_action is not None:
+        sof_def = get_skill("shield_of_faith")
+        sof_range = sof_def["range"] if sof_def else 3
+        sof_candidates: list[PlayerState] = []
+        for unit in all_units.values():
+            if not unit.is_alive or unit.team != ai.team:
+                continue
+            if unit.player_id == ai.player_id:
+                continue  # Don't buff self — buff allies who are taking damage
+            # Don't stack — check for existing armor buff
+            has_sof = any(b.get("buff_id") == "shield_of_faith" for b in unit.active_buffs)
+            if has_sof:
+                continue
+            dist = _chebyshev(ai_pos, (unit.position.x, unit.position.y))
+            if dist <= sof_range:
+                sof_candidates.append(unit)
+        if sof_candidates:
+            # Prefer lowest HP% (most at-risk)
+            sof_candidates.sort(key=lambda u: u.hp / u.max_hp if u.max_hp > 0 else 1.0)
+            target = sof_candidates[0]
+            return _try_skill(ai, "shield_of_faith", target_x=target.position.x, target_y=target.position.y, target_id=target.player_id)
 
     # --- Priority 5 & 6: Exorcism (holy damage) ---
     exo_action = _try_skill(ai, "exorcism")
@@ -342,14 +404,16 @@ def _support_move_preference(
     Support units prefer to stay near allies rather than charging at enemies.
     Priority:
       1. Most injured ally (below 60% HP) — move toward them to heal next turn
-      2. Nearest ally — stay grouped, don't solo charge
-      3. None — no allies alive, fall through to default behavior
+      2. Tank-role ally outside heal range — close distance proactively
+      3. Nearest ally — stay grouped, don't solo charge
+      4. None — no allies alive, fall through to default behavior
 
     Returns (x, y) position of the preferred move target, or None.
     """
     ai_pos = (ai.position.x, ai.position.y)
     injured_allies: list[tuple[float, int, PlayerState]] = []
     all_allies: list[tuple[int, PlayerState]] = []
+    tank_allies: list[tuple[int, PlayerState]] = []
 
     for unit in all_units.values():
         if not unit.is_alive:
@@ -361,19 +425,40 @@ def _support_move_preference(
         dist = _chebyshev(ai_pos, (unit.position.x, unit.position.y))
         all_allies.append((dist, unit))
 
+        # Track tank-role allies separately
+        unit_role = _get_role_for_class(unit.class_id) if unit.class_id else None
+        if unit_role in _TANK_ROLES:
+            tank_allies.append((dist, unit))
+
         if unit.max_hp > 0 and (unit.hp / unit.max_hp) < _HEAL_ALLY_THRESHOLD:
             injured_allies.append((unit.hp / unit.max_hp, dist, unit))
 
-    # Prefer moving toward most injured ally
+    # Priority 1: move toward most injured ally
     if injured_allies:
         injured_allies.sort(key=lambda t: (t[0], t[1]))  # lowest HP%, then closest
         target = injured_allies[0][2]
         return (target.position.x, target.position.y)
 
-    # Otherwise, move toward nearest ally (stay grouped)
-    if all_allies:
-        all_allies.sort(key=lambda t: t[0])
-        target = all_allies[0][1]
+    # Priority 2: stay within heal range of the tank
+    # If a tank-role ally is beyond heal range, close distance toward them
+    # even when nobody is injured yet — proactive positioning.
+    if tank_allies:
+        tank_allies.sort(key=lambda t: t[0])  # nearest tank first
+        nearest_tank_dist, nearest_tank = tank_allies[0]
+        if nearest_tank_dist > _SUPPORT_HEAL_RANGE:
+            return (nearest_tank.position.x, nearest_tank.position.y)
+
+    # Priority 3: move toward nearest non-support ally (stay grouped)
+    # Filter out other support-role allies to prevent two supports from
+    # gravitating toward each other and clumping away from the frontline.
+    non_support_allies = [
+        (d, u) for d, u in all_allies
+        if _get_role_for_class(u.class_id) not in _SUPPORT_ROLES
+    ] if all_allies else []
+    preferred = non_support_allies if non_support_allies else all_allies
+    if preferred:
+        preferred.sort(key=lambda t: t[0])
+        target = preferred[0][1]
         return (target.position.x, target.position.y)
 
     return None
@@ -467,10 +552,15 @@ def _totemic_support_move_preference(
         target = injured_allies[0][2]
         return (target.position.x, target.position.y)
 
-    # Otherwise nearest ally
-    if all_allies:
-        all_allies.sort(key=lambda t: t[0])
-        target = all_allies[0][1]
+    # Otherwise nearest non-support ally — avoid clumping with other supports
+    non_support_allies = [
+        (d, u) for d, u in all_allies
+        if _get_role_for_class(u.class_id) not in _SUPPORT_ROLES
+    ] if all_allies else []
+    preferred = non_support_allies if non_support_allies else all_allies
+    if preferred:
+        preferred.sort(key=lambda t: t[0])
+        target = preferred[0][1]
         return (target.position.x, target.position.y)
 
     return None
@@ -1744,11 +1834,9 @@ _HEALING_TOTEM_OOC_HP_THRESHOLD = 0.90
 _SEARING_TOTEM_MIN_ENEMIES = 1
 # Soul Anchor: ally HP% below which we consider anchoring
 _SOUL_ANCHOR_HP_THRESHOLD = 0.30
-# Earthgrasp: minimum enemies in AoE to justify root
-# (Lowered from 2→1 so Shaman roots single targets too;
-#  scoring still prefers multi-target roots and searing totem combos)
+# Earthgrasp Totem: minimum enemies in radius to justify placement
 _EARTHGRASP_MIN_ENEMIES = 1
-# Earthgrasp radius (matches skill config)
+# Earthgrasp Totem radius (matches skill config)
 _EARTHGRASP_RADIUS = 2
 # Totem placement range (matches skill config)
 _TOTEM_PLACEMENT_RANGE = 4
@@ -1795,22 +1883,22 @@ def _totemic_support_skill_logic(
     obstacles: set[tuple[int, int]],
     match_state=None,
 ) -> PlayerAction | None:
-    """Totemic Support role (Shaman): dual totem placement, earthgrasp combos, soul anchor.
+    """Totemic Support role (Shaman): triple totem placement, earthgrasp combos, soul anchor.
 
     Phase 26D implementation.
 
     Priority:
-      1. Healing Totem:  1+ allies below 70% HP (or any below 40%) within range, no active healing totem → place near injured cluster
-      2. Searing Totem:  2+ enemies clustered, no active searing totem → place near enemy cluster (combo with root)
-      3. Earthgrasp:     2+ enemies within range, esp. near active searing totem → root them
-      4. Soul Anchor:    frontline ally (or self) below 30% HP, no active anchor → cheat-death insurance
-      5. Return None →   fall through to basic ranged attack/move logic
+      1. Healing Totem:    1+ allies below 70% HP (or any below 40%) within range, no active healing totem → place near injured cluster
+      2. Searing Totem:    2+ enemies clustered, no active searing totem → place near enemy cluster (combo with root)
+      3. Earthgrasp Totem: 1+ enemies within range, no active earthgrasp totem → place root zone near enemies
+      4. Soul Anchor:      frontline ally (or self) below 30% HP, no active anchor → cheat-death insurance
+      5. Return None →     fall through to basic ranged attack/move logic
 
     Design:
       - Shaman is a backline support — places totems strategically, never charges.
       - Healing Totem is prioritized when allies are hurt (sustain the party).
       - Searing Totem is placed near enemy clusters for passive damage.
-      - Earthgrasp combos with Searing Totem — root enemies in the damage zone.
+      - Earthgrasp Totem combos with Searing Totem — root enemies in the damage zone.
       - Soul Anchor is saved for frontline allies in real danger (below 30% HP).
       - Match state is needed to check for existing active totems.
     """
@@ -1823,6 +1911,7 @@ def _totemic_support_skill_logic(
 
     has_healing_totem = any(t["type"] == "healing_totem" for t in my_totems)
     has_searing_totem = any(t["type"] == "searing_totem" for t in my_totems)
+    has_earthgrasp_totem = any(t["type"] == "earthgrasp_totem" for t in my_totems)
 
     # Gather living allies (same team, not self)
     allies = [
@@ -1913,64 +2002,31 @@ def _totemic_support_skill_logic(
                         target_x=best_tile[0], target_y=best_tile[1],
                     )
 
-    # --- Priority 3: Earthgrasp (AoE root, esp. near active searing totem) ---
-    eg_action = _try_skill(ai, "earthgrasp")
-    if eg_action is not None:
-        eg_def = get_skill("earthgrasp")
-        eg_range = eg_def["range"] if eg_def else 4
-        eg_radius = eg_def["effects"][0].get("radius", _EARTHGRASP_RADIUS) if eg_def else _EARTHGRASP_RADIUS
+    # --- Priority 3: Earthgrasp Totem (place root totem near enemy cluster) ---
+    if not has_earthgrasp_totem:
+        eg_action = _try_skill(ai, "earthgrasp")
+        if eg_action is not None:
+            eg_def = get_skill("earthgrasp")
+            eg_radius = eg_def["effects"][0].get("effect_radius", _EARTHGRASP_RADIUS) if eg_def else _EARTHGRASP_RADIUS
 
-        # Find best ground tile to root the most enemies
-        best_tile = None
-        best_score = 0
-
-        # Get active searing totem position for combo scoring
-        searing_totem_pos = None
-        for t in my_totems:
-            if t["type"] == "searing_totem":
-                searing_totem_pos = (t["x"], t["y"])
-                break
-
-        for enemy in enemies:
-            ex, ey = enemy.position.x, enemy.position.y
-            dist_to_tile = _chebyshev(ai_pos, (ex, ey))
-            if dist_to_tile > eg_range:
-                continue
-            if not has_line_of_sight(ai.position.x, ai.position.y, ex, ey, obstacles):
-                continue
-            # Score this tile: count enemies in AoE radius
-            score = 0
-            for e in enemies:
-                e_dist = _chebyshev((e.position.x, e.position.y), (ex, ey))
-                if e_dist <= eg_radius:
-                    # Already rooted enemies gain less value
-                    is_already_rooted = any(b.get("stat") == "rooted" for b in e.active_buffs)
-                    if is_already_rooted:
-                        score += 1  # Still counts but less valuable
-                    else:
-                        score += 4  # Un-rooted enemy in range
-                        # Bonus: enemy near searing totem (combo!)
-                        if searing_totem_pos:
-                            st_dist = _chebyshev((e.position.x, e.position.y), searing_totem_pos)
-                            if st_dist <= _TOTEM_EFFECT_RADIUS:
-                                score += 3  # Combo bonus — rooted in damage zone
-                        # Bonus: melee enemy (root is stronger vs melee)
-                        if getattr(e, "ranged_range", 0) == 0:
-                            score += 2
-
-            if score > best_score:
-                best_score = score
-                best_tile = (ex, ey)
-
-        # Use Earthgrasp if we can root 1+ enemies; scoring already
-        # prioritizes multi-target roots and searing totem combos.
-        # Single un-rooted enemy = 4 pts, with searing combo = 7 pts,
-        # melee bonus = 6 pts.  Threshold of 4 lets single-target roots
-        # fire while already-rooted-only scenarios (1 pt each) still fail.
-        min_score = _EARTHGRASP_MIN_ENEMIES * 4  # 1 enemy × 4 points = 4
-        if best_tile and best_score >= min_score:
-            return _try_skill(ai, "earthgrasp",
-                             target_x=best_tile[0], target_y=best_tile[1])
+            # Count enemies within placement range
+            reachable_enemies = [
+                e for e in enemies
+                if _chebyshev(ai_pos, (e.position.x, e.position.y)) <= _TOTEM_PLACEMENT_RANGE + _TOTEM_EFFECT_RADIUS
+            ]
+            if len(reachable_enemies) >= _EARTHGRASP_MIN_ENEMIES:
+                best_tile = _find_best_totem_tile(
+                    ai, allies + [ai], enemies, obstacles, all_units,
+                    _TOTEM_PLACEMENT_RANGE, _TOTEM_EFFECT_RADIUS,
+                    totem_mode="searing",  # Score based on enemy proximity (same logic)
+                    match_state=match_state,
+                    grid_width=grid_width, grid_height=grid_height,
+                )
+                if best_tile:
+                    return _try_skill(
+                        ai, "earthgrasp",
+                        target_x=best_tile[0], target_y=best_tile[1],
+                    )
 
     # --- Priority 4: Soul Anchor (cheat-death on endangered frontline ally) ---
     sa_action = _try_skill(ai, "soul_anchor")

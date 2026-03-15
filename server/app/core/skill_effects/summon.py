@@ -17,14 +17,16 @@ def resolve_place_totem(
 ) -> ActionResult:
     """Place a totem on an empty tile. Creates a persistent ground entity.
 
-    Shared handler for both Healing Totem and Searing Totem — dispatches based
-    on the ``totem_type`` field in the skill effect definition.
+    Shared handler for Healing Totem, Searing Totem, and Earthgrasp Totem —
+    dispatches based on the ``totem_type`` field in the skill effect definition.
 
     Healing Totem: heals all allies within radius each turn.
     Searing Totem: damages all enemies within radius each turn.
+    Earthgrasp Totem: roots all enemies within radius each turn.
     Totems are destructible (have HP). Max 1 of each type per Shaman.
 
     Phase 26B: Shaman — Healing Totem / Searing Totem.
+    Phase 26G: Earthgrasp Totem conversion.
     """
     from app.core.combat import is_in_range
     import uuid
@@ -35,6 +37,7 @@ def resolve_place_totem(
     totem_hp = effect.get("totem_hp", 20)
     heal_per_turn = effect.get("heal_per_turn", 0)
     damage_per_turn = effect.get("damage_per_turn", 0)
+    root_duration = effect.get("root_duration", 0)
     effect_radius = effect.get("effect_radius", 2)
     duration_turns = effect.get("duration_turns", 4)
     skill_range = skill_def.get("range", 4)
@@ -115,6 +118,7 @@ def resolve_place_totem(
         "max_hp": totem_hp,
         "heal_per_turn": heal_per_turn,
         "damage_per_turn": damage_per_turn,
+        "root_duration": root_duration,
         "effect_radius": effect_radius,
         "duration_remaining": duration_turns,
         "team": player.team,

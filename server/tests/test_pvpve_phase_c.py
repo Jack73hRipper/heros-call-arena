@@ -108,20 +108,30 @@ class TestAssignPVPVETeams:
         assert host.team == "a"
 
     def test_2_team_round_robin(self):
-        """2 humans → one per team (A and B)."""
+        """2 humans on different lobby teams → one per team (A and B)."""
         match, human_ids = _create_pvpve_match(team_count=2, num_humans=2)
+        # Simulate lobby: move player 2 to team B before match start
+        other_id = [h for h in human_ids if h != match.host_id][0]
+        from app.core.match_manager import change_player_team
+        change_player_team(match.match_id, other_id, "b")
+
         _assign_pvpve_teams(match.match_id)
 
         assert len(match.team_a) >= 1
         assert len(match.team_b) >= 1
         # Host on A, other on B
         assert match.host_id in match.team_a
-        other_id = [h for h in human_ids if h != match.host_id][0]
         assert other_id in match.team_b
 
     def test_4_team_assignment(self):
-        """4 humans, 4 teams → one per team."""
+        """4 humans on different lobby teams → one per team."""
         match, human_ids = _create_pvpve_match(team_count=4, num_humans=4)
+        # Simulate lobby: assign each human to a different team
+        from app.core.match_manager import change_player_team
+        team_keys = ["a", "b", "c", "d"]
+        for i, pid in enumerate(human_ids):
+            change_player_team(match.match_id, pid, team_keys[i])
+
         _assign_pvpve_teams(match.match_id)
 
         teams_with_players = [
@@ -133,6 +143,12 @@ class TestAssignPVPVETeams:
     def test_3_team_no_team_d(self):
         """3 teams → team_d should be empty."""
         match, human_ids = _create_pvpve_match(team_count=3, num_humans=3)
+        # Simulate lobby: assign humans to teams a, b, c
+        from app.core.match_manager import change_player_team
+        team_keys = ["a", "b", "c"]
+        for i, pid in enumerate(human_ids):
+            change_player_team(match.match_id, pid, team_keys[i])
+
         _assign_pvpve_teams(match.match_id)
 
         assert len(match.team_d) == 0
@@ -153,6 +169,11 @@ class TestAssignPVPVETeams:
     def test_team_assignment_sets_player_team_field(self):
         """Player state .team field is updated on assignment."""
         match, human_ids = _create_pvpve_match(team_count=2, num_humans=2)
+        # Simulate lobby: move player 2 to team B
+        other_id = [h for h in human_ids if h != match.host_id][0]
+        from app.core.match_manager import change_player_team
+        change_player_team(match.match_id, other_id, "b")
+
         _assign_pvpve_teams(match.match_id)
 
         players = get_match_players(match.match_id)
@@ -160,6 +181,20 @@ class TestAssignPVPVETeams:
             assert players[pid].team == "a"
         for pid in match.team_b:
             assert players[pid].team == "b"
+
+    def test_lobby_team_respected(self):
+        """2 humans both on team A in lobby → both stay on team A after assignment."""
+        match, human_ids = _create_pvpve_match(team_count=2, num_humans=2)
+        # Both players default to team A from join_match — don't change them
+        _assign_pvpve_teams(match.match_id)
+
+        assert len(match.team_a) == 2
+        assert len(match.team_b) == 0
+        for pid in human_ids:
+            assert pid in match.team_a
+        players = get_match_players(match.match_id)
+        for pid in human_ids:
+            assert players[pid].team == "a"
 
     def test_clears_old_team_lists(self):
         """Team lists are cleared before reassignment."""

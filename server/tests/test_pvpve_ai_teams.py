@@ -246,12 +246,20 @@ class TestSpawnPVPVEAITeams:
         assert len(pvpve_ai) == 1
 
     def test_ai_teams_skip_human_occupied_teams(self):
-        """AI teams are placed on non-human team slots only."""
-        # 2 humans with 4 teams → humans on A and B, AI should get C and D
-        match, _ = _create_pvpve_match(
+        """AI teams are placed on non-human team slots only.
+
+        Uses actual player.team values (not index-based round-robin).
+        2 humans on different teams (A, B) → AI fills C and D.
+        """
+        match, human_ids = _create_pvpve_match(
             team_count=4, ai_team_count=2, ai_team_sizes=[2, 2],
             num_humans=2
         )
+        # Move player 2 to team B so humans occupy A and B
+        other_id = [h for h in human_ids if h != match.host_id][0]
+        from app.core.match_manager import change_player_team
+        change_player_team(match.match_id, other_id, "b")
+
         _spawn_pvpve_ai_teams(match.match_id)
 
         players = get_match_players(match.match_id)
@@ -264,6 +272,28 @@ class TestSpawnPVPVEAITeams:
         # AI should be on C and D
         team_c_ai = [pid for pid in players if pid.startswith("pvpve-ai-c-")]
         team_d_ai = [pid for pid in players if pid.startswith("pvpve-ai-d-")]
+        assert len(team_c_ai) == 2
+        assert len(team_d_ai) == 2
+
+    def test_ai_teams_fill_all_non_human_slots_when_same_team(self):
+        """When all humans are on team A, AI fills B, C, D."""
+        match, _ = _create_pvpve_match(
+            team_count=4, ai_team_count=3, ai_team_sizes=[2, 2, 2],
+            num_humans=2
+        )
+        # Both humans default to team A — don't move them
+        _spawn_pvpve_ai_teams(match.match_id)
+
+        players = get_match_players(match.match_id)
+        # No AI on team A (humans are there)
+        team_a_ai = [pid for pid in players if pid.startswith("pvpve-ai-a-")]
+        assert len(team_a_ai) == 0
+
+        # AI should fill B, C, and D
+        team_b_ai = [pid for pid in players if pid.startswith("pvpve-ai-b-")]
+        team_c_ai = [pid for pid in players if pid.startswith("pvpve-ai-c-")]
+        team_d_ai = [pid for pid in players if pid.startswith("pvpve-ai-d-")]
+        assert len(team_b_ai) == 2
         assert len(team_c_ai) == 2
         assert len(team_d_ai) == 2
 
