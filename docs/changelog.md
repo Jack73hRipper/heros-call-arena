@@ -5,23 +5,23 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [v0.1.5g] - 2026-03-14 - Earthgrasp Totem Conversion & Lobby Improvements
+## [v0.1.6] - 2026-03-14 - AI & Team Fixes
 
-### Changed — `server/configs/skills_config.json`, `server/app/core/skill_effects/summon.py`, `server/app/core/turn_phases/buffs_phase.py`
+**Summary:** Six bug fixes and AI improvements targeting PVPVE team assignment, totem targeting, Confessor AI, and multi-support positioning. Rolls up v0.1.5–v0.1.5f changes into a published release.
 
-- **Earthgrasp → Earthgrasp Totem** — Converted from an instant AoE root skill to a persistent ground totem. Now places a destructible totem (20 HP, 4-turn duration) that roots all enemies within 2 tiles each turn for 1 turn. Totem uses the shared `place_totem` handler. Buff tick phase handles `earthgrasp_totem` type with root refresh (no stacking). Cooldown remains 7 turns.
+### Bug Fixes
+- **PVPVE lobby team ignored** — `_assign_pvpve_teams()` no longer force-distributes players round-robin; respects lobby-chosen team (v0.1.5)
+- **PVPVE index-based team detection** — `_spawn_pvpve_ai_teams()` now reads actual `player.team` instead of using list index (v0.1.5b)
+- **Hero ally hardcoded to Team A** — `_spawn_hero_ally()` now reads owner's team field (v0.1.5b)
+- **Ground-placement skills hijacked by auto-target** — Added `isPlacementSkill()` check to bypass auto-select for totem skills (v0.1.5c)
+- **Shield of Faith self-cast** — Excluded caster from SoF candidate loop; moved SoF to Priority 4.7 after reposition check (v0.1.5e)
+- **Multi-support clumping** — Support roles now exclude other supports from nearest-ally movement fallback (v0.1.5f)
 
-### Changed — `client/src/canvas/overlayRenderer.js`
-
-- **Earthgrasp Totem visuals** — Added distinct earthy-gold color palette (`#8B6914` base) for Earthgrasp Totems on the canvas, differentiating them from Healing (green) and Searing (red) totems. Affects glow, radius circle, and totem body colors.
-
-### Changed — `client/src/context/reducers/lobbyReducer.js`
-
-- **Lobby player data** — `PLAYER_JOINED` action now destructures and stores `team`, `unit_type`, and `class_id` fields from the payload, defaulting to `'a'`, `'human'`, and `null` respectively.
-
-### Changed — `server/app/core/hero_manager.py`
-
-- **Debug logging** — Added `[HeroSelect]` print statements throughout `select_heroes()` for troubleshooting hero selection failures in PVPVE matches.
+### AI Improvements
+- **Confessor tank-aware positioning** — Proactively moves toward tank-role allies when outside heal range (v0.1.5d)
+- **Reposition threshold raised 60% → 80%** — Confessor starts closing distance earlier (v0.1.5d)
+- **Check B tank drift threshold** — Introduced `_TANK_REPOSITION_THRESHOLD = 5` so Exorcism fires at medium range (v0.1.5e)
+- **Support anti-clump anchoring** — `_support_move_preference()` and `_totemic_support_move_preference()` prefer non-support allies as anchors (v0.1.5f)
 
 ---
 
