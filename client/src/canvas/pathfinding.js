@@ -354,7 +354,8 @@ export function generateSmartActions(
   }
 
   // 3. Unopened chest → loot intent (path to adjacent + loot)
-  if (chestStates && chestStates[targetKey] === 'unopened') {
+  const _chestState = chestStates && chestStates[targetKey];
+  if (_chestState === 'unopened' || (_chestState && _chestState.startsWith('unopened:'))) {
     // Phase 7D-1: Pass doorSet so A* can route through doors to reach chests in other rooms
     const path = aStar(startX, startY, targetX, targetY, gridWidth, gridHeight, obstacleSet, occupied, doorSet);
     if (path === null) return null;
@@ -714,7 +715,8 @@ export function computeHoverPreview(
 
   // Don't preview if target is a hard obstacle (not a door, not an enemy, not a chest)
   const isTargetDoor = doorStates && doorStates[targetKey] === 'closed';
-  const isTargetChest = chestStates && chestStates[targetKey] === 'unopened';
+  const _chestVal = chestStates && chestStates[targetKey];
+  const isTargetChest = _chestVal === 'unopened' || (_chestVal && _chestVal.startsWith('unopened:'));
   const occupant = occupiedMap[targetKey];
   const isTargetEnemy = occupant && occupant.pid !== playerId && occupant.team !== myTeam;
   if (obstacleSet.has(targetKey) && !isTargetDoor && !isTargetEnemy && !isTargetChest) return null;

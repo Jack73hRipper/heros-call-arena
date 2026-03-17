@@ -33,13 +33,12 @@ export default function MinimapPanel({
 }) {
   const canvasRef = useRef(null);
 
-  // Compute tile size to keep minimap a uniform fixed size regardless of map dimensions.
+  // Compute tile size to fill the right panel width (~270px usable).
+  // Use the panel width to determine optimal tile size so the minimap fills the space.
   const tileSize = useMemo(() => {
     const longest = Math.max(gridWidth, gridHeight);
-    if (minimapMode === 'expanded') {
-      return Math.max(2, Math.floor(380 / longest));
-    }
-    return Math.max(2, Math.floor(192 / longest));
+    const panelWidth = minimapMode === 'expanded' ? 380 : 270;
+    return Math.max(2, Math.floor(panelWidth / longest));
   }, [minimapMode, gridWidth, gridHeight]);
 
   // Compute canvas dimensions

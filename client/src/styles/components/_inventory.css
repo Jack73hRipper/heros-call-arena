@@ -19,10 +19,12 @@
   border: 1px solid var(--border-medium);
   border-radius: 4px;
   padding: 0.8rem 1rem;
-  min-width: 340px;
-  max-width: 440px;
+  min-width: 420px;
+  max-width: 560px;
+  width: max-content;
   max-height: 80vh;
   overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: var(--shadow-lg);
   position: relative;
   z-index: 501;
@@ -51,22 +53,22 @@
 
 @media (min-width: 501px) and (max-width: 768px) {
   .inventory-overlay {
-    min-width: 320px;
+    min-width: 400px;
     max-width: 95vw;
   }
 }
 
 @media (min-width: 769px) and (max-width: 1200px) {
   .inventory-overlay {
-    min-width: 340px;
-    max-width: 440px;
+    min-width: 420px;
+    max-width: 560px;
   }
 }
 
 @media (min-width: 1201px) {
   .inventory-overlay {
-    min-width: 360px;
-    max-width: 480px;
+    min-width: 440px;
+    max-width: 600px;
   }
 }
 
@@ -248,6 +250,8 @@
   font-family: var(--font-heading);
   font-size: 0.7rem;
   letter-spacing: 0.06em;
+  flex-wrap: wrap;
+  overflow: hidden;
 }
 
 .context-item {
@@ -413,6 +417,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.2rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .character-buff-pill {
@@ -624,6 +630,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .equip-slot-item-name.rarity-uncommon,
@@ -1462,6 +1469,7 @@
   cursor: pointer;
   min-width: 0;
   overflow: hidden;
+  max-width: 100%;
 }
 
 .bag-transfer-btn {

@@ -3338,5 +3338,403 @@
       "alpha": { "start": 1, "end": 0, "easing": "easeOutQuad" },
       "blendMode": "lighter"
     }
+  },
+  {
+    "name": "seal-judgment-brand",
+    "version": 1,
+    "duration": 1.0,
+    "loop": false,
+    "tags": ["holy", "offensive", "debuff", "inquisitor"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 45,
+      "spawnShape": "ring",
+      "spawnRadius": 10,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 15, "max": 50 },
+      "gravity": { "x": 0, "y": -20 },
+      "friction": 0.04
+    },
+    "particle": {
+      "lifetime": { "min": 0.4, "max": 0.9 },
+      "shape": "star",
+      "size": {
+        "start": { "min": 3, "max": 6 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutCubic"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.25, "color": "#ffeeaa" },
+          { "stop": 0.6, "color": "#ff9933" },
+          { "stop": 1, "color": "#663300" }
+        ]
+      },
+      "alpha": { "start": 1, "end": 0, "easing": "easeOutCubic" },
+      "rotation": { "speed": { "min": -4, "max": 4 } },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "seal-judgment-runes",
+    "version": 1,
+    "duration": 1.2,
+    "loop": false,
+    "tags": ["holy", "offensive", "debuff", "inquisitor"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 20,
+      "spawnShape": "ring",
+      "spawnRadius": 16,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 5, "max": 15 },
+      "gravity": { "x": 0, "y": -10 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.6, "max": 1.1 },
+      "shape": "diamond",
+      "size": {
+        "start": { "min": 2, "max": 4 },
+        "end": { "min": 4, "max": 7 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.4, "color": "#ffcc66" },
+          { "stop": 0.8, "color": "#cc8833" },
+          { "stop": 1, "color": "#442200" }
+        ]
+      },
+      "alpha": { "start": 0.8, "end": 0, "easing": "easeOutQuad" },
+      "rotation": { "speed": { "min": -2, "max": 2 } },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "seal-judgment-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": ["holy", "projectile", "trail", "inquisitor"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 60,
+      "spawnShape": "circle",
+      "spawnRadius": 2,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 5, "max": 15 },
+      "gravity": { "x": 0, "y": 0 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.1, "max": 0.3 },
+      "shape": "diamond",
+      "size": {
+        "start": { "min": 2, "max": 4 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.5, "color": "#ffcc44" },
+          { "stop": 1, "color": "#885500" }
+        ]
+      },
+      "alpha": { "start": 0.9, "end": 0, "easing": "easeOutCubic" },
+      "trail": { "length": 5 },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "blink-arrival",
+    "version": 1,
+    "duration": 0.6,
+    "loop": false,
+    "tags": ["arcane", "teleport", "mage"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 50,
+      "spawnShape": "ring",
+      "spawnRadius": 8,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 40, "max": 120 },
+      "gravity": { "x": 0, "y": -15 },
+      "friction": 0.06
+    },
+    "particle": {
+      "lifetime": { "min": 0.2, "max": 0.5 },
+      "shape": "star",
+      "size": {
+        "start": { "min": 3, "max": 6 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutCubic"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.3, "color": "#aaccff" },
+          { "stop": 0.7, "color": "#5588ee" },
+          { "stop": 1, "color": "#223388" }
+        ]
+      },
+      "alpha": { "start": 1, "end": 0, "easing": "easeOutCubic" },
+      "rotation": { "speed": { "min": -6, "max": 6 } },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "blink-departure",
+    "version": 1,
+    "duration": 0.4,
+    "loop": false,
+    "tags": ["arcane", "teleport", "mage"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 35,
+      "spawnShape": "circle",
+      "spawnRadius": 12,
+      "angle": { "min": 240, "max": 300 },
+      "speed": { "min": 30, "max": 80 },
+      "gravity": { "x": 0, "y": -40 },
+      "friction": 0.05
+    },
+    "particle": {
+      "lifetime": { "min": 0.15, "max": 0.35 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 5 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#aaccff" },
+          { "stop": 0.5, "color": "#5588ee" },
+          { "stop": 1, "color": "#112266" }
+        ]
+      },
+      "alpha": { "start": 0.9, "end": 0, "easing": "easeOutCubic" },
+      "trail": { "length": 4 },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "bone-shield-cast",
+    "version": 1,
+    "duration": 0.8,
+    "loop": false,
+    "tags": ["dark", "defensive", "skeleton"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 30,
+      "spawnShape": "ring",
+      "spawnRadius": 14,
+      "angle": { "min": 230, "max": 310 },
+      "speed": { "min": 15, "max": 45 },
+      "gravity": { "x": 0, "y": -10 },
+      "friction": 0.03
+    },
+    "particle": {
+      "lifetime": { "min": 0.3, "max": 0.7 },
+      "shape": "triangle",
+      "size": {
+        "start": { "min": 2, "max": 5 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#eeddcc" },
+          { "stop": 0.3, "color": "#ccbbaa" },
+          { "stop": 0.7, "color": "#887766" },
+          { "stop": 1, "color": "#332211" }
+        ]
+      },
+      "alpha": { "start": 0.9, "end": 0, "easing": "easeOutCubic" },
+      "rotation": { "speed": { "min": -5, "max": 5 } },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "dark-pact-cast",
+    "version": 1,
+    "duration": 0.9,
+    "loop": false,
+    "tags": ["dark", "buff", "dark_priest"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 35,
+      "spawnShape": "ring",
+      "spawnRadius": 10,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 10, "max": 35 },
+      "gravity": { "x": 0, "y": -15 },
+      "friction": 0.04
+    },
+    "particle": {
+      "lifetime": { "min": 0.4, "max": 0.8 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 5 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#dd88ff" },
+          { "stop": 0.3, "color": "#aa44cc" },
+          { "stop": 0.7, "color": "#662288" },
+          { "stop": 1, "color": "#220044" }
+        ]
+      },
+      "alpha": { "start": 0.9, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "dark-pact-link",
+    "version": 1,
+    "duration": 0.7,
+    "loop": false,
+    "tags": ["dark", "buff", "dark_priest"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 15,
+      "spawnShape": "circle",
+      "spawnRadius": 6,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 20, "max": 50 },
+      "gravity": { "x": 0, "y": -25 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.3, "max": 0.6 },
+      "shape": "diamond",
+      "size": {
+        "start": { "min": 1, "max": 3 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#cc66ff" },
+          { "stop": 0.5, "color": "#8833cc" },
+          { "stop": 1, "color": "#330066" }
+        ]
+      },
+      "alpha": { "start": 0.8, "end": 0, "easing": "easeOutCubic" },
+      "trail": { "length": 4 },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "profane-ward-cast",
+    "version": 1,
+    "duration": 0.8,
+    "loop": false,
+    "tags": ["dark", "defensive", "acolyte"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 30,
+      "spawnShape": "ring",
+      "spawnRadius": 12,
+      "angle": { "min": 240, "max": 300 },
+      "speed": { "min": 10, "max": 30 },
+      "gravity": { "x": 0, "y": -12 },
+      "friction": 0.03
+    },
+    "particle": {
+      "lifetime": { "min": 0.4, "max": 0.8 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 4 },
+        "end": { "min": 3, "max": 6 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ccaadd" },
+          { "stop": 0.3, "color": "#9966aa" },
+          { "stop": 0.7, "color": "#663377" },
+          { "stop": 1, "color": "#221133" }
+        ]
+      },
+      "alpha": { "start": 0.7, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "enrage-ignite",
+    "version": 1,
+    "duration": 1.0,
+    "loop": false,
+    "tags": ["fire", "buff", "demon"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 55,
+      "spawnShape": "circle",
+      "spawnRadius": 6,
+      "angle": { "min": 240, "max": 300 },
+      "speed": { "min": 40, "max": 120 },
+      "gravity": { "x": 0, "y": -50 },
+      "friction": 0.04
+    },
+    "particle": {
+      "lifetime": { "min": 0.3, "max": 0.7 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 3, "max": 7 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutCubic"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.2, "color": "#ffcc33" },
+          { "stop": 0.5, "color": "#ff4400" },
+          { "stop": 0.8, "color": "#cc0000" },
+          { "stop": 1, "color": "#440000" }
+        ]
+      },
+      "alpha": { "start": 1, "end": 0, "easing": "easeOutQuad" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "frenzy-aura-pulse",
+    "version": 1,
+    "duration": 0.8,
+    "loop": false,
+    "tags": ["fire", "buff", "imp"],
+    "emitter": {
+      "burstMode": true,
+      "burstCount": 25,
+      "spawnShape": "ring",
+      "spawnRadius": 18,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 20, "max": 60 },
+      "gravity": { "x": 0, "y": 0 },
+      "friction": 0.05
+    },
+    "particle": {
+      "lifetime": { "min": 0.3, "max": 0.6 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 4 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffaa44" },
+          { "stop": 0.4, "color": "#ff6622" },
+          { "stop": 0.8, "color": "#cc2200" },
+          { "stop": 1, "color": "#441100" }
+        ]
+      },
+      "alpha": { "start": 0.8, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
   }
 ]

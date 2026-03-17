@@ -52,6 +52,9 @@ const DUNGEON_THEMES = [
   { id: 'forgotten_cellar',    label: '🪨 Forgotten Cellar' },
   { id: 'pale_ossuary',        label: '🦴 Pale Ossuary' },
   { id: 'silent_vault',        label: '🔇 Silent Vault' },
+  { id: 'fungal_grotto',       label: '🍄 Fungal Grotto' },
+  { id: 'frozen_crypt',        label: '❄️ Frozen Crypt' },
+  { id: 'cursed_shrine',       label: '🕷️ Cursed Shrine' },
 ];
 
 /**

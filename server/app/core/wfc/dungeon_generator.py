@@ -24,6 +24,7 @@ from app.core.wfc.map_exporter import export_to_game_map
 from app.core.wfc.presets import get_preset_modules, SIZE_PRESETS
 from app.core.wfc.dungeon_styles import (
     apply_weight_overrides,
+    get_archetype_overrides,
     get_decorator_overrides,
     select_style_for_floor,
     VALID_STYLES,
@@ -578,6 +579,10 @@ def generate_dungeon_floor(
         style_decorator = get_decorator_overrides(active_style)
         if style_decorator:
             decorator_settings.update(style_decorator)
+        # Merge archetype overrides (shrine/library/prison/flooded chances)
+        style_archetypes = get_archetype_overrides(active_style)
+        if style_archetypes:
+            decorator_settings["archetype_overrides"] = style_archetypes
         # PVPVE mode: inject decorator settings AFTER style overrides so they
         # can't be clobbered (corner spawns, center boss, no stairs are mandatory)
         if config.pvpve_mode:

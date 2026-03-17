@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useGameState, useGameDispatch } from '../../context/GameStateContext';
+import { useGameState } from '../../context/GameStateContext';
 import HeroDetailPanel from './HeroDetailPanel';
 import HeroSprite from './HeroSprite';
 import { formatStatBonuses } from '../../utils/itemUtils';
@@ -7,20 +7,17 @@ import { formatStatBonuses } from '../../utils/itemUtils';
 /**
  * HeroRoster — displays owned heroes with stats and gear.
  * Use the "Manage Gear" button to open the gear management panel.
- * "Select for Dungeon" button toggles hero selection (up to 4).
  *
  * Phase 4E-3: Consumes stable 4E-1 REST API roster data.
  * Phase 5 Feature 7: Click-to-manage gear integration.
- * Multi-hero: Supports selecting up to 4 heroes for dungeon runs.
+ * Phase L5: Removed "Select for Dungeon" button — hero selection now happens in MatchLobby PartyAssembly.
  */
-export default function HeroRoster({ availableClasses, onSelectHero }) {
+export default function HeroRoster({ availableClasses }) {
   const gameState = useGameState();
-  const dispatch = useGameDispatch();
   const [inspectedHeroId, setInspectedHeroId] = useState(null);
   const [tooltip, setTooltip] = useState(null); // { item, x, y }
 
   const heroes = gameState.heroes || [];
-  const selectedHeroIds = gameState.selectedHeroIds || [];
   const aliveHeroes = heroes.filter(h => h.is_alive);
   const fallenHeroes = heroes.filter(h => !h.is_alive);
 
@@ -46,17 +43,9 @@ export default function HeroRoster({ availableClasses, onSelectHero }) {
     setTooltip(null);
   };
 
-  const handleSelect = (heroId) => {
-    dispatch({ type: 'SELECT_HERO', payload: heroId });
-    if (onSelectHero) onSelectHero(heroId);
-  };
-
   return (
     <div className="hero-roster">
       <h3>Hero Roster ({aliveHeroes.length} / 10)</h3>
-      <p className="party-counter" style={{ visibility: selectedHeroIds.length > 0 ? 'visible' : 'hidden' }}>
-        Party: {selectedHeroIds.length}/4 selected
-      </p>
 
       {aliveHeroes.length === 0 && fallenHeroes.length === 0 && (
         <p className="town-placeholder">No heroes yet. Visit the Hiring Hall to recruit!</p>
@@ -71,17 +60,13 @@ export default function HeroRoster({ availableClasses, onSelectHero }) {
         <div className="roster-hero-grid">
           {aliveHeroes.map((hero) => {
             const classDef = getClassDef(hero.class_id);
-            const isSelected = selectedHeroIds.includes(hero.hero_id);
-            const selectionIndex = selectedHeroIds.indexOf(hero.hero_id);
             const equipItems = getEquipmentSummary(hero.equipment);
             const invCount = (hero.inventory || []).length;
-            const canSelect = isSelected || selectedHeroIds.length < 4;
 
             return (
               <div
                 key={hero.hero_id}
-                className={`roster-hero-card ${isSelected ? 'roster-hero-selected' : ''}`}
-                style={{ borderColor: isSelected ? (classDef.color || '#e0a040') : undefined }}
+                className="roster-hero-card"
               >
                 <div className="hero-card-header">
                   <HeroSprite
@@ -96,7 +81,6 @@ export default function HeroRoster({ availableClasses, onSelectHero }) {
                       {classDef.name || hero.class_id}
                     </span>
                   </div>
-                  {isSelected && <span className="selected-badge">✓ #{selectionIndex + 1}</span>}
                 </div>
 
                 <div className="hero-card-stats">
@@ -155,13 +139,6 @@ export default function HeroRoster({ availableClasses, onSelectHero }) {
                     onClick={() => setInspectedHeroId(hero.hero_id)}
                   >
                     Manage Gear
-                  </button>
-                  <button
-                    className={`btn-select-hero ${isSelected ? 'btn-selected' : ''} ${!canSelect ? 'btn-disabled' : ''}`}
-                    onClick={() => { if (canSelect) handleSelect(hero.hero_id); }}
-                    disabled={!canSelect}
-                  >
-                    {isSelected ? `✓ Selected (#${selectionIndex + 1})` : selectedHeroIds.length >= 4 ? 'Party Full (4/4)' : 'Select for Dungeon'}
                   </button>
                 </div>
               </div>
@@ -243,7 +220,6 @@ export default function HeroRoster({ availableClasses, onSelectHero }) {
             hero={inspectedHero}
             availableClasses={availableClasses}
             onClose={() => setInspectedHeroId(null)}
-            onSelectHero={onSelectHero}
           />
         );
       })()}

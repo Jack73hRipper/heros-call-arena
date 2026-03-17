@@ -25,11 +25,43 @@ from app.core.match_manager import (
     _kill_tracker,
     _combat_stats,
     _match_timeline,
+    _controlled_hero_map,
 )
 
 
-MAX_PARTY_SIZE = 4  # Maximum heroes a single player can bring
+MAX_PARTY_SIZE = 5  # Maximum heroes a single player can bring (L2: raised from 4 to 5)
 MAX_DUNGEON_PARTY = 5  # Total cap for humans + hero allies in a dungeon
+MAX_TEAM_SIZE = 5  # Phase L3: Maximum total units per team (humans + AI hero allies)
+
+
+def get_team_slots_remaining(match_id: str, team: str) -> int:
+    """Phase L3: Return how many unit slots remain on a specific team (cap = 5).
+
+    Counts all human players + hero allies currently assigned to that team.
+    Returns remaining slots (0 means team is full).
+    """
+    players = _player_states.get(match_id, {})
+    team_units = sum(
+        1 for p in players.values()
+        if p.team == team and p.unit_type in ("human", "ai")
+    )
+    return max(0, MAX_TEAM_SIZE - team_units)
+
+
+def get_all_team_slots(match_id: str) -> dict[str, dict]:
+    """Phase L3: Return slot info for all teams in a match.
+
+    Returns dict like: { "a": {"used": 3, "max": 5, "remaining": 2}, ... }
+    """
+    players = _player_states.get(match_id, {})
+    slots = {}
+    for team_key in ("a", "b", "c", "d"):
+        used = sum(
+            1 for p in players.values()
+            if p.team == team_key and p.unit_type in ("human", "ai")
+        )
+        slots[team_key] = {"used": used, "max": MAX_TEAM_SIZE, "remaining": max(0, MAX_TEAM_SIZE - used)}
+    return slots
 
 
 def get_dungeon_slots_available(match_id: str) -> int:
@@ -170,6 +202,154 @@ def select_hero(match_id: str, player_id: str, hero_id: str) -> dict | None:
     return None
 
 
+def select_roster_heroes(
+    match_id: str, player_id: str, hero_ids: list[str], controlled_hero_id: str
+) -> dict | None:
+    """Phase L2: Select heroes from roster for the new Match Lobby flow.
+
+    Unlike select_heroes() (dungeon flow), this function:
+    - Validates heroes exist, are alive, and belong to the player
+    - Designates one hero as the "controlled" hero (player plays as this hero)
+    - Remaining selected heroes become AI allies on the player's team
+    - Applies the controlled hero's class/stats/equipment to the human PlayerState
+    - Stores the controlled_hero_id in _controlled_hero_map and MatchConfig
+
+    Returns a dict with hero info on success, or None on failure.
+    """
+    print(f"[RosterSelect] select_roster_heroes: match={match_id}, player={player_id}, heroes={hero_ids}, controlled={controlled_hero_id}")
+
+    match = _active_matches.get(match_id)
+    if not match or match.status != MatchStatus.WAITING:
+        print(f"[RosterSelect] FAIL: match not found or not WAITING")
+        return None
+
+    players = _player_states.get(match_id, {})
+    player = players.get(player_id)
+    if not player:
+        print(f"[RosterSelect] FAIL: player not found")
+        return None
+
+    if not hero_ids or len(hero_ids) == 0:
+        print(f"[RosterSelect] FAIL: no hero_ids provided")
+        return None
+
+    # Enforce max party size (5)
+    if len(hero_ids) > MAX_PARTY_SIZE:
+        hero_ids = hero_ids[:MAX_PARTY_SIZE]
+
+    # Controlled hero must be in the selected list
+    if controlled_hero_id not in hero_ids:
+        print(f"[RosterSelect] FAIL: controlled_hero_id not in hero_ids")
+        return None
+
+    # Deduplicate while preserving order
+    seen = set()
+    unique_ids = []
+    for hid in hero_ids:
+        if hid not in seen:
+            seen.add(hid)
+            unique_ids.append(hid)
+    hero_ids = unique_ids
+
+    # Load player profile to validate hero ownership
+    from app.services.persistence import load_or_create_profile
+    profile = load_or_create_profile(player.username)
+
+    # Validate all heroes
+    validated_heroes = []
+    controlled_hero = None
+    for hero_id in hero_ids:
+        hero = None
+        for h in profile.heroes:
+            if h.hero_id == hero_id:
+                hero = h
+                break
+        if hero is None:
+            print(f"[RosterSelect] FAIL: hero_id='{hero_id}' not found in profile")
+            return None
+        if not hero.is_alive:
+            print(f"[RosterSelect] FAIL: hero_id='{hero_id}' ({hero.name}) is dead")
+            return None
+        validated_heroes.append(hero)
+        if hero_id == controlled_hero_id:
+            controlled_hero = hero
+
+    if controlled_hero is None:
+        print(f"[RosterSelect] FAIL: controlled hero not found after validation")
+        return None
+
+    print(f"[RosterSelect] Validated {len(validated_heroes)} heroes, controlled={controlled_hero.name}")
+
+    # Remove any existing hero allies for this player (re-selection)
+    _remove_hero_ally(match_id, player_id)
+
+    # Phase L3: Enforce per-team cap of 5 across multiple humans
+    player_team = player.team or "a"
+    team_remaining = get_team_slots_remaining(match_id, player_team)
+    # The controlled hero occupies the player's existing slot (already counted),
+    # so only ally heroes (non-controlled) need new slots.
+    ally_count = len(hero_ids) - 1  # subtract controlled hero
+    if ally_count > team_remaining:
+        # Trim to fit: keep controlled hero + as many allies as slots allow
+        allowed_allies = team_remaining
+        trimmed = [controlled_hero_id]
+        for hid in hero_ids:
+            if hid != controlled_hero_id and len(trimmed) - 1 < allowed_allies:
+                trimmed.append(hid)
+        hero_ids = trimmed
+        print(f"[RosterSelect] Team {player_team} cap enforced: trimmed to {len(hero_ids)} heroes ({allowed_allies} allies)")
+
+    # Store hero selection for tracking
+    if match_id not in _hero_selections:
+        _hero_selections[match_id] = {}
+    _hero_selections[match_id][player_id] = hero_ids
+
+    # Store controlled hero mapping
+    if match_id not in _controlled_hero_map:
+        _controlled_hero_map[match_id] = {}
+    _controlled_hero_map[match_id][player_id] = controlled_hero_id
+    match.config.controlled_hero_ids[player_id] = controlled_hero_id
+
+    # Apply controlled hero's stats/class/equipment to the human PlayerState
+    player.hero_id = controlled_hero_id
+    player.class_id = controlled_hero.class_id
+    player.sprite_variant = getattr(controlled_hero, 'sprite_variant', 1)
+    player.hp = controlled_hero.stats.hp
+    player.max_hp = controlled_hero.stats.max_hp
+    player.attack_damage = controlled_hero.stats.attack_damage
+    player.ranged_damage = controlled_hero.stats.ranged_damage
+    player.armor = controlled_hero.stats.armor
+    player.vision_range = controlled_hero.stats.vision_range
+    player.ranged_range = controlled_hero.stats.ranged_range
+    player.equipment = dict(controlled_hero.equipment) if controlled_hero.equipment else {}
+    player.inventory = list(controlled_hero.inventory) if controlled_hero.inventory else []
+    _apply_hero_equipment_bonuses(player)
+
+    # Spawn non-controlled heroes as AI allies
+    ally_heroes = [h for h in validated_heroes if h.hero_id != controlled_hero_id]
+    for hero in ally_heroes:
+        _spawn_hero_ally(match_id, player_id, player.username, hero)
+
+    # Build result
+    heroes_info = []
+    for hero in validated_heroes:
+        heroes_info.append({
+            "hero_id": hero.hero_id,
+            "hero_name": hero.name,
+            "class_id": hero.class_id,
+            "stats": hero.stats.model_dump(),
+            "is_controlled": hero.hero_id == controlled_hero_id,
+        })
+
+    return {
+        "player_id": player_id,
+        "hero_ids": hero_ids,
+        "controlled_hero_id": controlled_hero_id,
+        "heroes": heroes_info,
+        "team_slots": get_all_team_slots(match_id),
+    }
+
+
 def _spawn_hero_ally(match_id: str, owner_player_id: str, owner_username: str, hero) -> str:
     """Spawn a persistent hero as an AI ally unit on the owner's team.
 
@@ -273,8 +453,10 @@ def _remove_hero_ally(match_id: str, owner_player_id: str) -> None:
             match.player_ids.remove(ai_id)
         if ai_id in match.ai_ids:
             match.ai_ids.remove(ai_id)
-        if ai_id in match.team_a:
-            match.team_a.remove(ai_id)
+        # Phase L3 fix: remove from ALL team lists, not just team_a
+        for team_list in (match.team_a, match.team_b, match.team_c, match.team_d):
+            if ai_id in team_list:
+                team_list.remove(ai_id)
 
 
 def get_hero_selection(match_id: str, player_id: str) -> list[str] | None:

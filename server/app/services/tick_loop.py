@@ -555,6 +555,7 @@ async def match_tick(match_id: str) -> None:
                     "is_dungeon": True,
                     "visible_tiles": list(team_fov_new) if team_fov_new else [],
                     "stairs_unlocked": False,
+                    "dungeon_rooms": floor_data.get("dungeon_rooms", []),
                 }
                 if match.theme_id:
                     floor_payload["theme_id"] = match.theme_id

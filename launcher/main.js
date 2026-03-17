@@ -49,6 +49,7 @@ function createWindow() {
     frame: false,              // Custom title bar
     transparent: false,
     title: "Hero's Call Arena Launcher",
+    icon: path.join(__dirname, 'assets', 'icon.ico'),
     backgroundColor: '#06060b',
     show: false,
     webPreferences: {

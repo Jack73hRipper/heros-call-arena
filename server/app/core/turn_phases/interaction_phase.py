@@ -117,7 +117,10 @@ def _resolve_loot(
         # Case 1: Chest interaction — target is an unopened chest tile
         if action.target_x is not None and action.target_y is not None and chest_states is not None:
             chest_key = f"{action.target_x},{action.target_y}"
-            if chest_states.get(chest_key) == "unopened":
+            chest_state = chest_states.get(chest_key, "")
+            # Parse tier from state format "unopened:tier" (backward compat: plain "unopened")
+            is_unopened = chest_state == "unopened" or chest_state.startswith("unopened:")
+            if is_unopened:
                 # Must be adjacent (8-directional / Chebyshev)
                 if not _is_chebyshev_adjacent(player.position, action.target_x, action.target_y):
                     results.append(ActionResult(
@@ -129,15 +132,21 @@ def _resolve_loot(
                     ))
                     continue
 
+                # Extract chest tier for loot generation
+                chest_tier = "default"
+                if ":" in chest_state:
+                    chest_tier = chest_state.split(":", 1)[1]
+
                 # Generate chest loot — Phase 16B: use affix generator
                 # Get best magic_find_pct from the looting player
                 player_mf = getattr(player, 'magic_find_pct', 0.0)
                 chest_items = generate_chest_loot(
-                    "default",
+                    chest_tier,
                     floor_number=floor_number,
                     magic_find_pct=player_mf,
                 )
-                chest_states[chest_key] = "opened"
+                # Mark opened, preserving the tier for client rendering
+                chest_states[chest_key] = f"opened:{chest_tier}" if chest_tier != "default" else "opened"
 
                 # Add to player inventory, overflow to ground
                 added_items = []

@@ -23,6 +23,13 @@ router = APIRouter()
 _maps_dir = Path(__file__).resolve().parent.parent.parent / "configs" / "maps"
 _wfc_modules_dir = Path(__file__).resolve().parent.parent.parent / "configs" / "wfc-modules"
 
+# Phase L5: Deprecated maps kept on disk but hidden from API/UI
+_HIDDEN_MAPS = {
+    'open_arena', 'open_arena_small', 'open_arena_large',
+    'maze', 'maze_large', 'islands', 'islands_large',
+    'dungeon_test', 'open_catacombs', 'test_xl', 'wfc_dungeon_6x6_test',
+}
+
 
 class MapInfo(BaseModel):
     """Summary info for a map, returned by the list endpoint."""
@@ -54,6 +61,8 @@ async def list_maps():
             with open(map_file, "r") as f:
                 data = json.load(f)
             map_id = map_file.stem
+            if map_id in _HIDDEN_MAPS:
+                continue
             maps.append(MapInfo(
                 id=map_id,
                 name=data.get("name", map_id),

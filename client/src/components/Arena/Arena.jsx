@@ -17,6 +17,8 @@ import PartyPanel from '../PartyPanel/PartyPanel';
 import EnemyPanel from '../EnemyPanel/EnemyPanel';
 import CombatMeter from '../CombatMeter/CombatMeter';
 import MinimapPanel from '../MinimapPanel/MinimapPanel';
+import PlayerVitals from '../PlayerVitals/PlayerVitals';
+import PartyVitals from '../PlayerVitals/PartyVitals';
 import EscapeMenu from '../EscapeMenu/EscapeMenu';
 import LootNotification from '../HUD/LootNotification';
 import EliteKillNotification from '../HUD/EliteKillNotification';
@@ -84,6 +86,8 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
     groundZones,
     // Theme system: server-assigned dungeon theme
     themeId,
+    // Phase 21F: Room archetype data for room props rendering
+    dungeonRooms,
   } = gameState;
 
   // Active unit: either the controlled party member or the player themselves
@@ -381,6 +385,8 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
     totems: totems || [],
     // Phase 23: Ground zones
     groundZones: groundZones || [],
+    // Phase 21F: Room data for props rendering
+    dungeonRooms: dungeonRooms || [],
   };
 
   // Dirty flag: set true whenever React state changes that affect rendering.
@@ -457,6 +463,8 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
           totems: p.totems,
           // Phase 23: Ground zones
           groundZones: p.groundZones,
+          // Phase 21F: Room data for props rendering
+          dungeonRooms: p.dungeonRooms,
           // Pass interpolated positions for smooth movement
           interpolatedPositions: lerpPositions,
         });
@@ -564,6 +572,12 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
         <CombatMeter />
       </div>
 
+      {/* Player & Party Vitals — between action bar and viewport */}
+      <div className="arena-vitals-row">
+        <PlayerVitals />
+        <PartyVitals />
+      </div>
+
       {/* Left panel — Combat Log */}
       <div className="arena-left-panel">
         <CombatLog />
@@ -638,7 +652,10 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
             </div>
           )}
         </div>
-        {/* Minimap — overlays top-right of canvas area */}
+      </div>
+
+      {/* Right panel — Minimap + HUD + Party + Enemies */}
+      <div className="arena-right-panel">
         <MinimapPanel
           minimapMode={minimapMode}
           gridWidth={gridWidth}
@@ -663,10 +680,6 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
           isPvpve={matchType === 'pvpve'}
           bossRoom={gameState.bossRoom || null}
         />
-      </div>
-
-      {/* Right panel — HUD + Party + Enemies */}
-      <div className="arena-right-panel">
         <HUD turnTimer={turnTimer} />
         <PartyPanel sendAction={sendAction} />
         <EnemyPanel sendAction={sendAction} />

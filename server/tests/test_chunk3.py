@@ -76,7 +76,8 @@ def test_ai_in_match_state():
 
 def test_host_can_change_map():
     """Host can change map in lobby."""
-    config = MatchConfig(match_type=MatchType.PVP)
+    # Phase L4: PVP mode only allows arena_classic, so use MIXED for map change test
+    config = MatchConfig(match_type=MatchType.MIXED)
     match, host = create_match("Host", config)
     mid = match.match_id
 

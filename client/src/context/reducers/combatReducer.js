@@ -47,6 +47,8 @@ export function combatReducer(state, action) {
         doorStates: action.payload.door_states || {},
         chestStates: action.payload.chest_states || {},
         themeId: action.payload.theme_id || null,
+        // Phase 21F: Room archetype data for room props rendering
+        dungeonRooms: action.payload.dungeon_rooms || [],
         // Phase 27E: Boss room metadata for minimap
         bossRoom: action.payload.boss_room || null,
         // Initial FOV from server (prevents full-map flash)
@@ -61,7 +63,7 @@ export function combatReducer(state, action) {
         // Reset party control state
         activeUnitId: null,
         selectedUnitIds: [],
-        partyMembers: [],
+        partyMembers: action.payload.party || [],
         partyQueues: {},
         partyInventories: {},
         // Reset auto-target state
@@ -278,6 +280,7 @@ export function combatReducer(state, action) {
         groundItems: {},
         isDungeon: true,
         themeId: fa.theme_id || state.themeId,
+        dungeonRooms: fa.dungeon_rooms || [],
         currentFloor: fa.floor_number || state.currentFloor + 1,
         stairsUnlocked: fa.stairs_unlocked || false,
         visibleTiles: newFov,

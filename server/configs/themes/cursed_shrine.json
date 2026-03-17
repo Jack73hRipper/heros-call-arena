@@ -1,0 +1,45 @@
+{
+  "id": "cursed_shrine",
+  "name": "Cursed Shrine",
+  "description": "A defiled sacred space drenched in crimson. Blood rituals have corrupted the stone, and cursed gold glows faintly in the dark.",
+  "palette": {
+    "primary": "#1a0a10",
+    "secondary": "#2a1520",
+    "accent": "#cc4430",
+    "mortar": "#200a12",
+    "highlight": "#ffaa30",
+    "floor": "#3a2028",
+    "floorAlt": "#3d232b",
+    "grout": "#100810",
+    "furniture": "#4a2520",
+    "metal": "#5a3a38"
+  },
+  "wall": {
+    "style": "blood_stone",
+    "blockRows": 2,
+    "blockCols": 2,
+    "mortarWidth": 2
+  },
+  "floor": {
+    "style": "ritual_tile",
+    "slabGrid": 3,
+    "groutWidth": 1
+  },
+  "corridor": {
+    "style": "worn_carpet",
+    "carpetColor": "rgba(120, 30, 30, 0.12)"
+  },
+  "fog": {
+    "exploredTint": "rgba(25, 8, 12, 0.6)",
+    "unexploredColor": "#0a0408"
+  },
+  "ambient": {
+    "vignetteStrength": 0.16,
+    "vignetteColor": "rgba(100, 20, 15, 0.10)"
+  },
+  "edge": {
+    "style": "blood_seep",
+    "intensity": 0.6,
+    "width": 4
+  }
+}

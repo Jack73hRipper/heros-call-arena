@@ -35,6 +35,8 @@ export const THEMES = {
       floor:      '#3e2d3d',   // Floor base — notably lighter purple-stone for contrast
       floorAlt:   '#413040',   // Floor variation — very close to floor, subtle shift
       grout:      '#120a10',   // Floor grout lines
+      furniture:  '#4a3520',   // Dark rotting wood — coffins, shelves, barrels
+      metal:      '#6a5540',   // Tarnished bronze — chains, brackets, brazier bowls
     },
     wall: {
       style: 'cracked_stone',
@@ -71,6 +73,16 @@ export const THEMES = {
       wallOverlayChance: 0.0,
       overlayTypes: [],
     },
+    edge: {
+      style: 'crumble',
+      intensity: 0.6,
+      width: 4,
+    },
+    propAffinities: {
+      pillar: 0.6, rubble: 0.4, brazier: 0.8, coffin: 1.0,
+      bookshelf: 0.0, altar: 0.7, puddle: 0.0, barrel: 0.2,
+      chains: 0.8, banner: 0.3,
+    },
   },
 
   // ═══════════════════════════════════════════════════════
@@ -92,6 +104,8 @@ export const THEMES = {
       floor:      '#443a2c',   // Ash-dusted floor — notably lighter warm brown
       floorAlt:   '#473d2f',   // Floor variation — very close to floor, subtle shift
       grout:      '#121010',   // Dark grout
+      furniture:  '#3a2a1a',   // Charred blackened wood
+      metal:      '#5a5048',   // Heat-blackened iron
     },
     wall: {
       style: 'scorched_brick',
@@ -130,6 +144,16 @@ export const THEMES = {
       wallOverlayChance: 0.0,
       overlayTypes: [],
     },
+    edge: {
+      style: 'scorch',
+      intensity: 0.7,
+      width: 4,
+    },
+    propAffinities: {
+      pillar: 0.3, rubble: 0.6, brazier: 0.8, coffin: 0.0,
+      bookshelf: 0.0, altar: 0.4, puddle: 0.0, barrel: 0.6,
+      chains: 0.2, banner: 0.2,
+    },
   },
 
   // ═══════════════════════════════════════════════════════
@@ -151,6 +175,8 @@ export const THEMES = {
       floor:      '#24394f',   // Water-logged floor — notably lighter blue-green
       floorAlt:   '#273c52',   // Floor variation — very close to floor, subtle shift
       grout:      '#080e14',   // Deep grout
+      furniture:  '#3a4a3a',   // Waterlogged grey-green wood
+      metal:      '#4a5a55',   // Corroded verdigris patina
     },
     wall: {
       style: 'mossy_stone',
@@ -190,6 +216,16 @@ export const THEMES = {
       wallOverlayChance: 0.0,
       overlayTypes: [],
     },
+    edge: {
+      style: 'moss_creep',
+      intensity: 0.5,
+      width: 3,
+    },
+    propAffinities: {
+      pillar: 0.7, rubble: 0.3, brazier: 0.4, coffin: 0.0,
+      bookshelf: 0.0, altar: 0.5, puddle: 1.0, barrel: 0.1,
+      chains: 0.6, banner: 0.1,
+    },
   },
 
   // ═══════════════════════════════════════════════════════
@@ -211,6 +247,8 @@ export const THEMES = {
       floor:      '#3d3555',   // Marble floor — notably lighter purple-grey
       floorAlt:   '#403858',   // Floor variation — very close to floor, subtle shift
       grout:      '#100e18',   // Dark grout
+      furniture:  '#4a3830',   // Old dark oak
+      metal:      '#7a6a48',   // Old brass
     },
     wall: {
       style: 'carved_stone',
@@ -251,6 +289,16 @@ export const THEMES = {
       wallOverlayChance: 0.0,
       overlayTypes: [],
     },
+    edge: {
+      style: 'rubble_strip',
+      intensity: 0.5,
+      width: 4,
+    },
+    propAffinities: {
+      pillar: 0.5, rubble: 0.3, brazier: 0.5, coffin: 0.2,
+      bookshelf: 0.8, altar: 0.8, puddle: 0.1, barrel: 0.1,
+      chains: 0.2, banner: 1.0,
+    },
   },
 
   // ═══════════════════════════════════════════════════════
@@ -272,6 +320,8 @@ export const THEMES = {
       floor:      '#3e3e48',   // Metal floor — notably lighter steel tone
       floorAlt:   '#41414b',   // Floor variation — very close to floor, subtle shift
       grout:      '#0a0a10',   // Deep gap between grates
+      furniture:  '#3a3028',   // Oil-stained industrial wood
+      metal:      '#6a6a72',   // Dull iron
     },
     wall: {
       style: 'iron_plate',
@@ -311,6 +361,16 @@ export const THEMES = {
       wallOverlayChance: 0.0,
       overlayTypes: [],
     },
+    edge: {
+      style: 'rust_drip',
+      intensity: 0.6,
+      width: 3,
+    },
+    propAffinities: {
+      pillar: 0.7, rubble: 0.3, brazier: 0.5, coffin: 0.1,
+      bookshelf: 0.1, altar: 0.3, puddle: 0.2, barrel: 0.7,
+      chains: 0.9, banner: 0.2,
+    },
   },
 
   // ═══════════════════════════════════════════════════════
@@ -332,24 +392,16 @@ export const THEMES = {
       floor:      '#443c30',   // Earthy floor — notably lighter warm brown
       floorAlt:   '#473f33',   // Floor variation — very close to floor, subtle shift
       grout:      '#100e0a',   // Dark grout
+      furniture:  '#5a4a35',   // Rough pine
+      metal:      '#5a4a3a',   // Rusty iron
     },
     wall: {
-      style: 'cracked_stone',
+      style: 'rough_hewn',
       brickRows: 3,
-      brickCols: 2,
       mortarWidth: 2,
-      crackDensity: 0.03,       // Almost no cracks — clean stone
-      bleedChance: 0.0,         // No mortar bleed — just plain joints
-      edgeVignette: false,       // No vignette — flatter, cleaner
     },
     floor: {
-      style: 'flagstone',
-      slabGrid: 2,
-      groutWidth: 1,
-      stainChance: 0.0,         // No random stain circles
-      stainColor: 'rgba(60, 50, 40, 0.12)',
-      debrisChance: 0.0,        // No debris
-      debrisColor: '#3a3530',
+      style: 'packed_earth',
     },
     corridor: {
       style: 'worn_stone',
@@ -366,6 +418,16 @@ export const THEMES = {
     details: {
       wallOverlayChance: 0.0,
       overlayTypes: [],
+    },
+    edge: {
+      style: 'dust_drift',
+      intensity: 0.4,
+      width: 2,
+    },
+    propAffinities: {
+      pillar: 0.4, rubble: 0.7, brazier: 0.7, coffin: 0.0,
+      bookshelf: 0.0, altar: 0.3, puddle: 0.1, barrel: 0.9,
+      chains: 0.3, banner: 0.1,
     },
   },
 
@@ -388,29 +450,18 @@ export const THEMES = {
       floor:      '#4d4856',   // Cool floor — notably lighter violet-grey
       floorAlt:   '#504b59',   // Floor variation — very close to floor, subtle shift
       grout:      '#141218',   // Dark cool grout
+      furniture:  '#4a4540',   // Bleached whitewashed wood
+      metal:      '#6a6570',   // Silver-grey
     },
     wall: {
-      style: 'carved_stone',
-      brickRows: 2,
-      brickCols: 2,
-      mortarWidth: 2,
-      crackDensity: 0.02,       // Nearly pristine
-      iconChance: 0.0,          // No icons
-      crumbleChance: 0.01,      // Barely any wear
-      goldTrimChance: 0.0,      // No gold — austerity
-      edgeVignette: false,
+      style: 'bone_stack',
+      boneRows: 4,
+      seamWidth: 1,
     },
     floor: {
-      style: 'cracked_marble',
-      slabGrid: 2,              // Larger slabs = less grid noise
+      style: 'polished_slab',
+      slabGrid: 2,
       groutWidth: 1,
-      crackChance: 0.0,         // No random crack lines
-      veinChance: 0.0,          // No random vein lines
-      rootChance: 0.0,          // No roots
-      stainChance: 0.0,         // No random stains
-      stainColor: 'rgba(40, 35, 45, 0.10)',
-      debrisChance: 0.0,        // No debris
-      debrisColor: '#302830',
     },
     corridor: {
       style: 'worn_carpet',
@@ -427,6 +478,16 @@ export const THEMES = {
     details: {
       wallOverlayChance: 0.0,
       overlayTypes: [],
+    },
+    edge: {
+      style: 'clean_edge',
+      intensity: 0.3,
+      width: 1,
+    },
+    propAffinities: {
+      pillar: 0.6, rubble: 0.2, brazier: 0.4, coffin: 0.9,
+      bookshelf: 0.1, altar: 0.8, puddle: 0.1, barrel: 0.2,
+      chains: 0.5, banner: 0.3,
     },
   },
 
@@ -449,28 +510,19 @@ export const THEMES = {
       floor:      '#2e3c50',   // Slate floor — notably lighter cool blue
       floorAlt:   '#313f53',   // Floor variation — very close to floor, subtle shift
       grout:      '#0a0e15',   // Deep dark grout
+      furniture:  '#3a3040',   // Dark mahogany
+      metal:      '#5a6068',   // Cold blued steel
     },
     wall: {
-      style: 'mossy_stone',
-      brickRows: 2,
-      brickCols: 2,
-      mortarWidth: 2,
-      crackDensity: 0.02,       // Almost no cracks
-      mossChance: 0.0,          // No moss — dry sealed vault
-      waterStainChance: 0.0,    // No random drip lines
-      veinChance: 0.0,          // No bioluminescence
-      edgeVignette: false,
+      style: 'ashlar_block',
+      blockRows: 3,
+      blockCols: 2,
+      mortarWidth: 1,
     },
     floor: {
-      style: 'flooded',
-      slabGrid: 2,
+      style: 'dusty_tile',
+      slabGrid: 3,
       groutWidth: 1,
-      waterDepth: 0.04,         // Barely a sheen — not actually flooded
-      rippleChance: 0.0,        // No ripple circles — still surface
-      stainChance: 0.0,         // No random stains
-      stainColor: 'rgba(30, 40, 55, 0.10)',
-      debrisChance: 0.0,        // No debris
-      debrisColor: '#1a2530',
     },
     corridor: {
       style: 'shallow_water',
@@ -487,6 +539,175 @@ export const THEMES = {
     details: {
       wallOverlayChance: 0.0,
       overlayTypes: [],
+    },
+    edge: {
+      style: 'seam_line',
+      intensity: 0.4,
+      width: 1,
+    },
+    propAffinities: {
+      pillar: 0.8, rubble: 0.2, brazier: 0.3, coffin: 0.1,
+      bookshelf: 0.9, altar: 0.5, puddle: 0.0, barrel: 0.3,
+      chains: 0.2, banner: 0.7,
+    },
+  },
+
+  // ─── Phase 21E — New Themes ─────────────────────────────
+
+  fungal_grotto: {
+    id: 'fungal_grotto',
+    name: 'Fungal Grotto',
+    description: 'An alien cave network pulsing with bioluminescent fungal colonies. Mycelium tendrils creep across every surface.',
+    palette: {
+      primary:    '#121a10',
+      secondary:  '#1e2a18',
+      accent:     '#5aaa40',
+      mortar:     '#0e1a0c',
+      highlight:  '#80ee60',
+      floor:      '#2a3822',
+      floorAlt:   '#2d3b25',
+      grout:      '#0a100a',
+      furniture:  '#3a4520',   // Fungus-covered rotting wood
+      metal:      '#4a6a45',   // Corroded copper
+    },
+    wall: {
+      style: 'fungal_growth',
+    },
+    floor: {
+      style: 'mycelium_mat',
+    },
+    corridor: {
+      style: 'shallow_water',
+      waterDepth: 0.06,
+    },
+    fog: {
+      exploredTint: 'rgba(10, 20, 8, 0.55)',
+      unexploredColor: '#060a05',
+    },
+    ambient: {
+      vignetteStrength: 0.12,
+      vignetteColor: 'rgba(30, 60, 15, 0.08)',
+    },
+    details: {
+      wallOverlayChance: 0.0,
+      overlayTypes: [],
+    },
+    edge: {
+      style: 'spore_creep',
+      intensity: 0.7,
+      width: 5,
+    },
+    propAffinities: {
+      pillar: 0.4, rubble: 0.5, brazier: 0.3, coffin: 0.0,
+      bookshelf: 0.0, altar: 0.4, puddle: 0.8, barrel: 0.3,
+      chains: 0.2, banner: 0.0,
+    },
+  },
+
+  frozen_crypt: {
+    id: 'frozen_crypt',
+    name: 'Frozen Crypt',
+    description: 'A crystalline ice tomb sealed in perpetual frost. Cracked ice over ancient stone, deadly cold radiating from every surface.',
+    palette: {
+      primary:    '#0a1020',
+      secondary:  '#182838',
+      accent:     '#4488cc',
+      mortar:     '#101828',
+      highlight:  '#88ccff',
+      floor:      '#253a4e',
+      floorAlt:   '#283d51',
+      grout:      '#080e18',
+      furniture:  '#4a4848',   // Frost-pale birch
+      metal:      '#6a7a88',   // Frost-covered steel
+    },
+    wall: {
+      style: 'ice_crystal',
+    },
+    floor: {
+      style: 'frozen_stone',
+      slabGrid: 2,
+      groutWidth: 1,
+    },
+    corridor: {
+      style: 'shallow_water',
+      waterDepth: 0.08,
+    },
+    fog: {
+      exploredTint: 'rgba(8, 12, 25, 0.55)',
+      unexploredColor: '#040610',
+    },
+    ambient: {
+      vignetteStrength: 0.10,
+      vignetteColor: 'rgba(20, 40, 80, 0.06)',
+    },
+    details: {
+      wallOverlayChance: 0.0,
+      overlayTypes: [],
+    },
+    edge: {
+      style: 'frost_creep',
+      intensity: 0.8,
+      width: 6,
+    },
+    propAffinities: {
+      pillar: 0.7, rubble: 0.4, brazier: 0.2, coffin: 0.3,
+      bookshelf: 0.0, altar: 0.5, puddle: 0.0, barrel: 0.2,
+      chains: 0.6, banner: 0.3,
+    },
+  },
+
+  cursed_shrine: {
+    id: 'cursed_shrine',
+    name: 'Cursed Shrine',
+    description: 'A defiled sacred space drenched in crimson. Blood rituals have corrupted the stone, and cursed gold glows faintly in the dark.',
+    palette: {
+      primary:    '#1a0a10',
+      secondary:  '#2a1520',
+      accent:     '#cc4430',
+      mortar:     '#200a12',
+      highlight:  '#ffaa30',
+      floor:      '#3a2028',
+      floorAlt:   '#3d232b',
+      grout:      '#100810',
+      furniture:  '#4a2520',   // Blood-stained dark wood
+      metal:      '#5a3a38',   // Dark iron with red patina
+    },
+    wall: {
+      style: 'blood_stone',
+      blockRows: 2,
+      blockCols: 2,
+      mortarWidth: 2,
+    },
+    floor: {
+      style: 'ritual_tile',
+      slabGrid: 3,
+      groutWidth: 1,
+    },
+    corridor: {
+      style: 'worn_carpet',
+      carpetColor: 'rgba(120, 30, 30, 0.12)',
+    },
+    fog: {
+      exploredTint: 'rgba(25, 8, 12, 0.6)',
+      unexploredColor: '#0a0408',
+    },
+    ambient: {
+      vignetteStrength: 0.16,
+      vignetteColor: 'rgba(100, 20, 15, 0.10)',
+    },
+    details: {
+      wallOverlayChance: 0.0,
+      overlayTypes: [],
+    },
+    edge: {
+      style: 'blood_seep',
+      intensity: 0.6,
+      width: 4,
+    },
+    propAffinities: {
+      pillar: 0.5, rubble: 0.3, brazier: 0.8, coffin: 0.4,
+      bookshelf: 0.2, altar: 1.0, puddle: 0.0, barrel: 0.1,
+      chains: 0.7, banner: 0.9,
     },
   },
 };

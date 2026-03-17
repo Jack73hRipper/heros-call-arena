@@ -72,6 +72,17 @@ export const initialState = {
   lobbyError: null,            // Error message from server (displayed in lobby)
   bank: [],                    // Account-wide bank storage (max 20 items)
 
+  // Phase L1: New Match Lobby state
+  lobbyMode: 'pvp',            // Active mode tab: 'pvp' | 'pve' | 'pvpve'
+  lobbySelectedMap: null,      // Selected map ID within current mode tab
+
+  // Phase L2: Party Assembly state
+  controlledHeroId: null,        // Local player's controlled hero ID
+  selectedRosterHeroes: [],      // Local player's selected hero IDs in the lobby
+
+  // Phase L3: Team slot tracking
+  teamSlots: null,               // { a: {used, max, remaining}, b: {...}, ... } or null
+
   // Phase 12C: Portal Scroll state
   portal: null,        // { active, x, y, turns_remaining, owner_id } or null
   channeling: null,    // { player_id, action, turns_remaining, tile_x, tile_y } or null
@@ -129,7 +140,9 @@ const LOBBY_ACTIONS = new Set([
   'SET_USERNAME', 'JOIN_MATCH', 'PLAYER_JOINED', 'PLAYER_READY',
   'PLAYER_DISCONNECTED', 'TEAM_CHANGED', 'CLASS_CHANGED',
   'SET_AVAILABLE_CLASSES', 'CHAT_MESSAGE', 'CONFIG_CHANGED',
-  'SET_LOBBY_ERROR', 'HERO_SELECTED',
+  'SET_LOBBY_ERROR', 'HERO_SELECTED', 'HERO_ROSTER_UPDATED',
+  'SET_CONTROLLED_HERO', 'SET_SELECTED_ROSTER_HEROES',
+  'SET_LOBBY_MODE', 'SET_LOBBY_SELECTED_MAP',
 ]);
 
 const COMBAT_ACTIONS = new Set([

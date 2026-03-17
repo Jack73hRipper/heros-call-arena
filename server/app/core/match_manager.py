@@ -14,7 +14,7 @@ import uuid
 from app.config import settings
 from app.models.match import MatchState, MatchStatus, MatchConfig, MatchSummary, MatchType
 from app.models.player import PlayerState, Position, apply_class_stats, get_all_classes, apply_enemy_stats, get_enemy_definition
-from app.core.map_loader import load_map, get_spawn_points, get_doors, get_chests, get_tiles, is_dungeon_map, get_obstacles, get_obstacles_with_door_states, get_room_definitions, get_wave_spawner_config, register_runtime_map, unregister_runtime_map, get_stairs
+from app.core.map_loader import load_map, get_spawn_points, get_doors, get_chests, get_tiles, is_dungeon_map, get_obstacles, get_obstacles_with_door_states, get_room_definitions, get_wave_spawner_config, register_runtime_map, unregister_runtime_map, get_stairs, get_map_dimensions
 from app.core.spawn import assign_spawns
 from app.core.ai_behavior import set_room_bounds, clear_room_bounds
 from app.core.combat import get_combat_config
@@ -58,6 +58,10 @@ _combat_stats: dict[str, dict[str, dict[str, int]]] = {}
 
 # Per-match turn-by-turn timeline for Arena Analyst: match_id -> [turn_entry, ...]
 _match_timeline: dict[str, list[dict]] = {}
+
+# Phase L2: Controlled hero mapping — match_id -> {player_id -> hero_id}
+# Tracks which hero each human player has designated as their controlled unit
+_controlled_hero_map: dict[str, dict[str, str]] = {}
 
 # Wave spawner state: match_id -> {current_wave, total_waves, wave_config, spawning_active}
 _wave_state: dict[str, dict] = {}
@@ -912,6 +916,12 @@ def get_match_start_payload(match_id: str) -> dict | None:
         payload["stairs_unlocked"] = match.stairs_unlocked
         if match.theme_id:
             payload["theme_id"] = match.theme_id
+        # Phase 21F: Include room archetype + bounds for client-side room props rendering
+        rooms = get_room_definitions(match.config.map_id)
+        payload["dungeon_rooms"] = [
+            {"archetype": r.get("archetype", r.get("purpose", "empty")), "bounds": r["bounds"]}
+            for r in rooms if "bounds" in r
+        ]
 
     return payload
 
@@ -963,6 +973,11 @@ def get_match_start_payload_for_player(match_id: str, player_id: str) -> dict | 
         base["players"] = filtered_players
         base["visible_tiles"] = list(player_fov)
 
+    # Include party members so PartyVitals renders immediately
+    party = get_party_members(match_id, player_id)
+    if party:
+        base["party"] = party
+
     return base
 
 
@@ -993,6 +1008,8 @@ def get_lobby_players_payload(match_id: str) -> dict:
     players = _player_states.get(match_id, {})
     active_ids = set(match.player_ids) if match else set()
     hero_selections = _hero_selections.get(match_id, {})
+    controlled_heroes = _controlled_hero_map.get(match_id, {})
+    hero_ally_owners = _hero_ally_map.get(match_id, {})  # Phase L3: AI hero owner tracking
     result = {}
     for pid, p in players.items():
         if pid not in active_ids:
@@ -1020,6 +1037,12 @@ def get_lobby_players_payload(match_id: str) -> dict:
             else:
                 entry["hero_id"] = selection
                 entry["hero_ids"] = [selection]
+        # Phase L2: Include controlled hero ID
+        if pid in controlled_heroes:
+            entry["controlled_hero_id"] = controlled_heroes[pid]
+        # Phase L3: Include owner_username for hero allies (contributed AI heroes)
+        if pid in hero_ally_owners:
+            entry["owner_username"] = hero_ally_owners[pid]
         result[pid] = entry
     return result
 
@@ -1203,22 +1226,66 @@ def update_match_config(match_id: str, player_id: str, updates: dict) -> dict | 
     config = match.config
     ai_changed = False
 
+    # Phase L4: Allowed maps per mode for validation
+    _mode_allowed_maps = {
+        MatchType.PVP: {'arena_classic'},
+        MatchType.SOLO_PVE: {'wave_arena', 'training_room', 'procedural'},
+        MatchType.DUNGEON: {'procedural', 'wave_arena', 'training_room'},
+        MatchType.PVPVE: {'procedural'},
+        MatchType.MIXED: None,  # No restriction for legacy mixed mode
+    }
+
     if "map_id" in updates:
         # Validate map exists on disk (auto-discovers new maps from configs/maps/)
         from app.core.map_loader import _maps_dir
-        map_file = _maps_dir / f"{updates['map_id']}.json"
-        if map_file.exists():
-            config.map_id = updates["map_id"]
+        new_map_id = updates['map_id']
+        # 'procedural' is a virtual map ID that doesn't have a file
+        map_valid = new_map_id == 'procedural' or (_maps_dir / f"{new_map_id}.json").exists()
+        if map_valid:
+            # Phase L4: Also validate map is allowed for current mode
+            current_type = MatchType(updates.get('match_type', config.match_type.value))
+            allowed = _mode_allowed_maps.get(current_type)
+            if allowed is None or new_map_id in allowed:
+                config.map_id = new_map_id
 
     if "match_type" in updates:
         try:
-            config.match_type = MatchType(updates["match_type"])
-            # PvP mode: reset AI counts
-            if config.match_type == MatchType.PVP:
-                if config.ai_opponents > 0 or config.ai_allies > 0:
-                    config.ai_opponents = 0
-                    config.ai_allies = 0
-                    ai_changed = True
+            new_type = MatchType(updates["match_type"])
+            old_type = config.match_type
+            config.match_type = new_type
+
+            # Phase L4: Mode-switch reset — clear irrelevant config when switching modes
+            if new_type != old_type:
+                # All non-PVP→PVP transitions: clear AI counts
+                if new_type == MatchType.PVP:
+                    if config.ai_opponents > 0 or config.ai_allies > 0:
+                        config.ai_opponents = 0
+                        config.ai_allies = 0
+                        ai_changed = True
+                    config.theme_id = None
+                    # Reset PvPvE fields
+                    config.pvpve_team_count = 2
+                    config.pvpve_pve_density = 0.5
+                    config.pvpve_boss_enabled = True
+                    config.pvpve_grid_size = 8
+                    config.pvpve_ai_team_count = 0
+                    config.pvpve_ai_team_sizes = []
+                elif new_type in (MatchType.SOLO_PVE, MatchType.DUNGEON):
+                    # PvE modes: reset PvPvE-specific fields
+                    config.pvpve_team_count = 2
+                    config.pvpve_pve_density = 0.5
+                    config.pvpve_boss_enabled = True
+                    config.pvpve_grid_size = 8
+                    config.pvpve_ai_team_count = 0
+                    config.pvpve_ai_team_sizes = []
+                elif new_type == MatchType.PVPVE:
+                    # Entering PvPvE: set defaults
+                    config.pvpve_team_count = 2
+                    config.pvpve_pve_density = 0.5
+                    config.pvpve_boss_enabled = True
+                    config.pvpve_grid_size = 8
+                    config.pvpve_ai_team_count = 0
+                    config.pvpve_ai_team_sizes = []
         except ValueError:
             pass  # Invalid match type, ignore
 
@@ -1239,6 +1306,7 @@ def update_match_config(match_id: str, player_id: str, updates: dict) -> dict | 
             'bleeding_catacombs', 'ashen_undercroft', 'drowned_sanctum',
             'hollowed_cathedral', 'iron_depths', 'forgotten_cellar',
             'pale_ossuary', 'silent_vault',
+            'fungal_grotto', 'frozen_crypt', 'cursed_shrine',
         ]
         new_theme = updates["theme_id"]
         if new_theme is None or new_theme in valid_themes:
@@ -1640,6 +1708,7 @@ def _generate_pvpve_dungeon(match: MatchState) -> None:
         'bleeding_catacombs', 'ashen_undercroft', 'drowned_sanctum',
         'hollowed_cathedral', 'iron_depths', 'forgotten_cellar',
         'pale_ossuary', 'silent_vault',
+        'fungal_grotto', 'frozen_crypt', 'cursed_shrine',
     ]
     if not match.theme_id:
         theme_rng = _rng.Random(seed)
@@ -1989,6 +2058,7 @@ def _generate_procedural_dungeon(match: MatchState) -> None:
         'bleeding_catacombs', 'ashen_undercroft', 'drowned_sanctum',
         'hollowed_cathedral', 'iron_depths', 'forgotten_cellar',
         'pale_ossuary', 'silent_vault',
+        'fungal_grotto', 'frozen_crypt', 'cursed_shrine',
     ]
     if not match.theme_id:
         # Use the dungeon seed for deterministic but per-match theme selection
@@ -2037,21 +2107,75 @@ def _init_dungeon_state(match: MatchState) -> None:
     """Populate door_states, chest_states, and ground_items from the dungeon map data.
 
     Called once when a dungeon match starts.
+    Chest states now include tier info: "unopened:wooden", "unopened:iron", etc.
+    PVPVE mode uses location-based centrality for tier rolling instead of floor depth.
     """
     import random as _rng
+    from app.core.loot import roll_chest_tier, roll_chest_tier_pvpve
 
     map_id = match.config.map_id
     doors = get_doors(map_id)
     chests = get_chests(map_id)
+    rooms = get_room_definitions(map_id)
 
     match.door_states = {
         f"{d['x']},{d['y']}": d.get("state", "closed")
         for d in doors
     }
-    match.chest_states = {
-        f"{c['x']},{c['y']}": "unopened"
-        for c in chests
-    }
+
+    # Build a lookup of which room (purpose) each chest is in
+    floor_number = getattr(match, "current_floor", 1) or 1
+    chest_rng = _rng.Random(hash(match.match_id) & 0xFFFFFFFF ^ floor_number)
+
+    is_pvpve = match.config.match_type == MatchType.PVPVE
+
+    # For PVPVE centrality: compute map center from dimensions
+    map_center_x, map_center_y, max_dist = 0.0, 0.0, 1.0
+    if is_pvpve:
+        map_w, map_h = get_map_dimensions(map_id)
+        map_center_x = map_w / 2.0
+        map_center_y = map_h / 2.0
+        # Max possible distance is corner to center
+        max_dist = max(1.0, (map_center_x**2 + map_center_y**2) ** 0.5)
+
+    chest_states = {}
+    for c in chests:
+        cx, cy = c["x"], c["y"]
+        key = f"{cx},{cy}"
+
+        # Check if this chest is in a boss room
+        is_boss = False
+        for room in rooms:
+            bounds = room.get("bounds", {})
+            if (room.get("purpose") == "boss"
+                    and bounds.get("x_min", 0) <= cx <= bounds.get("x_max", 0)
+                    and bounds.get("y_min", 0) <= cy <= bounds.get("y_max", 0)):
+                is_boss = True
+                break
+
+        # Use pre-assigned tier from map data, or roll one
+        pre_tier = c.get("tier")
+        if pre_tier:
+            tier = pre_tier
+        elif is_pvpve:
+            # PVPVE: compute centrality (0 = edge/spawn, 1 = center/boss)
+            dist = ((cx - map_center_x)**2 + (cy - map_center_y)**2) ** 0.5
+            centrality = 1.0 - (dist / max_dist)
+            centrality = max(0.0, min(1.0, centrality))
+            tier = roll_chest_tier_pvpve(
+                centrality=centrality,
+                is_boss_room=is_boss,
+                seed=chest_rng.randint(0, 2**31),
+            )
+        else:
+            tier = roll_chest_tier(
+                floor_number=floor_number,
+                is_boss_room=is_boss,
+                seed=chest_rng.randint(0, 2**31),
+            )
+        chest_states[key] = f"unopened:{tier}"
+
+    match.chest_states = chest_states
     # Initialize empty ground items dict for loot drops (Phase 4D-2)
     match.ground_items = {}
 
@@ -2061,6 +2185,7 @@ def _init_dungeon_state(match: MatchState) -> None:
             'bleeding_catacombs', 'ashen_undercroft', 'drowned_sanctum',
             'hollowed_cathedral', 'iron_depths', 'forgotten_cellar',
             'pale_ossuary', 'silent_vault',
+            'fungal_grotto', 'frozen_crypt', 'cursed_shrine',
         ]
         theme_rng = _rng.Random(hash(match.match_id) & 0xFFFFFFFF)
         match.theme_id = theme_rng.choice(DUNGEON_THEMES)
@@ -2342,6 +2467,13 @@ def advance_floor(match_id: str) -> dict | None:
         sum(1 for p in players.values() if p.team == "b"),
     )
 
+    # Phase 21F: Build lightweight room list for client-side room props
+    rooms = get_room_definitions(wfc_map_id)
+    dungeon_rooms = [
+        {"archetype": r.get("archetype", r.get("purpose", "empty")), "bounds": r["bounds"]}
+        for r in rooms if "bounds" in r
+    ]
+
     return {
         "floor_number": new_floor,
         "grid_width": map_data.get("width", 15),
@@ -2353,6 +2485,7 @@ def advance_floor(match_id: str) -> dict | None:
         "chest_states": dict(match.chest_states),
         "players": players_payload,
         "is_dungeon": True,
+        "dungeon_rooms": dungeon_rooms,
     }
 
 
@@ -2645,9 +2778,13 @@ def _spawn_dungeon_enemies(match_id: str) -> None:
 from app.core.hero_manager import (  # noqa: E402, F401
     MAX_PARTY_SIZE,
     MAX_DUNGEON_PARTY,
+    MAX_TEAM_SIZE,
+    get_team_slots_remaining,
+    get_all_team_slots,
     get_dungeon_slots_available,
     select_heroes,
     select_hero,
+    select_roster_heroes,
     _spawn_hero_ally,
     _remove_hero_ally,
     get_hero_selection,

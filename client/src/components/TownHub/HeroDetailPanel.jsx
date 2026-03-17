@@ -91,7 +91,7 @@ function ItemTooltip({ item, hint }) {
   );
 }
 
-export default function HeroDetailPanel({ hero, availableClasses, onClose, onSelectHero }) {
+export default function HeroDetailPanel({ hero, availableClasses, onClose }) {
   const gameState = useGameState();
   const dispatch = useGameDispatch();
 
@@ -104,9 +104,6 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose, onSel
   const equipment = hero.equipment || {};
   const inventory = hero.inventory || [];
   const bonuses = getEquipmentBonuses(equipment);
-  const isSelected = (gameState.selectedHeroIds || []).includes(hero.hero_id);
-  const selectionIndex = (gameState.selectedHeroIds || []).indexOf(hero.hero_id);
-  const canSelect = isSelected || (gameState.selectedHeroIds || []).length < 4;
   const bank = gameState.bank || [];
   const BANK_CAPACITY = 20;
   const bankFull = bank.length >= BANK_CAPACITY;
@@ -268,12 +265,6 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose, onSel
     }
   }, [loading, gameState.username, hero.hero_id, dispatch]);
 
-  // ---------- Select for Dungeon ----------
-  const handleSelectForDungeon = () => {
-    dispatch({ type: 'SELECT_HERO', payload: hero.hero_id });
-    if (onSelectHero) onSelectHero(hero.hero_id);
-  };
-
   // ---------- Dismiss Hero ----------
   const [confirmDismiss, setConfirmDismiss] = useState(false);
 
@@ -430,15 +421,6 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose, onSel
                 })}
               </div>
             </div>
-
-            {/* Dungeon select */}
-            <button
-              className={`btn-detail-select ${isSelected ? 'btn-selected' : ''} ${!canSelect ? 'btn-disabled' : ''}`}
-              onClick={canSelect ? handleSelectForDungeon : undefined}
-              disabled={!canSelect}
-            >
-              {isSelected ? `Selected (#${selectionIndex + 1})` : (gameState.selectedHeroIds || []).length >= 4 ? 'Party Full (4/4)' : 'Select for Dungeon'}
-            </button>
 
             {/* Dismiss hero */}
             {!confirmDismiss ? (

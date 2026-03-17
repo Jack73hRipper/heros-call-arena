@@ -357,7 +357,7 @@ class TestDungeonMatchCreation:
         assert len(updated_match.door_states) == 9
         assert all(v == "closed" for v in updated_match.door_states.values())
         assert len(updated_match.chest_states) == 3
-        assert all(v == "unopened" for v in updated_match.chest_states.values())
+        assert all(v.startswith("unopened") for v in updated_match.chest_states.values())
 
     def test_dungeon_state_key_format(self):
         """Door/chest state keys are 'x,y' strings."""

@@ -1,9 +1,6 @@
-/* ===== Minimap (absolute overlay in canvas area) ===== */
+/* ===== Minimap (right panel, above HUD/Target bar) ===== */
 
 .minimap-wrap {
-  position: absolute;
-  top: 8px;
-  right: 8px;
   z-index: 20;
   background: var(--bg-panel);
   border: 1px solid var(--border-subtle);
@@ -11,7 +8,12 @@
   padding: 0;
   box-shadow: var(--shadow-sm);
   transition: all 0.2s ease;
-  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  overflow: hidden;
 }
 
 .minimap-wrap.minimap-expanded {
@@ -25,4 +27,6 @@
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   border-radius: 1px;
+  max-width: 100%;
+  max-height: 100%;
 }

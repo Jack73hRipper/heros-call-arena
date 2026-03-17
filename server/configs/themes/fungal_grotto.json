@@ -1,0 +1,40 @@
+{
+  "id": "fungal_grotto",
+  "name": "Fungal Grotto",
+  "description": "An alien cave network pulsing with bioluminescent fungal colonies. Mycelium tendrils creep across every surface.",
+  "palette": {
+    "primary": "#121a10",
+    "secondary": "#1e2a18",
+    "accent": "#5aaa40",
+    "mortar": "#0e1a0c",
+    "highlight": "#80ee60",
+    "floor": "#2a3822",
+    "floorAlt": "#2d3b25",
+    "grout": "#0a100a",
+    "furniture": "#3a4520",
+    "metal": "#4a6a45"
+  },
+  "wall": {
+    "style": "fungal_growth"
+  },
+  "floor": {
+    "style": "mycelium_mat"
+  },
+  "corridor": {
+    "style": "shallow_water",
+    "waterDepth": 0.06
+  },
+  "fog": {
+    "exploredTint": "rgba(10, 20, 8, 0.55)",
+    "unexploredColor": "#060a05"
+  },
+  "ambient": {
+    "vignetteStrength": 0.12,
+    "vignetteColor": "rgba(30, 60, 15, 0.08)"
+  },
+  "edge": {
+    "style": "spore_creep",
+    "intensity": 0.7,
+    "width": 5
+  }
+}

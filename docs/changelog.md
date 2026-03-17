@@ -5,6 +5,223 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.7f] - 2026-03-16 - Party HP Panel Centering & Instant Population Fix
+
+### Fixed
+- **Party HP panels biased to the left** — `.party-vitals` had `flex: 1` which stretched the container to fill all remaining space in the vitals row, overriding the `justify-content: center` on the parent. Removed `flex: 1` and `overflow-x: auto` so the party vitals container is content-sized and the vitals row correctly centers all HP panels (player + party) over the viewport.
+- **Party HP bars missing on first frame** — only the player's own HP panel appeared at match start; party member HP panels didn't populate until after the first tick. The `MATCH_START` handler in `combatReducer` reset `partyMembers` to `[]`, and party data was only sent via the `queue_updated` message after the first turn resolved. Added `party` data to the server's `match_start` payload (`get_match_start_payload_for_player`) and updated the client's `MATCH_START` handler to use `action.payload.party` if present, so all party HP bars render immediately when the match begins.
+
+### Files Changed
+- `client/src/styles/components/_player-vitals.css` — removed `flex: 1` and `overflow-x: auto` from `.party-vitals`
+- `server/app/core/match_manager.py` — `get_match_start_payload_for_player()` now includes `party` array via `get_party_members()`
+- `client/src/context/reducers/combatReducer.js` — `MATCH_START` handler uses `action.payload.party || []` instead of hardcoded `[]`
+
+---
+
+## [v0.1.7e] - 2026-03-16 - Dungeon HUD Layout Overhaul
+
+### Changed
+- **Minimap relocated to right panel** — moved from an absolute overlay in the top-right of the game viewport to the right sidebar, positioned above the target bar (HUD). The minimap now fills the full panel width (~270px) as a squared-off panel matching the width of the HUD, Party, and Enemy panels below it. Tile size auto-scales to fill the panel based on map dimensions.
+- **Player HP bar relocated above viewport** — the PlayerVitals frame (gradient HP bar with class identity row) moved from an absolute overlay at the bottom-left of the canvas to a dedicated vitals row between the action bar and the game viewport. It now sits outside the viewport area entirely rather than hovering over it.
+- **Combat Meter button labeled** — the "⚔" combat meter toggle button in the action bar now displays a "Meter" text label below the icon, making its purpose clearer to players
+- **Arena grid layout expanded** — grid changed from 3-row to 4-row layout (`auto auto auto 1fr`) to accommodate the new vitals row; left panel and right panel span rows 3–4 so they remain full-height
+
+### Added
+- **PartyVitals component** — new component that displays HP bars for all party members side by side using the same gradient bar style as the player's own PlayerVitals. Each party member gets a class-colored top accent border, class icon + name, player name, and a 20px gradient HP bar with HP text centered inside. Includes the same color-coded HP states (green >50%, amber 25–50%, red ≤25%, grey dead), danger pulse animation at low HP, and dead state desaturation.
+- **Vitals row** (`arena-vitals-row`) — new grid row in the arena layout that contains the player's HP bar on the left and party HP bars side by side next to it, all between the action bar and the game canvas
+
+### Files Changed
+- `client/src/components/Arena/Arena.jsx` — moved MinimapPanel from canvas overlays to right panel (above HUD); moved PlayerVitals from canvas overlay to vitals row; added PartyVitals import and render
+- `client/src/components/PlayerVitals/PartyVitals.jsx` — new component
+- `client/src/components/PlayerVitals/PlayerVitals.jsx` — unchanged (styles updated in CSS)
+- `client/src/components/MinimapPanel/MinimapPanel.jsx` — updated tile size calculation to fill panel width (~270px)
+- `client/src/components/BottomBar/BottomBar.jsx` — added "Meter" label text to combat meter toggle button
+- `client/src/styles/layout/_arena.css` — 4-row grid, vitals row styles, updated row spans for left/right/canvas
+- `client/src/styles/layout/_minimap.css` — changed from absolute overlay to flow element with aspect-ratio 1/1 and full width
+- `client/src/styles/components/_player-vitals.css` — removed absolute positioning; added PartyVitals/party-vital styles
+- `client/src/styles/components/_combat-meter.css` — flex-direction column on btn-meter, added meter-label styles
+
+---
+
+## [v0.1.7d] - 2026-03-16 - Inventory Panel Width & Overflow Fix
+
+### Fixed
+- **Inventory overlay panel too narrow** — text (item names, buff pills, stat rows, context strip) was overflowing to the right and creating a horizontal scrollbar
+  - Widened base panel from 340–440px to 420–560px (`width: max-content` up to max-width)
+  - Widened large-screen breakpoint (1201px+) from 360–480px to 440–600px
+  - Widened medium breakpoint (769–1200px) from 340–440px to 420–560px
+  - Widened small-medium breakpoint (501–768px) from 320px min to 400px min
+  - Added `overflow-x: hidden` to prevent horizontal scrollbar
+  - Added `max-width: 100%` to equipment slot item names for proper ellipsis truncation
+  - Added `overflow: hidden` and `max-width: 100%` to buff list and bag slot item info
+  - Added `flex-wrap: wrap` and `overflow: hidden` to dungeon context strip
+
+### Files Changed
+- `client/src/styles/components/_inventory.css` — panel width increases, overflow protection
+
+---
+
+## [v0.1.7c] - 2026-03-16 - Player Vitals HP Bar Overhaul
+
+### Added
+- **PlayerVitals component** — new dedicated HP frame overlay anchored to the bottom-left of the game canvas, replacing the tiny inline HP bar that was buried in the header
+  - **20px tall gradient HP bar** with HP text centered inside (white text with dark shadow for readability)
+  - **Class identity row** — class-colored top accent border, class icon + class name + player name
+  - **Color-coded HP states** — green gradient (>50%), amber gradient (25–50%), red gradient (<25%), grey (dead)
+  - **Low-HP danger pulse** — red glow animation on the frame border when HP ≤ 25%
+  - **Dead state** — desaturated and dimmed frame with "💀 DEAD" text
+  - **Responsive scaling** — shrinks bar and frame on smaller viewports (<800px height)
+- **`_player-vitals.css`** — full stylesheet with gradients, inner shadows, pulse animation, and responsive rules
+
+### Changed
+- **HeaderBar** — removed inline HP bar section (label, bar, value) to reduce top-bar clutter; turn/timer/mode/class/buffs remain
+- **Arena layout** — PlayerVitals renders as an overlay inside the canvas area (bottom-left corner), near the player's natural focus area beside the action bar
+
+### Removed
+- **Header HP CSS** — removed `.header-hp`, `.header-hp-label`, `.header-hp-bar-bg`, `.header-hp-bar-fill`, `.header-hp-value` styles (no longer needed)
+
+### Files Changed
+- `client/src/components/PlayerVitals/PlayerVitals.jsx` — new component
+- `client/src/styles/components/_player-vitals.css` — new stylesheet
+- `client/src/components/HeaderBar/HeaderBar.jsx` — removed HP bar section
+- `client/src/styles/components/_header-bar.css` — removed HP styles
+- `client/src/components/Arena/Arena.jsx` — import and render PlayerVitals in canvas area
+- `client/src/styles/main.css` — added `_player-vitals.css` import
+
+---
+
+## [v0.1.7b] - 2026-03-16 - Missing Particle Effects Pass
+
+### Added
+- **Seal of Judgment particles** — gold/holy branded star burst on target with diamond rune extras and a golden projectile trail (Inquisitor)
+- **Blink particles** — arcane blue star burst at destination + fading departure trail at origin, visually distinct from Shadow Step's dark-bolt (Mage)
+- **Bone Shield particles** — bone-colored triangle fragments orbit the caster on cast + persistent bone-shard aura while active (Skeleton enemy)
+- **Dark Pact particles** — purple dark-magic burst on target with diamond-trail link wisps at caster + persistent purple aura while buffed (Dark Priest enemy)
+- **Profane Ward particles** — expanding lavender circles on target + persistent lavender aura while damage reduction is active (Acolyte enemy)
+- **Enrage particles** — dramatic fire ignition burst (white→gold→red→crimson) when HP drops below 30% + persistent flame aura while enraged (Demon Enrage enemy)
+- **Frenzy Aura particles** — orange/red ring pulse on activation + persistent smoldering aura while the imp buff aura is active (Imp Lord enemy)
+- **6 new buff auras** — `buff-aura-bone-shield`, `buff-aura-dark-pact`, `buff-aura-profane-ward`, `buff-aura-enrage`, `buff-aura-frenzy` persistent looping effects; `dark_pact` and `profane_ward` buff_id overrides added
+- **3 new buff_status types** — `damage_absorb`, `passive_enrage`, `passive_aura_ally_buff` now have persistent aura visuals
+
+### Changed
+- **`particle-effects.json`** — added skill mappings for `seal_of_judgment`, `blink`, `bone_shield`, `dark_pact`, `profane_ward`, `enrage`, `frenzy_aura`; added `buff_id_overrides` for `dark_pact` and `profane_ward`; added `buff_status` entries for `damage_absorb`, `passive_enrage`, `passive_aura_ally_buff`
+
+### Files Changed
+- `client/public/particle-effects.json` — 7 new skill mappings, 3 new buff_status types, 2 new buff_id overrides
+- `client/public/particle-presets/skills.json` — 12 new presets (seal-judgment-brand, seal-judgment-runes, seal-judgment-trail, blink-arrival, blink-departure, bone-shield-cast, dark-pact-cast, dark-pact-link, profane-ward-cast, enrage-ignite, frenzy-aura-pulse)
+- `client/public/particle-presets/buffs.json` — 6 new aura presets (buff-aura-bone-shield, buff-aura-dark-pact, buff-aura-profane-ward, buff-aura-enrage, buff-aura-frenzy)
+
+---
+
+## [v0.1.7a] - 2026-03-16 - PVPVE Chest Tier Overhaul
+
+### Added
+- **PVPVE location-based chest tiers** — PVPVE mode now uses a centrality-based tier system instead of floor-depth gating. Chests closer to the map center (boss room area) roll higher tiers, creating a risk/reward dynamic where better loot requires venturing into contested territory.
+  - **Edge zone** (team spawn corners): ~57% Wooden, ~28% Iron, ~11% Gold, ~3% Obsidian
+  - **Mid zone** (midfield rooms): ~31% Wooden, ~37% Iron, ~22% Gold, ~11% Obsidian
+  - **Center zone** (boss area): ~11% Wooden, ~25% Iron, ~40% Gold, ~24% Obsidian
+- **`pvpve_tier_weights` config** — new section in `chest_tier_config` defines per-zone (edge/mid/center) spawn weights for PVPVE mode, independent of floor-range gating
+- **`roll_chest_tier_pvpve()`** — new loot function that accepts a `centrality` value (0.0 = map edge, 1.0 = map center) and selects the appropriate zone weight table
+
+### Fixed
+- **PVPVE chests no longer all Wooden** — previously, PVPVE mode was always floor 1, so the floor-range gating meant only Wooden chests (floor 1+) were eligible. Iron (floor 2+), Gold (floor 4+), and Obsidian (floor 7+) could never spawn. The new centrality system bypasses floor gating entirely.
+
+### Changed
+- **`_init_dungeon_state()`** — now detects PVPVE match type and computes Euclidean centrality for each chest position relative to the map center. PVPVE chests use `roll_chest_tier_pvpve()` while standard dungeon chests continue using the floor-based `roll_chest_tier()`.
+
+### Files Changed
+- `server/configs/loot_tables.json` — added `pvpve_tier_weights` section with edge/mid/center weight tables
+- `server/app/core/loot.py` — added `roll_chest_tier_pvpve()` function
+- `server/app/core/match_manager.py` — updated `_init_dungeon_state()` with PVPVE centrality logic, added `get_map_dimensions` import
+
+---
+
+## [v0.1.7] - 2026-03-15 - Chest Tier System & Visual Redesign
+
+### Added
+- **Chest tier system** — 5 distinct chest tiers replace the single generic chest:
+  - **Wooden Chest** (floors 1+, weight 50) — 1-2 common-leaning items
+  - **Iron Chest** (floors 2+, weight 30) — 1-3 items, better uncommon drop rates
+  - **Gold Chest** (floors 4+, weight 15) — 2-3 items, guaranteed magic+ rarity
+  - **Obsidian Chest** (floors 7+, weight 5) — 2-4 items, guaranteed rare+ rarity
+  - **Boss Chest** (boss rooms only) — unchanged from previous boss_chest behavior
+- **Chest tier config** in `loot_tables.json` — new `chest_tier_config` section defines tier spawn weights, floor ranges, and loot table mappings
+- **4 new chest loot tables** — `wooden`, `iron`, `gold`, `obsidian` with progressively better weighted pools
+- **Chest tier visual redesign** — all chests now render as detailed barrel-lidded treasure chests with:
+  - 3D shading (dark right edge, highlight left edge)
+  - Visible lid with overhang and border
+  - 2 horizontal metal band straps
+  - Center latch/lock with keyhole detail
+  - Opened state shows interior cavity, tilted-back lid, and hinge dots
+  - Tier-specific glow effects (gold glow for Gold, purple glow for Obsidian, red glow for Boss)
+- **Tier-specific color palettes** — each tier has unique body, band, latch, and lid colors
+- **Tier-aware minimap** — minimap chest dots now use tier-specific colors instead of a single gold dot
+- **Client utility modules**:
+  - `chestUtils.js` — chest state parsing, tier config lookup, minimap color helper
+  - `chestRenderer.js` — shared detailed chest drawing function used by ThemeEngine and dungeonRenderer
+
+### Changed
+- **Chest state format** — `chest_states` values changed from `"unopened"/"opened"` to `"unopened:tier"/"opened:tier"` (e.g. `"unopened:iron"`, `"opened:gold"`). Full backward compatibility with plain `"unopened"`/`"opened"` maintained.
+- **`_init_dungeon_state`** — now rolls a chest tier for each chest based on floor number and boss room context using `roll_chest_tier()`
+- **`generate_chest_loot`** — now falls back to the `"default"` loot table when an unknown chest type is passed, instead of returning empty
+- **`_resolve_loot` (interaction_phase)** — extracts chest tier from state and passes it to `generate_chest_loot` for tier-appropriate drops
+- **ThemeEngine** — chest case now delegates to shared `drawChestIcon()` with tier info passed via `extra.chestTier`
+- **dungeonRenderer** — flat-color fallback chest replaced with tier-aware `drawChestIcon()`
+- **Theme Designer tool** — `tilePatterns.js` `drawChest()` updated with detailed rendering matching the game
+- **Pathfinding & keyboard shortcuts** — updated to recognize `"unopened:tier"` format via `startsWith` checks
+
+### Files Changed
+- `server/configs/loot_tables.json` — added `chest_tier_config`, 4 new chest loot tables (wooden, iron, gold, obsidian)
+- `server/app/core/loot.py` — added `roll_chest_tier()`, updated `generate_chest_loot()` fallback
+- `server/app/core/match_manager.py` — `_init_dungeon_state()` now rolls chest tiers
+- `server/app/core/turn_phases/interaction_phase.py` — `_resolve_loot()` parses tier from chest state
+- `client/src/utils/chestUtils.js` — new (chest tier config, state parsing)
+- `client/src/canvas/chestRenderer.js` — new (detailed chest icon drawing)
+- `client/src/canvas/dungeonRenderer.js` — updated chest drawing + imports
+- `client/src/canvas/ThemeEngine.js` — updated chest drawing to use `drawChestIcon`
+- `client/src/canvas/minimapRenderer.js` — tier-aware chest minimap colors
+- `client/src/canvas/renderConstants.js` — updated default chest colors
+- `client/src/canvas/pathfinding.js` — updated `startsWith` checks for new state format
+- `client/src/hooks/useKeyboardShortcuts.js` — updated `startsWith` check for E key chest detection
+- `tools/theme-designer/src/engine/tilePatterns.js` — updated `drawChest()` with detailed rendering
+- `server/tests/test_dungeon_map.py` — updated assertion for new chest state format
+- `server/tests/test_phase16b_affix_system.py` — updated test for fallback behavior
+
+---
+
+## [v0.1.6b] - 2026-03-15 - Hero Permadeath Bug Fix
+
+### Fixed
+- **Hero permadeath now applies to all heroes** — AI hero allies (party members) were not triggering permadeath when killed in dungeon runs. Only the human-controlled hero was checked (`unit_type == "human"`), but party allies spawn as `unit_type == "ai"` with a valid `hero_id`. Changed the condition to check for `hero_id` presence regardless of unit type, so all roster heroes are properly marked dead and removed from the active roster on death.
+
+### Files Changed
+- `server/app/core/turn_phases/deaths_phase.py` — permadeath condition changed from `unit_type == "human" and hero_id` to just `hero_id`
+
+---
+
+## [v0.1.6a] - 2026-03-15 - Custom Cursor & Game Icon
+
+### Added
+- **Custom game cursor** — `MouseFinal.png` resized to 32×32 and applied as the in-game cursor site-wide via CSS (`cursor.png` in `client/public/`). Replaces default browser cursor on all elements including buttons and interactive controls.
+- **Game icon** — `icon 1.ico` / `icon 1.png` set as the official app icon:
+  - Electron game window icon (`client/public/favicon.ico`)
+  - Browser favicon (`<link>` tags in `index.html` for `.ico` and `.png`)
+  - Electron builder icon for Windows/Mac/Linux builds
+  - Launcher window icon + system tray icon (`launcher/assets/icon.ico`)
+  - Launcher electron-builder config updated
+
+### Files Changed
+- `client/public/cursor.png` — new (32×32 resized from `Assets/Sprites/MouseFinal.png`)
+- `client/public/favicon.ico` — new (from `Assets/Sprites/icon 1.ico`)
+- `client/public/favicon.png` — new (from `Assets/Sprites/icon 1.png`)
+- `launcher/assets/icon.ico` — new (from `Assets/Sprites/icon 1.ico`)
+- `client/src/styles/base/_reset.css` — added custom cursor rules
+- `client/index.html` — added favicon `<link>` tags
+- `launcher/main.js` — added `icon` property to BrowserWindow
+- `launcher/package.json` — added `icon` to electron-builder win config
+
+---
+
 ## [v0.1.6] - 2026-03-14 - AI & Team Fixes
 
 **Summary:** Six bug fixes and AI improvements targeting PVPVE team assignment, totem targeting, Confessor AI, and multi-support positioning. Rolls up v0.1.5–v0.1.5f changes into a published release.

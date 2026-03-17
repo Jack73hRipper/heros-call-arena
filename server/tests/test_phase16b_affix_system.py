@@ -748,9 +748,11 @@ class TestLootIntegration:
         items = generate_chest_loot("default", floor_number=3, seed=42)
         assert isinstance(items, list)
 
-    def test_generate_chest_loot_unknown_type_returns_empty(self):
+    def test_generate_chest_loot_unknown_type_falls_back_to_default(self):
+        """Unknown chest types fall back to the 'default' loot table."""
         items = generate_chest_loot("nonexistent_chest", floor_number=1, seed=42)
-        assert items == []
+        assert isinstance(items, list)
+        assert len(items) > 0  # Falls back to default table, should produce items
 
     def test_generated_loot_items_have_instance_ids(self):
         """Items from generate_enemy_loot should have instance_ids."""

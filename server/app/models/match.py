@@ -42,6 +42,8 @@ class MatchConfig(BaseModel):
     pvpve_grid_size: int = 8           # WFC grid size (default 8×8)
     pvpve_ai_team_count: int = 0       # Number of AI-controlled hero teams (0 = none)
     pvpve_ai_team_sizes: list[int] = Field(default_factory=list)  # Units per AI team
+    # Phase L2: Controlled hero mapping — player_id → hero_id they control
+    controlled_hero_ids: dict[str, str] = Field(default_factory=dict)
 
 
 class MatchState(BaseModel):

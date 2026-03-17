@@ -35,7 +35,7 @@ const CONTENT_TITLES = {
   browse: 'The Notice Board',
 };
 
-export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
+export default function TownHub({ onJoinMatch, onCreateMatch }) {
   const gameState = useGameState();
   const dispatch = useGameDispatch();
   const [activeTab, setActiveTab] = useState('roster');
@@ -47,7 +47,7 @@ export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
 
   const availableClasses = gameState.availableClasses || {};
   const gold = gameState.gold;
-  const selectedHeroIds = gameState.selectedHeroIds || [];
+
 
   // Escape key — toggle town ESC menu
   useEffect(() => {
@@ -149,12 +149,7 @@ export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
     browse: joinableMatches.length,
   };
 
-  const handleJoinMatch = async (matchId, matchType) => {
-    if (matchType === 'dungeon' && (!selectedHeroIds || selectedHeroIds.length === 0)) {
-      setError('Select at least one hero from your roster before joining a dungeon!');
-      setActiveTab('roster');
-      return;
-    }
+  const handleJoinMatch = async (matchId) => {
     setJoiningMatchId(matchId);
     try {
       await onJoinMatch(matchId);
@@ -163,19 +158,6 @@ export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
     } finally {
       setJoiningMatchId(null);
     }
-  };
-
-  const handleEnterDungeon = () => {
-    if (!selectedHeroIds || selectedHeroIds.length === 0) {
-      setError('Select at least one hero from your roster first!');
-      setActiveTab('roster');
-      return;
-    }
-    onEnterDungeon(selectedHeroIds);
-  };
-
-  const handleHeroSelected = (heroId) => {
-    setError(null);
   };
 
   if (loading) {
@@ -234,16 +216,8 @@ export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
 
         {/* Action buttons in sidebar */}
         <div className="town-sidebar-actions">
-          <button className="grim-btn grim-btn--verdant grim-btn--full grim-btn-pulse--verdant" onClick={handleEnterDungeon}>
-            Enter Dungeon
-            {selectedHeroIds.length > 0 && (
-              <span className="selected-hero-name">
-                {' '}({selectedHeroIds.length})
-              </span>
-            )}
-          </button>
-          <button className="grim-btn grim-btn--crimson grim-btn--full grim-btn-pulse--crimson" onClick={onEnterArena}>
-            Enter Arena
+          <button className="grim-btn grim-btn--ember grim-btn--full grim-btn-pulse" onClick={onCreateMatch}>
+            Create Match
           </button>
         </div>
       </aside>
@@ -262,7 +236,6 @@ export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
           {activeTab === 'roster' && (
             <HeroRoster
               availableClasses={availableClasses}
-              onSelectHero={handleHeroSelected}
             />
           )}
           {activeTab === 'hiring' && (
@@ -282,7 +255,6 @@ export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
               ) : (
                 <ul className="town-match-list">
                   {joinableMatches.map((match) => {
-                    const isDungeon = match.match_type === 'dungeon';
                     const typeLabel = (match.match_type || 'pvp').toUpperCase().replace('_', ' ');
                     return (
                       <li key={match.match_id} className="town-match-item">
@@ -295,13 +267,10 @@ export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
                           <span className={`match-type-tag tag-${match.match_type || 'pvp'}`}>
                             {typeLabel}
                           </span>
-                          {isDungeon && selectedHeroIds.length === 0 && (
-                            <span className="town-match-warning">Select heroes first</span>
-                          )}
                         </div>
                         <button
-                          className={`btn-join-town ${isDungeon ? 'btn-join-dungeon' : ''}`}
-                          onClick={() => handleJoinMatch(match.match_id, match.match_type)}
+                          className="btn-join-town"
+                          onClick={() => handleJoinMatch(match.match_id)}
                           disabled={joiningMatchId === match.match_id}
                         >
                           {joiningMatchId === match.match_id ? 'Joining...' : 'Join'}
@@ -310,11 +279,6 @@ export default function TownHub({ onEnterArena, onEnterDungeon, onJoinMatch }) {
                     );
                   })}
                 </ul>
-              )}
-              {selectedHeroIds.length > 0 && (
-                <p className="town-browse-hint">
-                  {selectedHeroIds.length} hero{selectedHeroIds.length > 1 ? 'es' : ''} selected for dungeon
-                </p>
               )}
             </div>
           )}

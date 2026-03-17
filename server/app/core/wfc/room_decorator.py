@@ -575,6 +575,37 @@ def decorate_rooms(
                  if f"{r['gridRow']},{r['gridCol']}" not in assignments]
     n = len(remaining)
 
+    # ── Pass C-pre: Carve out specialty archetypes before deck dealing ──
+    # shrine (5%), library (5%), flooded (5%) are taken from remaining pool
+    archetype_overrides = config.get("archetype_overrides", {})
+    shrine_chance = archetype_overrides.get("shrine_chance", 0.05)
+    library_chance = archetype_overrides.get("library_chance", 0.05)
+    flooded_chance = archetype_overrides.get("flooded_chance", 0.05)
+    prison_enemy_chance = archetype_overrides.get("prison_enemy_chance", 0.10)
+
+    specialty_assigned: set[str] = set()
+    _shuffle(remaining, rng)
+
+    for room in remaining:
+        key = f"{room['gridRow']},{room['gridCol']}"
+        if key in specialty_assigned:
+            continue
+        roll = rng()
+        if roll < shrine_chance:
+            assignments[key] = "shrine"
+            specialty_assigned.add(key)
+        elif roll < shrine_chance + library_chance:
+            assignments[key] = "library"
+            specialty_assigned.add(key)
+        elif roll < shrine_chance + library_chance + flooded_chance:
+            assignments[key] = "flooded"
+            specialty_assigned.add(key)
+
+    # Remove specialty-assigned rooms from remaining pool
+    remaining = [r for r in remaining
+                 if f"{r['gridRow']},{r['gridCol']}" not in specialty_assigned]
+    n = len(remaining)
+
     if n > 0:
         # Compute target counts from density settings
         n_enemy = round(n * config["enemyDensity"])
@@ -633,6 +664,14 @@ def decorate_rooms(
         for room, role in zip(remaining, deck):
             key = f"{room['gridRow']},{room['gridCol']}"
             assignments[key] = role
+
+    # ── Pass C1.5: Prison override — promote heavy-enemy rooms to prison ──
+    # Rooms assigned "enemy" that have ≥3 max enemies get a chance to become prison
+    for room in flexible_rooms:
+        key = f"{room['gridRow']},{room['gridCol']}"
+        if assignments.get(key) == "enemy" and room["maxEnemies"] >= 3:
+            if rng() < prison_enemy_chance:
+                assignments[key] = "prison"
 
     # ── Pass C2: Cluster smoothing (Phase 4 — Neighbor-Aware) ──
     # Iteratively find clusters of 2+ adjacent enemy rooms and downgrade one per
@@ -791,6 +830,40 @@ def decorate_rooms(
                     _place_tile(decorated_map, start_r + enemy_slots[0]["y"], start_c + enemy_slots[0]["x"], "E")
                     placements.append({"x": start_c + enemy_slots[0]["x"], "y": start_r + enemy_slots[0]["y"], "type": "E"})
 
+        elif role == "shrine":
+            # Non-combat room — no enemies, optional chest for quest reward
+            if config["scatterChests"] and rng() < 0.4:
+                loot_slots = [s for s in available_slots if s.get("types") and "loot" in s["types"]]
+                if loot_slots:
+                    _place_tile(decorated_map, start_r + loot_slots[0]["y"], start_c + loot_slots[0]["x"], "X")
+                    placements.append({"x": start_c + loot_slots[0]["x"], "y": start_r + loot_slots[0]["y"], "type": "X"})
+
+        elif role == "library":
+            # Non-combat discovery room — occasional loot
+            if config["scatterChests"] and rng() < 0.5:
+                loot_slots = [s for s in available_slots if s.get("types") and "loot" in s["types"]]
+                if loot_slots:
+                    _place_tile(decorated_map, start_r + loot_slots[0]["y"], start_c + loot_slots[0]["x"], "X")
+                    placements.append({"x": start_c + loot_slots[0]["x"], "y": start_r + loot_slots[0]["y"], "type": "X"})
+
+        elif role == "prison":
+            # Heavy enemy room — same logic as enemy but with more enemies
+            effective_max = room["maxEnemies"]
+            enemy_slots = [s for s in available_slots if s.get("types") and "enemy" in s["types"]]
+            count = min(effective_max, len(enemy_slots))
+            actual_count = max(2, int(rng() * count) + 1) if count > 0 else 0
+            for i in range(min(actual_count, len(enemy_slots))):
+                _place_tile(decorated_map, start_r + enemy_slots[i]["y"], start_c + enemy_slots[i]["x"], "E")
+                placements.append({"x": start_c + enemy_slots[i]["x"], "y": start_r + enemy_slots[i]["y"], "type": "E"})
+
+        elif role == "flooded":
+            # Environmental atmosphere room — occasional scattered enemy
+            if config["scatterEnemies"] and rng() < 0.3:
+                enemy_slots = [s for s in available_slots if s.get("types") and "enemy" in s["types"]]
+                if enemy_slots:
+                    _place_tile(decorated_map, start_r + enemy_slots[0]["y"], start_c + enemy_slots[0]["x"], "E")
+                    placements.append({"x": start_c + enemy_slots[0]["x"], "y": start_r + enemy_slots[0]["y"], "type": "E"})
+
         else:  # empty
             if config["scatterEnemies"] and rng() < 0.25:
                 enemy_slots = [s for s in available_slots if s.get("types") and "enemy" in s["types"]]
@@ -876,7 +949,8 @@ def _compute_decoration_stats(
     smoothed_keys: set[str] | None = None,
 ) -> dict:
     """Compute summary stats about the decoration pass."""
-    role_count = {"enemy": 0, "loot": 0, "boss": 0, "spawn": 0, "stairs": 0, "empty": 0}
+    role_count = {"enemy": 0, "loot": 0, "boss": 0, "spawn": 0, "stairs": 0, "empty": 0,
+                   "shrine": 0, "library": 0, "prison": 0, "flooded": 0}
     total_placements = 0
     enemies_placed = 0
     chests_placed = 0

@@ -7,6 +7,7 @@ import { useAudio, useAmbientAudio, AudioProvider } from './audio';
 import VolumeSettings from './components/VolumeSettings/VolumeSettings';
 import Lobby from './components/Lobby/Lobby';
 import WaitingRoom from './components/WaitingRoom/WaitingRoom';
+import MatchLobby from './components/MatchLobby/MatchLobby';
 import Arena from './components/Arena/Arena';
 import TownHub from './components/TownHub/TownHub';
 import PostMatchScreen from './components/PostMatch/PostMatchScreen';
@@ -15,11 +16,10 @@ import PostMatchScreen from './components/PostMatch/PostMatchScreen';
  * AppInner — lives inside GameStateProvider so it can access game state.
  * Owns the single WebSocket connection that persists across WaitingRoom → Arena.
  *
- * Screen flow (Phase 4E-3):
- *   lobby → town → (arena: create/join via lobby flow)
- *                → (dungeon: create with hero_id via town flow)
- *   arena → postmatch → town
- *   dungeon → postmatch → town
+ * Screen flow (Phase L5):
+ *   lobby → town → match_lobby (create or join via new unified lobby)
+ *   match_lobby → arena → postmatch → town
+ *   Note: screen='waiting' now also renders MatchLobby (backward compat)
  */
 function AppInner() {
   const [screen, setScreenRaw] = useState('lobby'); // 'lobby' | 'waiting' | 'arena' | 'town' | 'postmatch'
@@ -173,6 +173,10 @@ function AppInner() {
       case 'hero_selected':
         dispatch({ type: 'HERO_SELECTED', payload: data });
         break;
+      // Phase L2: Hero roster selection in new Match Lobby
+      case 'hero_roster_updated':
+        dispatch({ type: 'HERO_ROSTER_UPDATED', payload: data });
+        break;
       // Phase 4D: Inventory & Equipment WS messages
       case 'item_equipped':
         dispatch({ type: 'ITEM_EQUIPPED', payload: data });
@@ -284,8 +288,43 @@ function AppInner() {
     setScreen('town');
   };
 
-  const handleEnterArena = async () => {
-    // Create a PvP arena match directly from Town Hub (no need to return to lobby)
+  const handleJoinMatch = async (matchId) => {
+    // Join an existing match from TownHub browse panel
+    try {
+      const res = await apiFetch(`/api/lobby/join/${matchId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: gameState.username }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || 'Failed to join match');
+      }
+      const data = await res.json();
+
+      dispatch({
+        type: 'JOIN_MATCH',
+        payload: {
+          matchId: data.match_id,
+          playerId: data.player_id,
+          players: data.players || {},
+          config: data.config || null,
+          chat: data.chat || [],
+        },
+      });
+      // Derive lobby mode from match config
+      const matchType = data.config?.match_type || 'pvp';
+      const lobbyMode = matchType === 'pvpve' ? 'pvpve' : (matchType === 'pvp' ? 'pvp' : 'pve');
+      dispatch({ type: 'SET_LOBBY_MODE', payload: lobbyMode });
+      dispatch({ type: 'SET_LOBBY_SELECTED_MAP', payload: data.config?.map_id || 'arena_classic' });
+      setScreen('match_lobby');
+    } catch (err) {
+      console.error('[App] Failed to join match:', err);
+    }
+  };
+
+  // Phase L1: Create a match and open the new MatchLobby
+  const handleCreateMatch = async () => {
     try {
       const body = {
         request: { username: gameState.username },
@@ -314,78 +353,11 @@ function AppInner() {
           chat: [],
         },
       });
-      setScreen('waiting');
+      dispatch({ type: 'SET_LOBBY_MODE', payload: 'pvp' });
+      dispatch({ type: 'SET_LOBBY_SELECTED_MAP', payload: 'arena_classic' });
+      setScreen('match_lobby');
     } catch (err) {
-      console.error('[App] Failed to create arena match:', err);
-    }
-  };
-
-  const handleEnterDungeon = async (heroIds) => {
-    // Create a dungeon match with the selected heroes (up to 4)
-    // Default to procedural WFC map — host can change map in the WaitingRoom dropdown
-    try {
-      const mapId = 'procedural';
-      const body = {
-        request: { username: gameState.username },
-        config: {
-          map_id: mapId,
-          match_type: 'dungeon',
-          ai_opponents: 0,
-          ai_allies: 0,
-        },
-      };
-      const res = await apiFetch('/api/lobby/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error('Failed to create dungeon match');
-      const data = await res.json();
-
-      dispatch({
-        type: 'JOIN_MATCH',
-        payload: {
-          matchId: data.match_id,
-          playerId: data.player_id,
-          players: data.players || {},
-          config: data.config || null,
-          chat: [],
-        },
-      });
-      // selectedHeroIds is already set from HeroRoster toggles — no need to re-dispatch
-      setScreen('waiting');
-    } catch (err) {
-      console.error('[App] Failed to create dungeon match:', err);
-    }
-  };
-
-  const handleJoinMatch = async (matchId) => {
-    // Join an existing match from TownHub browse panel
-    try {
-      const res = await apiFetch(`/api/lobby/join/${matchId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: gameState.username }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || 'Failed to join match');
-      }
-      const data = await res.json();
-
-      dispatch({
-        type: 'JOIN_MATCH',
-        payload: {
-          matchId: data.match_id,
-          playerId: data.player_id,
-          players: data.players || {},
-          config: data.config || null,
-          chat: data.chat || [],
-        },
-      });
-      setScreen('waiting');
-    } catch (err) {
-      console.error('[App] Failed to join match:', err);
+      console.error('[App] Failed to create match:', err);
     }
   };
 
@@ -406,15 +378,23 @@ function AppInner() {
         {screen === 'town' && (
           <div key={`town-${screenKeyRef.current}`} className="screen-enter">
             <TownHub
-              onEnterArena={handleEnterArena}
-              onEnterDungeon={handleEnterDungeon}
               onJoinMatch={handleJoinMatch}
+              onCreateMatch={handleCreateMatch}
             />
           </div>
         )}
         {screen === 'waiting' && (
           <div key={`waiting-${screenKeyRef.current}`} className="screen-enter">
-            <WaitingRoom
+            <MatchLobby
+              sendAction={sendAction}
+              onLeave={handleLeaveMatch}
+              wsReady={wsReady}
+            />
+          </div>
+        )}
+        {screen === 'match_lobby' && (
+          <div key={`match_lobby-${screenKeyRef.current}`} className="screen-enter">
+            <MatchLobby
               sendAction={sendAction}
               onLeave={handleLeaveMatch}
               wsReady={wsReady}

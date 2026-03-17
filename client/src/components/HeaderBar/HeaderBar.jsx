@@ -96,10 +96,6 @@ export default function HeaderBar({ turnTimer }) {
   const timerRatio = tickRate > 0 ? Math.max(0, turnTimer / tickRate) : 0;
   const timerColor = timerRatio > 0.5 ? '#4f4' : timerRatio > 0.25 ? '#ff0' : '#f44';
 
-  // HP bar color
-  const hpRatio = myPlayer ? myPlayer.hp / myPlayer.max_hp : 0;
-  const hpColor = hpRatio > 0.5 ? '#4f4' : hpRatio > 0.25 ? '#ff0' : '#f44';
-
   // Mode label
   const isPvpve = matchType === 'pvpve';
   const modeLabel = isPvpve ? 'PVPVE' : isDungeon ? 'Dungeon' : 'Arena';
@@ -157,20 +153,6 @@ export default function HeaderBar({ turnTimer }) {
         </div>
         <span className="header-timer-value">{Math.ceil(turnTimer)}s</span>
       </div>
-
-      {/* Player HP */}
-      {myPlayer && (
-        <div className="header-section header-hp">
-          <span className="header-hp-label">HP</span>
-          <div className="header-hp-bar-bg">
-            <div
-              className="header-hp-bar-fill"
-              style={{ width: `${hpRatio * 100}%`, backgroundColor: hpColor }}
-            />
-          </div>
-          <span className="header-hp-value">{myPlayer.hp}/{myPlayer.max_hp}</span>
-        </div>
-      )}
 
       {/* Class */}
       {myPlayer?.class_id && (

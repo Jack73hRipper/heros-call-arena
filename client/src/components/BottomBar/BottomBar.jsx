@@ -677,6 +677,7 @@ export default function BottomBar({ onAction, onLeave }) {
           title="Combat Meter"
         >
           <span className="meter-icon">⚔</span>
+          <span className="meter-label">Meter</span>
         </button>
       </div>
 

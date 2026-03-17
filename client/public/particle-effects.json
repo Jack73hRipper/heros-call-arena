@@ -309,6 +309,50 @@
       "effect": "shaman-earthgrasp",
       "target": "destination",
       "extras": ["shaman-earthgrasp-hands"]
+    },
+    "seal_of_judgment": {
+      "effect": "seal-judgment-brand",
+      "target": "victim",
+      "extras": ["seal-judgment-runes"],
+      "projectile": {
+        "trail": "seal-judgment-trail",
+        "head": "holy-head",
+        "speed": 900,
+        "arc": 0
+      }
+    },
+    "blink": {
+      "effect": "blink-arrival",
+      "target": "destination",
+      "extras": ["blink-departure"],
+      "extrasTarget": "caster"
+    },
+    "bone_shield": {
+      "effect": "bone-shield-cast",
+      "target": "caster",
+      "follow": true
+    },
+    "dark_pact": {
+      "effect": "dark-pact-cast",
+      "target": "victim",
+      "extras": ["dark-pact-link"],
+      "extrasTarget": "caster",
+      "follow": true
+    },
+    "profane_ward": {
+      "effect": "profane-ward-cast",
+      "target": "victim",
+      "follow": true
+    },
+    "enrage": {
+      "effect": "enrage-ignite",
+      "target": "caster",
+      "follow": true
+    },
+    "frenzy_aura": {
+      "effect": "frenzy-aura-pulse",
+      "target": "caster",
+      "follow": true
     }
   },
 
@@ -374,7 +418,9 @@
         "ballad_of_might": { "effect": "buff-aura-ballad" },
         "crimson_veil":   { "effect": "buff-aura-crimson-veil" },
         "blood_frenzy":   { "effect": "buff-aura-blood-frenzy" },
-        "inoculate":      { "effect": "buff-aura-inoculate" }
+        "inoculate":      { "effect": "buff-aura-inoculate" },
+        "dark_pact":     { "effect": "buff-aura-dark-pact" },
+        "profane_ward":  { "effect": "buff-aura-profane-ward" }
       }
     },
     "debuff": {
@@ -419,6 +465,21 @@
       "effect": "buff-aura-soul-anchor",
       "follow": true,
       "yOffset": -4
+    },
+    "damage_absorb": {
+      "effect": "buff-aura-bone-shield",
+      "follow": true,
+      "yOffset": 0
+    },
+    "passive_enrage": {
+      "effect": "buff-aura-enrage",
+      "follow": true,
+      "yOffset": 0
+    },
+    "passive_aura_ally_buff": {
+      "effect": "buff-aura-frenzy",
+      "follow": true,
+      "yOffset": 0
     }
   }
 }

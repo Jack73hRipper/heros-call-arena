@@ -19,6 +19,7 @@
  */
 
 import { TILE_SIZE } from './renderConstants.js';
+import { getChestMinimapColor } from '../utils/chestUtils.js';
 
 // ---------- Minimap constants ----------
 
@@ -181,7 +182,7 @@ export function drawMinimap(ctx, {
           color = doorState === 'open' ? TILE_COLORS.doorOpen : TILE_COLORS.door;
         } else if (tileType === 'chest') {
           const chestState = chestStates[key];
-          color = chestState === 'opened' ? TILE_COLORS.chestOpened : TILE_COLORS.chest;
+          color = getChestMinimapColor(chestState);
         } else if (tileType === 'stairs') {
           color = TILE_COLORS.stairs;
         } else if (tileType === 'corridor') {

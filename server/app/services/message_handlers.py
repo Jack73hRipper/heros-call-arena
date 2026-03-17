@@ -32,6 +32,7 @@ from app.core.match_manager import (
     unequip_item,
     destroy_item,
     select_heroes,
+    select_roster_heroes,
     validate_dungeon_hero_selections,
     is_party_member,
     set_party_control,
@@ -599,6 +600,43 @@ async def handle_hero_select(ws_manager, match_id: str, player_id: str, data: di
         })
 
 
+async def handle_hero_roster_select(ws_manager, match_id: str, player_id: str, data: dict):
+    """Phase L2: Player selects heroes from roster + designates controlled hero in new Match Lobby."""
+    hero_ids = data.get("hero_ids")
+    controlled_hero_id = data.get("controlled_hero_id")
+
+    if not hero_ids or len(hero_ids) == 0:
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "error",
+            "message": "Missing hero_ids",
+        })
+        return SKIP
+
+    if not controlled_hero_id:
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "error",
+            "message": "Missing controlled_hero_id",
+        })
+        return SKIP
+
+    result = select_roster_heroes(match_id, player_id, hero_ids, controlled_hero_id)
+    if result:
+        await ws_manager.broadcast_to_match(match_id, {
+            "type": "hero_roster_updated",
+            "player_id": result["player_id"],
+            "hero_ids": result["hero_ids"],
+            "controlled_hero_id": result["controlled_hero_id"],
+            "heroes": result["heroes"],
+            "team_slots": result.get("team_slots", {}),
+            "players": get_lobby_players_payload(match_id),
+        })
+    else:
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "error",
+            "message": "Cannot select heroes: one or more heroes not found, dead, or not yours",
+        })
+
+
 # ---------------------------------------------------------------------------
 # Inventory / Equipment handlers
 # ---------------------------------------------------------------------------
@@ -819,6 +857,7 @@ MESSAGE_HANDLERS = {
     "lobby_config": handle_lobby_config,
     "class_select": handle_class_select,
     "hero_select": handle_hero_select,
+    "hero_roster_select": handle_hero_roster_select,
     "transfer_item": handle_transfer_item,
     "get_party_inventory": handle_get_party_inventory,
     "equip_item": handle_equip_item,

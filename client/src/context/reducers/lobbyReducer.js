@@ -5,7 +5,12 @@
  *   SET_USERNAME, JOIN_MATCH, PLAYER_JOINED, PLAYER_READY,
  *   PLAYER_DISCONNECTED, TEAM_CHANGED, CLASS_CHANGED,
  *   SET_AVAILABLE_CLASSES, CHAT_MESSAGE, CONFIG_CHANGED,
- *   SET_LOBBY_ERROR, HERO_SELECTED
+ *   SET_LOBBY_ERROR, HERO_SELECTED, HERO_ROSTER_UPDATED,
+ *   SET_CONTROLLED_HERO, SET_SELECTED_ROSTER_HEROES,
+ *   SET_LOBBY_MODE, SET_LOBBY_SELECTED_MAP
+ *
+ * Phase L4: CONFIG_CHANGED now derives lobbyMode and lobbySelectedMap
+ * from match_type/map_id, syncing non-host players when host switches modes.
  */
 
 export function lobbyReducer(state, action) {
@@ -116,12 +121,38 @@ export function lobbyReducer(state, action) {
     }
 
     case 'CONFIG_CHANGED': {
+      const newConfig = action.payload.config
+        ? { ...state.lobbyConfig, ...action.payload.config }
+        : state.lobbyConfig;
+
+      // Phase L4: Sync lobbyMode and lobbySelectedMap for non-host players
+      // when the host switches mode tabs via lobby_config
+      let newMode = state.lobbyMode;
+      let newSelectedMap = state.lobbySelectedMap;
+      if (action.payload.config?.match_type) {
+        const mt = action.payload.config.match_type;
+        if (mt === 'pvp') newMode = 'pvp';
+        else if (mt === 'pvpve') newMode = 'pvpve';
+        else if (mt === 'solo_pve' || mt === 'dungeon' || mt === 'mixed') newMode = 'pve';
+      }
+      if (action.payload.config?.map_id) {
+        const mapId = action.payload.config.map_id;
+        // Map backend map_id back to UI map selector value
+        if (mapId === 'arena_classic') newSelectedMap = 'arena_classic';
+        else if (mapId === 'wave_arena') newSelectedMap = 'wave_arena';
+        else if (mapId === 'training_room') newSelectedMap = 'training_room';
+        else if (mapId === 'procedural') {
+          // Procedural could be PvE (The Crypt) or PvPvE (The Crucible)
+          newSelectedMap = newMode === 'pvpve' ? 'the_crucible' : 'wfc_dungeon';
+        }
+      }
+
       return {
         ...state,
-        lobbyConfig: action.payload.config
-          ? { ...state.lobbyConfig, ...action.payload.config }
-          : state.lobbyConfig,
+        lobbyConfig: newConfig,
         lobbyPlayers: action.payload.players || state.lobbyPlayers,
+        lobbyMode: newMode,
+        lobbySelectedMap: newSelectedMap,
       };
     }
 
@@ -134,6 +165,28 @@ export function lobbyReducer(state, action) {
         lobbyPlayers: action.payload.players || state.lobbyPlayers,
       };
     }
+
+    // Phase L1: New Match Lobby state
+    case 'SET_LOBBY_MODE':
+      return { ...state, lobbyMode: action.payload };
+
+    case 'SET_LOBBY_SELECTED_MAP':
+      return { ...state, lobbySelectedMap: action.payload };
+
+    // Phase L2: Hero roster selection in new Match Lobby
+    case 'HERO_ROSTER_UPDATED': {
+      return {
+        ...state,
+        lobbyPlayers: action.payload.players || state.lobbyPlayers,
+        teamSlots: action.payload.team_slots || state.teamSlots,
+      };
+    }
+
+    case 'SET_CONTROLLED_HERO':
+      return { ...state, controlledHeroId: action.payload };
+
+    case 'SET_SELECTED_ROSTER_HEROES':
+      return { ...state, selectedRosterHeroes: action.payload };
 
     default:
       return state;

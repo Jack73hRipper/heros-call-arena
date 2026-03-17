@@ -316,8 +316,8 @@ class TestSafeZoneEnemyExclusion:
                 if dist <= 1 and room["assignedRole"] not in ("boss", "spawn", "stairs"):
                     safe_roles_seen.add(room["assignedRole"])
 
-        # Safe zone rooms should only get loot or empty
-        assert safe_roles_seen <= {"loot", "empty"}, \
+        # Safe zone rooms should only get loot, empty, or non-combat specialty archetypes
+        assert safe_roles_seen <= {"loot", "empty", "shrine", "library", "flooded"}, \
             f"Safe zone rooms got unexpected roles: {safe_roles_seen}"
 
 
@@ -539,7 +539,10 @@ class TestQuotaPreservation:
 
             roles = _count_roles(result)
             reserved = roles.get("boss", 0) + roles.get("spawn", 0) + roles.get("stairs", 0)
-            remaining = sum(roles.values()) - reserved
+            # Specialty archetypes are carved out before the deck is built
+            specialty = (roles.get("shrine", 0) + roles.get("library", 0)
+                         + roles.get("flooded", 0) + roles.get("prison", 0))
+            remaining = sum(roles.values()) - reserved - specialty
 
             enemy_count = roles.get("enemy", 0)
             expected_enemy = round(remaining * density)

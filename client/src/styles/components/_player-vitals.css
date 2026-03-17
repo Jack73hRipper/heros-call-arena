@@ -1,0 +1,205 @@
+/* ===== PlayerVitals — Vitals row HP bar ===== */
+
+.player-vitals {
+  z-index: 20;
+  width: 220px;
+  flex-shrink: 0;
+  padding: 0.4rem 0.55rem 0.5rem;
+  background: rgba(10, 10, 16, 0.88);
+  border: 1px solid rgba(120, 120, 120, 0.3);
+  border-top: 2px solid var(--class-color, #888);
+  border-radius: 4px;
+  animation: pv-fade-in 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+@keyframes pv-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Class identity row */
+.pv-class-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.3rem;
+  min-height: 1.6em;
+}
+
+.pv-class-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.pv-class-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pv-player-name {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  margin-left: auto;
+  font-family: var(--font-heading);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+/* HP bar */
+.pv-hp-bar-bg {
+  position: relative;
+  width: 100%;
+  height: 20px;
+  background: rgba(30, 30, 30, 0.9);
+  border: 1px solid rgba(80, 80, 80, 0.5);
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.pv-hp-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.35s ease;
+  background: linear-gradient(180deg, #5ddb5d 0%, #2fa82f 50%, #228b22 100%);
+  box-shadow: 0 0 6px rgba(68, 255, 68, 0.2);
+}
+
+/* Mid HP (25-50%) — yellow/amber */
+.pv-hp-bar-fill.pv-hp-mid {
+  background: linear-gradient(180deg, #f0d040 0%, #d4a017 50%, #b8860b 100%);
+  box-shadow: 0 0 6px rgba(240, 208, 64, 0.25);
+}
+
+/* Low HP (<= 25%) — red with pulse */
+.pv-hp-bar-fill.pv-hp-low {
+  background: linear-gradient(180deg, #ff5555 0%, #cc2222 50%, #991111 100%);
+  box-shadow: 0 0 8px rgba(255, 50, 50, 0.35);
+}
+
+/* Dead — grey */
+.pv-hp-bar-fill.pv-hp-dead {
+  background: linear-gradient(180deg, #555 0%, #333 100%);
+  box-shadow: none;
+}
+
+/* HP text centered inside the bar */
+.pv-hp-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+/* Danger state — red pulse on the frame border */
+.player-vitals.pv-danger {
+  animation: pv-danger-pulse 1.2s ease-in-out infinite;
+  border-color: rgba(255, 60, 60, 0.5);
+}
+
+@keyframes pv-danger-pulse {
+  0%, 100% {
+    box-shadow: 0 0 4px rgba(255, 40, 40, 0.15);
+    border-color: rgba(255, 60, 60, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(255, 40, 40, 0.4), inset 0 0 8px rgba(255, 40, 40, 0.08);
+    border-color: rgba(255, 60, 60, 0.7);
+  }
+}
+
+/* Dead state — desaturated, dimmed */
+.player-vitals.pv-dead {
+  opacity: 0.6;
+  filter: saturate(0.3);
+  border-color: rgba(100, 100, 100, 0.3);
+  border-top-color: rgba(100, 100, 100, 0.3);
+}
+
+/* Responsive — shrink on small screens */
+@media (max-height: 800px) {
+  .player-vitals {
+    width: 180px;
+    padding: 0.3rem 0.4rem 0.35rem;
+  }
+
+  .pv-hp-bar-bg {
+    height: 16px;
+  }
+
+  .pv-hp-text {
+    font-size: 0.65rem;
+  }
+
+  .pv-class-name {
+    font-size: 0.65rem;
+  }
+
+  .pv-class-icon {
+    font-size: 0.75rem;
+  }
+}
+
+/* ===== PartyVitals — Side-by-side party HP bars ===== */
+
+.party-vitals {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+}
+
+.party-vital {
+  flex: 1;
+  min-width: 120px;
+  max-width: 220px;
+  padding: 0.4rem 0.55rem 0.5rem;
+  background: rgba(10, 10, 16, 0.88);
+  border: 1px solid rgba(120, 120, 120, 0.3);
+  border-top: 2px solid var(--class-color, #888);
+  border-radius: 4px;
+  animation: pv-fade-in 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Reuse danger/dead states from PlayerVitals */
+.party-vital.pv-danger {
+  animation: pv-danger-pulse 1.2s ease-in-out infinite;
+  border-color: rgba(255, 60, 60, 0.5);
+}
+
+.party-vital.pv-dead {
+  opacity: 0.6;
+  filter: saturate(0.3);
+  border-color: rgba(100, 100, 100, 0.3);
+  border-top-color: rgba(100, 100, 100, 0.3);
+}
+
+@media (max-height: 800px) {
+  .party-vital {
+    min-width: 100px;
+    padding: 0.3rem 0.4rem 0.35rem;
+  }
+}

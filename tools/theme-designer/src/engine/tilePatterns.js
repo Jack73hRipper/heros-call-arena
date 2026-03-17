@@ -466,6 +466,386 @@ export function drawWall_ironPlate(ctx, x, y, size, seed, palette, params) {
   }
 }
 
+/**
+ * Forgotten Cellar wall — rough-hewn quarry stone with chisel
+ * marks and irregular block sizes. Plain, utilitarian.
+ */
+export function drawWall_roughHewn(ctx, x, y, size, seed, palette, params) {
+  const { brickRows = 3, mortarWidth = 2 } = params;
+  const h = cellHash;
+
+  // Base fill
+  ctx.fillStyle = palette.primary;
+  ctx.fillRect(x, y, size, size);
+
+  const brickH = size / brickRows;
+
+  // Irregular rough-cut blocks — 2-4 per row with varied widths
+  for (let r = 0; r < brickRows; r++) {
+    const numBlocks = 2 + Math.floor(h(r, seed, 1) * 3); // 2-4 blocks
+    let cx = x;
+    for (let c = 0; c < numBlocks; c++) {
+      // Distribute width unevenly
+      const fraction = (1 / numBlocks) + (h(r * 10 + c, seed, 2) - 0.5) * 0.3;
+      const brickW = Math.max(8, size * fraction);
+      const drawX = cx + mortarWidth;
+      const drawY = y + r * brickH + mortarWidth;
+      const drawW = Math.min(brickW - mortarWidth * 2, x + size - mortarWidth - drawX);
+      const drawH = brickH - mortarWidth * 2;
+
+      if (drawW <= 2 || drawH <= 2 || drawX >= x + size - mortarWidth) break;
+
+      // Stone face with color variation
+      const v = h(r * 10 + c, seed, 3);
+      ctx.fillStyle = varyColor(palette.secondary, 10, v);
+      ctx.fillRect(drawX, drawY, drawW, drawH);
+
+      // Top-edge highlight
+      ctx.fillStyle = shiftColor(palette.secondary, 8);
+      ctx.fillRect(drawX, drawY, drawW, 1);
+
+      // Bottom-edge shadow
+      ctx.fillStyle = shiftColor(palette.primary, -5);
+      ctx.fillRect(drawX, drawY + drawH - 1, drawW, 1);
+
+      // Chisel marks: 2-3 short angled lines per block
+      const chiselCount = 2 + Math.floor(h(r * 10 + c, seed, 4) * 2);
+      ctx.strokeStyle = shiftColor(palette.secondary, -8);
+      ctx.lineWidth = 0.8;
+      for (let m = 0; m < chiselCount; m++) {
+        const mx = drawX + h(r * 10 + c + m, seed, 5) * (drawW - 4) + 2;
+        const my = drawY + h(r * 10 + c + m, seed, 6) * (drawH - 4) + 2;
+        ctx.beginPath();
+        ctx.moveTo(mx, my);
+        ctx.lineTo(mx + 2 + h(m, seed, 7) * 2, my + 1 + h(m, seed, 8));
+        ctx.stroke();
+      }
+
+      cx += brickW;
+    }
+  }
+
+  // Horizontal mortar lines
+  ctx.fillStyle = palette.mortar;
+  for (let r = 1; r < brickRows; r++) {
+    ctx.fillRect(x, y + r * brickH - 1, size, mortarWidth);
+  }
+}
+
+/**
+ * Pale Ossuary wall — horizontal rows of bone-like rounded
+ * segments, densely packed, with thin dark seams.
+ */
+export function drawWall_boneStack(ctx, x, y, size, seed, palette, params) {
+  const { boneRows = 4, seamWidth = 1 } = params;
+  const h = cellHash;
+
+  // Base fill
+  ctx.fillStyle = palette.primary;
+  ctx.fillRect(x, y, size, size);
+
+  const rowH = size / boneRows;
+
+  // Rows of bone segments
+  for (let r = 0; r < boneRows; r++) {
+    const numBones = 3 + Math.floor(h(r, seed, 1) * 3); // 3-5 bones per row
+    let cx = x;
+
+    for (let b = 0; b < numBones; b++) {
+      const boneW = (size / numBones) + (h(r * 10 + b, seed, 2) - 0.5) * 6;
+      const drawX = cx + 1;
+      const drawY = y + r * rowH + seamWidth;
+      const drawW = Math.min(boneW - 2, x + size - 1 - drawX);
+      const drawH = rowH - seamWidth * 2;
+
+      if (drawW <= 4 || drawH <= 2 || drawX >= x + size - 1) break;
+
+      // Bone color with slight variation
+      const v = h(r * 10 + b, seed, 3);
+      ctx.fillStyle = varyColor(palette.secondary, 4, v);
+
+      // Rounded rectangle bone segment
+      const radius = Math.min(2, drawW / 4, drawH / 4);
+      ctx.beginPath();
+      ctx.moveTo(drawX + radius, drawY);
+      ctx.lineTo(drawX + drawW - radius, drawY);
+      ctx.arcTo(drawX + drawW, drawY, drawX + drawW, drawY + radius, radius);
+      ctx.lineTo(drawX + drawW, drawY + drawH - radius);
+      ctx.arcTo(drawX + drawW, drawY + drawH, drawX + drawW - radius, drawY + drawH, radius);
+      ctx.lineTo(drawX + radius, drawY + drawH);
+      ctx.arcTo(drawX, drawY + drawH, drawX, drawY + drawH - radius, radius);
+      ctx.lineTo(drawX, drawY + radius);
+      ctx.arcTo(drawX, drawY, drawX + radius, drawY, radius);
+      ctx.closePath();
+      ctx.fill();
+
+      // Top highlight on bone
+      ctx.fillStyle = shiftColor(palette.secondary, 6);
+      ctx.fillRect(drawX + radius, drawY + 1, drawW - radius * 2, 1);
+
+      cx += boneW;
+    }
+
+    // Dark seam line between rows
+    if (r < boneRows - 1) {
+      ctx.fillStyle = palette.mortar;
+      ctx.fillRect(x, y + (r + 1) * rowH - 1, size, seamWidth);
+    }
+  }
+}
+
+/**
+ * Silent Vault wall — tight-fit ashlar masonry with perfectly
+ * uniform blocks, hair-thin mortar, and geometric precision.
+ */
+export function drawWall_ashlarBlock(ctx, x, y, size, seed, palette, params) {
+  const { blockRows = 3, blockCols = 2, mortarWidth = 1 } = params;
+  const h = cellHash;
+
+  // Base fill
+  ctx.fillStyle = palette.primary;
+  ctx.fillRect(x, y, size, size);
+
+  const blockH = size / blockRows;
+  const blockW = size / blockCols;
+
+  // Perfectly aligned ashlar blocks — no row offset
+  for (let r = 0; r < blockRows; r++) {
+    for (let c = 0; c < blockCols; c++) {
+      const bx = x + c * blockW + mortarWidth;
+      const by = y + r * blockH + mortarWidth;
+      const bw = blockW - mortarWidth * 2;
+      const bh = blockH - mortarWidth * 2;
+
+      if (bw <= 2 || bh <= 2) continue;
+
+      // Block face
+      const v = h(r * 10 + c, seed, 1);
+      ctx.fillStyle = varyColor(palette.secondary, 5, v);
+      ctx.fillRect(bx, by, bw, bh);
+
+      // Gradient simulation: 1px lighter stripe at top
+      ctx.fillStyle = shiftColor(palette.secondary, 6);
+      ctx.fillRect(bx, by, bw, 1);
+
+      // 1px darker at bottom
+      ctx.fillStyle = shiftColor(palette.primary, -3);
+      ctx.fillRect(bx, by + bh - 1, bw, 1);
+
+      // Faint incised line border 2px inside each block
+      ctx.strokeStyle = shiftColor(palette.secondary, -4);
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(bx + 2, by + 2, bw - 4, bh - 4);
+    }
+  }
+
+  // Hair-thin mortar lines
+  ctx.fillStyle = palette.mortar;
+  for (let r = 1; r < blockRows; r++) {
+    ctx.fillRect(x, y + r * blockH - 1, size, mortarWidth);
+  }
+  for (let c = 1; c < blockCols; c++) {
+    ctx.fillRect(x + c * blockW - 1, y, mortarWidth, size);
+  }
+}
+
+/**
+ * Fungal Grotto wall — organic bulging masses with bioluminescent dots.
+ * Irregular overlapping ellipses, no mortar lines, thin tendrils.
+ */
+export function drawWall_fungalGrowth(ctx, x, y, size, seed, palette, params) {
+  const h = cellHash;
+
+  // Base fill — deep forest black-green
+  ctx.fillStyle = palette.primary;
+  ctx.fillRect(x, y, size, size);
+
+  // 4-6 irregular organic masses (overlapping ellipses)
+  const massCount = 4 + Math.floor(h(0, seed, 1) * 3);
+  for (let i = 0; i < massCount; i++) {
+    const cx = x + h(i, seed, 2) * size;
+    const cy = y + h(i, seed, 3) * size;
+    const rx = size * 0.15 + h(i, seed, 4) * size * 0.2;
+    const ry = size * 0.12 + h(i, seed, 5) * size * 0.18;
+    ctx.fillStyle = varyColor(palette.secondary, 6, h(i, seed, 6));
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, rx, ry, h(i, seed, 7) * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 2-3 bioluminescent dots (accent color, small glow)
+  const dotCount = 2 + Math.floor(h(0, seed, 10) * 2);
+  for (let i = 0; i < dotCount; i++) {
+    const dx = x + h(i, seed, 11) * (size - 6) + 3;
+    const dy = y + h(i, seed, 12) * (size - 6) + 3;
+    const grad = ctx.createRadialGradient(dx, dy, 0, dx, dy, 4);
+    grad.addColorStop(0, hexAlpha(palette.highlight, 0.6));
+    grad.addColorStop(1, hexAlpha(palette.highlight, 0));
+    ctx.fillStyle = grad;
+    ctx.fillRect(dx - 4, dy - 4, 8, 8);
+    ctx.fillStyle = palette.accent;
+    ctx.fillRect(dx, dy, 1, 1);
+  }
+
+  // Thin tendril lines from top and bottom
+  ctx.strokeStyle = hexAlpha(palette.accent, 0.25);
+  ctx.lineWidth = 0.8;
+  for (let i = 0; i < 2; i++) {
+    const tx = x + h(i, seed, 20) * (size - 4) + 2;
+    ctx.beginPath();
+    ctx.moveTo(tx, y);
+    ctx.quadraticCurveTo(tx + (h(i, seed, 21) - 0.5) * 8, y + size * 0.3, tx + (h(i, seed, 22) - 0.5) * 6, y + size * 0.5);
+    ctx.stroke();
+    const bx = x + h(i + 2, seed, 20) * (size - 4) + 2;
+    ctx.beginPath();
+    ctx.moveTo(bx, y + size);
+    ctx.quadraticCurveTo(bx + (h(i + 2, seed, 21) - 0.5) * 8, y + size * 0.7, bx + (h(i + 2, seed, 22) - 0.5) * 6, y + size * 0.5);
+    ctx.stroke();
+  }
+}
+
+/**
+ * Frozen Crypt wall — angular crystal facets with frost lines.
+ * 3-4 irregular polygons simulating crystal faces, highlight edge, white frost seams.
+ */
+export function drawWall_iceCrystal(ctx, x, y, size, seed, palette, params) {
+  const h = cellHash;
+
+  // Base fill — deep ice-blue black
+  ctx.fillStyle = palette.primary;
+  ctx.fillRect(x, y, size, size);
+
+  // 3-4 crystal facets as irregular polygons
+  const facetCount = 3 + Math.floor(h(0, seed, 1) * 2);
+  const cx = x + size / 2, cy = y + size / 2;
+
+  for (let i = 0; i < facetCount; i++) {
+    const angle = (i / facetCount) * Math.PI * 2 + h(i, seed, 2) * 0.5;
+    const nextAngle = ((i + 1) / facetCount) * Math.PI * 2 + h(i + 1, seed, 2) * 0.5;
+    const r1 = size * 0.3 + h(i, seed, 3) * size * 0.2;
+    const r2 = size * 0.3 + h(i + 1, seed, 3) * size * 0.2;
+
+    // Each facet: slightly different shade of blue-grey
+    ctx.fillStyle = varyColor(palette.secondary, 8, h(i, seed, 4));
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(angle) * r1, cy + Math.sin(angle) * r1);
+    ctx.lineTo(cx + Math.cos(nextAngle) * r2, cy + Math.sin(nextAngle) * r2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Frost seam line at polygon edge
+    ctx.strokeStyle = hexAlpha('#ffffff', 0.15);
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(angle) * r1, cy + Math.sin(angle) * r1);
+    ctx.lineTo(cx + Math.cos(nextAngle) * r2, cy + Math.sin(nextAngle) * r2);
+    ctx.stroke();
+  }
+
+  // Bright highlight on 1 facet face (light refraction)
+  const hlFacet = Math.floor(h(0, seed, 10) * facetCount);
+  const hlAngle = (hlFacet / facetCount) * Math.PI * 2 + h(hlFacet, seed, 2) * 0.5;
+  const hlR = size * 0.15 + h(hlFacet, seed, 11) * size * 0.1;
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.2);
+  ctx.beginPath();
+  ctx.arc(cx + Math.cos(hlAngle) * hlR, cy + Math.sin(hlAngle) * hlR, size * 0.08, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Outer edge darkening
+  ctx.fillStyle = hexAlpha(palette.primary, 0.3);
+  ctx.fillRect(x, y, size, 2);
+  ctx.fillRect(x, y + size - 2, size, 2);
+  ctx.fillRect(x, y, 2, size);
+  ctx.fillRect(x + size - 2, y, 2, size);
+}
+
+/**
+ * Cursed Shrine wall — dark marble blocks with red vein lines and gold symbols.
+ * 2x2 grid, bezier curve veins, occasional geometric gold mark.
+ */
+export function drawWall_bloodStone(ctx, x, y, size, seed, palette, params) {
+  const { blockRows = 2, blockCols = 2, mortarWidth = 2 } = params;
+  const h = cellHash;
+
+  // Base fill
+  ctx.fillStyle = palette.primary;
+  ctx.fillRect(x, y, size, size);
+
+  const blockH = size / blockRows;
+  const blockW = size / blockCols;
+
+  // Dark marble blocks
+  for (let r = 0; r < blockRows; r++) {
+    for (let c = 0; c < blockCols; c++) {
+      const bx = x + c * blockW + mortarWidth;
+      const by = y + r * blockH + mortarWidth;
+      const bw = blockW - mortarWidth * 2;
+      const bh = blockH - mortarWidth * 2;
+      if (bw <= 2 || bh <= 2) continue;
+
+      ctx.fillStyle = varyColor(palette.secondary, 5, h(r * 10 + c, seed, 1));
+      ctx.fillRect(bx, by, bw, bh);
+
+      // Top highlight, bottom shadow
+      ctx.fillStyle = shiftColor(palette.secondary, 5);
+      ctx.fillRect(bx, by, bw, 1);
+      ctx.fillStyle = shiftColor(palette.primary, -3);
+      ctx.fillRect(bx, by + bh - 1, bw, 1);
+
+      // Red vein lines (1-2 per block, bezier curves)
+      const veinCount = 1 + Math.floor(h(r * 10 + c, seed, 5) * 2);
+      ctx.strokeStyle = hexAlpha(palette.accent, 0.35);
+      ctx.lineWidth = 0.8;
+      for (let v = 0; v < veinCount; v++) {
+        const vx1 = bx + h(r * 10 + c + v, seed, 6) * bw;
+        const vy1 = by + h(r * 10 + c + v, seed, 7) * bh;
+        const vx2 = bx + h(r * 10 + c + v, seed, 8) * bw;
+        const vy2 = by + h(r * 10 + c + v, seed, 9) * bh;
+        const cpx = bx + h(r * 10 + c + v, seed, 10) * bw;
+        const cpy = by + h(r * 10 + c + v, seed, 11) * bh;
+        ctx.beginPath();
+        ctx.moveTo(vx1, vy1);
+        ctx.quadraticCurveTo(cpx, cpy, vx2, vy2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // Occasional gold symbol remnant (1 per tile, seeded)
+  if (h(0, seed, 20) < 0.35) {
+    const sx = x + size * 0.3 + h(0, seed, 21) * size * 0.4;
+    const sy = y + size * 0.3 + h(0, seed, 22) * size * 0.4;
+    ctx.strokeStyle = hexAlpha(palette.highlight, 0.25);
+    ctx.lineWidth = 1;
+    // Simple geometric mark — small diamond
+    ctx.beginPath();
+    ctx.moveTo(sx, sy - 3);
+    ctx.lineTo(sx + 3, sy);
+    ctx.lineTo(sx, sy + 3);
+    ctx.lineTo(sx - 3, sy);
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  // Deep mortar with faint red glow
+  ctx.fillStyle = palette.mortar;
+  for (let r = 1; r < blockRows; r++) {
+    ctx.fillRect(x, y + r * blockH - 1, size, mortarWidth);
+  }
+  for (let c = 1; c < blockCols; c++) {
+    ctx.fillRect(x + c * blockW - 1, y, mortarWidth, size);
+  }
+  // Faint red glow over mortar
+  ctx.fillStyle = hexAlpha(palette.accent, 0.08);
+  for (let r = 1; r < blockRows; r++) {
+    ctx.fillRect(x, y + r * blockH - 2, size, mortarWidth + 2);
+  }
+  for (let c = 1; c < blockCols; c++) {
+    ctx.fillRect(x + c * blockW - 2, y, mortarWidth + 2, size);
+  }
+}
+
 // ═══════════════════════════════════════════════════════════
 //  FLOOR STYLES
 // ═══════════════════════════════════════════════════════════
@@ -701,16 +1081,12 @@ export function drawFloor_crackedMarble(ctx, x, y, size, seed, palette, params) 
  * and darkness visible below. Oil stains.
  */
 export function drawFloor_metalGrate(ctx, x, y, size, seed, palette, params) {
-  const { groutWidth = 2, grateLineSpacing = 10, oilChance = 0.0 } = params;
+  const { grateLineSpacing = 10, oilChance = 0.0 } = params;
   const h = cellHash;
 
-  // Void below (very dark)
-  ctx.fillStyle = palette.grout;
-  ctx.fillRect(x, y, size, size);
-
-  // Metal grate surface
+  // Solid metal grate surface — no visible border gap between tiles
   ctx.fillStyle = palette.floor;
-  ctx.fillRect(x + groutWidth, y + groutWidth, size - groutWidth * 2, size - groutWidth * 2);
+  ctx.fillRect(x, y, size, size);
 
   // Crosshatch grate lines
   ctx.strokeStyle = shiftColor(palette.floor, -10);
@@ -718,15 +1094,15 @@ export function drawFloor_metalGrate(ctx, x, y, size, seed, palette, params) {
   for (let i = grateLineSpacing; i < size; i += grateLineSpacing) {
     // Horizontal bars
     ctx.beginPath();
-    ctx.moveTo(x + groutWidth, y + i);
-    ctx.lineTo(x + size - groutWidth, y + i);
+    ctx.moveTo(x, y + i);
+    ctx.lineTo(x + size, y + i);
     ctx.stroke();
   }
   for (let i = grateLineSpacing; i < size; i += grateLineSpacing) {
     // Vertical bars
     ctx.beginPath();
-    ctx.moveTo(x + i, y + groutWidth);
-    ctx.lineTo(x + i, y + size - groutWidth);
+    ctx.moveTo(x + i, y);
+    ctx.lineTo(x + i, y + size);
     ctx.stroke();
   }
 
@@ -735,15 +1111,15 @@ export function drawFloor_metalGrate(ctx, x, y, size, seed, palette, params) {
   ctx.lineWidth = 0.5;
   for (let i = grateLineSpacing; i < size; i += grateLineSpacing) {
     ctx.beginPath();
-    ctx.moveTo(x + groutWidth, y + i - 1);
-    ctx.lineTo(x + size - groutWidth, y + i - 1);
+    ctx.moveTo(x, y + i - 1);
+    ctx.lineTo(x + size, y + i - 1);
     ctx.stroke();
   }
 
-  // Outer frame
-  ctx.strokeStyle = shiftColor(palette.secondary, 5);
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x + groutWidth, y + groutWidth, size - groutWidth * 2, size - groutWidth * 2);
+  // Subtle outer frame
+  ctx.strokeStyle = hexAlpha(palette.secondary, 0.15);
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
 
   // Oil stain
   if (h(0, seed, 200) < oilChance) {
@@ -753,6 +1129,298 @@ export function drawFloor_metalGrate(ctx, x, y, size, seed, palette, params) {
     ctx.beginPath();
     ctx.ellipse(ox + 4, oy + 3, 4 + h(0, seed, 203) * 3, 2 + h(0, seed, 204) * 2, 0, 0, Math.PI * 2);
     ctx.fill();
+  }
+}
+
+/**
+ * Forgotten Cellar floor — compacted dirt with tiny pebble
+ * dots. No grid pattern — organic texture.
+ */
+export function drawFloor_packedEarth(ctx, x, y, size, seed, palette, params) {
+  const h = cellHash;
+
+  // Base fill — single solid fill, no slab grid
+  ctx.fillStyle = palette.floor;
+  ctx.fillRect(x, y, size, size);
+
+  // 4-8 tiny pebble dots scattered deterministically
+  const pebbleCount = 4 + Math.floor(h(0, seed, 100) * 5);
+  for (let i = 0; i < pebbleCount; i++) {
+    const px = x + h(i, seed, 101) * (size - 4) + 2;
+    const py = y + h(i, seed, 102) * (size - 4) + 2;
+    const pSize = 1 + Math.floor(h(i, seed, 103) * 2);
+    ctx.fillStyle = shiftColor(palette.floor, h(i, seed, 104) < 0.5 ? 5 : -5);
+    ctx.beginPath();
+    ctx.arc(px, py, pSize * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 1-2 faint scratch lines (directional grain)
+  const scratchCount = 1 + Math.floor(h(0, seed, 110) * 2);
+  ctx.strokeStyle = shiftColor(palette.floor, -3);
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i < scratchCount; i++) {
+    const sx = x + h(i, seed, 111) * size;
+    const sy = y + h(i, seed, 112) * size * 0.3;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx + h(i, seed, 113) * size * 0.4, sy + size * 0.6 + h(i, seed, 114) * size * 0.3);
+    ctx.stroke();
+  }
+}
+
+/**
+ * Pale Ossuary floor — smooth large tiles with barely visible
+ * seam lines. Austere, clean. The emptiness is the horror.
+ */
+export function drawFloor_polishedSlab(ctx, x, y, size, seed, palette, params) {
+  const { slabGrid = 2, groutWidth = 1 } = params;
+  const h = cellHash;
+
+  // Base floor fill
+  ctx.fillStyle = palette.floor;
+  ctx.fillRect(x, y, size, size);
+
+  const slabW = size / slabGrid;
+
+  // 2×2 large slabs with very faint seam
+  for (let r = 0; r < slabGrid; r++) {
+    for (let c = 0; c < slabGrid; c++) {
+      const sx = x + c * slabW + groutWidth;
+      const sy = y + r * slabW + groutWidth;
+      const sw = slabW - groutWidth * 2;
+      const sh = slabW - groutWidth * 2;
+
+      // Nearly identical color — only ±1 RGB variation
+      const v = h(r * 3 + c, seed, 100);
+      ctx.fillStyle = varyColor(palette.floor, 1, v);
+      ctx.fillRect(sx, sy, sw, sh);
+
+      // Optional faint reflection highlight (1px lighter bar at 30% height)
+      if (h(r * 3 + c, seed, 105) < 0.4) {
+        ctx.fillStyle = shiftColor(palette.floor, 3);
+        ctx.fillRect(sx + 2, sy + sh * 0.3, sw - 4, 1);
+      }
+    }
+  }
+
+  // Very faint grout lines — barely perceptible seams
+  ctx.fillStyle = hexAlpha(palette.grout, 0.08);
+  for (let r = 1; r < slabGrid; r++) {
+    ctx.fillRect(x, y + r * slabW, size, 1);
+  }
+  for (let c = 1; c < slabGrid; c++) {
+    ctx.fillRect(x + c * slabW, y, 1, size);
+  }
+}
+
+/**
+ * Silent Vault floor — geometric tile pattern with a faint
+ * dust film overlay. Archival/library feel.
+ */
+export function drawFloor_dustyTile(ctx, x, y, size, seed, palette, params) {
+  const { slabGrid = 3, groutWidth = 1 } = params;
+  const h = cellHash;
+
+  // Base floor fill
+  ctx.fillStyle = palette.floor;
+  ctx.fillRect(x, y, size, size);
+
+  const slabW = size / slabGrid;
+
+  // 3×3 smaller tile grid
+  for (let r = 0; r < slabGrid; r++) {
+    for (let c = 0; c < slabGrid; c++) {
+      const sx = x + c * slabW + groutWidth;
+      const sy = y + r * slabW + groutWidth;
+      const sw = slabW - groutWidth * 2;
+      const sh = slabW - groutWidth * 2;
+
+      const v = h(r * 3 + c, seed, 100);
+      ctx.fillStyle = varyColor(palette.floor, 3, v);
+      ctx.fillRect(sx, sy, sw, sh);
+
+      // 1 seeded "dust mote" per tile (1px, slightly lighter)
+      const dx = sx + h(r * 3 + c, seed, 105) * (sw - 2) + 1;
+      const dy = sy + h(r * 3 + c, seed, 106) * (sh - 2) + 1;
+      ctx.fillStyle = shiftColor(palette.floor, 4);
+      ctx.fillRect(dx, dy, 1, 1);
+    }
+  }
+
+  // Thin dust film: semi-transparent grey overlay
+  ctx.fillStyle = 'rgba(40, 40, 50, 0.04)';
+  ctx.fillRect(x, y, size, size);
+}
+
+/**
+ * Fungal Grotto floor — dark green-brown base with mycelium network lines.
+ * Thin branching lines + faint spore dots.
+ */
+export function drawFloor_myceliumMat(ctx, x, y, size, seed, palette, params) {
+  const h = cellHash;
+
+  // Dark green-brown base fill
+  ctx.fillStyle = palette.floor;
+  ctx.fillRect(x, y, size, size);
+
+  // Subtle floor variation
+  ctx.fillStyle = varyColor(palette.floor, 3, h(0, seed, 100));
+  ctx.fillRect(x + 2, y + 2, size - 4, size - 4);
+
+  // Thin branching mycelium lines (2-3 per tile, seeded)
+  const lineCount = 2 + Math.floor(h(0, seed, 1) * 2);
+  ctx.strokeStyle = hexAlpha(palette.accent, 0.2);
+  ctx.lineWidth = 0.6;
+  for (let i = 0; i < lineCount; i++) {
+    const sx = x + h(i, seed, 2) * size;
+    const sy = y + h(i, seed, 3) * size;
+    const ex = x + h(i, seed, 4) * size;
+    const ey = y + h(i, seed, 5) * size;
+    const cpx = x + h(i, seed, 6) * size;
+    const cpy = y + h(i, seed, 7) * size;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.quadraticCurveTo(cpx, cpy, ex, ey);
+    ctx.stroke();
+
+    // Branch fork
+    if (h(i, seed, 8) > 0.4) {
+      const fx = (ex + cpx) / 2 + (h(i, seed, 9) - 0.5) * size * 0.3;
+      const fy = (ey + cpy) / 2 + (h(i, seed, 10) - 0.5) * size * 0.3;
+      ctx.beginPath();
+      ctx.moveTo((sx + cpx) / 2, (sy + cpy) / 2);
+      ctx.lineTo(fx, fy);
+      ctx.stroke();
+    }
+  }
+
+  // Very faint spore dots (highlight, 0.2 alpha, 1px)
+  const sporeCount = 3 + Math.floor(h(0, seed, 20) * 3);
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.2);
+  for (let i = 0; i < sporeCount; i++) {
+    const dx = x + h(i, seed, 21) * (size - 2) + 1;
+    const dy = y + h(i, seed, 22) * (size - 2) + 1;
+    ctx.fillRect(dx, dy, 1, 1);
+  }
+}
+
+/**
+ * Frozen Crypt floor — frost-covered 2x2 slab grid with crystal glints.
+ * Barely visible slabs under frost film, thin ice crack.
+ */
+export function drawFloor_frozenStone(ctx, x, y, size, seed, palette, params) {
+  const { slabGrid = 2, groutWidth = 1 } = params;
+  const h = cellHash;
+
+  // Base floor fill
+  ctx.fillStyle = palette.floor;
+  ctx.fillRect(x, y, size, size);
+
+  // 2×2 slab grid barely visible under frost
+  const slabW = size / slabGrid;
+  for (let r = 0; r < slabGrid; r++) {
+    for (let c = 0; c < slabGrid; c++) {
+      const sx = x + c * slabW + groutWidth;
+      const sy = y + r * slabW + groutWidth;
+      const sw = slabW - groutWidth * 2;
+      const sh = slabW - groutWidth * 2;
+      ctx.fillStyle = varyColor(palette.floor, 3, h(r * 3 + c, seed, 100));
+      ctx.fillRect(sx, sy, sw, sh);
+    }
+  }
+
+  // Light frost film overlay (rgba white, 0.04)
+  ctx.fillStyle = 'rgba(200, 220, 255, 0.04)';
+  ctx.fillRect(x, y, size, size);
+
+  // 1-2 tiny crystal glint dots (highlight color, 1px)
+  const glintCount = 1 + Math.floor(h(0, seed, 1) * 2);
+  for (let i = 0; i < glintCount; i++) {
+    const gx = x + h(i, seed, 2) * (size - 4) + 2;
+    const gy = y + h(i, seed, 3) * (size - 4) + 2;
+    ctx.fillStyle = hexAlpha(palette.highlight, 0.4);
+    ctx.fillRect(gx, gy, 1, 1);
+  }
+
+  // Optional thin crack line (ice crack, 0.8px, very faint)
+  if (h(0, seed, 10) < 0.35) {
+    ctx.strokeStyle = hexAlpha(palette.highlight, 0.15);
+    ctx.lineWidth = 0.8;
+    const cx1 = x + h(0, seed, 11) * size;
+    const cy1 = y + h(0, seed, 12) * size;
+    const cx2 = x + h(0, seed, 13) * size;
+    const cy2 = y + h(0, seed, 14) * size;
+    ctx.beginPath();
+    ctx.moveTo(cx1, cy1);
+    ctx.lineTo(cx2, cy2);
+    ctx.stroke();
+  }
+}
+
+/**
+ * Cursed Shrine floor — geometric pentagonal/hexagonal tile pattern.
+ * Accent-colored ritual geometry borders, occasional gold center dots.
+ */
+export function drawFloor_ritualTile(ctx, x, y, size, seed, palette, params) {
+  const { slabGrid = 3, groutWidth = 1 } = params;
+  const h = cellHash;
+
+  // Base floor fill
+  ctx.fillStyle = palette.floor;
+  ctx.fillRect(x, y, size, size);
+
+  // Faint overall dark red wash
+  ctx.fillStyle = hexAlpha(palette.accent, 0.04);
+  ctx.fillRect(x, y, size, size);
+
+  // Geometric tile pattern — pentagonal approximation via 3x3 grid with diagonal lines
+  const slabW = size / slabGrid;
+  for (let r = 0; r < slabGrid; r++) {
+    for (let c = 0; c < slabGrid; c++) {
+      const sx = x + c * slabW;
+      const sy = y + r * slabW;
+      const sw = slabW;
+      const sh = slabW;
+
+      ctx.fillStyle = varyColor(palette.floor, 3, h(r * slabGrid + c, seed, 100));
+      ctx.fillRect(sx + groutWidth, sy + groutWidth, sw - groutWidth * 2, sh - groutWidth * 2);
+
+      // Diagonal line across each sub-tile for pentagonal feel
+      ctx.strokeStyle = hexAlpha(palette.accent, 0.12);
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      if ((r + c) % 2 === 0) {
+        ctx.moveTo(sx, sy + sh);
+        ctx.lineTo(sx + sw, sy);
+      } else {
+        ctx.moveTo(sx, sy);
+        ctx.lineTo(sx + sw, sy + sh);
+      }
+      ctx.stroke();
+
+      // Tiny gold dot in center of some tiles (seeded)
+      if (h(r * slabGrid + c, seed, 1) < 0.3) {
+        ctx.fillStyle = hexAlpha(palette.highlight, 0.35);
+        ctx.fillRect(sx + sw / 2, sy + sh / 2, 1, 1);
+      }
+    }
+  }
+
+  // Thin accent-colored border lines at tile borders
+  ctx.strokeStyle = hexAlpha(palette.accent, 0.15);
+  ctx.lineWidth = 0.5;
+  for (let r = 1; r < slabGrid; r++) {
+    ctx.beginPath();
+    ctx.moveTo(x, y + r * slabW);
+    ctx.lineTo(x + size, y + r * slabW);
+    ctx.stroke();
+  }
+  for (let c = 1; c < slabGrid; c++) {
+    ctx.beginPath();
+    ctx.moveTo(x + c * slabW, y);
+    ctx.lineTo(x + c * slabW, y + size);
+    ctx.stroke();
   }
 }
 
@@ -892,41 +1560,121 @@ export function drawDoor(ctx, x, y, size, seed, palette, theme, isOpen) {
 
 /**
  * Draw a chest tile using theme palette.
+ * Renders a detailed barrel-lidded chest with metal bands, clasp, and 3D shading.
  */
 export function drawChest(ctx, x, y, size, seed, palette, theme, isOpened) {
   // Floor underneath
   const h = cellHash;
-  // Use the floor style from the theme
   const floorFn = FLOOR_DRAW_MAP[theme.floor.style] || drawFloor_flagstone;
   floorFn(ctx, x, y, size, seed, palette, theme.floor);
 
-  // Chest icon
-  const chestColor = isOpened
-    ? shiftColor(palette.accent, -20)
-    : palette.highlight || '#DAA520';
-  const cw = size * 0.5;
-  const ch = size * 0.4;
-  const cx = x + (size - cw) / 2;
-  const cy = y + (size - ch) / 2;
+  // Chest colors from palette
+  const bodyColor = isOpened ? shiftColor(palette.accent, -20) : (palette.highlight || '#DAA520');
+  const bodyDark = shiftColor(bodyColor, -30);
+  const bodyHi = shiftColor(bodyColor, 20);
+  const bandColor = shiftColor(palette.primary, -10);
+  const latchColor = palette.highlight || '#FFD700';
 
-  ctx.fillStyle = chestColor;
-  ctx.fillRect(cx, cy, cw, ch);
-  ctx.strokeStyle = shiftColor(palette.primary, 10);
-  ctx.lineWidth = 1;
-  ctx.strokeRect(cx, cy, cw, ch);
+  // Proportions
+  const cw = size * 0.58;
+  const ch = size * 0.42;
+  const lidH = size * 0.14;
+  const cx = x + (size - cw) / 2;
+  const cy = y + (size - ch - lidH) / 2 + size * 0.06;
+  const lidY = cy - lidH;
+  const lidOverhang = cw * 0.04;
+  const lx = cx - lidOverhang;
+  const lw = cw + lidOverhang * 2;
 
   if (!isOpened) {
+    // Lid
+    ctx.fillStyle = shiftColor(bodyColor, 10);
+    ctx.fillRect(lx, lidY, lw, lidH);
+    ctx.fillStyle = bodyHi;
+    ctx.fillRect(lx + 1, lidY, lw - 2, 2);
+    ctx.strokeStyle = bodyDark;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(lx, lidY, lw, lidH);
+
+    // Body
+    ctx.fillStyle = bodyColor;
+    ctx.fillRect(cx, cy, cw, ch);
+    ctx.fillStyle = bodyDark;
+    ctx.fillRect(cx + cw - cw * 0.12, cy, cw * 0.12, ch);
+    ctx.fillStyle = bodyHi;
+    ctx.fillRect(cx, cy, cw * 0.06, ch);
+    ctx.strokeStyle = bodyDark;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(cx, cy, cw, ch);
+
+    // Metal bands
+    ctx.fillStyle = bandColor;
+    const bandH = Math.max(2, size * 0.04);
+    ctx.fillRect(cx + 1, cy + ch * 0.25, cw - 2, bandH);
+    ctx.fillRect(cx + 1, cy + ch * 0.70, cw - 2, bandH);
+
     // Latch
-    ctx.fillStyle = palette.highlight || '#FFD700';
-    ctx.fillRect(cx + cw / 2 - 3, cy + ch / 2 - 2, 6, 4);
-  } else {
-    // Open lid line
-    ctx.strokeStyle = shiftColor(chestColor, 10);
-    ctx.lineWidth = 2;
+    const latchW = Math.max(4, size * 0.10);
+    const latchH2 = Math.max(6, size * 0.12);
+    const latchX = cx + cw / 2 - latchW / 2;
+    const latchY2 = cy + ch * 0.35;
+    ctx.fillStyle = latchColor;
+    ctx.fillRect(latchX, latchY2, latchW, latchH2);
+    ctx.strokeStyle = bodyDark;
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(latchX, latchY2, latchW, latchH2);
+    ctx.fillStyle = bodyDark;
+    ctx.beginPath();
+    ctx.arc(latchX + latchW / 2, latchY2 + latchH2 * 0.6, Math.max(1, size * 0.02), 0, Math.PI * 2);
+    ctx.fill();
+
+    // Seam
+    ctx.strokeStyle = bodyDark;
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(cx, cy);
     ctx.lineTo(cx + cw, cy);
     ctx.stroke();
+  } else {
+    // Opened body
+    ctx.fillStyle = bodyColor;
+    ctx.fillRect(cx, cy, cw, ch);
+    ctx.fillStyle = bodyDark;
+    ctx.fillRect(cx + cw - cw * 0.12, cy, cw * 0.12, ch);
+    ctx.strokeStyle = bodyDark;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(cx, cy, cw, ch);
+
+    // Faded bands
+    ctx.fillStyle = bandColor;
+    ctx.globalAlpha = 0.5;
+    const bandH = Math.max(2, size * 0.04);
+    ctx.fillRect(cx + 1, cy + ch * 0.25, cw - 2, bandH);
+    ctx.fillRect(cx + 1, cy + ch * 0.70, cw - 2, bandH);
+    ctx.globalAlpha = 1.0;
+
+    // Interior
+    ctx.fillStyle = '#0a0a14';
+    ctx.fillRect(cx + 2, cy + 1, cw - 4, ch * 0.35);
+
+    // Open lid
+    const openLidH = lidH * 0.6;
+    const openLidY = lidY - openLidH * 0.3;
+    ctx.fillStyle = bodyColor;
+    ctx.fillRect(lx, openLidY, lw, openLidH);
+    ctx.strokeStyle = bodyDark;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(lx, openLidY, lw, openLidH);
+
+    // Hinges
+    ctx.fillStyle = bandColor;
+    const hingeR = Math.max(1, size * 0.015);
+    ctx.beginPath();
+    ctx.arc(cx + 2, cy, hingeR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(cx + cw - 2, cy, hingeR, 0, Math.PI * 2);
+    ctx.fill();
   }
 }
 
@@ -988,6 +1736,12 @@ export const WALL_DRAW_MAP = {
   mossy_stone:    drawWall_mossyStone,
   carved_stone:   drawWall_carvedStone,
   iron_plate:     drawWall_ironPlate,
+  rough_hewn:     drawWall_roughHewn,
+  bone_stack:     drawWall_boneStack,
+  ashlar_block:   drawWall_ashlarBlock,
+  fungal_growth:  drawWall_fungalGrowth,
+  ice_crystal:    drawWall_iceCrystal,
+  blood_stone:    drawWall_bloodStone,
 };
 
 /** Maps floor style string → drawing function */
@@ -997,7 +1751,405 @@ export const FLOOR_DRAW_MAP = {
   flooded:        drawFloor_flooded,
   cracked_marble: drawFloor_crackedMarble,
   metal_grate:    drawFloor_metalGrate,
+  packed_earth:   drawFloor_packedEarth,
+  polished_slab:  drawFloor_polishedSlab,
+  dusty_tile:     drawFloor_dustyTile,
+  mycelium_mat:   drawFloor_myceliumMat,
+  frozen_stone:   drawFloor_frozenStone,
+  ritual_tile:    drawFloor_ritualTile,
 };
+
+
+// ═══════════════════════════════════════════════════════════
+//  WALL-EDGE TRANSITION STYLES
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Bleeding Catacombs edge — crumbled stone rubble along wall boundary.
+ * 2-3 small stone-colored rectangles scattered along the wall edge.
+ */
+export function drawEdge_crumble(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const h = cellHash;
+  const w = edgeConfig.width || 4;
+  const alpha = edgeConfig.intensity || 0.6;
+  const count = 2 + Math.floor(h(seed, 0, 60) * 2); // 2-3 rubble pieces
+
+  for (let i = 0; i < count; i++) {
+    const pos = h(seed, i, 61) * (size - 6) + 2; // position along the edge
+    const rw = 3 + h(seed, i, 62) * 4;            // rubble width 3-7px
+    const rh = 2 + h(seed, i, 63) * (w - 1);      // rubble height within edge width
+
+    ctx.fillStyle = hexAlpha(palette.secondary, alpha);
+
+    if (side === 'top') {
+      ctx.fillRect(x + pos, y, rw, rh);
+    } else if (side === 'bottom') {
+      ctx.fillRect(x + pos, y + size - rh, rw, rh);
+    } else if (side === 'left') {
+      ctx.fillRect(x, y + pos, rh, rw);
+    } else {
+      ctx.fillRect(x + size - rh, y + pos, rh, rw);
+    }
+  }
+}
+
+/**
+ * Ashen Undercroft edge — gradient darkening toward the wall edge (scorch mark).
+ * 4px fade from opaque charred to transparent.
+ */
+export function drawEdge_scorch(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const w = edgeConfig.width || 4;
+  const alpha = edgeConfig.intensity || 0.7;
+
+  for (let i = 0; i < w; i++) {
+    const a = alpha * (1 - i / w) * 0.3; // fade from wall edge outward
+    ctx.fillStyle = `rgba(10, 8, 5, ${a})`;
+
+    if (side === 'top') {
+      ctx.fillRect(x, y + i, size, 1);
+    } else if (side === 'bottom') {
+      ctx.fillRect(x, y + size - 1 - i, size, 1);
+    } else if (side === 'left') {
+      ctx.fillRect(x + i, y, 1, size);
+    } else {
+      ctx.fillRect(x + size - 1 - i, y, 1, size);
+    }
+  }
+}
+
+/**
+ * Drowned Sanctum edge — thin green-tinted semi-transparent irregular line (moss creep).
+ */
+export function drawEdge_mossCreep(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const h = cellHash;
+  const w = edgeConfig.width || 3;
+  const alpha = edgeConfig.intensity || 0.5;
+
+  ctx.strokeStyle = hexAlpha(palette.accent, alpha * 0.5);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+
+  const segments = 4 + Math.floor(h(seed, 0, 70) * 3);
+  if (side === 'top' || side === 'bottom') {
+    const ey = side === 'top' ? y + 1 : y + size - 2;
+    ctx.moveTo(x, ey);
+    for (let i = 1; i <= segments; i++) {
+      const sx = x + (i / segments) * size;
+      const sy = ey + (h(seed, i, 71) - 0.5) * w;
+      ctx.lineTo(sx, sy);
+    }
+  } else {
+    const ex = side === 'left' ? x + 1 : x + size - 2;
+    ctx.moveTo(ex, y);
+    for (let i = 1; i <= segments; i++) {
+      const sy = y + (i / segments) * size;
+      const sx = ex + (h(seed, i, 72) - 0.5) * w;
+      ctx.lineTo(sx, sy);
+    }
+  }
+  ctx.stroke();
+
+  // Tiny moss dots along edge
+  const dotCount = 2 + Math.floor(h(seed, 0, 73) * 2);
+  ctx.fillStyle = hexAlpha(palette.accent, alpha * 0.3);
+  for (let i = 0; i < dotCount; i++) {
+    const pos = h(seed, i, 74) * (size - 4) + 2;
+    const offset = h(seed, i, 75) * (w - 1);
+    if (side === 'top') {
+      ctx.fillRect(x + pos, y + offset, 2, 2);
+    } else if (side === 'bottom') {
+      ctx.fillRect(x + pos, y + size - 1 - offset, 2, 2);
+    } else if (side === 'left') {
+      ctx.fillRect(x + offset, y + pos, 2, 2);
+    } else {
+      ctx.fillRect(x + size - 1 - offset, y + pos, 2, 2);
+    }
+  }
+}
+
+/**
+ * Hollowed Cathedral edge — fine debris dots in a 4px strip along wall.
+ */
+export function drawEdge_rubbleStrip(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const h = cellHash;
+  const w = edgeConfig.width || 4;
+  const alpha = edgeConfig.intensity || 0.5;
+  const dotCount = 5 + Math.floor(h(seed, 0, 80) * 4); // 5-8 debris dots
+
+  for (let i = 0; i < dotCount; i++) {
+    const pos = h(seed, i, 81) * (size - 2) + 1;
+    const offset = h(seed, i, 82) * w;
+    const dotSize = 1 + Math.floor(h(seed, i, 83) * 1.5); // 1-2px dots
+
+    ctx.fillStyle = hexAlpha(palette.secondary, alpha * (0.4 + h(seed, i, 84) * 0.3));
+
+    if (side === 'top') {
+      ctx.fillRect(x + pos, y + offset, dotSize, dotSize);
+    } else if (side === 'bottom') {
+      ctx.fillRect(x + pos, y + size - offset - dotSize, dotSize, dotSize);
+    } else if (side === 'left') {
+      ctx.fillRect(x + offset, y + pos, dotSize, dotSize);
+    } else {
+      ctx.fillRect(x + size - offset - dotSize, y + pos, dotSize, dotSize);
+    }
+  }
+}
+
+/**
+ * Iron Depths edge — thin orange-brown drip line on floor near wall.
+ */
+export function drawEdge_rustDrip(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const h = cellHash;
+  const w = edgeConfig.width || 3;
+  const alpha = edgeConfig.intensity || 0.6;
+
+  // 1-2 thin drip lines
+  const lines = 1 + Math.floor(h(seed, 0, 90) * 1.5);
+  for (let l = 0; l < lines; l++) {
+    const pos = 4 + h(seed, l, 91) * (size - 8); // position along edge
+    ctx.strokeStyle = hexAlpha(palette.accent, alpha * 0.4);
+    ctx.lineWidth = 0.8;
+    ctx.beginPath();
+
+    if (side === 'top') {
+      ctx.moveTo(x + pos, y);
+      ctx.lineTo(x + pos + (h(seed, l, 92) - 0.5) * 3, y + w);
+    } else if (side === 'bottom') {
+      ctx.moveTo(x + pos, y + size);
+      ctx.lineTo(x + pos + (h(seed, l, 92) - 0.5) * 3, y + size - w);
+    } else if (side === 'left') {
+      ctx.moveTo(x, y + pos);
+      ctx.lineTo(x + w, y + pos + (h(seed, l, 92) - 0.5) * 3);
+    } else {
+      ctx.moveTo(x + size, y + pos);
+      ctx.lineTo(x + size - w, y + pos + (h(seed, l, 92) - 0.5) * 3);
+    }
+    ctx.stroke();
+  }
+}
+
+/**
+ * Forgotten Cellar edge — very faint grey gradient (2px) at wall base.
+ */
+export function drawEdge_dustDrift(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const w = edgeConfig.width || 2;
+  const alpha = edgeConfig.intensity || 0.4;
+
+  for (let i = 0; i < w; i++) {
+    const a = alpha * (1 - i / w) * 0.15;
+    ctx.fillStyle = `rgba(60, 55, 45, ${a})`;
+
+    if (side === 'top') {
+      ctx.fillRect(x, y + i, size, 1);
+    } else if (side === 'bottom') {
+      ctx.fillRect(x, y + size - 1 - i, size, 1);
+    } else if (side === 'left') {
+      ctx.fillRect(x + i, y, 1, size);
+    } else {
+      ctx.fillRect(x + size - 1 - i, y, 1, size);
+    }
+  }
+}
+
+/**
+ * Pale Ossuary edge — almost nothing, just a 1px darker seam line.
+ */
+export function drawEdge_cleanEdge(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const alpha = edgeConfig.intensity || 0.3;
+  ctx.fillStyle = hexAlpha(palette.grout, alpha);
+
+  if (side === 'top') {
+    ctx.fillRect(x, y, size, 1);
+  } else if (side === 'bottom') {
+    ctx.fillRect(x, y + size - 1, size, 1);
+  } else if (side === 'left') {
+    ctx.fillRect(x, y, 1, size);
+  } else {
+    ctx.fillRect(x + size - 1, y, 1, size);
+  }
+}
+
+/**
+ * Silent Vault edge — precise 1px geometric inset line matching wall grid.
+ */
+export function drawEdge_seamLine(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const alpha = edgeConfig.intensity || 0.4;
+  ctx.strokeStyle = hexAlpha(palette.mortar, alpha);
+  ctx.lineWidth = 1;
+
+  const inset = 2; // geometric inset from tile edge
+  ctx.beginPath();
+  if (side === 'top') {
+    ctx.moveTo(x + inset, y + inset);
+    ctx.lineTo(x + size - inset, y + inset);
+  } else if (side === 'bottom') {
+    ctx.moveTo(x + inset, y + size - inset);
+    ctx.lineTo(x + size - inset, y + size - inset);
+  } else if (side === 'left') {
+    ctx.moveTo(x + inset, y + inset);
+    ctx.lineTo(x + inset, y + size - inset);
+  } else {
+    ctx.moveTo(x + size - inset, y + inset);
+    ctx.lineTo(x + size - inset, y + size - inset);
+  }
+  ctx.stroke();
+}
+
+/**
+ * Fungal Grotto edge — spore tendrils creeping from wall onto floor.
+ * Thin organic lines with tiny spore dots along the wall edge.
+ */
+export function drawEdge_sporeCreep(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const h = cellHash;
+  const w = edgeConfig.width || 5;
+  const alpha = edgeConfig.intensity || 0.7;
+
+  // Thin tendril lines creeping from wall edge
+  const tendrilCount = 2 + Math.floor(h(seed, 0, 80) * 2);
+  ctx.strokeStyle = hexAlpha(palette.accent, alpha * 0.35);
+  ctx.lineWidth = 0.7;
+
+  for (let i = 0; i < tendrilCount; i++) {
+    const pos = h(seed, i, 81) * (size - 6) + 3;
+    ctx.beginPath();
+    if (side === 'top') {
+      ctx.moveTo(x + pos, y);
+      ctx.quadraticCurveTo(x + pos + (h(seed, i, 82) - 0.5) * 4, y + w * 0.5, x + pos + (h(seed, i, 83) - 0.5) * 6, y + w);
+    } else if (side === 'bottom') {
+      ctx.moveTo(x + pos, y + size);
+      ctx.quadraticCurveTo(x + pos + (h(seed, i, 82) - 0.5) * 4, y + size - w * 0.5, x + pos + (h(seed, i, 83) - 0.5) * 6, y + size - w);
+    } else if (side === 'left') {
+      ctx.moveTo(x, y + pos);
+      ctx.quadraticCurveTo(x + w * 0.5, y + pos + (h(seed, i, 82) - 0.5) * 4, x + w, y + pos + (h(seed, i, 83) - 0.5) * 6);
+    } else {
+      ctx.moveTo(x + size, y + pos);
+      ctx.quadraticCurveTo(x + size - w * 0.5, y + pos + (h(seed, i, 82) - 0.5) * 4, x + size - w, y + pos + (h(seed, i, 83) - 0.5) * 6);
+    }
+    ctx.stroke();
+  }
+
+  // Tiny spore dots near edge
+  const dotCount = 3 + Math.floor(h(seed, 0, 85) * 2);
+  ctx.fillStyle = hexAlpha(palette.highlight, alpha * 0.3);
+  for (let i = 0; i < dotCount; i++) {
+    const pos = h(seed, i, 86) * (size - 4) + 2;
+    const off = h(seed, i, 87) * (w - 1);
+    if (side === 'top') ctx.fillRect(x + pos, y + off, 1, 1);
+    else if (side === 'bottom') ctx.fillRect(x + pos, y + size - 1 - off, 1, 1);
+    else if (side === 'left') ctx.fillRect(x + off, y + pos, 1, 1);
+    else ctx.fillRect(x + size - 1 - off, y + pos, 1, 1);
+  }
+}
+
+/**
+ * Frozen Crypt edge — frost creep with ice crystal formations.
+ * White-blue gradient fade from wall + tiny crystal glint dots.
+ */
+export function drawEdge_frostCreep(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const h = cellHash;
+  const w = edgeConfig.width || 6;
+  const alpha = edgeConfig.intensity || 0.8;
+
+  // Frost gradient from wall edge
+  for (let i = 0; i < w; i++) {
+    const a = alpha * 0.08 * (1 - i / w);
+    ctx.fillStyle = `rgba(200, 220, 255, ${a})`;
+    if (side === 'top') ctx.fillRect(x, y + i, size, 1);
+    else if (side === 'bottom') ctx.fillRect(x, y + size - 1 - i, size, 1);
+    else if (side === 'left') ctx.fillRect(x + i, y, 1, size);
+    else ctx.fillRect(x + size - 1 - i, y, 1, size);
+  }
+
+  // Tiny ice crystal dots along edge
+  const crystalCount = 2 + Math.floor(h(seed, 0, 90) * 3);
+  for (let i = 0; i < crystalCount; i++) {
+    const pos = h(seed, i, 91) * (size - 4) + 2;
+    const off = h(seed, i, 92) * (w * 0.6);
+    ctx.fillStyle = hexAlpha(palette.highlight, alpha * 0.4);
+    if (side === 'top') ctx.fillRect(x + pos, y + off, 1, 1);
+    else if (side === 'bottom') ctx.fillRect(x + pos, y + size - 1 - off, 1, 1);
+    else if (side === 'left') ctx.fillRect(x + off, y + pos, 1, 1);
+    else ctx.fillRect(x + size - 1 - off, y + pos, 1, 1);
+  }
+
+  // Thin frost line at edge boundary
+  ctx.strokeStyle = hexAlpha('#ffffff', alpha * 0.12);
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  if (side === 'top') { ctx.moveTo(x, y + 1); ctx.lineTo(x + size, y + 1); }
+  else if (side === 'bottom') { ctx.moveTo(x, y + size - 2); ctx.lineTo(x + size, y + size - 2); }
+  else if (side === 'left') { ctx.moveTo(x + 1, y); ctx.lineTo(x + 1, y + size); }
+  else { ctx.moveTo(x + size - 2, y); ctx.lineTo(x + size - 2, y + size); }
+  ctx.stroke();
+}
+
+/**
+ * Cursed Shrine edge — blood seep dripping from wall onto floor.
+ * Dark red gradient + thin drip lines from wall edge.
+ */
+export function drawEdge_bloodSeep(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  const h = cellHash;
+  const w = edgeConfig.width || 4;
+  const alpha = edgeConfig.intensity || 0.6;
+
+  // Dark red gradient from wall edge
+  for (let i = 0; i < w; i++) {
+    const a = alpha * 0.06 * (1 - i / w);
+    ctx.fillStyle = hexAlpha(palette.accent, a);
+    if (side === 'top') ctx.fillRect(x, y + i, size, 1);
+    else if (side === 'bottom') ctx.fillRect(x, y + size - 1 - i, size, 1);
+    else if (side === 'left') ctx.fillRect(x + i, y, 1, size);
+    else ctx.fillRect(x + size - 1 - i, y, 1, size);
+  }
+
+  // 1-2 thin drip lines (vertical for top/bottom, horizontal for left/right)
+  const dripCount = 1 + Math.floor(h(seed, 0, 95) * 2);
+  ctx.strokeStyle = hexAlpha(palette.accent, alpha * 0.3);
+  ctx.lineWidth = 0.6;
+  for (let i = 0; i < dripCount; i++) {
+    const pos = h(seed, i, 96) * (size - 6) + 3;
+    const len = w + h(seed, i, 97) * w * 0.5;
+    ctx.beginPath();
+    if (side === 'top') { ctx.moveTo(x + pos, y); ctx.lineTo(x + pos + (h(seed, i, 98) - 0.5) * 2, y + len); }
+    else if (side === 'bottom') { ctx.moveTo(x + pos, y + size); ctx.lineTo(x + pos + (h(seed, i, 98) - 0.5) * 2, y + size - len); }
+    else if (side === 'left') { ctx.moveTo(x, y + pos); ctx.lineTo(x + len, y + pos + (h(seed, i, 98) - 0.5) * 2); }
+    else { ctx.moveTo(x + size, y + pos); ctx.lineTo(x + size - len, y + pos + (h(seed, i, 98) - 0.5) * 2); }
+    ctx.stroke();
+  }
+}
+
+/** Maps edge style string → drawing function */
+export const EDGE_DRAW_MAP = {
+  crumble:      drawEdge_crumble,
+  scorch:       drawEdge_scorch,
+  moss_creep:   drawEdge_mossCreep,
+  rubble_strip: drawEdge_rubbleStrip,
+  rust_drip:    drawEdge_rustDrip,
+  dust_drift:   drawEdge_dustDrift,
+  clean_edge:   drawEdge_cleanEdge,
+  seam_line:    drawEdge_seamLine,
+  spore_creep:  drawEdge_sporeCreep,
+  frost_creep:  drawEdge_frostCreep,
+  blood_seep:   drawEdge_bloodSeep,
+};
+
+/**
+ * Draw a wall-edge transition on a floor tile for one side.
+ * Called for each cardinal neighbor that is a wall.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {number} x - Pixel X of the floor tile
+ * @param {number} y - Pixel Y of the floor tile
+ * @param {number} size - Tile size in pixels
+ * @param {string} side - 'top', 'bottom', 'left', 'right'
+ * @param {number} seed - Deterministic seed
+ * @param {Object} palette - Theme palette
+ * @param {Object} edgeConfig - { style, intensity, width }
+ */
+export function drawWallEdge(ctx, x, y, size, side, seed, palette, edgeConfig) {
+  if (!edgeConfig || !edgeConfig.style) return;
+  const fn = EDGE_DRAW_MAP[edgeConfig.style];
+  if (fn) fn(ctx, x, y, size, side, seed, palette, edgeConfig);
+}
 
 
 // ═══════════════════════════════════════════════════════════

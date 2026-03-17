@@ -1228,5 +1228,187 @@
       "blendMode": "lighter"
     },
     "maxParticles": 25
+  },
+  {
+    "name": "buff-aura-bone-shield",
+    "version": 1,
+    "duration": 2.5,
+    "loop": true,
+    "tags": ["dark", "defensive", "aura", "skeleton"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 6,
+      "spawnShape": "ring",
+      "spawnRadius": 14,
+      "angle": { "min": 240, "max": 300 },
+      "speed": { "min": 5, "max": 15 },
+      "gravity": { "x": 0, "y": -8 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.6, "max": 1.2 },
+      "shape": "triangle",
+      "size": {
+        "start": { "min": 1.5, "max": 3 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#eeddcc" },
+          { "stop": 0.4, "color": "#ccbbaa" },
+          { "stop": 0.8, "color": "#887766" },
+          { "stop": 1, "color": "#332211" }
+        ]
+      },
+      "alpha": { "start": 0.5, "end": 0, "easing": "easeOutCubic" },
+      "rotation": { "speed": { "min": -3, "max": 3 } },
+      "blendMode": "lighter"
+    },
+    "maxParticles": 20
+  },
+  {
+    "name": "buff-aura-dark-pact",
+    "version": 1,
+    "duration": 2.5,
+    "loop": true,
+    "tags": ["dark", "buff", "aura", "dark_priest"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 5,
+      "spawnShape": "ring",
+      "spawnRadius": 12,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 8, "max": 20 },
+      "gravity": { "x": 0, "y": -12 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.5, "max": 1.0 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1, "max": 2.5 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#dd88ff" },
+          { "stop": 0.4, "color": "#aa44cc" },
+          { "stop": 0.8, "color": "#662288" },
+          { "stop": 1, "color": "#220044" }
+        ]
+      },
+      "alpha": { "start": 0.5, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    },
+    "maxParticles": 20
+  },
+  {
+    "name": "buff-aura-profane-ward",
+    "version": 1,
+    "duration": 3,
+    "loop": true,
+    "tags": ["dark", "defensive", "aura", "acolyte"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 5,
+      "spawnShape": "ring",
+      "spawnRadius": 13,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 6, "max": 16 },
+      "gravity": { "x": 0, "y": -10 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.6, "max": 1.2 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1, "max": 2.5 },
+        "end": { "min": 2, "max": 4 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ccaadd" },
+          { "stop": 0.4, "color": "#9966aa" },
+          { "stop": 0.7, "color": "#663377" },
+          { "stop": 1, "color": "#221133" }
+        ]
+      },
+      "alpha": { "start": 0.4, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    },
+    "maxParticles": 20
+  },
+  {
+    "name": "buff-aura-enrage",
+    "version": 1,
+    "duration": 2,
+    "loop": true,
+    "tags": ["fire", "buff", "aura", "demon"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 8,
+      "spawnShape": "circle",
+      "spawnRadius": 10,
+      "angle": { "min": 240, "max": 300 },
+      "speed": { "min": 15, "max": 40 },
+      "gravity": { "x": 0, "y": -30 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.3, "max": 0.6 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 4 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutCubic"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffcc33" },
+          { "stop": 0.3, "color": "#ff6600" },
+          { "stop": 0.7, "color": "#cc2200" },
+          { "stop": 1, "color": "#440000" }
+        ]
+      },
+      "alpha": { "start": 0.7, "end": 0, "easing": "easeOutQuad" },
+      "blendMode": "lighter"
+    },
+    "maxParticles": 30
+  },
+  {
+    "name": "buff-aura-frenzy",
+    "version": 1,
+    "duration": 2.5,
+    "loop": true,
+    "tags": ["fire", "buff", "aura", "imp"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 6,
+      "spawnShape": "ring",
+      "spawnRadius": 16,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 8, "max": 20 },
+      "gravity": { "x": 0, "y": 0 },
+      "friction": 0.04
+    },
+    "particle": {
+      "lifetime": { "min": 0.4, "max": 0.8 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1.5, "max": 3 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffaa44" },
+          { "stop": 0.4, "color": "#ff6622" },
+          { "stop": 0.8, "color": "#cc2200" },
+          { "stop": 1, "color": "#441100" }
+        ]
+      },
+      "alpha": { "start": 0.5, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    },
+    "maxParticles": 25
   }
 ]

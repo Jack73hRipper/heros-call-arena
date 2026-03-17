@@ -1,0 +1,42 @@
+{
+  "id": "frozen_crypt",
+  "name": "Frozen Crypt",
+  "description": "A crystalline ice tomb sealed in perpetual frost. Cracked ice over ancient stone, deadly cold radiating from every surface.",
+  "palette": {
+    "primary": "#0a1020",
+    "secondary": "#182838",
+    "accent": "#4488cc",
+    "mortar": "#101828",
+    "highlight": "#88ccff",
+    "floor": "#253a4e",
+    "floorAlt": "#283d51",
+    "grout": "#080e18",
+    "furniture": "#4a4848",
+    "metal": "#6a7a88"
+  },
+  "wall": {
+    "style": "ice_crystal"
+  },
+  "floor": {
+    "style": "frozen_stone",
+    "slabGrid": 2,
+    "groutWidth": 1
+  },
+  "corridor": {
+    "style": "shallow_water",
+    "waterDepth": 0.08
+  },
+  "fog": {
+    "exploredTint": "rgba(8, 12, 25, 0.55)",
+    "unexploredColor": "#040610"
+  },
+  "ambient": {
+    "vignetteStrength": 0.10,
+    "vignetteColor": "rgba(20, 40, 80, 0.06)"
+  },
+  "edge": {
+    "style": "frost_creep",
+    "intensity": 0.8,
+    "width": 6
+  }
+}

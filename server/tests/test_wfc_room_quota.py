@@ -206,7 +206,10 @@ class TestQuotaMath:
 
             roles = _count_roles(result)
             reserved = roles.get("boss", 0) + roles.get("spawn", 0) + roles.get("stairs", 0)
-            remaining = sum(roles.values()) - reserved
+            # Specialty archetypes are carved out before the deck is built
+            specialty = (roles.get("shrine", 0) + roles.get("library", 0)
+                         + roles.get("flooded", 0) + roles.get("prison", 0))
+            remaining = sum(roles.values()) - reserved - specialty
             enemy_count = roles.get("enemy", 0)
             expected = round(remaining * density)
             smoothed = result["stats"].get("clustersSmoothed", 0)
@@ -284,8 +287,10 @@ class TestQuotaEdgeCases:
         # Should still have at least 1 empty room (guaranteed by clamping)
         assert roles.get("empty", 0) >= 1, "Oversubscribed density should still yield ≥1 empty"
 
-        # Total should match
-        assert roles.get("enemy", 0) + roles.get("loot", 0) + roles.get("empty", 0) == remaining
+        # Total should match (including specialty archetypes carved out before deck)
+        specialty = (roles.get("shrine", 0) + roles.get("library", 0)
+                     + roles.get("flooded", 0) + roles.get("prison", 0))
+        assert roles.get("enemy", 0) + roles.get("loot", 0) + roles.get("empty", 0) + specialty == remaining
 
     def test_zero_enemy_density(self):
         """0% enemy density should produce 0 enemy rooms in the deck."""

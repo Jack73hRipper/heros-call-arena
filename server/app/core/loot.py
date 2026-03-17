@@ -81,6 +81,90 @@ def clear_caches() -> None:
     _loot_tables_cache = None
 
 
+# ---------- Chest Tier System ----------
+
+def roll_chest_tier(floor_number: int = 1, is_boss_room: bool = False, seed: int | None = None) -> str:
+    """Roll a chest tier based on current floor depth.
+
+    Higher floors unlock rarer chest tiers. Boss rooms always get boss_chest.
+
+    Args:
+        floor_number: Current dungeon floor (1-based).
+        is_boss_room: Whether the chest is in a boss room.
+        seed: Optional deterministic seed.
+
+    Returns:
+        Chest tier string (e.g. "wooden", "iron", "gold", "obsidian", "boss_chest").
+    """
+    if is_boss_room:
+        return "boss_chest"
+
+    rng = random.Random(seed) if seed is not None else random.Random()
+    loot_tables = load_loot_tables()
+    tier_config = loot_tables.get("chest_tier_config", {})
+    tiers = tier_config.get("tiers", {})
+
+    if not tiers:
+        return "wooden"
+
+    # Filter tiers eligible for this floor
+    eligible = []
+    for tier_id, tier_data in tiers.items():
+        floor_range = tier_data.get("floor_range", [1, 99])
+        if floor_range[0] <= floor_number <= floor_range[1]:
+            eligible.append((tier_id, tier_data.get("spawn_weight", 1)))
+
+    if not eligible:
+        return "wooden"
+
+    tier_ids, weights = zip(*eligible)
+    return rng.choices(tier_ids, weights=weights, k=1)[0]
+
+
+def roll_chest_tier_pvpve(centrality: float = 0.0, is_boss_room: bool = False, seed: int | None = None) -> str:
+    """Roll a chest tier for PVPVE mode using location-based centrality.
+
+    PVPVE is single-floor, so the standard floor-gating doesn't apply.
+    Instead, chests closer to the map center (boss room area) get better
+    tiers, creating a risk/reward dynamic for contested territory.
+
+    Args:
+        centrality: 0.0 (map edge / team spawn) to 1.0 (map center / boss area).
+        is_boss_room: Whether the chest is in a boss room.
+        seed: Optional deterministic seed.
+
+    Returns:
+        Chest tier string (e.g. "wooden", "iron", "gold", "obsidian", "boss_chest").
+    """
+    if is_boss_room:
+        return "boss_chest"
+
+    rng = random.Random(seed) if seed is not None else random.Random()
+    loot_tables = load_loot_tables()
+    tier_config = loot_tables.get("chest_tier_config", {})
+    pvpve_weights = tier_config.get("pvpve_tier_weights", {})
+
+    if not pvpve_weights:
+        # Fallback: treat PVPVE as floor 4 so iron/gold are available
+        return roll_chest_tier(floor_number=4, is_boss_room=False, seed=seed)
+
+    # Select zone based on centrality: edge < 0.33, mid 0.33-0.66, center > 0.66
+    if centrality >= 0.66:
+        zone = "center"
+    elif centrality >= 0.33:
+        zone = "mid"
+    else:
+        zone = "edge"
+
+    zone_weights = pvpve_weights.get(zone, pvpve_weights.get("mid", {}))
+    if not zone_weights:
+        return "wooden"
+
+    tier_ids = list(zone_weights.keys())
+    weights = [zone_weights[t] for t in tier_ids]
+    return rng.choices(tier_ids, weights=weights, k=1)[0]
+
+
 # ---------- Phase 18F: Monster Rarity Loot Helpers ----------
 
 # MF bonus per monster rarity tier (on top of killer's magic find)
@@ -706,7 +790,8 @@ def generate_chest_loot(
     """Roll loot for a chest using the Phase 16B affix generator.
 
     Args:
-        chest_type: Chest type ID (e.g. "default", "boss_chest").
+        chest_type: Chest type/tier ID (e.g. "default", "wooden", "iron",
+                    "gold", "obsidian", "boss_chest").
         floor_number: Current dungeon floor (affects rarity + item level).
         magic_find_pct: Player's magic find bonus (decimal, e.g. 0.20 = 20%).
         seed: Optional deterministic seed for reproducible results.
@@ -720,7 +805,10 @@ def generate_chest_loot(
     items_config = load_items_config()
     loot_tables = load_loot_tables()
 
+    # Look up the chest loot table — fall back to "default" if tier not found
     table = loot_tables.get("chest_loot_tables", {}).get(chest_type)
+    if table is None:
+        table = loot_tables.get("chest_loot_tables", {}).get("default")
     if table is None:
         return []
 

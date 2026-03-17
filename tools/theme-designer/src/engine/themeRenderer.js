@@ -22,6 +22,7 @@ import {
   drawChest,
   drawStairs,
   drawSpawn,
+  drawWallEdge,
 } from './tilePatterns.js';
 
 const VARIANTS_PER_TYPE = 8;   // Number of cached variants per tile type
@@ -151,6 +152,32 @@ export class ThemeRenderer {
     }
 
     return false;
+  }
+
+  /**
+   * Draw wall-edge transition effects on a floor tile.
+   * Checks which cardinal neighbors are walls and draws
+   * the theme's edge style on each adjacent side.
+   *
+   * @param {CanvasRenderingContext2D} ctx - Target canvas context
+   * @param {number} px - Pixel X of the floor tile
+   * @param {number} py - Pixel Y of the floor tile
+   * @param {number} gridX - Grid X coordinate
+   * @param {number} gridY - Grid Y coordinate
+   * @param {Object} neighbors - { top, bottom, left, right } — true if neighbor is a wall
+   */
+  drawEdge(ctx, px, py, gridX, gridY, neighbors) {
+    if (!this._initialized || !this.theme?.edge) return;
+
+    const size = this.tileSize;
+    const edgeConfig = this.theme.edge;
+    const palette = this.theme.palette;
+    const seed = this._tileSeed(gridX, gridY);
+
+    if (neighbors.top)    drawWallEdge(ctx, px, py, size, 'top', seed, palette, edgeConfig);
+    if (neighbors.bottom) drawWallEdge(ctx, px, py, size, 'bottom', seed, palette, edgeConfig);
+    if (neighbors.left)   drawWallEdge(ctx, px, py, size, 'left', seed, palette, edgeConfig);
+    if (neighbors.right)  drawWallEdge(ctx, px, py, size, 'right', seed, palette, edgeConfig);
   }
 
   /**

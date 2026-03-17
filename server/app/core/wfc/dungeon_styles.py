@@ -30,6 +30,7 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
         "description": "Default balanced dungeon — no weight modifications",
         "weight_overrides": {},
         "decorator_overrides": {},
+        "archetype_overrides": {},
     },
     "dense_catacomb": {
         "name": "Dense Catacomb",
@@ -49,6 +50,10 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
             "guaranteeBoss": False,
             "scatterEnemies": True,
             "scatterChests": False,
+        },
+        "archetype_overrides": {
+            "prison_enemy_chance": 0.25,   # More prison rooms in claustrophobic style
+            "flooded_chance": 0.02,
         },
     },
     "open_ruins": {
@@ -70,6 +75,11 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
             "scatterEnemies": True,
             "scatterChests": True,
         },
+        "archetype_overrides": {
+            "shrine_chance": 0.08,    # Sacred sites in ruins
+            "flooded_chance": 0.08,   # Weathered and flooded
+            "library_chance": 0.03,
+        },
     },
     "boss_rush": {
         "name": "Boss Rush",
@@ -89,6 +99,10 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
             "guaranteeBoss": True,
             "scatterEnemies": True,
             "scatterChests": False,
+        },
+        "archetype_overrides": {
+            "shrine_chance": 0.06,    # Shrines before boss encounters
+            "prison_enemy_chance": 0.15,
         },
     },
     "treasure_vault": {
@@ -110,6 +124,10 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
             "guaranteeSpawn": True,
             "scatterEnemies": True,
             "scatterChests": True,
+        },
+        "archetype_overrides": {
+            "library_chance": 0.10,   # Doubled — archives hold treasure maps
+            "shrine_chance": 0.05,
         },
     },
 }
@@ -263,3 +281,18 @@ def get_decorator_overrides(style_key: str) -> dict[str, Any]:
     """
     style = get_style(style_key)
     return dict(style.get("decorator_overrides", {}))
+
+
+def get_archetype_overrides(style_key: str) -> dict[str, Any]:
+    """Get archetype weight overrides for a style.
+
+    Controls specialty room assignment chances (shrine, library, prison, flooded).
+
+    Args:
+        style_key: Key from DUNGEON_STYLES.
+
+    Returns:
+        Dict of archetype overrides to merge into decorator settings.
+    """
+    style = get_style(style_key)
+    return dict(style.get("archetype_overrides", {}))

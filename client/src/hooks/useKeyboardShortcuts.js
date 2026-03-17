@@ -293,7 +293,8 @@ export default function useKeyboardShortcuts({
           const cx = px + dx;
           const cy = py + dy;
           const chestKey = `${cx},${cy}`;
-          if (chestStates[chestKey] === 'unopened') {
+          const _cs = chestStates[chestKey];
+          if (_cs === 'unopened' || (_cs && _cs.startsWith('unopened:'))) {
             sendAction(buildMsg('loot', { target_x: cx, target_y: cy }));
             dispatch({
               type: 'ADD_COMBAT_LOG',

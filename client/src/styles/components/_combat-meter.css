@@ -10,6 +10,7 @@
 .btn-meter {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 40px;
@@ -20,11 +21,21 @@
   cursor: pointer;
   transition: all 0.15s ease;
   padding: 0;
+  gap: 1px;
 }
 
 .btn-meter .meter-icon {
-  font-size: 1.2rem;
+  font-size: 1rem;
   line-height: 1;
+}
+
+.btn-meter .meter-label {
+  font-size: 0.5rem;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .btn-meter:hover {

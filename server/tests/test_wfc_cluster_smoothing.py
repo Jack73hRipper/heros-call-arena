@@ -594,7 +594,8 @@ class TestPhaseIntegration:
         assert total == 16, f"Expected 16 rooms total, got {total}"
 
         # All rooms should be accounted for
-        expected_roles = {"boss", "spawn", "stairs", "enemy", "loot", "empty"}
+        expected_roles = {"boss", "spawn", "stairs", "enemy", "loot", "empty",
+                         "shrine", "library", "prison", "flooded"}
         for role in roles:
             assert role in expected_roles, f"Unexpected role: {role}"
 

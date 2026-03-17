@@ -161,8 +161,8 @@ export const DUNGEON_COLORS = {
   doorClosed: '#8B4513',
   doorOpen: '#A0764B',
   doorOpenBg: '#1a1a2e',
-  chest: '#DAA520',
-  chestOpened: '#8B7355',
+  chest: '#B8860B',        // Wooden chest (default tier)
+  chestOpened: '#6B5B3A',  // Opened wooden chest
   // Stairs tile colors
   stairs: '#2a3a2a',
   stairsIcon: '#88CC88',

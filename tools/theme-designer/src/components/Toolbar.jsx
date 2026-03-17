@@ -6,7 +6,7 @@ import React from 'react';
 import { getSampleMapIds, getSampleMap } from '../engine/sampleMaps.js';
 import { getTheme } from '../engine/themes.js';
 
-export default function Toolbar({ activeThemeId, sampleMapId, onSelectMap, onExportTheme }) {
+export default function Toolbar({ activeThemeId, sampleMapId, onSelectMap, onExportTheme, viewMode, onViewModeChange }) {
   const mapIds = getSampleMapIds();
   const theme = getTheme(activeThemeId);
 
@@ -31,21 +31,39 @@ export default function Toolbar({ activeThemeId, sampleMapId, onSelectMap, onExp
       </div>
 
       <div className="toolbar-center">
-        <label className="toolbar-label">Sample Map:</label>
-        <select
-          value={sampleMapId}
-          onChange={e => onSelectMap(e.target.value)}
-          className="toolbar-select"
-        >
-          {mapIds.map(id => {
-            const m = getSampleMap(id);
-            return (
-              <option key={id} value={id}>
-                {m.name} ({m.width}×{m.height})
-              </option>
-            );
-          })}
-        </select>
+        <div className="toolbar-view-toggle">
+          <button
+            className={`toolbar-btn view-btn ${viewMode === 'dungeon' ? 'active' : ''}`}
+            onClick={() => onViewModeChange('dungeon')}
+          >
+            Dungeon Preview
+          </button>
+          <button
+            className={`toolbar-btn view-btn ${viewMode === 'archetypes' ? 'active' : ''}`}
+            onClick={() => onViewModeChange('archetypes')}
+          >
+            Room Archetypes
+          </button>
+        </div>
+        {viewMode === 'dungeon' && (
+          <>
+            <label className="toolbar-label">Sample Map:</label>
+            <select
+              value={sampleMapId}
+              onChange={e => onSelectMap(e.target.value)}
+              className="toolbar-select"
+            >
+              {mapIds.map(id => {
+                const m = getSampleMap(id);
+                return (
+                  <option key={id} value={id}>
+                    {m.name} ({m.width}×{m.height})
+                  </option>
+                );
+              })}
+            </select>
+          </>
+        )}
       </div>
 
       <div className="toolbar-right">

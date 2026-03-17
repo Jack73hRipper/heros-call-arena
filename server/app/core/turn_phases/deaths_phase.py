@@ -216,12 +216,12 @@ def _resolve_deaths(
                 track_kill(match_id, result_action.player_id,
                           victim_is_boss=getattr(dead_unit, 'is_boss', False))
 
-    # Handle permadeath for human heroes that died
+    # Handle permadeath for any hero that died (human-controlled or AI ally)
     for death_pid in deaths:
         dead_unit = players.get(death_pid)
         if not dead_unit:
             continue
-        if dead_unit.unit_type == "human" and dead_unit.hero_id:
+        if dead_unit.hero_id:
             hero_death = handle_hero_permadeath(match_id, death_pid)
             if hero_death:
                 hero_deaths.append(hero_death)

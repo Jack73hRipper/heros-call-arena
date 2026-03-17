@@ -10,29 +10,19 @@
     "highlight": "#807580",
     "floor": "#4d4856",
     "floorAlt": "#504b59",
-    "grout": "#141218"
+    "grout": "#141218",
+    "furniture": "#4a4540",
+    "metal": "#6a6570"
   },
   "wall": {
-    "style": "carved_stone",
-    "brickRows": 2,
-    "brickCols": 2,
-    "mortarWidth": 2,
-    "crackDensity": 0.02,
-    "iconChance": 0.0,
-    "crumbleChance": 0.01,
-    "goldTrimChance": 0.0,
-    "edgeVignette": false
+    "style": "bone_stack",
+    "boneRows": 4,
+    "seamWidth": 1
   },
   "floor": {
-    "style": "cracked_marble",
+    "style": "polished_slab",
     "slabGrid": 2,
-    "groutWidth": 1,
-    "crackChance": 0.0,
-    "rootChance": 0.0,
-    "stainChance": 0.0,
-    "stainColor": "rgba(40, 35, 45, 0.10)",
-    "debrisChance": 0.0,
-    "debrisColor": "#302830"
+    "groutWidth": 1
   },
   "corridor": {
     "style": "worn_carpet",
@@ -45,5 +35,10 @@
   "ambient": {
     "vignetteStrength": 0.06,
     "vignetteColor": "rgba(40, 35, 50, 0.04)"
+  },
+  "edge": {
+    "style": "clean_edge",
+    "intensity": 0.3,
+    "width": 1
   }
 }

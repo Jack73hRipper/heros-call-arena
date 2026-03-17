@@ -14,17 +14,29 @@
 import { TILE_SIZE, DUNGEON_COLORS } from './renderConstants.js';
 import { isTileSheetLoaded, drawFloorTile, drawWallTile } from './TileLoader.js';
 import { themeEngine } from './ThemeEngine.js';
+import { parseChestState } from '../utils/chestUtils.js';
+import { drawChestIcon } from './chestRenderer.js';
+import { drawRoomOverlay } from './RoomOverlays.js';
 
 /**
  * Draw the full dungeon tile grid using the tiles array and tile_legend.
  * Replaces the generic obstacle + grid rendering for dungeon maps.
+ * Phase 21F: Adds neighbor-aware edge rendering and room props.
  */
-export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates, offsetX = 0, offsetY = 0) {
+export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates, offsetX = 0, offsetY = 0, dungeonRooms = []) {
   if (!tiles || !tileLegend) return;
 
   const useTheme = themeEngine.isReady();
+  const height = tiles.length;
+  const width = height > 0 ? tiles[0].length : 0;
 
-  for (let y = 0; y < tiles.length; y++) {
+  // Helper: resolve tileType at a grid position
+  const _type = (gx, gy) => {
+    if (gy < 0 || gy >= height || gx < 0 || gx >= width) return 'wall';
+    return tileLegend[tiles[gy][gx]] || 'wall';
+  };
+
+  for (let y = 0; y < height; y++) {
     const row = tiles[y];
     for (let x = 0; x < row.length; x++) {
       const ch = row[x];
@@ -38,7 +50,11 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
       if (useTheme) {
         const extra = {};
         if (tileType === 'door') extra.doorOpen = doorStates[doorKey] === 'open';
-        if (tileType === 'chest') extra.chestOpened = chestStates[chestKey] === 'opened';
+        if (tileType === 'chest') {
+          const parsed = parseChestState(chestStates[chestKey]);
+          extra.chestOpened = parsed.isOpened;
+          extra.chestTier = parsed.tier;
+        }
         if (themeEngine.drawTile(ctx, tileType, px, py, x, y, extra)) continue;
       }
 
@@ -136,34 +152,8 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
             ctx.strokeRect(px, py, TILE_SIZE, TILE_SIZE);
           }
 
-          const isOpened = chestStates[chestKey] === 'opened';
-          const chestColor = isOpened ? DUNGEON_COLORS.chestOpened : DUNGEON_COLORS.chest;
-
-          // Chest icon — small box
-          const cw = TILE_SIZE * 0.5;
-          const ch2 = TILE_SIZE * 0.4;
-          const cx = px + (TILE_SIZE - cw) / 2;
-          const cy = py + (TILE_SIZE - ch2) / 2;
-
-          ctx.fillStyle = chestColor;
-          ctx.fillRect(cx, cy, cw, ch2);
-          ctx.strokeStyle = '#333';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(cx, cy, cw, ch2);
-
-          // Latch/clasp
-          if (!isOpened) {
-            ctx.fillStyle = '#FFD700';
-            ctx.fillRect(cx + cw / 2 - 3, cy + ch2 / 2 - 2, 6, 4);
-          } else {
-            // Open chest — lid line
-            ctx.strokeStyle = chestColor;
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(cx + cw, cy);
-            ctx.stroke();
-          }
+          const { isOpened, tier } = parseChestState(chestStates[chestKey]);
+          drawChestIcon(ctx, px, py, TILE_SIZE, tier, isOpened);
           break;
         }
 
@@ -207,6 +197,58 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
             ctx.fillRect(px + 1, py + 1, TILE_SIZE - 2, TILE_SIZE - 2);
           }
           break;
+      }
+    }
+  }
+
+  // ── Phase 21F: Edge rendering pass (wall→floor transitions) ──
+  if (useTheme) {
+    const _isWall = (t) => t === 'wall';
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const t = _type(x, y);
+        // Only draw edges on floor-type tiles adjacent to walls
+        if (_isWall(t)) continue;
+        const neighbors = {
+          top:    _isWall(_type(x, y - 1)),
+          bottom: _isWall(_type(x, y + 1)),
+          left:   _isWall(_type(x - 1, y)),
+          right:  _isWall(_type(x + 1, y)),
+        };
+        if (neighbors.top || neighbors.bottom || neighbors.left || neighbors.right) {
+          themeEngine.drawEdge(ctx, (x - offsetX) * TILE_SIZE, (y - offsetY) * TILE_SIZE, x, y, neighbors);
+        }
+      }
+    }
+
+    // ── Phase 21F: Room props rendering pass ──
+    // roomOffsetX/Y is the pixel offset of grid origin (0,0) on screen.
+    // _resolvePosition returns absolute grid coords, so props compute
+    // px = roomOffsetX + pos.x * tileSize — must NOT include room's x_min.
+    if (dungeonRooms && dungeonRooms.length > 0 && themeEngine.theme) {
+      const gridOffsetX = -offsetX * TILE_SIZE;
+      const gridOffsetY = -offsetY * TILE_SIZE;
+      for (const room of dungeonRooms) {
+        const b = room.bounds;
+        if (!b) continue;
+        // Inset bounds by 1 to exclude the wall ring — server bounds cover
+        // the full 8×8 module including walls; props must only land on floor.
+        const inner = {
+          x_min: b.x_min + 1,
+          y_min: b.y_min + 1,
+          x_max: b.x_max - 1,
+          y_max: b.y_max - 1,
+        };
+        drawRoomOverlay(ctx, {
+          archetype: room.archetype || 'empty',
+          theme: themeEngine.theme,
+          tileSize: TILE_SIZE,
+          roomOffsetX: gridOffsetX,
+          roomOffsetY: gridOffsetY,
+          bounds: inner,
+          doorPositions: [],   // per-room door data not available from server
+          seed: ((b.x_min * 7919) + (b.y_min * 6271)) & 0x7FFFFFFF,
+        });
       }
     }
   }

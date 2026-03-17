@@ -45,6 +45,11 @@ input[type="number"] {
   background: var(--accent-ember-dim);
 }
 
+/* Custom game cursor — !important ensures no browser default cursors leak through */
+*, *::before, *::after {
+  cursor: url('/cursor.png'), auto !important;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--bg-abyss);

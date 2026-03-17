@@ -283,6 +283,12 @@ def export_to_game_map(
 
     # Build rooms from the WFC module grid
     rooms = []
+    # Build archetype lookup from decoration result (assignedRole overrides content-detected purpose)
+    _archetype_lookup: dict[str, str] = {}
+    if decoration_result:
+        for dr in decoration_result.get("decoratedRooms", []):
+            key = f"{dr['gridRow']},{dr['gridCol']}"
+            _archetype_lookup[key] = dr.get("assignedRole", "")
     if grid is not None and variants is not None:
         grid_rows = len(grid)
         grid_cols = len(grid[0]) if grid_rows > 0 else 0
@@ -423,14 +429,22 @@ def export_to_game_map(
                                 if detected_purpose == "empty":
                                     detected_purpose = "stairs"
 
-                # Skip purely structural modules
+                # Use decorator's assignedRole as archetype (preserves shrine/library/prison/flooded)
+                _dec_key = f"{gr},{gc}"
+                archetype = _archetype_lookup.get(_dec_key, detected_purpose)
+
+                # Skip purely structural modules — but keep rooms that the
+                # decorator assigned a specialty archetype (shrine, library,
+                # prison, flooded, empty) so overlays render client-side.
                 if not has_content and variant.get("purpose") in ("empty", "corridor"):
-                    continue
+                    if archetype == detected_purpose:
+                        continue
 
                 room = {
                     "id": f"room_{gr}_{gc}",
                     "name": variant.get("sourceName", "Room"),
                     "purpose": detected_purpose,
+                    "archetype": archetype,
                     "bounds": {
                         "x_min": start_c,
                         "y_min": start_r,

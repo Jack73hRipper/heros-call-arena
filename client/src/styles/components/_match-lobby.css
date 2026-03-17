@@ -1,0 +1,820 @@
+/* =====================================================
+   Phase L1 — Match Lobby (New Unified Lobby)
+   Full-width layout with mode tabs, battle orders,
+   chat, party assembly, deployed forces, action bar.
+   Phase L5 — Polish: entrance animations, card transitions,
+   hover effects, mode tab glow, action bar pulse.
+   ===================================================== */
+
+/* --- Match Lobby: Outer container --- */
+.match-lobby {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* --- Header --- */
+.match-lobby-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+  position: relative;
+}
+
+.match-lobby-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-ember) 0%,
+    var(--accent-ember-dim) 25%,
+    transparent 70%
+  );
+}
+
+.match-lobby-title-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.match-lobby-title {
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-ember-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+  text-shadow: 0 0 20px rgba(196, 151, 58, 0.2), 0 2px 3px rgba(0, 0, 0, 0.6);
+}
+
+.match-lobby-subtitle {
+  font-family: var(--font-flavor);
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 0.15rem;
+}
+
+.match-lobby-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.match-lobby-match-id {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.match-lobby-match-id .match-id-code {
+  color: var(--accent-ember);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.match-lobby-host-badge {
+  display: inline-block;
+  background: linear-gradient(180deg, var(--accent-ember) 0%, var(--accent-ember-dim) 100%);
+  color: var(--bg-abyss);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  padding: 0.15rem 0.6rem;
+  border-radius: 2px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.match-lobby-headcount {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* --- Mode Tabs --- */
+.match-lobby-mode-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.match-lobby-mode-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.2rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.match-lobby-mode-tab:hover:not(:disabled) {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+}
+
+.match-lobby-mode-tab--active {
+  background: var(--bg-elevated);
+  color: var(--accent-ember-bright);
+  border-color: var(--accent-ember-dim);
+  border-bottom-color: var(--accent-ember);
+  text-shadow: 0 0 12px rgba(196, 151, 58, 0.3);
+}
+
+.match-lobby-mode-tab:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.mode-tab-icon {
+  font-size: 1rem;
+}
+
+.mode-tab-label {
+  font-size: 0.85rem;
+}
+
+.match-lobby-mode-label {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+}
+
+.match-lobby-mode-label strong {
+  color: var(--accent-ember);
+}
+
+/* --- Mode Description Banner --- */
+.match-lobby-mode-desc {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  background: var(--bg-surface);
+  border-left: 3px solid var(--accent-ember-dim);
+  color: var(--text-body);
+  font-family: var(--font-flavor);
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+/* --- Two-Column Layout --- */
+.match-lobby-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.match-lobby-left {
+  padding: 0.75rem;
+}
+
+.match-lobby-right {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Section Panels --- */
+.match-lobby-section {
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* --- Battle Orders --- */
+.battle-orders .config-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.battle-orders .config-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.battle-orders .config-row label {
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.battle-orders .config-hint {
+  width: 100%;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: -0.25rem;
+}
+
+.battle-orders .config-value {
+  color: var(--text-body);
+  font-size: 0.85rem;
+}
+
+.battle-orders .config-readonly {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+/* Phase L4: Minimal config row for PvP mode */
+.battle-orders .config-row--minimal {
+  padding: 0.25rem 0;
+  border-top: 1px solid var(--border-dark);
+  margin-top: 0.25rem;
+}
+
+.battle-orders .config-row--minimal .config-hint {
+  width: 100%;
+  margin-top: 0;
+}
+
+/* --- Chat Panel --- */
+.lobby-chat-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.lobby-chat-messages {
+  flex: 1;
+  min-height: 120px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-dark);
+  margin-bottom: 0.5rem;
+}
+
+.lobby-chat-placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+  font-family: var(--font-flavor);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.lobby-chat-form {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.lobby-chat-input {
+  flex: 1;
+  padding: 0.4rem 0.6rem;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.lobby-chat-input:focus {
+  border-color: var(--accent-ember-dim);
+}
+
+/* --- Party Assembly (Phase L2) --- */
+.party-assembly-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.party-assembly-section-title {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-heading);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.party-assembly-count {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.party-assembly-loading,
+.party-assembly-error {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.party-assembly-error {
+  color: var(--accent-crimson);
+}
+
+.party-assembly-empty {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-style: italic;
+  text-align: center;
+  padding: 1rem;
+}
+
+.party-assembly-locked {
+  color: var(--accent-ember-dim);
+  font-size: 0.8rem;
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+/* Phase L3: Team full warning in party assembly */
+.party-assembly-team-full {
+  background: rgba(224, 64, 64, 0.10);
+  color: #e04040;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.3rem 0.5rem;
+  border-radius: 3px;
+  margin-bottom: 0.4rem;
+  border: 1px solid rgba(224, 64, 64, 0.25);
+}
+
+/* Roster grid */
+.party-assembly-roster-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.party-roster-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  transition: border-color 0.2s, background 0.2s;
+  cursor: default;
+}
+
+.party-roster-card:hover {
+  border-color: var(--accent-ember-dim);
+}
+
+.party-roster-card--selected {
+  border-color: var(--accent-ember);
+  background: rgba(255, 140, 50, 0.08);
+}
+
+.party-roster-card--disabled {
+  opacity: 0.5;
+}
+
+.party-roster-card-sprite {
+  flex-shrink: 0;
+}
+
+.party-roster-card-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.party-roster-card-name {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-heading);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.party-roster-card-class {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.party-roster-card-stats {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-family: var(--font-body);
+}
+
+.party-roster-card-actions {
+  flex-shrink: 0;
+}
+
+/* Lineup list */
+.party-assembly-lineup-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.party-lineup-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  transition: border-color 0.2s;
+}
+
+.party-lineup-card--controlled {
+  border-color: var(--accent-gold, #d4a843);
+  background: rgba(212, 168, 67, 0.08);
+}
+
+.party-lineup-crown {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  background: none;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  padding: 0;
+}
+
+.party-lineup-crown:hover:not(:disabled) {
+  border-color: var(--accent-gold, #d4a843);
+  background: rgba(212, 168, 67, 0.12);
+}
+
+.party-lineup-crown--active {
+  border-color: var(--accent-gold, #d4a843);
+  background: rgba(212, 168, 67, 0.15);
+  cursor: default;
+}
+
+.party-lineup-crown:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.party-lineup-card-sprite {
+  flex-shrink: 0;
+}
+
+.party-lineup-card-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.party-lineup-card-name {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-heading);
+}
+
+.party-lineup-card-class {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.party-lineup-card-role {
+  font-size: 0.65rem;
+  font-style: italic;
+  color: var(--accent-ember-dim);
+}
+
+.party-lineup-card--controlled .party-lineup-card-role {
+  color: var(--accent-gold, #d4a843);
+}
+
+.party-lineup-remove {
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .party-assembly-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Deployed Forces --- */
+.deployed-forces-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.deployed-team {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-left-width: 3px;
+  padding: 0.5rem;
+}
+
+.deployed-team-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding-bottom: 0.35rem;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.deployed-team-count {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+/* Phase L3: Team full count highlight */
+.deployed-team-count--full {
+  color: #e04040;
+  font-weight: 700;
+}
+
+/* Phase L3: Team full visual border */
+.deployed-team--full {
+  border-color: #e04040 !important;
+  box-shadow: 0 0 6px rgba(224, 64, 64, 0.15);
+}
+
+/* Phase L3: Team Full indicator banner */
+.deployed-team-full-indicator {
+  background: rgba(224, 64, 64, 0.12);
+  color: #e04040;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-align: center;
+  padding: 0.2rem 0.4rem;
+  margin-bottom: 0.25rem;
+  border-radius: 2px;
+}
+
+.deployed-team-members {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.deployed-team-empty {
+  color: var(--text-dim);
+  font-style: italic;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.deployed-unit {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.8rem;
+  border-left: 2px solid transparent;
+}
+
+.deployed-unit--you {
+  background: rgba(196, 151, 58, 0.08);
+  border-left-color: var(--accent-ember-dim);
+}
+
+.deployed-unit-icon {
+  font-size: 0.85rem;
+  min-width: 1.1rem;
+  text-align: center;
+}
+
+.deployed-unit-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  flex: 1;
+}
+
+.deployed-unit-you {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+  margin-left: 0.2rem;
+}
+
+/* Phase L3: Owner label for contributed AI heroes */
+.deployed-unit-owner {
+  color: var(--text-dim);
+  font-size: 0.65rem;
+  font-style: italic;
+  margin-left: 0.2rem;
+}
+
+.deployed-unit-class {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.deployed-unit-status {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+
+.deployed-unit-status--ready {
+  color: var(--accent-ember);
+}
+
+.team-select--small {
+  padding: 0.15rem 0.3rem;
+  font-size: 0.7rem;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+/* --- Action Bar --- */
+.match-lobby-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  gap: 1rem;
+}
+
+.match-lobby-btn-leave {
+  order: -1;
+}
+
+.match-lobby-btn-start,
+.match-lobby-btn-ready {
+  margin-left: auto;
+}
+
+.match-lobby-btn-ready--active {
+  opacity: 0.7;
+}
+
+/* --- Responsive: Stack columns on narrow viewports --- */
+@media (max-width: 900px) {
+  .match-lobby-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .deployed-forces-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .match-lobby-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .match-lobby-meta {
+    justify-content: flex-start;
+  }
+}
+
+/* --- Phase L5: Entrance Animation --- */
+@keyframes lobby-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.match-lobby {
+  animation: lobby-fade-in 0.35s ease-out;
+}
+
+/* Staggered section fade-in */
+.match-lobby-header {
+  animation: lobby-fade-in 0.3s ease-out 0.05s both;
+}
+
+.match-lobby-mode-tabs {
+  animation: lobby-fade-in 0.3s ease-out 0.1s both;
+}
+
+.match-lobby-columns {
+  animation: lobby-fade-in 0.3s ease-out 0.15s both;
+}
+
+.match-lobby-section {
+  animation: lobby-fade-in 0.3s ease-out 0.2s both;
+}
+
+.match-lobby-action-bar {
+  animation: lobby-fade-in 0.3s ease-out 0.25s both;
+}
+
+/* --- Phase L5: Mode Tab Glow on Active --- */
+.match-lobby-mode-tab--active {
+  box-shadow: 0 2px 8px rgba(196, 151, 58, 0.15), inset 0 -1px 0 var(--accent-ember);
+}
+
+/* --- Phase L5: Card Hover Polish --- */
+.party-roster-card {
+  transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.party-roster-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.party-lineup-card {
+  transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+
+.party-lineup-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.deployed-unit {
+  transition: background 0.15s;
+}
+
+.deployed-unit:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* --- Phase L5: Action Bar Button Pulse --- */
+@keyframes action-pulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(196, 151, 58, 0); }
+  50% { box-shadow: 0 0 12px rgba(196, 151, 58, 0.3); }
+}
+
+.match-lobby-btn-start:not(:disabled),
+.match-lobby-btn-ready:not(.match-lobby-btn-ready--active) {
+  animation: action-pulse 2.5s ease-in-out infinite;
+}
+
+/* --- Phase L5: Deployed Team Border Color per Team --- */
+.deployed-team[data-team="a"] {
+  border-left-color: var(--team-blue, #4a9eff);
+}
+.deployed-team[data-team="b"] {
+  border-left-color: var(--team-red, #e04040);
+}
+.deployed-team[data-team="c"] {
+  border-left-color: var(--team-green, #40c040);
+}
+.deployed-team[data-team="d"] {
+  border-left-color: var(--team-gold, #d4a843);
+}

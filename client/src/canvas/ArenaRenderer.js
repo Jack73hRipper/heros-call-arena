@@ -217,6 +217,8 @@ export function renderFrame(ctx, {
   totems = [],
   // Phase 23: Persistent AoE ground zones
   groundZones = [],
+  // Phase 21F: Room data for props rendering
+  dungeonRooms = [],
 }) {
   clearCanvas(ctx, gridWidth, gridHeight);
 
@@ -225,7 +227,7 @@ export function renderFrame(ctx, {
 
   if (isDungeon && tiles && tileLegend) {
     // Dungeon rendering path: tile-aware
-    drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates, ox, oy);
+    drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates, ox, oy, dungeonRooms);
   } else {
     // Arena rendering path: grid + obstacle blocks
     drawGrid(ctx, gridWidth, gridHeight, ox, oy);
