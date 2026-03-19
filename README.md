@@ -1,534 +1,228 @@
-# Arena Prototype
+```
+    __  __                  _          ______      ____
+   / / / /__  _________   ( )_____   / ____/___ _/ / /
+  / /_/ / _ \/ ___/ __ \ /|// ___/  / /   / __ `/ / / 
+ / __  /  __/ /  / /_/ /  (__  )  / /___/ /_/ / / /  
+/_/ /_/\___/_/   \____/  /____/   \____/\__,_/_/_/   
+                                                      
+                    A  R  E  N  A
+```
 
-Turn-based multiplayer combat arena & grimdark dungeon crawler — MMO Project.
+<p align="center">
+  <em>A grimdark co-op dungeon crawler with permadeath, turn-based tactical combat, and a loot system worth dying for.</em>
+</p>
 
-**Current status:** Launcher Phase L7 complete (Polish & Hardening — settings panel with install dir/browse/auto-check/minimize-to-tray/repair, system tray icon, window position persistence, loading spinner, smooth animated progress bar, file logging with rotation, keyboard shortcuts Enter/Esc, tray update notifications) · Launcher Phase L6 complete (Launcher Self-Update — electron-updater integration, auto-download background install, GitHub Releases publish config, notification bar with Restart Now, dev-mode skip, separate launcher v1.x / game v0.x versioning) · Launcher Phase L5 complete (Publish Pipeline — host-agnostic publish-config.json supporting R2/GitHub/local, publish-update.bat full build+hash+manifest+upload pipeline, write-patch-notes.bat template generator, bump-version.bat semver helper, start-publish.bat convenience wrapper) · Launcher Phase L4 complete (Download & Install — Downloader with progress/cancellation, SHA-256 Verifier, Extractor with atomic update swap, GameLauncher with auto-detect exe/minimize/foreground-on-exit, full UI progress bar with status pipeline, disk space check, installed.json write-back) · Launcher Phase L3 complete (Manifest & Version Check — VersionChecker module fetches remote latest.json, compares with local installed.json, UI state machine for not-installed/up-to-date/update-available/check-failed, patch notes markdown rendering, test manifest server) · Launcher Phase L2 complete (Game Packaging — PyInstaller spec for server bundling, Electron main.cjs spawns/kills bundled server in PROD mode with /health polling, electron-builder extraResources config, 5-step build-game-package.bat pipeline) · Launcher Phase L1 complete (Launcher Shell — frameless Electron window, grimdark theme, custom title bar, PLAY button) · Arena Analyst Phase D complete (Advanced Views — Composition Analysis with ranked comps + filterable table, Timeline Replay with SVG damage curves + turn event scrubber, Trend Charts with match volume/damage creep/win distribution) · Arena Analyst Phase C complete (Core Views — MatchList with filters, MatchDetail scoreboard/team comparison/MVP/kill feed, ClassBalance with sortable win rates/stat charts/class matrix) · Arena Analyst Phase B complete (Tool Scaffold — React+Vite app, Express API server, match history endpoints) · WFC Integration Phase C complete (Shared Module Format — canonical library.json, tool→server export pipeline, JSON loading with builtin fallback, round-trip import/export, 38 tests) · WFC Integration Phase B complete (Batch Generation — Best-of-N candidate selection, quality scoring, 33 tests) · WFC Integration Phase A complete (Dungeon Style Templates — 5 styles, auto-selection, floor-scaled weight/decorator overrides — 51 tests) · Phase 20 complete (Turn Resolver File Split — 2,240→267 line orchestrator, 10 sub-modules in turn_phases/, 61 smoke tests, 19 test imports migrated) · Phase 19 complete (Inventory/Stats Panel Overhaul — bag sort, set bonus badges, responsive width, class portrait, party quick-switch tabs) · Phase 18F complete (Loot Integration — rarity-scaled drops, bonus items, guaranteed rarity, gold multiplier, elite kill broadcast + client notifications — 38 tests) · Phase 18E complete (Client Visual Feedback — name colors, glow, tints, ghostly, minimap, combat log, enemy panel, affix ambient particles, death explosions, death celebrations) · Phase 18I complete (Enemy Identity Skills — 42 tests) · Phase 18G complete (Super Uniques — 63 tests) · Phase 18H complete (Enemy Forge Tool) · Phase 18D complete (Combat Integration — auras, on-hit effects, on-death explosions, ghostly phase-through, teleporter auto-cast, minion unlinking, 33 tests) · Phase 18C complete (Spawn Integration — 28 tests) · Phase 18B complete (Affix Engine — 150 tests) · Phase 18A complete (Monster Rarity Data Model) · Phase 16G complete (Client UI & Loot Presentation) · CSS split complete · 3987 tests passing
+<p align="center">
+  <img src="https://img.shields.io/badge/version-v0.1.8-blue" alt="Version" />
+  <img src="https://img.shields.io/badge/tests-3987_passing-brightgreen" alt="Tests" />
+  <img src="https://img.shields.io/badge/classes-11_playable-purple" alt="Classes" />
+  <img src="https://img.shields.io/badge/platform-Windows_|_Desktop-lightgrey" alt="Platform" />
+  <img src="https://img.shields.io/badge/status-Active_Development-orange" alt="Status" />
+</p>
 
-## Project Structure
+---
+
+## The Pitch
+
+You don't get to be the chosen one. You get to hire some poor bastard from a tavern, strap a rusty sword to his back, and shove him into a dungeon full of things that want to eat him. If he makes it out alive, you keep the loot. If he doesn't — and he probably won't — you lose him and everything he was carrying. Permanently.
+
+**Hero's Call Arena** is a turn-based co-op dungeon crawler where nothing is safe. Champion packs roam the halls with shared aura buffs. Rare elites roll random affixes that change how you have to fight them. Hand-crafted super unique bosses guard the deepest rooms with their own retinues and loot tables. Your party of five is all that stands between a fat haul of gear and a total wipe.
+
+### Core Loop
 
 ```
-Arena/
-├── start-game.bat          # Launch backend + frontend together
-├── start-backend.bat       # Launch Python backend only
-├── start-frontend.bat      # Launch Vite dev server only
-├── start-electron.bat      # Launch Electron desktop app
-├── start-dungeon-wfc.bat   # Launch WFC Dungeon Lab tool
-├── start-particle-lab.bat  # Launch Particle Effects Lab tool
-├── start-sprite-cataloger.bat # Launch Sprite Cataloger tool
-├── start-cave-automata.bat # Launch Cave Automata Lab tool
-├── start-module-decorator.bat # Launch Module Sprite Decorator tool
-├── start-theme-designer.bat# Launch Dungeon Theme Designer tool
-├── start-audio-workbench.bat # Launch Audio Workbench tool
-├── start-item-forge.bat    # Launch Item Forge tool
-├── start-enemy-forge.bat   # Launch Enemy Forge tool
-├── start-arena-analyst.bat # Launch Arena Analyst tool
-├── start-launcher.bat      # Launch game launcher (dev mode)
-├── start-publish.bat       # Build + publish game update
-│
-├── docs/                   # Project documentation
-│   ├── DOCS-ARCHITECTURE.md        # ★ Master index — start here to find any doc
-│   ├── Current Phase.md            # Phase tracker — all milestones & test counts
-│   ├── changelog.md                # Permanent versioned changelog
-│   ├── class-overview.md           # Source of truth: all 11 playable classes
-│   ├── bug-log.md                  # Bug tracking log
-│   ├── websocket-protocol.md       # All WS message types and data shapes
-│   ├── project-audit-march-2026.md # Current project health audit
-│   ├── Phase Docs/                 # Design specs per phase (57 files)
-│   │   ├── phase1-design-document-updated.md
-│   │   ├── phase2-arena-plus-v2.md
-│   │   ├── phase3-arena-refined.md
-│   │   ├── phase4-grimdark-dungeon.md
-│   │   ├── phase4-implementation-plan.md
-│   │   ├── phase5-qol-and-completion.md
-│   │   ├── phase5-feature7-gear-management.md
-│   │   ├── phase6-skills-and-ui-overhaul.md
-│   │   ├── phase6E-dungeon-gui-plan.md
-│   │   ├── phase7-party-movement-overhaul.md
-│   │   ├── phase8-party-ai-combat-intelligence.md
-│   │   ├── phase8K-ai-retreat-and-kiting.md
-│   │   ├── phase9-particle-effects-lab.md
-│   │   ├── phase10-auto-target-pursuit.md
-│   │   ├── phase10G-skill-auto-target.md
-│   │   ├── phase11-class-identity.md
-│   │   ├── phase11-implementation-log.md
-│   │   ├── phase12-dungeon-run.md
-│   │   ├── phase12-feature5-procedural-dungeon.md
-│   │   ├── phase13-path-forward.md
-│   │   ├── phase14-visual-feedback.md
-│   │   ├── phase15-complete-experience.md
-│   │   ├── phase15-menu-overhaul.md
-│   │   ├── phase16-item-equipment-overhaul.md
-│   │   ├── phase17-mage-class.md
-│   │   ├── phase18-monster-rarity-core.md
-│   │   ├── phase18-monster-rarity-content.md
-│   │   ├── phase18J-enemy-forge-skill-integration.md
-│   │   ├── phase19-inventory-panel-overhaul.md
-│   │   ├── phase20-turn-resolver-split.md
-│   │   ├── enemy-hp-rebalance-and-identity.md
-│   │   ├── enemy-roster-system.md
-│   │   ├── loot-system-overhaul.md
-│   │   ├── party-control-system.md
-│   │   └── wfc-in-game-integration-plan.md
-│   ├── Systems/                    # System design docs
-│   │   ├── action-intent-system.md
-│   │   ├── affix-system.md
-│   │   ├── audio-system.md
-│   │   ├── audio-workbench.md
-│   │   ├── buff-particle-overhaul.md
-│   │   ├── combat-meter.md
-│   │   ├── combat-system-overview.md
-│   │   ├── electron-desktop-app.md
-│   │   ├── enemy-forge.md
-│   │   ├── input-targeting-systems.md
-│   │   ├── minimap.md
-│   │   ├── monster-rarity-visual-improvements.md
-│   │   ├── particle-visibility-lifecycle.md
-│   │   ├── projectile-travel-system.md
-│   │   └── weapon-class-lock-system.md
-│   ├── Tools/                      # Tool documentation
-│   │   ├── wfc-dungeon-lab.md
-│   │   ├── sprite-cataloger.md
-│   │   ├── cave-automata-lab.md
-│   │   ├── module-sprite-decorator.md
-│   │   ├── theme-designer.md
-│   │   ├── audio-workbench.md
-│   │   ├── item-forge.md
-│   │   ├── enemy-forge.md
-│   │   └── arena-analyst.md
-│   ├── Game stats references/
-│   │   └── game-balance-reference.md
-│   └── Achieve/                    # Archived docs (completed/superseded)
-│
-├── server/                 # Python backend (FastAPI)
-│   ├── pyproject.toml
-│   ├── requirements.txt
-│   ├── app/
-│   │   ├── main.py             # Entry point
-│   │   ├── config.py           # Settings
-│   │   ├── models/             # Pydantic schemas
-│   │   │   ├── actions.py          # ActionType enum, PlayerAction
-│   │   │   ├── items.py            # Item, StatBonuses, Equipment, Inventory
-│   │   │   ├── match.py            # MatchState, MatchConfig
-│   │   │   ├── player.py           # PlayerState, ClassDefinition, EnemyDefinition
-│   │   │   └── profile.py          # PlayerProfile, Hero
-│   │   ├── core/               # Pure game logic (no framework deps)
-│   │   │   ├── combat.py              # Melee + ranged damage, LOS, cooldowns, team victory, affix on-hit effects
-│   │   │   ├── turn_resolver.py       # Thin orchestrator → delegates to turn_phases/ sub-modules
-│   │   │   ├── turn_phases/           # Resolution phase sub-modules (split from turn_resolver.py)
-│   │   │   │   ├── helpers.py             # Adjacency utilities
-│   │   │   │   ├── items_phase.py         # Phase 0: Item use
-│   │   │   │   ├── portal_phase.py        # Phase 0.25–0.9: Portal, extraction, stairs
-│   │   │   │   ├── buffs_phase.py         # Phase 0.5–0.75: Cooldowns, buffs, DoT/HoT
-│   │   │   │   ├── auras_phase.py         # Phase 18D: Monster rarity auras
-│   │   │   │   ├── movement_phase.py      # Phase 1: Batch movement
-│   │   │   │   ├── interaction_phase.py   # Phase 1.5–1.75: Doors, loot
-│   │   │   │   ├── skills_phase.py        # Phase 1.9: Skill resolution
-│   │   │   │   ├── combat_phase.py        # Phase 2–3: Ranged + melee
-│   │   │   │   └── deaths_phase.py        # Phase 3.5–4: Deaths, victory
-│   │   │   ├── match_manager.py       # Match lifecycle, AI spawning, FOV cache, rarity spawn integration
-│   │   │   ├── map_loader.py          # JSON map loading + spawn points
-│   │   │   ├── fov.py                 # Recursive shadowcasting + LOS
-│   │   │   ├── skills.py              # Skills config loader + validation
-│   │   │   ├── loot.py                # Loot generation (roll_enemy_loot, roll_chest_loot, rarity-scaled drops)
-│   │   │   ├── spawn.py               # Spawn point logic
-│   │   │   ├── ai_behavior.py         # AI decision hub (dispatches to modules below) + teleporter auto-cast
-│   │   │   ├── ai_pathfinding.py      # A* pathfinding, neighbor/heuristic helpers, ghostly phase-through
-│   │   │   ├── ai_skills.py           # Skill decision logic for all AI skill types
-│   │   │   ├── ai_stances.py          # Stance-based AI (follow, aggressive, defensive, hold)
-│   │   │   ├── ai_memory.py           # Enemy memory, target tracking, ally reinforcement
-│   │   │   ├── ai_patrol.py           # Patrol waypoints & random movement
-│   │   │   ├── wave_spawner.py        # Wave state, spawn logic, wave-clear checks, rarity support
-│   │   │   ├── equipment_manager.py   # Equip/unequip items, stat bonuses, inventory transfer
-│   │   │   ├── item_generator.py      # Procedural item generation (affixes, uniques, sets)
-│   │   │   ├── set_bonuses.py         # Set bonus definitions & activation logic
-│   │   │   ├── auto_target.py         # Auto-target pursuit, skill range helpers
-│   │   │   ├── party_manager.py       # Party control, group actions, stances
-│   │   │   ├── hero_manager.py        # Hero selection, spawn, permadeath, kill tracking
-│   │   │   ├── monster_rarity.py       # Phase 18A–18D, 18G: Monster rarity config, affix engine, name gen, spawn integration, super uniques
-│   │   │   └── wfc/                   # Wave Function Collapse dungeon engine
-│   │   │       ├── wfc_engine.py          # Core WFC solver (propagation, collapse, backtracking)
-│   │   │       ├── dungeon_generator.py   # High-level dungeon assembly from WFC output + style integration
-│   │   │       ├── dungeon_styles.py      # 5 dungeon style templates (weight overrides + decorator defaults)
-│   │   │       ├── room_decorator.py      # Room content placement (enemies, chests, doors)
-│   │   │       ├── connectivity.py        # Graph connectivity validation for generated layouts
-│   │   │       ├── map_exporter.py        # Export WFC result to game map JSON format + rarity rolling
-│   │   │       ├── module_utils.py        # Module loading, rotation, socket helpers
-│   │   │       └── presets.py             # 49 preset modules (5 socket types, 163 rotation variants)
-│   │   ├── services/           # Infrastructure (Redis, scheduler, WS)
-│   │   │   ├── websocket.py           # ConnectionManager, ws_manager, WS endpoint dispatcher
-│   │   │   ├── tick_loop.py           # match_tick() — game loop (FOV, AI, auras, resolve, broadcast)
-│   │   │   ├── message_handlers.py    # 24 WS message handlers + dispatch_message() router
-│   │   │   ├── persistence.py         # JSON file persistence (hero/profile save/load)
-│   │   │   ├── redis_client.py        # Redis client wrapper
-│   │   │   └── scheduler.py           # APScheduler task scheduler
-│   │   └── routes/             # REST + WS endpoints
-│   │       ├── lobby.py               # Lobby/match creation
-│   │       ├── maps.py                # Map list endpoint
-│   │       ├── match.py               # Match REST routes
-│   │       └── town.py                # Town hub REST (profile, tavern, hire, merchant, gear)
-│   ├── configs/
-│   │   ├── themes/                     # Dungeon theme configs (8 biomes)
-│   │   ├── combat_config.json
-│   │   ├── classes_config.json
-│   │   ├── enemies_config.json
-│   │   ├── skills_config.json
-│   │   ├── items_config.json
-│   │   ├── affixes_config.json         # Item affix definitions
-│   │   ├── item_names_config.json      # Procedural item name parts
-│   │   ├── sets_config.json            # Equipment set definitions & bonuses
-│   │   ├── uniques_config.json         # Unique item definitions
-│   │   ├── super_uniques_config.json   # Super unique monster definitions
-│   │   ├── loot_tables.json
-│   │   ├── merchant_config.json
-│   │   ├── monster_rarity_config.json  # Monster rarity tiers, champion types, 15 affixes, spawn rules
-│   │   ├── names_config.json
-│   │   ├── maps/                      # 15 map definitions
-│   │   │   ├── arena_classic.json
-│   │   │   ├── open_arena.json
-│   │   │   ├── open_arena_small.json
-│   │   │   ├── open_arena_large.json
-│   │   │   ├── maze.json
-│   │   │   ├── maze_large.json
-│   │   │   ├── islands.json
-│   │   │   ├── islands_large.json
-│   │   │   ├── dungeon_test.json
-│   │   │   ├── open_catacombs.json
-│   │   │   ├── training_room.json
-│   │   │   ├── wave_arena.json
-│   │   │   ├── test_xl.json
-│   │   │   ├── wfc_dungeon.json
-│   │   │   └── wfc_dungeon_6x6_test.json
-│   │   ├── wfc-modules/               # WFC module library
-│   │   │   └── library.json           # Canonical shared module library (49 modules, v2 format)
-│   │   └── wfc-rulesets/              # WFC generation rulesets
-│   ├── data/
-│   │   └── players/                   # Persisted player profiles (JSON)
-│   └── tests/                         # 60 test files, 2933 tests
-│
-├── client/                 # React frontend (Vite)
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── index.html
-│   ├── electron/                  # Electron desktop wrapper
-│   │   ├── main.cjs
-│   │   └── preload.cjs
-│   ├── public/
-│   │   ├── spritesheet.png
-│   │   ├── tilesheet.png
-│   │   ├── skill-icons.png
-│   │   ├── particle-effects.json
-│   │   ├── particle-presets.json      # Index file → points to category files below
-│   │   ├── audio-effects.json         # Audio effect trigger definitions
-│   │   ├── audio/                     # Audio asset files
-│   │   │   ├── buffs/
-│   │   │   ├── combat/
-│   │   │   ├── events/
-│   │   │   ├── items/
-│   │   │   ├── movement/
-│   │   │   ├── music/
-│   │   │   ├── skills/
-│   │   │   └── ui/
-│   │   └── particle-presets/          # Particle presets split into 8 category files
-│   │       ├── combat.json            #   Combat presets (melee-hit, ranged-hit, etc.)
-│   │       ├── skills.json            #   Skill presets (fire-blast, heal-pulse, etc.)
-│   │       ├── buffs.json             #   Buff presets (buff-aura-*, stun-stars, etc.)
-│   │       ├── projectiles.json       #   Projectile presets (arrow-trail, holy-head, etc.)
-│   │       ├── portal.json            #   Portal presets (portal-swirl, portal-core-glow, etc.)
-│   │       ├── ambient.json           #   Ambient presets (torch-flame, dust-motes, etc.)
-│   │       ├── compound.json          #   Compound presets (war-cry-blast, faith-descend, etc.)
-│   │       └── affixes.json           #   Monster affix presets
-│   └── src/
-│       ├── App.jsx                # Screen router (lobby → town → arena → postmatch)
-│       ├── index.jsx
-│       ├── components/            # UI components (organized by feature)
-│       │   ├── Arena/             # Main game canvas container
-│       │   ├── BottomBar/         # Skill bar, action buttons, tooltips
-│       │   ├── CombatLog/         # Scrollable combat event log
-│       │   ├── CombatMeter/       # Live combat stats panel + per-skill breakdown
-│       │   ├── EnemyPanel/        # Targeted enemy info display
-│       │   ├── HeaderBar/         # Turn counter, timer, HP, buffs
-│       │   ├── HUD/               # Heads-up display overlay
-│       │   ├── Inventory/         # Equipment slots + bag grid
-│       │   ├── Lobby/             # Match creation & joining
-│       │   ├── MinimapPanel/      # Minimap overlay panel
-│       │   ├── PartyPanel/        # Party list, stances, multi-select
-│       │   ├── PostMatch/         # Post-match results screen
-│       │   ├── TownHub/           # Town hub (merchant, hiring hall, hero roster, bank)
-│       │   ├── EscapeMenu/        # In-game escape/pause menu
-│       │   ├── VolumeSettings/    # Audio volume controls
-│       │   └── WaitingRoom/       # Pre-match waiting room
-│       ├── canvas/                # Canvas rendering pipeline
-│       │   ├── ArenaRenderer.js       # Hub — canvas setup, viewport, renderFrame()
-│       │   ├── renderConstants.js     # TILE_SIZE, color tables, shape/name maps
-│       │   ├── ThemeEngine.js          # Procedural grimdark theme renderer + tile cache
-│       │   ├── minimapRenderer.js     # Minimap rendering
-│       │   ├── PositionInterpolator.js # Smooth unit position interpolation
-│       │   ├── dungeonRenderer.js     # Dungeon tiles (walls, doors, chests) + fog of war
-│       │   ├── unitRenderer.js        # Unit drawing (sprites/shapes, stances, targets)
-│       │   ├── overlayRenderer.js     # Highlights, hover paths, loot, damage floaters
-│       │   ├── SpriteLoader.js        # Sprite sheet loading + drawing
-│       │   ├── TileLoader.js          # Tile sheet loading + drawing
-│       │   ├── pathfinding.js         # Client-side A* pathfinding
-│       │   └── particles/             # Particle effects engine
-│       │       ├── ParticleEngine.js
-│       │       ├── ParticleManager.js
-│       │       ├── ParticleRenderer.js
-│       │       ├── Emitter.js
-│       │       ├── Particle.js
-│       │       ├── ParticleProjectile.js
-│       │       └── MathUtils.js
-│       ├── hooks/                 # Custom React hooks
-│       │   ├── useWebSocket.js            # WebSocket connection management
-│       │   ├── useHighlights.js           # Tile highlight computations
-│       │   ├── useCanvasInput.js          # Canvas click, right-click, hover handlers
-│       │   ├── useKeyboardShortcuts.js    # Keyboard shortcuts (Ctrl+A, F1-F4, etc.)
-│       │   └── useWASDMovement.js         # WASD movement input
-│       ├── audio/                 # Audio system
-│       │   ├── AudioContext.jsx        # React audio context provider
-│       │   ├── AudioManager.js         # Audio playback manager (SFX, music, categories)
-│       │   ├── useAudio.js             # Audio hook for components
-│       │   ├── soundMap.js             # Sound effect → asset mapping
-│       │   └── index.js                # Audio module barrel export
-│       ├── context/               # GameStateContext + domain sub-reducers
-│       │   ├── GameStateContext.jsx    # Provider, hooks, initialState, combiner dispatch
-│       │   └── reducers/
-│       │       ├── lobbyReducer.js        # Lobby/pre-match actions
-│       │       ├── combatReducer.js       # Match lifecycle, turns, queues
-│       │       ├── partyReducer.js        # Party selection, stances, auto-target
-│       │       ├── combatStatsReducer.js   # Combat meter stats accumulation
-│       │       ├── townReducer.js         # Town hub, heroes, merchant, bank
-│       │       └── inventoryReducer.js    # In-match inventory & equipment
-│       ├── utils/                 # Shared utility functions
-│       │   ├── skillUtils.js          # isInSkillRange() — shared skill range helper
-│       │   └── itemUtils.js           # formatStatBonuses() — shared item display helper
-│       └── styles/                # CSS (split from 7,197-line monolith → 29 partials)
-│           ├── main.css               # Barrel file (29 @import statements)
-│           ├── base/
-│           │   ├── _variables.css     # CSS custom properties (:root)
-│           │   ├── _reset.css         # Reset, scrollbar, body, .app, vignette
-│           │   ├── _buttons.css       # Shared button styles (.grim-btn, etc.)
-│           │   ├── _frames.css        # Decorative frame styles
-│           │   ├── _forms.css         # Form element styles
-│           │   └── _animations.css    # Keyframe animations
-│           ├── layout/
-│           │   ├── _app-header.css    # Game title bar
-│           │   ├── _arena.css         # Arena grid + responsive viewport
-│           │   └── _minimap.css       # Minimap overlay
-│           ├── components/
-│           │   ├── _lobby.css         # Lobby screens (username, match list, config, class select)
-│           │   ├── _waiting-room.css  # Waiting room + AI badge
-│           │   ├── _header-bar.css    # In-match header (turn counter, HP, buffs)
-│           │   ├── _bottom-bar.css    # Action bar, skill slots, hotkeys, cooldowns
-│           │   ├── _hud.css           # HUD overlay
-│           │   ├── _combat-log.css    # Combat log
-│           │   ├── _party-panel.css   # Party list, stances, multi-select
-│           │   ├── _enemy-panel.css   # Targeted enemy info
-│           │   ├── _inventory.css     # Inventory/loot UI + dungeon transfer
-│           │   ├── _combat-meter.css  # Combat stats, meter bars, skill breakdown
-│           │   ├── _overlays.css      # Match end, death banner, auto-target, action intent
-│           │   ├── _volume-settings.css # Volume settings panel
-│           │   └── _escape-menu.css   # Escape menu overlay
-│           ├── town/
-│           │   ├── _town-hub.css      # Town hub layout + browse matches
-│           │   ├── _merchant.css      # Merchant buy/sell UI
-│           │   ├── _hiring-hall.css   # Hiring hall
-│           │   ├── _hero-roster.css   # Hero roster + detail panel
-│           │   ├── _gear-management.css # Gear management (equip/unequip/compare)
-│           │   └── _bank.css          # Bank / shared stash
-│           └── screens/
-│               └── _post-match.css    # Post-match results screen
-│
-├── tools/                  # Standalone dev tools
-│   ├── generate_atlas.py   # Sprite atlas generation utility
-│   ├── dungeon-wfc/        # WFC Dungeon Lab — procedural dungeon generator
-│   ├── cave-automata/      # Cave Automata Lab — cellular automata cave generator
-│   ├── module-decorator/   # Module Sprite Decorator — visual tile painting for WFC modules
-│   ├── particle-lab/       # Particle Effects Lab — visual effect testing
-│   ├── sprite-cataloger/   # Sprite Cataloger — sprite sheet browser
-│   ├── theme-designer/     # Dungeon Theme Designer — procedural grimdark tile preview
-│   ├── audio-workbench/    # Audio Workbench — sound testing, categorization & config editor
-│   ├── item-forge/         # Item Forge — item/equipment creation, balancing & simulation
-│   ├── enemy-forge/        # Enemy Forge — monster rarity, affixes, champion types, TTK simulation
-│   ├── arena-analyst/      # Arena Analyst — match tracker, balance analysis & trend visualization
-│   └── Thought-Mapper/     # Thought Mapper — planning tool
-│
-├── Assets/                 # Art assets (XCF source files, sprite sheets, maps, audio)
-│   ├── Audio/
-│   ├── Character Sheet/
-│   ├── Maps/
-│   ├── Sprites/
-│   └── Walls and Objects/
-│
-└── README.md
+  Town Hub  -->  Form Party  -->  Enter Dungeon  -->  Fight & Loot  -->  Escape or Perish
+     |                                                                         |
+     '---- Hire new heroes, buy gear, sell loot, stash valuables <-------------'
 ```
+
+**Death is not a setback. It's a reset.** Hero dies, hero is gone. Gear on that hero — gone. Portal scrolls are your only lifeline. Use one to extract your party with their loot, or push deeper and risk everything.
+
+---
+
+## Features
+
+### Tactical Combat
+- **Turn-based action queue** — Queue up to 10 actions ahead and watch them execute in fast 1-second ticks
+- **11 playable classes** — Tank, healer, scout, ranged DPS, hybrid DPS, caster, support, and more — each with unique skills, stats, and identity
+- **Skill system** — 40+ skills across all classes including heals, buffs, AoE, DoTs, summons, auras, and crowd control
+- **Combat meter** — Live damage/healing/kill tracking with per-skill breakdowns
+
+### Dungeons
+- **Wave Function Collapse generation** — Every dungeon layout is unique, assembled from modular tile pieces
+- **8 dungeon themes** — Each biome has distinct wall textures, floor patterns, props, and ambient lighting
+- **Room archetypes** — Grand Cathedrals, Ritual Chambers, Torture Chambers, Ossuaries, Fungal Grottos, and more
+- **Dynamic lighting** — Torches, braziers, and ritual circles cast flickering multi-tile glow through ambient darkness
+- **Door system** — Rooms separated by chokepoint doors that create tactical bottlenecks
+
+### Monster Rarity System
+- **Diablo II-inspired tiers** — Normal, Champion, Rare, and Super Unique monsters
+- **15 affixes** — Enemies can roll modifiers like Teleporter, Ghostly, Vampiric, Molten Death, and more
+- **Champion packs** — Elites spawn with minion escorts and shared aura buffs
+- **4 hand-crafted super uniques** — Malgris the Defiler, Serelith Bonequeen, Gorvek Ironhide, The Hollow King — each with fixed affixes, retinues, and unique loot tables
+
+### Loot & Equipment
+- **Procedural item generation** — Weapons, armor, and accessories with random affixes and stat rolls
+- **Rarity tiers** — Common through Unique, plus 5 equipment sets with tiered set bonuses
+- **Town economy** — Merchant for buying/selling, bank for shared stash, hiring hall for recruiting heroes
+- **Permadeath stakes** — Die in the dungeon and everything your hero was carrying is lost forever
+
+### AI & Party System
+- **Party of up to 5** — Control a full party with stance-based AI (Follow, Aggressive, Defensive, Hold)
+- **Smart AI companions** — Allies use skills, drink potions, retreat when low, seek treasure chests, and pathfind through doors
+- **PvP, PvE, and PvPvE** — Fight other players, dungeon monsters, or both at once
+- **Wave Arena mode** — 8 escalating waves for testing builds and strategies
+
+### Visual & Audio
+- **Grimdark aesthetic** — Dark fantasy theme with procedural tile rendering, particle effects, and ambient atmosphere
+- **50+ particle effects** — Combat hits, skill casts, buff auras, projectile trails, death explosions, and ambient dungeon effects
+- **Full audio system** — Categorized SFX for combat, skills, UI, movement, and ambient music
+- **Fog of war** — Server-side recursive shadowcasting with shared team vision
+
+---
+
+## The Classes
+
+| Class | Role | Identity |
+|-------|------|----------|
+| **Crusader** | Tank | Heavy-armored frontline. Highest HP and armor in the game. |
+| **Confessor** | Support | Primary healer with protective buffs and party sustain. |
+| **Inquisitor** | Scout | Long-range vision, ranged damage, and battlefield awareness. |
+| **Ranger** | Ranged DPS | Highest ranged damage dealer. Glass cannon with long range. |
+| **Hexblade** | Hybrid DPS | Melee/ranged hybrid with cursed blade magic. |
+| **Mage** | Caster DPS | Arcane artillery. Magic bypasses 50% of armor. |
+| **Bard** | Offensive Support | Buffs allies while dealing respectable damage. |
+| **Blood Knight** | Sustain Melee | Life-stealing melee fighter who heals through violence. |
+| **Plague Doctor** | Controller | DoTs, debuffs, and area denial through poison and plague. |
+| **Revenant** | Retaliation Tank | Punishes attackers with thorns and retaliatory damage. |
+| **Shaman** | Totemic Healer | Deploys totems for healing, buffs, and area control. |
+
+---
 
 ## Quick Start
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 18+
+- **Python 3.11+** and **Node.js 18+**
 
 ### One-Click Launch
 ```bash
-# Start everything (backend + frontend)
-start-game.bat
+start-game.bat          # Starts backend + frontend together
 ```
+The game opens at `http://localhost:5173`. That's it.
 
 ### Manual Setup
-
-**Backend:**
 ```bash
+# Backend
 cd server
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
-```
 
-**Frontend:**
-```bash
+# Frontend (separate terminal)
 cd client
 npm install
 npm run dev
 ```
 
-The client runs at `http://localhost:5173` and proxies API/WS requests to the backend.
-
-### Desktop App (Electron)
+### Desktop App
 ```bash
-# Option 1: Use the batch file (starts everything)
-start-electron.bat
-
-# Option 2: Manual (backend must be running first)
-cd client
-npm run electron:dev
+start-electron.bat      # Launches the Electron desktop client
 ```
 
-See [docs/Systems/electron-desktop-app.md](docs/Systems/electron-desktop-app.md) for full details, build instructions, and packaging.
+---
 
-### Dev Tools
-```bash
-start-dungeon-wfc.bat       # WFC Dungeon Lab
-start-cave-automata.bat     # Cave Automata Lab
-start-particle-lab.bat      # Particle Effects Lab
-start-sprite-cataloger.bat  # Sprite Cataloger
-start-module-decorator.bat  # Module Sprite Decorator
-start-theme-designer.bat    # Dungeon Theme Designer
-start-audio-workbench.bat   # Audio Workbench
-start-item-forge.bat        # Item Forge
-start-enemy-forge.bat       # Enemy Forge
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | React 18 · Vite · Canvas API · Custom particle engine |
+| **Backend** | Python · FastAPI · WebSockets · Uvicorn |
+| **Desktop** | Electron · electron-builder · PyInstaller |
+| **Launcher** | Electron · Auto-updater · GitHub Releases |
+| **Data** | JSON file persistence · Redis (optional) |
+| **Testing** | pytest · 3,987 tests across 88 files · 0 failures |
+
+---
+
+## Dev Tools
+
+The project includes **10 standalone development tools**, each launchable with a single batch file:
+
+| Tool | Launch | Purpose |
+|------|--------|---------|
+| **WFC Dungeon Lab** | `start-dungeon-wfc.bat` | Design and test procedural dungeon layouts |
+| **Cave Automata** | `start-cave-automata.bat` | Generate organic cave systems via cellular automata |
+| **Particle Lab** | `start-particle-lab.bat` | Create and preview particle effects in real time |
+| **Theme Designer** | `start-theme-designer.bat` | Preview procedural grimdark tile themes (8 biomes) |
+| **Sprite Cataloger** | `start-sprite-cataloger.bat` | Browse and inspect sprite sheet assets |
+| **Module Decorator** | `start-module-decorator.bat` | Paint visual tiles onto WFC dungeon modules |
+| **Audio Workbench** | `start-audio-workbench.bat` | Preview sounds, A/B compare, edit audio configs |
+| **Item Forge** | `start-item-forge.bat` | Create items, tune affixes, simulate drop rates |
+| **Enemy Forge** | `start-enemy-forge.bat` | Edit monster rarity, affixes, TTK simulation |
+| **Arena Analyst** | `start-arena-analyst.bat` | Match history, class balance analysis, trend charts |
+
+---
+
+## Project Architecture
+
+```
+Arena/
+├── client/             # React frontend — UI, canvas renderer, particle engine, audio
+├── server/             # Python backend — game logic, AI, combat, WebSocket server
+│   ├── app/core/       #   Pure game logic (combat, AI, loot, WFC dungeons, skills)
+│   ├── app/services/   #   Infrastructure (WebSocket, tick loop, persistence)
+│   ├── app/routes/     #   REST + WS endpoints
+│   ├── configs/        #   Game data (classes, enemies, items, maps, themes)
+│   └── tests/          #   88 test files, 3,987 tests
+├── tools/              # 10 standalone dev tools (React + Express)
+├── launcher/           # Electron game launcher with auto-update
+├── docs/               # 80+ design docs, system specs, and tool guides
+└── build/              # Build artifacts, packaging configs, patch notes
 ```
 
-## Features
+> **Full documentation:** [docs/DOCS-ARCHITECTURE.md](docs/DOCS-ARCHITECTURE.md) — Master index of all 80+ project documents.
 
-| Feature | Description |
-|---------|-------------|
-| **FOV / Fog of War** | Server-side recursive shadowcasting; shared team vision (7-tile range) |
-| **Combat System** | Melee + ranged attacks, LOS checks, cooldowns, armor, per-class stats |
-| **6 Playable Classes** | Crusader, Confessor, Inquisitor, Ranger, Hexblade, Mage — unique stats, shapes, skills |
-| **Skills & Spells** | 5 class skills (Heal, Double Strike, Power Shot, War Cry, Shadow Step) with buff system |
-| **AI System** | A* pathfinding, stance-based behavior (follow/aggressive/defensive/hold), potion usage, retreat/kiting |
-| **Dungeon Crawler** | Grimdark dungeons with rooms, doors, chests, enemy types, loot drops |
-| **Loot & Items** | Equipment (weapon/armor/accessory), consumables, ground items, rarity system |
-| **Hero System** | Persistent heroes, permadeath, name generation, stat variation |
-| **Town Hub** | Merchant (buy/sell), Hiring Hall, Hero Roster, Bank, gear management |
-| **Party Control** | Multi-select, group movement, formation pathfinding, stance control |
-| **Auto-Target Pursuit** | Right-click to persistently chase + attack/skill enemies across turns |
-| **Combat Meter** | Live damage/healing/kill stats with click-to-inspect per-skill breakdown, source type bars, and keyboard nav |
-| **Match Types** | PvP Only, Solo PvE, Mixed (humans + AI) |
-| **Team System** | Up to 4 teams (A, B, C, D), no friendly fire, shared team FOV |
-| **Wave Arena** | 8 waves of escalating enemies for AI testing |
-| **Particle Effects** | Damage, heal, buff, teleport, and death visual effects |
-| **WFC Dungeons** | Procedural dungeon generation via Wave Function Collapse |
-| **Module Decorator** | Visual sprite painting tool for WFC dungeon modules |
-| **Cave Automata** | Organic cave/cavern generation via Cellular Automata |
-| **Theme Designer** | Procedural grimdark dungeon tile preview tool (8 biomes) |
-| **Audio Workbench** | Sound preview, A/B comparison, category management & config editor |
-| **Item Forge** | Item/equipment creation, affix editing, set design, balance simulation & drop rate calculator |
-| **Enemy Forge** | Monster rarity editing, affix tuning, champion types, floor roster viewer, TTK simulator, spawn preview, super uniques |
-| **Monster Rarity** | D2-inspired Normal/Champion/Rare/Super Unique tiers, 5 champion types, 15 affixes, pack spawning, combat effects (auras, on-hit, on-death) |
-| **Electron App** | Desktop wrapper with native window chrome |
+---
 
-## Maps
+## Documentation Highlights
 
-| Map | Size | Type | Description |
-|-----|------|------|-------------|
-| Open Arena Small | 12×12 | Arena | Compact open arena for 2-4 players |
-| Arena Classic | 15×15 | Arena | Balanced mix with center cross |
-| Open Arena | 15×15 | Arena | Wide open with scattered pillars |
-| Maze | 15×15 | Arena | Tight corridors and dead ends |
-| Islands | 15×15 | Arena | Clustered obstacle zones |
-| Open Arena Large | 20×20 | Arena | Spacious open arena for 6-8 players |
-| Maze Large | 20×20 | Arena | Brick-wall corridor maze, large scale |
-| Islands Large | 20×20 | Arena | Scaled island clusters for large groups |
-| Wave Arena | 20×20 | Arena | AI testing — 8 waves of escalating enemies |
-| Test Map XL | 25×25 | Arena | Fortress theme — scalability testing |
-| Dungeon Test | 20×20 | Dungeon | 5 rooms, doors, chests, enemy spawns |
-| Open Catacombs | — | Dungeon | Catacomb-themed dungeon |
-| Training Room | — | Dungeon | Practice environment |
-| WFC Dungeon | — | Dungeon | Procedurally generated via WFC |
+| Document | Description |
+|----------|-------------|
+| [Current Phase](docs/Current%20Phase.md) | Full milestone tracker — every feature and its status |
+| [Class Overview](docs/class-overview.md) | Source of truth for all 11 classes, stats, and skills |
+| [Combat System](docs/Systems/combat-system-overview.md) | Damage formulas, turn resolution, and combat mechanics |
+| [WebSocket Protocol](docs/websocket-protocol.md) | All real-time message types and data shapes |
+| [Project Audit](docs/project-audit-march-2026.md) | Architecture health assessment (8/10) |
+| [Changelog](docs/changelog.md) | Full versioned history of every change |
 
-## Decisions Locked In
+---
 
-| Decision | Choice |
-|----------|--------|
-| Turn tick rate | 1 second (configurable) |
-| Rendering | Canvas API |
-| Map sizes | 12×12, 15×15, 20×20, 25×25 |
-| FOV algorithm | Recursive shadowcasting (pure Python, server-side) |
-| AI pathfinding | A* with Chebyshev heuristic |
-| Auth | Username only |
-| Bundler | Vite |
-| Persistence | JSON file-based (server/data/players/) |
-| Desktop | Electron |
+## Latest Release — v0.1.8
 
-## Documentation
+*Dungeon Lighting, Door System, HUD Overhaul & AI Upgrades*
 
-> **📖 Full documentation map:** [docs/DOCS-ARCHITECTURE.md](docs/DOCS-ARCHITECTURE.md) — Master index of all project documentation. Agents and contributors should start there to navigate the docs tree.
+- **Prop lighting system** — Torches, braziers, and candelabras cast flickering multi-tile glow through ambient darkness
+- **Room door system** — Wall separators with chokepoint doors at room boundaries
+- **7 new room archetypes** — Grand Cathedral, Ritual Chamber, Torture Chamber, Burial Ground, Armory, Ossuary, Fungal Grotto
+- **HUD overhaul** — Player/party HP bars, minimap relocation, 4-row grid layout
+- **7 new skill particles** — Seal of Judgment, Blink, Bone Shield, Dark Pact, and more
+- **AI upgrades** — Door-aware pathfinding, chest seeking, unique class compositions
+- **Loot rebalance** — Location-based chest tiers, rarity curve adjustments
 
-### Key References
-- [Current Phase](docs/Current%20Phase.md) — Full milestone tracker with test counts
-- [Class Overview](docs/class-overview.md) — Source of truth for all 11 playable classes
-- [WebSocket Protocol](docs/websocket-protocol.md) — All message types and data shapes
-- [Project Health Audit](docs/project-audit-march-2026.md) — Current architecture health assessment
+**3,987 tests passing.**
 
-### Phase Specs (57 docs)
-Design specs per feature phase — see [DOCS-ARCHITECTURE.md § Phase Docs](docs/DOCS-ARCHITECTURE.md#phase-docs--design-specs) for the full indexed list.
+---
 
-Highlights:
-- [Phase 1](docs/Phase%20Docs/phase1-design-document-updated.md) — Original scope & timeline
-- [Phase 4](docs/Phase%20Docs/phase4-grimdark-dungeon.md) — Grimdark dungeon crawler design
-- [Phase 12](docs/Phase%20Docs/phase12-dungeon-run.md) — The Dungeon Run (multi-floor, extraction, CC, loot, audio)
-- [Phase 16](docs/Phase%20Docs/phase16-item-equipment-overhaul.md) — Item & Equipment Overhaul
-- [Phase 18 Core](docs/Phase%20Docs/phase18-monster-rarity-core.md) — Monster Rarity & Affix System
-- [Phase 20](docs/Phase%20Docs/phase20-turn-resolver-split.md) — Turn Resolver File Split
-- [Phase 21–26](docs/Phase%20Docs/phase21-bard-class.md) — New classes (Bard, Blood Knight, Plague Doctor, Revenant, Shaman)
-- [Phase 27](docs/Phase%20Docs/phase27-pvpve-dungeon-map.md) — PvPvE Dungeon
+## Roadmap
 
-### Systems & References (16 docs)
-Technical reference docs for current-state architecture — see [DOCS-ARCHITECTURE.md § Systems](docs/DOCS-ARCHITECTURE.md#systems--technical-references) for the full categorized list.
+The project has completed **27 major development phases** with active work continuing. Key areas of focus:
 
-- [Combat System](docs/Systems/combat-system-overview.md) — Master combat reference
-- [Action & Intent](docs/Systems/action-intent-system.md) — Action queueing pipeline
-- [Audio System](docs/Systems/audio-system.md) — Audio engine architecture
-- [Electron Desktop App](docs/Systems/electron-desktop-app.md) — Desktop app setup & packaging
-- [Affix System](docs/Systems/affix-system.md) — Item affix system design
-- [Game Balance](docs/Game%20stats%20references/game-balance-reference.md) — Balance reference data
+- **Online multiplayer** — Server hosting and matchmaking for real player-vs-player dungeon encounters
+- **Combat meter expansion** — Per-skill breakdowns, team grouping, buff uptime tracking
+- **Additional dungeon content** — New themes, room types, and boss encounters
+- **Performance monitoring** — Client FPS overlay, server tick timing
 
-### Tools (9 docs)
-Dev tool user guides — see [DOCS-ARCHITECTURE.md § Tools](docs/DOCS-ARCHITECTURE.md#tools--development-tool-guides) for the full list with launch commands.
+---
 
-- [WFC Dungeon Lab](docs/Tools/wfc-dungeon-lab.md) — Procedural dungeon generator
-- [Item Forge](docs/Tools/item-forge.md) — Item/equipment creation, balancing & simulation
-- [Enemy Forge](docs/Tools/enemy-forge.md) — Monster rarity, affixes, champion types, TTK simulation
-- [Arena Analyst](docs/Tools/arena-analyst.md) — Match tracker, balance analysis & trend visualization
-
-### Workflows
-- [Publish Workflow](docs/publish-workflow.md) — Publishing steps, versioning, build pipeline
-- [Launcher Pipeline](docs/launcher-pipeline.md) — Launcher versioning & update manifest flow
-- [New Class Template](docs/new-class-implementation-template.md) — Step-by-step protocol for implementing new classes
-
-## Test Suite
-
-- **2933 tests** across 60 test files (0 failures)
-- Full backward compatibility verified at every phase
-- Coverage spans: combat, turn resolution, AI behavior, WebSocket protocol, dungeon mechanics, items/loot, hero persistence, skills, cooperative movement, stances, door pathfinding, wave spawner, auto-target, portal scroll, crowd control, Phase 12 skills, monster rarity (affix engine, spawn integration, combat effects, super uniques, loot integration), turn phase sub-module imports, and more
-
+<p align="center">
+  <sub>Built with obsessive attention to grimdark detail · 80+ design docs · 3,987 tests · 0 failures</sub>
+</p>
