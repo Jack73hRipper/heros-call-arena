@@ -618,6 +618,7 @@ def generate_enemy_loot(
     dropped_set_piece_ids: set[str] | None = None,
     player_class: str = "",
     monster_rarity: str | None = None,
+    party_classes: list[str] | None = None,
 ) -> list[Item]:
     """Roll loot for a defeated enemy using the Phase 16B affix generator.
 
@@ -629,6 +630,8 @@ def generate_enemy_loot(
     Phase 18F: Monster rarity tier bonuses — champions/rares/super uniques
     get boosted drop chances, bonus item counts, guaranteed rarity floors,
     and magic find bonuses.
+    Phase 21C: Party-aware loot bias — 60% chance to bias armor drops toward
+    a random party member's preferred armor category.
 
     Args:
         enemy_type: Enemy type ID (e.g. "demon", "skeleton", "undead_knight").
@@ -638,6 +641,7 @@ def generate_enemy_loot(
         seed: Optional deterministic seed for reproducible results.
         dropped_unique_ids: Set of unique IDs already dropped this run (prevents duplicates).
         monster_rarity: Phase 18F — monster rarity tier ("normal", "champion", "rare", "super_unique").
+        party_classes: Phase 21C — list of class IDs in the party for loot bias.
 
     Returns:
         List of Item objects dropped. May be empty if drop chance fails.
@@ -709,9 +713,13 @@ def generate_enemy_loot(
 
     # Roll items with affix generation
     first_item = True
+    # Phase 21C: Resolve party preferred armor categories for bias
+    preferred_categories = _get_party_preferred_categories(party_classes)
     for _ in range(num_items):
-        # Pick base type from pools
-        base_type_id = _pick_base_type_from_pool(pools, rng, items_config)
+        # Pick base type from pools — Phase 21C: with party-aware bias
+        base_type_id = _pick_base_type_from_pool(
+            pools, rng, items_config, preferred_categories=preferred_categories,
+        )
         if base_type_id is None:
             continue
 
@@ -786,6 +794,7 @@ def generate_chest_loot(
     floor_number: int = 1,
     magic_find_pct: float = 0.0,
     seed: int | None = None,
+    party_classes: list[str] | None = None,
 ) -> list[Item]:
     """Roll loot for a chest using the Phase 16B affix generator.
 
@@ -795,6 +804,7 @@ def generate_chest_loot(
         floor_number: Current dungeon floor (affects rarity + item level).
         magic_find_pct: Player's magic find bonus (decimal, e.g. 0.20 = 20%).
         seed: Optional deterministic seed for reproducible results.
+        party_classes: Phase 21C — list of class IDs in the party for loot bias.
 
     Returns:
         List of Item objects found in the chest.
@@ -830,13 +840,27 @@ def generate_chest_loot(
     if is_boss_chest:
         base_item_level += 4
 
+    # Phase 21C: Resolve party preferred armor categories for bias
+    preferred_categories = _get_party_preferred_categories(party_classes)
+
     for _ in range(num_items):
-        base_type_id = _pick_base_type_from_pool(pools, rng, items_config)
+        base_type_id = _pick_base_type_from_pool(
+            pools, rng, items_config, preferred_categories=preferred_categories,
+        )
         if base_type_id is None:
             continue
 
-        # Roll rarity (chests use "mid" tier equivalent for rarity)
-        chest_tier = "elite" if is_boss_chest else "mid"
+        # Roll rarity — chest tier maps to enemy tier for rarity rolling
+        _CHEST_TIER_MAP = {
+            "wooden": "fodder",
+            "iron": "fodder",
+            "gold": "mid",
+            "obsidian": "elite",
+            "boss_chest": "boss",
+        }
+        chest_tier = _CHEST_TIER_MAP.get(
+            chest_type, "boss" if is_boss_chest else "fodder"
+        )
         rarity = roll_rarity(
             floor_number=floor_number,
             enemy_tier=chest_tier,
@@ -859,9 +883,16 @@ def generate_chest_loot(
 
 
 def _pick_base_type_from_pool(
-    pools: list[dict], rng: random.Random, items_config: dict[str, dict]
+    pools: list[dict],
+    rng: random.Random,
+    items_config: dict[str, dict],
+    preferred_categories: list[str] | None = None,
 ) -> str | None:
     """Pick a base type ID from weighted pools (without creating the item).
+
+    Phase 21C: When preferred_categories is provided, there is a 60% chance
+    to bias armor item selection toward items matching one of the preferred
+    armor categories. Non-armor items are unaffected.
 
     Returns the item_id string, or None if pools are empty/invalid.
     """
@@ -874,8 +905,53 @@ def _pick_base_type_from_pool(
     if not pool_items:
         return None
 
+    # Phase 21C: Party-aware armor category bias
+    if preferred_categories and rng.random() < 0.60:
+        # Try to find armor items matching a preferred category
+        matching = [
+            item_id for item_id in pool_items
+            if item_id in items_config
+            and items_config[item_id].get("armor_category", "") in preferred_categories
+        ]
+        if matching:
+            chosen_id = rng.choice(matching)
+            return chosen_id
+
     chosen_id = rng.choice(pool_items)
     # Verify it exists in config
     if chosen_id not in items_config:
         return None
     return chosen_id
+
+
+# ---------- Phase 21C: Party-Aware Loot Helpers ----------
+
+# Class → preferred armor mapping (mirrors classes_config.json)
+_CLASS_PREFERRED_ARMOR: dict[str, str] = {
+    "crusader": "heavy",
+    "revenant": "heavy",
+    "blood_knight": "heavy",
+    "confessor": "cloth",
+    "shaman": "cloth",
+    "mage": "cloth",
+    "bard": "cloth",
+    "plague_doctor": "cloth",
+    "ranger": "light",
+    "inquisitor": "light",
+    "hexblade": "light",
+}
+
+
+def _get_party_preferred_categories(party_classes: list[str] | None) -> list[str] | None:
+    """Resolve a list of unique preferred armor categories from party class IDs.
+
+    Returns None if party_classes is empty/None (no bias applied).
+    """
+    if not party_classes:
+        return None
+    categories = list(set(
+        _CLASS_PREFERRED_ARMOR.get(cls, "")
+        for cls in party_classes
+        if _CLASS_PREFERRED_ARMOR.get(cls, "")
+    ))
+    return categories if categories else None

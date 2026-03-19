@@ -11,6 +11,7 @@ import React, { useState, useCallback } from 'react';
 import ThemeSelector from './components/ThemeSelector.jsx';
 import DungeonPreview from './components/DungeonPreview.jsx';
 import RoomArchetypePreview from './components/RoomArchetypePreview.jsx';
+import ObjectBrowser from './components/ObjectBrowser.jsx';
 import PaletteEditor from './components/PaletteEditor.jsx';
 import Toolbar from './components/Toolbar.jsx';
 import './styles/theme-designer.css';
@@ -18,7 +19,7 @@ import './styles/theme-designer.css';
 export default function App() {
   const [activeThemeId, setActiveThemeId] = useState('bleeding_catacombs');
   const [sampleMapId, setSampleMapId] = useState('classic');
-  const [viewMode, setViewMode] = useState('dungeon'); // 'dungeon' | 'archetypes'
+  const [viewMode, setViewMode] = useState('dungeon'); // 'dungeon' | 'archetypes' | 'objects'
 
   const handleSelectTheme = useCallback((themeId) => {
     setActiveThemeId(themeId);
@@ -48,6 +49,8 @@ export default function App() {
       />
       {viewMode === 'archetypes' ? (
         <RoomArchetypePreview themeId={activeThemeId} />
+      ) : viewMode === 'objects' ? (
+        <ObjectBrowser themeId={activeThemeId} />
       ) : (
         <DungeonPreview
           themeId={activeThemeId}

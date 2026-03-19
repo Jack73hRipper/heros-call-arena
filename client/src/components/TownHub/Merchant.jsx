@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
 import { apiFetch } from '../../utils/serverUrl';
 import HeroSprite from './HeroSprite';
+import { ARMOR_CATEGORY_LABELS } from '../../utils/itemUtils';
 
 /**
  * Merchant — buy/sell items in the Town Hub.
@@ -270,6 +271,9 @@ export default function Merchant({ availableClasses }) {
                               {item.name}
                             </span>
                             <span className="merchant-item-stats">{getStatSummary(item)}</span>
+                            {item.armor_category && ARMOR_CATEGORY_LABELS[item.armor_category] && (
+                              <span className="merchant-armor-category">[{ARMOR_CATEGORY_LABELS[item.armor_category]}]</span>
+                            )}
                             {item.description && (
                               <span className="merchant-item-desc">{item.description}</span>
                             )}
@@ -325,6 +329,9 @@ export default function Merchant({ availableClasses }) {
                           {item.name}
                         </span>
                         <span className="merchant-item-stats">{getStatSummary(item)}</span>
+                        {item.armor_category && ARMOR_CATEGORY_LABELS[item.armor_category] && (
+                          <span className="merchant-armor-category">[{ARMOR_CATEGORY_LABELS[item.armor_category]}]</span>
+                        )}
                       </div>
                       <div className="merchant-item-action">
                         <span className="merchant-price merchant-price-sell">

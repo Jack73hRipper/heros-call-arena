@@ -158,7 +158,10 @@ export class Emitter {
       if (!alive) {
         // Return to pool
         this._pool.push(p);
-        this.particles.splice(i, 1);
+        // P-F: Swap-and-pop — O(1) removal (order doesn't matter for particles)
+        const last = this.particles.length - 1;
+        if (i !== last) this.particles[i] = this.particles[last];
+        this.particles.pop();
       }
     }
   }

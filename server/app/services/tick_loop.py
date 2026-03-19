@@ -45,6 +45,7 @@ from app.core.match_manager import (
     track_turn_survived,
     record_turn_events,
     save_match_report,
+    is_dev_mode,
 )
 from app.core.turn_resolver import resolve_turn
 from app.core.map_loader import get_obstacles_with_door_states, load_map, is_dungeon_map
@@ -138,6 +139,8 @@ async def match_tick(match_id: str) -> None:
         door_tiles=door_tiles,
         portal=match.portal,
         match_state=match,
+        ground_items=ground_items,
+        chest_states=chest_states,
     )
 
     # --- Step 3: Pop first action from each human player's queue ---
@@ -332,6 +335,9 @@ async def match_tick(match_id: str) -> None:
     }
 
     for pid in connections:
+        # Dev mode: skip FOV filtering — send full state to this player
+        pid_dev_mode = is_dev_mode(match_id, pid)
+
         # Determine which team this player is on and use the team's combined FOV
         player_data = full_snapshot.get(pid, {})
         player_team = player_data.get("team", "")
@@ -343,30 +349,36 @@ async def match_tick(match_id: str) -> None:
 
         # Filter players snapshot: only include units visible in this player's FOV
         # Always include the player themselves
-        filtered_players = {}
-        for uid, data in full_snapshot.items():
-            if uid == pid:
-                filtered_players[uid] = data
-                continue
-            pos = data["position"]
-            if (pos["x"], pos["y"]) in player_fov:
-                filtered_players[uid] = data
-            elif data["team"] == full_snapshot.get(pid, {}).get("team"):
-                # Allies are always visible (show position even out of FOV)
-                filtered_players[uid] = data
+        if pid_dev_mode:
+            filtered_players = dict(full_snapshot)
+        else:
+            filtered_players = {}
+            for uid, data in full_snapshot.items():
+                if uid == pid:
+                    filtered_players[uid] = data
+                    continue
+                pos = data["position"]
+                if (pos["x"], pos["y"]) in player_fov:
+                    filtered_players[uid] = data
+                elif data["team"] == full_snapshot.get(pid, {}).get("team"):
+                    # Allies are always visible (show position even out of FOV)
+                    filtered_players[uid] = data
 
         # Filter actions: only include actions involving visible units
-        filtered_actions = []
-        for a in turn_result.actions:
-            action_dict = a.model_dump()
-            # Show action if actor is visible or player is the target
-            actor_unit = all_units.get(a.player_id)
-            if actor_unit and (actor_unit.position.x, actor_unit.position.y) in player_fov:
-                filtered_actions.append(action_dict)
-            elif a.target_id == pid:
-                # Player was attacked from outside FOV
-                action_dict["message"] = "You were attacked from the shadows!"
-                filtered_actions.append(action_dict)
+        if pid_dev_mode:
+            filtered_actions = [a.model_dump() for a in turn_result.actions]
+        else:
+            filtered_actions = []
+            for a in turn_result.actions:
+                action_dict = a.model_dump()
+                # Show action if actor is visible or player is the target
+                actor_unit = all_units.get(a.player_id)
+                if actor_unit and (actor_unit.position.x, actor_unit.position.y) in player_fov:
+                    filtered_actions.append(action_dict)
+                elif a.target_id == pid:
+                    # Player was attacked from outside FOV
+                    action_dict["message"] = "You were attacked from the shadows!"
+                    filtered_actions.append(action_dict)
 
         payload = {
             "type": "turn_result",
@@ -381,12 +393,15 @@ async def match_tick(match_id: str) -> None:
 
         # Phase 26C: Include totem data, FOV-filtered
         if match.totems:
-            visible_totems = [
-                t for t in match.totems
-                if (t.get("x"), t.get("y")) in player_fov
-            ] if player_fov else list(match.totems)
-            if visible_totems:
-                payload["totems"] = visible_totems
+            if pid_dev_mode:
+                payload["totems"] = list(match.totems)
+            else:
+                visible_totems = [
+                    t for t in match.totems
+                    if (t.get("x"), t.get("y")) in player_fov
+                ] if player_fov else list(match.totems)
+                if visible_totems:
+                    payload["totems"] = visible_totems
 
         # Include door changes for dungeon matches
         if turn_result.door_changes:

@@ -1,5 +1,45 @@
 # Bug Log
 
+## Bug #11 — PVPVE AI Team Frozen at Spawn (Leader-Follower Deadlock)
+
+**Date:** March 2026
+**Phase:** Phase 27C (PVPVE)
+**Severity:** High — one of 3 AI opponent teams is consistently non-functional
+**Status:** Fixed
+
+### Symptoms
+
+1. In PVPVE with 3 AI opponent teams (5 heroes each), one team never moves from spawn
+2. The affected team is always the one that spawns in a narrow 2-tile wide corridor
+3. The team leader oscillates between two adjacent tiles while all 4 followers stand still
+4. Reproducible across multiple dungeon seeds — always at least one team idle
+
+### Root Cause
+
+**Leader treats followers as obstacles in `_decide_aggressive_action`.**
+
+The PVPVE team leader uses aggressive AI (patrol/fight). Its `_build_occupied_set` calls did NOT pass `allow_team_swap`, so all 4 followers were treated as impassable tiles. In a compact BFS spawn formation inside a narrow corridor:
+
+- A* pathfinding to patrol waypoints fails (followers block every path)
+- `_random_adjacent_move` fallback oscillates between 1-2 free tiles
+- Leader stays within 2 tiles of followers → followers' `_decide_follow_action` returns WAIT (owner is close enough)
+- Permanent deadlock: leader can't escape, followers won't move
+
+The follower stance system (`_decide_stance_action`) already used `allow_team_swap=ai.team`. The leader's aggressive behavior path was missing the same treatment.
+
+### Fix
+
+- `_decide_aggressive_action`: Compute `allow_swap = ai.team` for hero party AI (`enemy_type is None`); pass to all `_build_occupied_set` calls. Dungeon enemies retain original behavior.
+- `_patrol_action`: Accept `allow_team_swap` parameter and forward to `_build_occupied_set`.
+- Movement resolver's friendly swap injection (Phase 1B) already handles same-team tile collisions.
+
+### Files Changed
+- `server/app/core/ai_behavior.py`
+- `server/app/core/ai_patrol.py`
+- `server/tests/test_movement_prediction.py`
+
+---
+
 ## Bug #10 — "Failed - No valid target" Target Desync (Entity-Based Targeting Fix)
 
 **Date:** June 2025

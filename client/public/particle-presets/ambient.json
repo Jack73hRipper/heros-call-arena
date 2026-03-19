@@ -394,5 +394,186 @@
       },
       "blendMode": "lighter"
     }
+  },
+  {
+    "name": "prop-candelabra-glow",
+    "version": 1,
+    "duration": 3,
+    "loop": true,
+    "tags": ["environment", "fire", "ambient", "prop-lighting"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 8,
+      "spawnShape": "rect",
+      "spawnWidth": 16,
+      "spawnHeight": 6,
+      "angle": { "min": 255, "max": 285 },
+      "speed": { "min": 8, "max": 22 },
+      "gravity": { "x": 0, "y": -12 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.3, "max": 0.6 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 3.5 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#fffbe6" },
+          { "stop": 0.25, "color": "#ffdd55" },
+          { "stop": 0.6, "color": "#ff9922" },
+          { "stop": 1, "color": "#441100" }
+        ]
+      },
+      "alpha": { "start": 0.7, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "prop-ritual-pulse",
+    "version": 1,
+    "duration": 4,
+    "loop": true,
+    "tags": ["environment", "magic", "ambient", "prop-lighting"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 5,
+      "spawnShape": "ring",
+      "spawnRadius": 12,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 6, "max": 18 },
+      "gravity": { "x": 0, "y": -3 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.8, "max": 1.6 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1.5, "max": 3 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.3, "color": "#cc4430" },
+          { "stop": 0.7, "color": "#8a2030" },
+          { "stop": 1, "color": "#220008" }
+        ]
+      },
+      "alpha": { "start": 0.55, "end": 0, "easing": "easeInOutQuad" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "prop-bioluminescent-spore",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": ["environment", "nature", "ambient", "prop-lighting"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 3,
+      "spawnShape": "rect",
+      "spawnWidth": 14,
+      "spawnHeight": 14,
+      "angle": { "min": 230, "max": 310 },
+      "speed": { "min": 2, "max": 8 },
+      "gravity": { "x": 0, "y": -4 },
+      "wind": { "x": 2 }
+    },
+    "particle": {
+      "lifetime": { "min": 1.5, "max": 3.0 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1, "max": 2.5 },
+        "end": { "min": 0.5, "max": 1 },
+        "easing": "easeInOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ccffcc" },
+          { "stop": 0.4, "color": "#66ee55" },
+          { "stop": 0.8, "color": "#33aa22" },
+          { "stop": 1, "color": "#114400" }
+        ]
+      },
+      "alpha": { "start": 0.45, "end": 0, "easing": "easeInOutQuad" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "prop-brazier-embers",
+    "version": 1,
+    "duration": 3,
+    "loop": true,
+    "tags": ["environment", "fire", "ambient", "prop-lighting"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 12,
+      "spawnShape": "rect",
+      "spawnWidth": 8,
+      "spawnHeight": 4,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 12, "max": 35 },
+      "gravity": { "x": 0, "y": -20 },
+      "wind": { "x": 3 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.4, "max": 0.9 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2.5, "max": 4.5 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.15, "color": "#ffcc33" },
+          { "stop": 0.45, "color": "#ff6600" },
+          { "stop": 0.8, "color": "#cc2200" },
+          { "stop": 1, "color": "#330000" }
+        ]
+      },
+      "alpha": { "start": 0.75, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "prop-fountain-mist",
+    "version": 1,
+    "duration": 4,
+    "loop": true,
+    "tags": ["environment", "water", "ambient", "prop-lighting"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 4,
+      "spawnShape": "rect",
+      "spawnWidth": 10,
+      "spawnHeight": 4,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 3, "max": 10 },
+      "gravity": { "x": 0, "y": -6 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.8, "max": 1.8 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1.5, "max": 3 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ddeeff" },
+          { "stop": 0.5, "color": "#88bbdd" },
+          { "stop": 1, "color": "#335566" }
+        ]
+      },
+      "alpha": { "start": 0.35, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
   }
 ]

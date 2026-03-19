@@ -246,3 +246,228 @@ export function formatSetBonuses(activeSets) {
     })),
   }));
 }
+
+/**
+ * Phase 21B: Class → preferred armor category mapping.
+ * Mirrors server/configs/classes_config.json preferred_armor values.
+ */
+const CLASS_PREFERRED_ARMOR = {
+  crusader:      'heavy',
+  revenant:      'heavy',
+  blood_knight:  'heavy',
+  confessor:     'cloth',
+  shaman:        'cloth',
+  mage:          'cloth',
+  bard:          'cloth',
+  plague_doctor: 'cloth',
+  ranger:        'light',
+  inquisitor:    'light',
+  hexblade:      'light',
+};
+
+/** Phase 21B: Default affinity bonus percentage (matches server default). */
+const DEFAULT_AFFINITY_BONUS = 0.15;
+
+/** Phase 21B: Human-readable armor category labels. */
+export const ARMOR_CATEGORY_LABELS = {
+  heavy: 'Heavy Armor',
+  light: 'Light Armor',
+  cloth: 'Cloth Armor',
+};
+
+/**
+ * Phase 21B: Check if an armor item matches a class's preferred armor category.
+ *
+ * @param {Object} item - Item data object (must have armor_category)
+ * @param {string} classId - Player's class_id (e.g. "crusader", "mage")
+ * @returns {{ isMatch: boolean, bonusPct: number, categoryLabel: string, className: string } | null}
+ *   Returns null if item is not armor or has no category.
+ */
+export function getArmorAffinityInfo(item, classId) {
+  if (!item || !item.armor_category || !classId) return null;
+
+  const preferred = CLASS_PREFERRED_ARMOR[classId];
+  const categoryLabel = ARMOR_CATEGORY_LABELS[item.armor_category] || item.armor_category;
+  const className = classId.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+  return {
+    isMatch: item.armor_category === preferred,
+    bonusPct: item.armor_category === preferred ? DEFAULT_AFFINITY_BONUS : 0,
+    categoryLabel,
+    className,
+  };
+}
+
+/**
+ * Phase 21D: Stat display groups for tier organization in tooltips.
+ */
+export const STAT_DISPLAY_GROUPS = [
+  { label: 'Core', keys: ['attack_damage', 'ranged_damage', 'armor', 'max_hp'] },
+  { label: 'Offensive', keys: ['crit_chance', 'crit_damage', 'skill_damage_pct', 'holy_damage_pct', 'dot_damage_pct', 'armor_pen'] },
+  { label: 'Defensive', keys: ['dodge_chance', 'damage_reduction_pct', 'hp_regen', 'life_on_hit', 'thorns'] },
+  { label: 'Utility', keys: ['cooldown_reduction_pct', 'move_speed', 'heal_power_pct', 'gold_find_pct', 'magic_find_pct'] },
+];
+
+/**
+ * Phase 21D: Inline comparison between two items with tier grouping info.
+ * Returns array of stat comparisons with formatted values for direct tooltip rendering.
+ *
+ * @param {Object} newItem - The item being inspected (potential equip)
+ * @param {Object} equippedItem - The currently equipped item in the same slot
+ * @returns {Array<{key, label, format, newVal, oldVal, delta, direction, tier, newValFormatted, oldValFormatted, deltaFormatted}>}
+ */
+export function compareItemsInline(newItem, equippedItem) {
+  if (!newItem) return [];
+
+  const newBonuses = newItem.stat_bonuses || {};
+  const oldBonuses = equippedItem?.stat_bonuses || {};
+
+  const statToTier = {};
+  for (const group of STAT_DISPLAY_GROUPS) {
+    for (const key of group.keys) {
+      statToTier[key] = group.label;
+    }
+  }
+
+  const results = [];
+
+  for (const { key, label, format } of STAT_DEFINITIONS) {
+    const newVal = newBonuses[key] || 0;
+    const oldVal = oldBonuses[key] || 0;
+
+    if (newVal === 0 && oldVal === 0) continue;
+
+    const delta = newVal - oldVal;
+    let direction = 'same';
+    if (oldVal === 0 && newVal !== 0) direction = 'new';
+    else if (newVal === 0 && oldVal !== 0) direction = 'lost';
+    else if (delta > 0) direction = 'up';
+    else if (delta < 0) direction = 'down';
+
+    results.push({
+      key,
+      label,
+      format,
+      newVal,
+      oldVal,
+      delta,
+      direction,
+      tier: statToTier[key] || 'Utility',
+      newValFormatted: newVal !== 0 ? `+${formatStatValue(newVal, format)}` : '',
+      oldValFormatted: oldVal !== 0 ? formatStatValue(oldVal, format) : '',
+      deltaFormatted: delta > 0 ? `▲ +${formatStatValue(delta, format)}`
+                    : delta < 0 ? `▼ ${formatStatValue(delta, format)}`
+                    : '—',
+    });
+  }
+
+  return results;
+}
+
+/**
+ * Phase 21D: Compute overall comparison verdict from inline comparison results.
+ *
+ * @param {Array} comparison - Result from compareItemsInline()
+ * @returns {{ upgrades: number, downgrades: number, label: string, color: string }}
+ */
+export function getComparisonVerdict(comparison) {
+  const upgrades = comparison.filter(c => c.direction === 'up' || c.direction === 'new').length;
+  const downgrades = comparison.filter(c => c.direction === 'down' || c.direction === 'lost').length;
+
+  let label, color;
+  if (upgrades > 0 && downgrades === 0) {
+    label = `◆ ${upgrades} upgrade${upgrades > 1 ? 's' : ''}`;
+    color = 'green';
+  } else if (upgrades > 0 && downgrades > 0) {
+    label = `◆ ${upgrades} upgrade${upgrades > 1 ? 's' : ''}, ${downgrades} downgrade${downgrades > 1 ? 's' : ''}`;
+    color = 'amber';
+  } else if (downgrades > 0) {
+    label = `◆ ${downgrades} downgrade${downgrades > 1 ? 's' : ''}`;
+    color = 'red';
+  } else {
+    label = '◆ Same stats';
+    color = 'gray';
+  }
+
+  return { upgrades, downgrades, label, color };
+}
+
+/**
+ * Phase 21G-1: Compare an item against all party members' equipped gear in the same slot.
+ * Returns an array of { unitId, className, displayName, verdict, fitScore,
+ *                        isAffinityMatch, isBestFit, isCurrentHero }
+ */
+export function getPartyFitRoster(item, partyMembers, partyInventories, players, currentUnitId) {
+  if (!item?.equip_slot || !partyMembers?.length) return [];
+
+  const slot = item.equip_slot;
+  const results = partyMembers
+    .filter(m => m.is_alive)
+    .map(member => {
+      const memberEquip = partyInventories[member.unit_id]?.equipment || {};
+      const equippedItem = memberEquip[slot] || null;
+
+      let verdict, fitScore;
+      if (!equippedItem) {
+        verdict = { upgrades: 1, downgrades: 0, label: '▲ empty slot', color: 'green' };
+        fitScore = 1;
+      } else {
+        const comparison = compareItemsInline(item, equippedItem);
+        verdict = getComparisonVerdict(comparison);
+        fitScore = verdict.upgrades - verdict.downgrades;
+      }
+
+      const affinity = getArmorAffinityInfo(item, member.class_id);
+
+      return {
+        unitId: member.unit_id,
+        className: players[member.unit_id]?.class_id || member.class_id,
+        displayName: member.username,
+        verdict,
+        fitScore,
+        isAffinityMatch: affinity?.isMatch || false,
+        isBestFit: false,
+        isCurrentHero: member.unit_id === currentUnitId,
+      };
+    });
+
+  // Determine best fit
+  const bestScore = Math.max(...results.map(r => r.fitScore));
+  if (bestScore > 0) {
+    const bestCandidates = results.filter(r => r.fitScore === bestScore);
+    const best = bestCandidates.find(r => r.isAffinityMatch) || bestCandidates[0];
+    best.isBestFit = true;
+  }
+
+  return results;
+}
+
+/**
+ * Phase 21G-3: Class abbreviation map for bag-slot best-fit badges.
+ */
+export const CLASS_BADGE_ABBREV = {
+  crusader: 'Cr', revenant: 'Re', blood_knight: 'BK',
+  confessor: 'Co', shaman: 'Sh', mage: 'Ma', bard: 'Ba',
+  plague_doctor: 'PD', ranger: 'Ra', inquisitor: 'In', hexblade: 'Hx',
+};
+
+/**
+ * Phase 21G-3: From a partyFitRoster result, return badge info for a bag slot overlay.
+ * Returns null if no upgrades exist for any party member.
+ */
+export function getBestFitBadge(roster) {
+  if (!roster?.length) return null;
+
+  const upgraders = roster.filter(r => r.fitScore > 0);
+  if (upgraders.length === 0) return null;
+
+  const best = roster.find(r => r.isBestFit);
+  if (!best) return null;
+
+  if (upgraders.length > 1) {
+    return { label: `▲${upgraders.length}`, color: 'gold', tooltip: `Upgrade for ${upgraders.length} heroes` };
+  }
+
+  const abbrev = CLASS_BADGE_ABBREV[best.className] || best.className.charAt(0).toUpperCase();
+  return { label: `▲${abbrev}`, color: best.isCurrentHero ? 'green-bright' : 'green', tooltip: `Upgrade for ${best.displayName}` };
+}

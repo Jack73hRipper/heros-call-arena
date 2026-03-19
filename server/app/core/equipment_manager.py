@@ -235,10 +235,13 @@ def _recalculate_effective_stats(player: PlayerState) -> None:
     """Recalculate Phase 16A effective stats from the player's full equipment set.
 
     Aggregates all new stats from equipment and applies configurable caps.
+    Phase 21B: Includes armor affinity bonus for matching armor category.
     Called after every equip/unequip operation.
     """
     from app.models.items import Item, Equipment, EquipSlot, StatBonuses
     from app.core.combat import get_combat_config
+    from app.models.player import get_class_definition
+    import math
 
     config = get_combat_config()
     dodge_cap = config.get("dodge_cap", 0.40)
@@ -269,6 +272,87 @@ def _recalculate_effective_stats(player: PlayerState) -> None:
             totals.dot_damage_pct += bonuses.dot_damage_pct
             totals.heal_power_pct += bonuses.heal_power_pct
             totals.armor_pen += bonuses.armor_pen
+
+    # Phase 21B: Armor affinity bonus — boost armor base stats if category matches class preference
+    # Step 1: Remove any previously applied affinity core bonuses
+    old_affinity = player.armor_affinity_applied
+    if old_affinity:
+        player.attack_damage -= old_affinity.get("attack_damage", 0)
+        player.ranged_damage -= old_affinity.get("ranged_damage", 0)
+        player.armor -= old_affinity.get("armor", 0)
+        if old_affinity.get("max_hp", 0):
+            player.max_hp -= old_affinity["max_hp"]
+            player.hp = min(player.hp, player.max_hp)
+        player.armor_affinity_applied = {}
+
+    # Step 2: Calculate and apply new affinity bonus
+    armor_data = player.equipment.get("armor")
+    if armor_data and player.class_id:
+        armor_category = armor_data.get("armor_category", "")
+        if armor_category:
+            class_def = get_class_definition(player.class_id)
+            if class_def and class_def.preferred_armor == armor_category:
+                bonus_pct = class_def.armor_affinity_bonus
+                if bonus_pct > 0:
+                    # Use base_stats if available (generated items), otherwise stat_bonuses (legacy items)
+                    raw_base = armor_data.get("base_stats") or armor_data.get("stat_bonuses") or {}
+                    base = StatBonuses(**raw_base)
+                    new_affinity = {}
+
+                    # Core stats — track for reversal
+                    if base.attack_damage:
+                        bonus = math.floor(base.attack_damage * bonus_pct)
+                        player.attack_damage += bonus
+                        new_affinity["attack_damage"] = bonus
+                    if base.ranged_damage:
+                        bonus = math.floor(base.ranged_damage * bonus_pct)
+                        player.ranged_damage += bonus
+                        new_affinity["ranged_damage"] = bonus
+                    if base.armor:
+                        bonus = math.floor(base.armor * bonus_pct)
+                        player.armor += bonus
+                        new_affinity["armor"] = bonus
+                    if base.max_hp:
+                        hp_bonus = math.floor(base.max_hp * bonus_pct)
+                        player.max_hp += hp_bonus
+                        player.hp += hp_bonus
+                        new_affinity["max_hp"] = hp_bonus
+
+                    # Phase 16A stats — add to totals (recalculated from scratch each pass)
+                    if base.crit_chance:
+                        totals.crit_chance += round(base.crit_chance * bonus_pct, 2)
+                    if base.crit_damage:
+                        totals.crit_damage += round(base.crit_damage * bonus_pct, 2)
+                    if base.dodge_chance:
+                        totals.dodge_chance += round(base.dodge_chance * bonus_pct, 2)
+                    if base.damage_reduction_pct:
+                        totals.damage_reduction_pct += round(base.damage_reduction_pct * bonus_pct, 2)
+                    if base.hp_regen:
+                        totals.hp_regen += math.floor(base.hp_regen * bonus_pct)
+                    if base.move_speed:
+                        totals.move_speed += math.floor(base.move_speed * bonus_pct)
+                    if base.life_on_hit:
+                        totals.life_on_hit += math.floor(base.life_on_hit * bonus_pct)
+                    if base.cooldown_reduction_pct:
+                        totals.cooldown_reduction_pct += round(base.cooldown_reduction_pct * bonus_pct, 2)
+                    if base.skill_damage_pct:
+                        totals.skill_damage_pct += round(base.skill_damage_pct * bonus_pct, 2)
+                    if base.thorns:
+                        totals.thorns += math.floor(base.thorns * bonus_pct)
+                    if base.gold_find_pct:
+                        totals.gold_find_pct += round(base.gold_find_pct * bonus_pct, 2)
+                    if base.magic_find_pct:
+                        totals.magic_find_pct += round(base.magic_find_pct * bonus_pct, 2)
+                    if base.holy_damage_pct:
+                        totals.holy_damage_pct += round(base.holy_damage_pct * bonus_pct, 2)
+                    if base.dot_damage_pct:
+                        totals.dot_damage_pct += round(base.dot_damage_pct * bonus_pct, 2)
+                    if base.heal_power_pct:
+                        totals.heal_power_pct += round(base.heal_power_pct * bonus_pct, 2)
+                    if base.armor_pen:
+                        totals.armor_pen += math.floor(base.armor_pen * bonus_pct)
+
+                    player.armor_affinity_applied = new_affinity
 
     # Apply to PlayerState with caps
     player.crit_chance = min(0.50, base_crit_chance + totals.crit_chance)
@@ -317,6 +401,186 @@ def _recalculate_set_bonuses(player: PlayerState) -> None:
 
     # Store active set bonuses on player for client display and skill checks
     player.active_set_bonuses = new_sets
+
+
+# ---------------------------------------------------------------------------
+# Phase 28D — AI Auto-Equip: Item scoring & automatic equipment upgrade
+# Phase 28E — Class-to-role mapping for hero party loadout scoring
+# ---------------------------------------------------------------------------
+
+_CLASS_ROLE_MAP: dict[str, str] = {
+    "crusader": "aggressive",
+    "blood_knight": "aggressive",
+    "revenant": "aggressive",
+    "hexblade": "aggressive",
+    "ranger": "ranged",
+    "mage": "ranged",
+    "inquisitor": "ranged",
+    "plague_doctor": "ranged",
+    "confessor": "support",
+    "bard": "support",
+    "shaman": "support",
+}
+
+
+def _get_role_for_unit(unit) -> str:
+    """Get equipment role from ai_behavior or class_id fallback."""
+    if getattr(unit, 'ai_behavior', None):
+        return unit.ai_behavior
+    return _CLASS_ROLE_MAP.get(getattr(unit, 'class_id', None) or "", "aggressive")
+
+
+_ROLE_STAT_WEIGHTS: dict[str, dict[str, float]] = {
+    "aggressive": {
+        "attack_damage": 3.0,
+        "crit_chance": 2.0,
+        "crit_damage": 1.5,
+        "max_hp": 1.0,
+        "armor": 1.0,
+        "damage_reduction_pct": 1.0,
+        "dodge_chance": 0.5,
+    },
+    "ranged": {
+        "ranged_damage": 3.0,
+        "crit_chance": 2.5,
+        "crit_damage": 2.0,
+        "dodge_chance": 1.5,
+        "max_hp": 0.5,
+        "armor": 0.5,
+    },
+    "boss": {
+        "attack_damage": 2.5,
+        "max_hp": 2.5,
+        "armor": 2.0,
+        "damage_reduction_pct": 2.0,
+        "crit_chance": 1.0,
+        "crit_damage": 1.0,
+    },
+    "support": {
+        "max_hp": 3.0,
+        "armor": 2.5,
+        "cooldown_reduction_pct": 2.5,
+        "skill_damage_pct": 2.0,
+        "damage_reduction_pct": 1.5,
+        "dodge_chance": 1.0,
+    },
+}
+
+
+def score_item_for_role(item_data: dict | None, role: str = "aggressive") -> float:
+    """Score an item's value for a given AI role.
+
+    Returns a weighted sum of stat bonuses based on role priorities.
+    Higher score = better item for this role.
+
+    Args:
+        item_data: Serialized item dict with stat_bonuses.
+        role: AI behavior role (aggressive, ranged, boss, support).
+
+    Returns:
+        Float score. 0.0 for consumables, None items, or items without stats.
+    """
+    if not item_data or not isinstance(item_data, dict):
+        return 0.0
+    if item_data.get("item_type") == "consumable":
+        return 0.0
+
+    stat_bonuses = item_data.get("stat_bonuses", {})
+    if not stat_bonuses or not isinstance(stat_bonuses, dict):
+        return 0.0
+
+    role_weights = _ROLE_STAT_WEIGHTS.get(role, _ROLE_STAT_WEIGHTS["aggressive"])
+    return sum(
+        stat_bonuses.get(stat, 0) * weight
+        for stat, weight in role_weights.items()
+    )
+
+
+def try_auto_equip(unit: PlayerState, match_id: str) -> list[dict]:
+    """Evaluate inventory and auto-equip upgrades for an AI unit.
+
+    Scans inventory for equippable items. For each, compares score against
+    currently equipped item in that slot. If upgrade, equips it.
+
+    Args:
+        unit: The AI unit's PlayerState.
+        match_id: Current match ID (for equip_item call).
+
+    Returns:
+        List of equip result dicts (for combat log events).
+    """
+    results = []
+    role = _get_role_for_unit(unit)
+
+    # Iterate in reverse to handle index shifts from equip_item removing items
+    for idx in range(len(unit.inventory) - 1, -1, -1):
+        if idx >= len(unit.inventory):
+            continue  # Guard against inventory changes from previous equip
+        item = unit.inventory[idx]
+        if not isinstance(item, dict):
+            continue
+        if item.get("item_type") == "consumable":
+            continue
+
+        slot = item.get("equip_slot")
+        if not slot:
+            continue
+
+        new_score = score_item_for_role(item, role)
+        current = unit.equipment.get(slot)
+        current_score = score_item_for_role(current, role) if current else 0.0
+
+        if new_score > current_score:
+            item_key = item.get("instance_id") or item.get("item_id")
+            if item_key:
+                result = equip_item(match_id, unit.player_id, item_key)
+                if result:
+                    results.append(result)
+
+    return results
+
+
+def find_best_party_recipient(
+    item_data: dict,
+    party_members: list,
+) -> object | None:
+    """Determine which party member benefits most from an item.
+
+    Compares the item's score-over-current-equipped for each member's role.
+    The member with the highest upgrade delta receives the item.
+
+    Args:
+        item_data: The picked-up item dict.
+        party_members: All living members of the same team.
+
+    Returns:
+        The PlayerState that should receive the item, or None if nobody wants it.
+    """
+    if not item_data or not isinstance(item_data, dict):
+        return None
+    if item_data.get("item_type") == "consumable":
+        return None
+
+    slot = item_data.get("equip_slot")
+    if not slot:
+        return None
+
+    best_member = None
+    best_delta = 0.0
+
+    for member in party_members:
+        if not getattr(member, 'is_alive', False):
+            continue
+        role = _get_role_for_unit(member)
+        new_score = score_item_for_role(item_data, role)
+        current_equipped = getattr(member, 'equipment', {}).get(slot)
+        current_score = score_item_for_role(current_equipped, role) if current_equipped else 0.0
+        delta = new_score - current_score
+        if delta > best_delta:
+            best_delta = delta
+            best_member = member
+
+    return best_member
 
 
 def transfer_item_in_match(

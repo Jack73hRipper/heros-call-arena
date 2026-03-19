@@ -194,6 +194,7 @@ def resolve_turn(
         loot_actions, players, chest_states, ground_items,
         results, chest_opened, items_picked_up,
         floor_number=floor_number,
+        match_id=match_id,
     )
 
     # Phase 1.9: Skills

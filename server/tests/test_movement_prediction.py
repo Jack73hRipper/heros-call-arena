@@ -165,13 +165,20 @@ class TestDecideWithPendingMoves:
     """AI decisions should use pending_moves to avoid blocking allies."""
 
     def test_ai_paths_through_vacating_ally(self):
-        """AI should be able to path toward a tile being vacated by an ally."""
+        """Dungeon enemies use pending_moves to path through vacating allies.
+
+        Hero party AI (enemy_type=None) always paths through same-team allies
+        via allow_team_swap, so we test with dungeon enemies (enemy_type set)
+        to verify the pending_moves prediction feature in isolation.
+        """
         # Set up: 1-wide hallway at y=5, AI at (1,5), Bob at (2,5) moving to (3,5),
         # enemy at (5,5). Walls at y=4 and y=6 to force horizontal movement.
         # Put ranged on cooldown so AI must MOVE.
         ai = make_player("ai1", "AI-1", 1, 5, team="b", unit_type="ai", ai_behavior="aggressive")
         ai.cooldowns["ranged_attack"] = 3  # ranged on cooldown → must move
+        ai.enemy_type = "skeleton"  # dungeon enemy — no allow_team_swap
         bob = make_player("p2", "Bob", 2, 5, team="b", unit_type="ai", ai_behavior="aggressive")
+        bob.enemy_type = "skeleton"
         enemy = make_player("e1", "Enemy", 5, 5, team="a")
         all_units = {"ai1": ai, "p2": bob, "e1": enemy}
 
@@ -200,6 +207,27 @@ class TestDecideWithPendingMoves:
         assert action_with_pending.action_type == ActionType.MOVE
         assert action_with_pending.target_x == 2
         assert action_with_pending.target_y == 5
+
+    def test_hero_party_ai_paths_through_same_team_ally(self):
+        """Hero party AI (enemy_type=None) can path through same-team allies
+        even without pending_moves — the allow_team_swap fix prevents deadlock
+        in narrow PVPVE spawn corridors."""
+        ai = make_player("ai1", "AI-1", 1, 5, team="b", unit_type="ai", ai_behavior="aggressive")
+        ai.cooldowns["ranged_attack"] = 3
+        bob = make_player("p2", "Bob", 2, 5, team="b", unit_type="ai", ai_behavior="aggressive")
+        enemy = make_player("e1", "Enemy", 5, 5, team="a")
+        all_units = {"ai1": ai, "p2": bob, "e1": enemy}
+
+        obstacles = set()
+        for x in range(10):
+            obstacles.add((x, 4))
+            obstacles.add((x, 6))
+
+        action = decide_ai_action(ai, all_units, 10, 10, obstacles)
+        assert action is not None
+        assert action.action_type == ActionType.MOVE
+        assert action.target_x == 2
+        assert action.target_y == 5
 
     def test_ai_backward_compat_no_pending(self):
         """Without pending_moves, AI behavior should be unchanged."""

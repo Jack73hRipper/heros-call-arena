@@ -81,9 +81,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'flagstone', slabGrid: 2, groutWidth: 1, stainChance: 0.0, stainColor: 'rgba(120, 20, 20, 0.18)', debrisChance: 0.0, debrisColor: '#4a4040', textureDots: 1 },
     corridor: { style: 'worn_stone', streakChance: 0.0 },
     fog: { exploredTint: 'rgba(30, 10, 15, 0.6)', unexploredColor: '#0a0508' },
-    ambient: { vignetteStrength: 0.15, vignetteColor: 'rgba(80, 10, 20, 0.10)' },
+    ambient: { vignetteStrength: 0.15, vignetteColor: 'rgba(80, 10, 20, 0.10)', ambientDarkness: 0.40 },
     edge: { style: 'crumble', intensity: 0.6, width: 4 },
-    propAffinities: { pillar: 0.6, rubble: 0.4, brazier: 0.8, coffin: 1.0, bookshelf: 0.0, altar: 0.7, puddle: 0.0, barrel: 0.2, chains: 0.8, banner: 0.3 },
+    propAffinities: { pillar: 0.6, rubble: 0.4, brazier: 0.8, coffin: 1.0, bookshelf: 0.0, altar: 0.7, puddle: 0.0, barrel: 0.2, chains: 0.8, banner: 0.3, statue: 0.4, throne: 0.3, cage: 0.6, weapon_rack: 0.3, torch_sconce: 0.7, skull_pile: 0.8, mushroom_cluster: 0.1, web: 0.4, fountain: 0.1, candelabra: 0.5, ritual_circle: 0.6, iron_maiden: 0.7, tombstone: 0.5 },
   },
   ashen_undercroft: {
     id: 'ashen_undercroft', name: 'Ashen Undercroft',
@@ -92,9 +92,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'ash_covered', slabGrid: 2, groutWidth: 1, ashDensity: 0.08, emberChance: 0.0, stainChance: 0.0, stainColor: 'rgba(60, 40, 20, 0.15)', debrisChance: 0.0, debrisColor: '#3a3025' },
     corridor: { style: 'ash_trail', ashDensity: 0.15 },
     fog: { exploredTint: 'rgba(25, 18, 10, 0.6)', unexploredColor: '#0a0805' },
-    ambient: { vignetteStrength: 0.14, vignetteColor: 'rgba(80, 50, 10, 0.08)' },
+    ambient: { vignetteStrength: 0.14, vignetteColor: 'rgba(80, 50, 10, 0.08)', ambientDarkness: 0.35 },
     edge: { style: 'scorch', intensity: 0.7, width: 4 },
-    propAffinities: { pillar: 0.3, rubble: 0.6, brazier: 0.8, coffin: 0.0, bookshelf: 0.0, altar: 0.4, puddle: 0.0, barrel: 0.6, chains: 0.2, banner: 0.2 },
+    propAffinities: { pillar: 0.3, rubble: 0.6, brazier: 0.8, coffin: 0.0, bookshelf: 0.0, altar: 0.4, puddle: 0.0, barrel: 0.6, chains: 0.2, banner: 0.2, statue: 0.2, throne: 0.1, cage: 0.3, weapon_rack: 0.5, torch_sconce: 0.8, skull_pile: 0.3, mushroom_cluster: 0.0, web: 0.1, fountain: 0.0, candelabra: 0.4, ritual_circle: 0.2, iron_maiden: 0.3, tombstone: 0.1 },
   },
   drowned_sanctum: {
     id: 'drowned_sanctum', name: 'Drowned Sanctum',
@@ -103,9 +103,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'flooded', slabGrid: 2, groutWidth: 1, waterDepth: 0.08, rippleChance: 0.0, stainChance: 0.0, stainColor: 'rgba(20, 80, 60, 0.12)', debrisChance: 0.0, debrisColor: '#1a3a30' },
     corridor: { style: 'shallow_water', waterDepth: 0.15 },
     fog: { exploredTint: 'rgba(8, 20, 30, 0.6)', unexploredColor: '#040a10' },
-    ambient: { vignetteStrength: 0.12, vignetteColor: 'rgba(10, 60, 60, 0.07)' },
+    ambient: { vignetteStrength: 0.12, vignetteColor: 'rgba(10, 60, 60, 0.07)', ambientDarkness: 0.38 },
     edge: { style: 'moss_creep', intensity: 0.5, width: 3 },
-    propAffinities: { pillar: 0.7, rubble: 0.3, brazier: 0.4, coffin: 0.0, bookshelf: 0.0, altar: 0.5, puddle: 1.0, barrel: 0.1, chains: 0.6, banner: 0.1 },
+    propAffinities: { pillar: 0.7, rubble: 0.3, brazier: 0.4, coffin: 0.0, bookshelf: 0.0, altar: 0.5, puddle: 1.0, barrel: 0.1, chains: 0.6, banner: 0.1, statue: 0.5, throne: 0.2, cage: 0.3, weapon_rack: 0.1, torch_sconce: 0.3, skull_pile: 0.2, mushroom_cluster: 0.7, web: 0.3, fountain: 0.8, candelabra: 0.2, ritual_circle: 0.3, iron_maiden: 0.1, tombstone: 0.4 },
   },
   hollowed_cathedral: {
     id: 'hollowed_cathedral', name: 'Hollowed Cathedral',
@@ -114,9 +114,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'cracked_marble', slabGrid: 3, groutWidth: 1, crackChance: 0.0, veinChance: 0.0, rootChance: 0.0, stainChance: 0.0, stainColor: 'rgba(60, 40, 70, 0.12)', debrisChance: 0.0, debrisColor: '#3a3045' },
     corridor: { style: 'worn_carpet', carpetColor: 'rgba(80, 40, 50, 0.12)' },
     fog: { exploredTint: 'rgba(20, 15, 30, 0.6)', unexploredColor: '#08050e' },
-    ambient: { vignetteStrength: 0.15, vignetteColor: 'rgba(50, 30, 60, 0.08)' },
+    ambient: { vignetteStrength: 0.15, vignetteColor: 'rgba(50, 30, 60, 0.08)', ambientDarkness: 0.32 },
     edge: { style: 'rubble_strip', intensity: 0.5, width: 4 },
-    propAffinities: { pillar: 0.5, rubble: 0.3, brazier: 0.5, coffin: 0.2, bookshelf: 0.8, altar: 0.8, puddle: 0.1, barrel: 0.1, chains: 0.2, banner: 1.0 },
+    propAffinities: { pillar: 0.5, rubble: 0.3, brazier: 0.5, coffin: 0.2, bookshelf: 0.8, altar: 0.8, puddle: 0.1, barrel: 0.1, chains: 0.2, banner: 1.0, statue: 0.8, throne: 0.7, cage: 0.1, weapon_rack: 0.2, torch_sconce: 0.6, skull_pile: 0.1, mushroom_cluster: 0.0, web: 0.2, fountain: 0.6, candelabra: 0.9, ritual_circle: 0.4, iron_maiden: 0.1, tombstone: 0.3 },
   },
   iron_depths: {
     id: 'iron_depths', name: 'Iron Depths',
@@ -125,9 +125,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'metal_grate', slabGrid: 2, groutWidth: 2, grateLineSpacing: 10, oilChance: 0.0, stainChance: 0.0, stainColor: 'rgba(90, 60, 30, 0.15)', debrisChance: 0.0, debrisColor: '#3a3530' },
     corridor: { style: 'walkway', railHint: true },
     fog: { exploredTint: 'rgba(15, 15, 20, 0.6)', unexploredColor: '#050508' },
-    ambient: { vignetteStrength: 0.14, vignetteColor: 'rgba(40, 40, 50, 0.08)' },
+    ambient: { vignetteStrength: 0.14, vignetteColor: 'rgba(40, 40, 50, 0.08)', ambientDarkness: 0.38 },
     edge: { style: 'rust_drip', intensity: 0.6, width: 3 },
-    propAffinities: { pillar: 0.7, rubble: 0.3, brazier: 0.5, coffin: 0.1, bookshelf: 0.1, altar: 0.3, puddle: 0.2, barrel: 0.7, chains: 0.9, banner: 0.2 },
+    propAffinities: { pillar: 0.7, rubble: 0.3, brazier: 0.5, coffin: 0.1, bookshelf: 0.1, altar: 0.3, puddle: 0.2, barrel: 0.7, chains: 0.9, banner: 0.2, statue: 0.2, throne: 0.1, cage: 0.8, weapon_rack: 0.7, torch_sconce: 0.6, skull_pile: 0.2, mushroom_cluster: 0.0, web: 0.2, fountain: 0.1, candelabra: 0.3, ritual_circle: 0.1, iron_maiden: 0.8, tombstone: 0.1 },
   },
   forgotten_cellar: {
     id: 'forgotten_cellar', name: 'Forgotten Cellar',
@@ -136,9 +136,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'packed_earth' },
     corridor: { style: 'worn_stone', streakChance: 0.0 },
     fog: { exploredTint: 'rgba(20, 18, 12, 0.55)', unexploredColor: '#0a0908' },
-    ambient: { vignetteStrength: 0.08, vignetteColor: 'rgba(30, 25, 15, 0.05)' },
+    ambient: { vignetteStrength: 0.08, vignetteColor: 'rgba(30, 25, 15, 0.05)', ambientDarkness: 0.30 },
     edge: { style: 'dust_drift', intensity: 0.4, width: 2 },
-    propAffinities: { pillar: 0.4, rubble: 0.7, brazier: 0.7, coffin: 0.0, bookshelf: 0.0, altar: 0.3, puddle: 0.1, barrel: 0.9, chains: 0.3, banner: 0.1 },
+    propAffinities: { pillar: 0.4, rubble: 0.7, brazier: 0.7, coffin: 0.0, bookshelf: 0.0, altar: 0.3, puddle: 0.1, barrel: 0.9, chains: 0.3, banner: 0.1, statue: 0.1, throne: 0.0, cage: 0.2, weapon_rack: 0.4, torch_sconce: 0.7, skull_pile: 0.1, mushroom_cluster: 0.3, web: 0.6, fountain: 0.0, candelabra: 0.2, ritual_circle: 0.0, iron_maiden: 0.1, tombstone: 0.1 },
   },
   pale_ossuary: {
     id: 'pale_ossuary', name: 'Pale Ossuary',
@@ -147,9 +147,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'polished_slab', slabGrid: 2, groutWidth: 1 },
     corridor: { style: 'worn_carpet', carpetColor: 'rgba(60, 55, 65, 0.08)' },
     fog: { exploredTint: 'rgba(20, 18, 24, 0.55)', unexploredColor: '#08060c' },
-    ambient: { vignetteStrength: 0.06, vignetteColor: 'rgba(40, 35, 50, 0.04)' },
+    ambient: { vignetteStrength: 0.06, vignetteColor: 'rgba(40, 35, 50, 0.04)', ambientDarkness: 0.30 },
     edge: { style: 'clean_edge', intensity: 0.3, width: 1 },
-    propAffinities: { pillar: 0.6, rubble: 0.2, brazier: 0.4, coffin: 0.9, bookshelf: 0.1, altar: 0.8, puddle: 0.1, barrel: 0.2, chains: 0.5, banner: 0.3 },
+    propAffinities: { pillar: 0.6, rubble: 0.2, brazier: 0.4, coffin: 0.9, bookshelf: 0.1, altar: 0.8, puddle: 0.1, barrel: 0.2, chains: 0.5, banner: 0.3, statue: 0.6, throne: 0.4, cage: 0.3, weapon_rack: 0.1, torch_sconce: 0.5, skull_pile: 1.0, mushroom_cluster: 0.0, web: 0.3, fountain: 0.3, candelabra: 0.7, ritual_circle: 0.5, iron_maiden: 0.4, tombstone: 0.8 },
   },
   silent_vault: {
     id: 'silent_vault', name: 'Silent Vault',
@@ -158,9 +158,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'dusty_tile', slabGrid: 3, groutWidth: 1 },
     corridor: { style: 'shallow_water', waterDepth: 0.04 },
     fog: { exploredTint: 'rgba(10, 15, 25, 0.55)', unexploredColor: '#060810' },
-    ambient: { vignetteStrength: 0.06, vignetteColor: 'rgba(20, 30, 50, 0.04)' },
+    ambient: { vignetteStrength: 0.06, vignetteColor: 'rgba(20, 30, 50, 0.04)', ambientDarkness: 0.35 },
     edge: { style: 'seam_line', intensity: 0.4, width: 1 },
-    propAffinities: { pillar: 0.8, rubble: 0.2, brazier: 0.3, coffin: 0.1, bookshelf: 0.9, altar: 0.5, puddle: 0.0, barrel: 0.3, chains: 0.2, banner: 0.7 },
+    propAffinities: { pillar: 0.8, rubble: 0.2, brazier: 0.3, coffin: 0.1, bookshelf: 0.9, altar: 0.5, puddle: 0.0, barrel: 0.3, chains: 0.2, banner: 0.7, statue: 0.6, throne: 0.5, cage: 0.1, weapon_rack: 0.2, torch_sconce: 0.5, skull_pile: 0.1, mushroom_cluster: 0.0, web: 0.3, fountain: 0.4, candelabra: 0.7, ritual_circle: 0.3, iron_maiden: 0.0, tombstone: 0.2 },
   },
   fungal_grotto: {
     id: 'fungal_grotto', name: 'Fungal Grotto',
@@ -169,9 +169,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'mycelium_mat' },
     corridor: { style: 'shallow_water', waterDepth: 0.06 },
     fog: { exploredTint: 'rgba(10, 20, 8, 0.55)', unexploredColor: '#060a05' },
-    ambient: { vignetteStrength: 0.12, vignetteColor: 'rgba(30, 60, 15, 0.08)' },
+    ambient: { vignetteStrength: 0.12, vignetteColor: 'rgba(30, 60, 15, 0.08)', ambientDarkness: 0.40 },
     edge: { style: 'spore_creep', intensity: 0.7, width: 5 },
-    propAffinities: { pillar: 0.4, rubble: 0.5, brazier: 0.3, coffin: 0.0, bookshelf: 0.0, altar: 0.4, puddle: 0.8, barrel: 0.3, chains: 0.2, banner: 0.0 },
+    propAffinities: { pillar: 0.4, rubble: 0.5, brazier: 0.3, coffin: 0.0, bookshelf: 0.0, altar: 0.4, puddle: 0.8, barrel: 0.3, chains: 0.2, banner: 0.0, statue: 0.2, throne: 0.0, cage: 0.1, weapon_rack: 0.1, torch_sconce: 0.2, skull_pile: 0.3, mushroom_cluster: 1.0, web: 0.7, fountain: 0.3, candelabra: 0.1, ritual_circle: 0.2, iron_maiden: 0.0, tombstone: 0.2 },
   },
   frozen_crypt: {
     id: 'frozen_crypt', name: 'Frozen Crypt',
@@ -180,9 +180,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'frozen_stone', slabGrid: 2, groutWidth: 1 },
     corridor: { style: 'shallow_water', waterDepth: 0.08 },
     fog: { exploredTint: 'rgba(8, 12, 25, 0.55)', unexploredColor: '#040610' },
-    ambient: { vignetteStrength: 0.10, vignetteColor: 'rgba(20, 40, 80, 0.06)' },
+    ambient: { vignetteStrength: 0.10, vignetteColor: 'rgba(20, 40, 80, 0.06)', ambientDarkness: 0.35 },
     edge: { style: 'frost_creep', intensity: 0.8, width: 6 },
-    propAffinities: { pillar: 0.7, rubble: 0.4, brazier: 0.2, coffin: 0.3, bookshelf: 0.0, altar: 0.5, puddle: 0.0, barrel: 0.2, chains: 0.6, banner: 0.3 },
+    propAffinities: { pillar: 0.7, rubble: 0.4, brazier: 0.2, coffin: 0.3, bookshelf: 0.0, altar: 0.5, puddle: 0.0, barrel: 0.2, chains: 0.6, banner: 0.3, statue: 0.5, throne: 0.3, cage: 0.4, weapon_rack: 0.3, torch_sconce: 0.4, skull_pile: 0.4, mushroom_cluster: 0.0, web: 0.2, fountain: 0.2, candelabra: 0.4, ritual_circle: 0.3, iron_maiden: 0.3, tombstone: 0.6 },
   },
   cursed_shrine: {
     id: 'cursed_shrine', name: 'Cursed Shrine',
@@ -191,9 +191,9 @@ const BUILT_IN_THEMES = {
     floor: { style: 'ritual_tile', slabGrid: 3, groutWidth: 1 },
     corridor: { style: 'worn_carpet', carpetColor: 'rgba(120, 30, 30, 0.12)' },
     fog: { exploredTint: 'rgba(25, 8, 12, 0.6)', unexploredColor: '#0a0408' },
-    ambient: { vignetteStrength: 0.16, vignetteColor: 'rgba(100, 20, 15, 0.10)' },
+    ambient: { vignetteStrength: 0.16, vignetteColor: 'rgba(100, 20, 15, 0.10)', ambientDarkness: 0.42 },
     edge: { style: 'blood_seep', intensity: 0.6, width: 4 },
-    propAffinities: { pillar: 0.5, rubble: 0.3, brazier: 0.8, coffin: 0.4, bookshelf: 0.2, altar: 1.0, puddle: 0.0, barrel: 0.1, chains: 0.7, banner: 0.9 },
+    propAffinities: { pillar: 0.5, rubble: 0.3, brazier: 0.8, coffin: 0.4, bookshelf: 0.2, altar: 1.0, puddle: 0.0, barrel: 0.1, chains: 0.7, banner: 0.9, statue: 0.6, throne: 0.5, cage: 0.5, weapon_rack: 0.3, torch_sconce: 0.7, skull_pile: 0.6, mushroom_cluster: 0.0, web: 0.3, fountain: 0.2, candelabra: 0.8, ritual_circle: 1.0, iron_maiden: 0.5, tombstone: 0.4 },
   },
 };
 
@@ -1003,6 +1003,10 @@ export class ThemeEngine {
     this.tileSize = 48;
     this.cache = new Map();
     this._ready = false;
+
+    // P-B: Offscreen fog canvas cache
+    this._fogCanvas = null;
+    this._fogCacheKey = null;
   }
 
   /** Load a theme by ID or config object. Rebuilds tile cache. */
@@ -1011,6 +1015,10 @@ export class ThemeEngine {
     this.tileSize = tileSize;
     this._buildCache();
     this._ready = true;
+
+    // Invalidate fog offscreen cache on theme change
+    this._fogCanvas = null;
+    this._fogCacheKey = null;
   }
 
   isReady() { return this._ready && this.theme !== null; }
@@ -1115,19 +1123,81 @@ export class ThemeEngine {
 
   /**
    * Draw themed fog of war.
+   * @param {Map<string,number>|null} fogLightMap — per-tile alpha reduction from nearby light sources
    */
-  drawFog(ctx, gridWidth, gridHeight, visibleTiles, offsetX, offsetY, revealedTiles) {
+  drawFog(ctx, gridWidth, gridHeight, visibleTiles, offsetX, offsetY, revealedTiles, fogLightMap = null) {
     if (!visibleTiles) return;
+
+    const canvasW = ctx.canvas.width;
+    const canvasH = ctx.canvas.height;
+    const themeId = this.theme?.id || '';
+    const revealedSize = revealedTiles ? revealedTiles.size : 0;
+
+    // P-B: Cache key — visibleTiles.size and revealedTiles.size are O(1) proxies.
+    // Both Sets only grow during a floor (tiles get revealed, never un-revealed).
+    // offsetX/offsetY included because offscreen canvas is viewport-scoped.
+    const newKey = `${themeId}_${visibleTiles.size}_${revealedSize}_${offsetX}_${offsetY}_${canvasW}_${canvasH}`;
+
+    if (this._fogCacheKey === newKey && this._fogCanvas) {
+      // Cache hit — single blit
+      ctx.drawImage(this._fogCanvas, 0, 0);
+      return;
+    }
+
+    // Cache miss — render fog to offscreen canvas
+    if (!this._fogCanvas || this._fogCanvas.width !== canvasW || this._fogCanvas.height !== canvasH) {
+      this._fogCanvas = document.createElement('canvas');
+      this._fogCanvas.width = canvasW;
+      this._fogCanvas.height = canvasH;
+    }
+
+    const offCtx = this._fogCanvas.getContext('2d');
+    offCtx.clearRect(0, 0, canvasW, canvasH);
+
     const fog = this.theme?.fog || {};
     const eTint = fog.exploredTint || 'rgba(0,0,0,0.6)';
     const uColor = fog.unexploredColor || 'rgba(0,0,0,1.0)';
-    for (let x = 0; x < gridWidth; x++) {
-      for (let y = 0; y < gridHeight; y++) {
-        if (visibleTiles.has(`${x},${y}`)) continue;
-        ctx.fillStyle = (revealedTiles && revealedTiles.has(`${x},${y}`)) ? eTint : (revealedTiles ? uColor : 'rgba(0,0,0,0.7)');
-        ctx.fillRect((x - offsetX) * this.tileSize, (y - offsetY) * this.tileSize, this.tileSize, this.tileSize);
+
+    // Parse the base explored alpha from the theme tint string
+    let baseExploredAlpha = 0.6;
+    const alphaMatch = eTint.match(/[\d.]+\)$/);
+    if (alphaMatch) baseExploredAlpha = parseFloat(alphaMatch[0]);
+
+    // Parse RGB components from explored tint for light-modulated tiles
+    let eTintR = 0, eTintG = 0, eTintB = 0;
+    const rgbMatch = eTint.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+    if (rgbMatch) { eTintR = parseInt(rgbMatch[1]); eTintG = parseInt(rgbMatch[2]); eTintB = parseInt(rgbMatch[3]); }
+
+    // Only iterate tiles visible in the current viewport (not the full grid)
+    const tilesVisibleX = Math.ceil(canvasW / this.tileSize) + 1;
+    const tilesVisibleY = Math.ceil(canvasH / this.tileSize) + 1;
+    const startX = Math.max(0, Math.floor(offsetX));
+    const startY = Math.max(0, Math.floor(offsetY));
+    const endX = Math.min(gridWidth, startX + tilesVisibleX);
+    const endY = Math.min(gridHeight, startY + tilesVisibleY);
+
+    for (let x = startX; x < endX; x++) {
+      for (let y = startY; y < endY; y++) {
+        const key = `${x},${y}`;
+        if (visibleTiles.has(key)) continue;
+
+        const isRevealed = revealedTiles && revealedTiles.has(key);
+        if (isRevealed) {
+          // Modulate fog alpha near light sources on revealed tiles
+          const lightReduction = fogLightMap ? (fogLightMap.get(key) || 0) : 0;
+          const alpha = Math.max(0.15, baseExploredAlpha - lightReduction);
+          offCtx.fillStyle = `rgba(${eTintR}, ${eTintG}, ${eTintB}, ${alpha.toFixed(3)})`;
+        } else {
+          offCtx.fillStyle = revealedTiles ? uColor : 'rgba(0,0,0,0.7)';
+        }
+        offCtx.fillRect((x - offsetX) * this.tileSize, (y - offsetY) * this.tileSize, this.tileSize, this.tileSize);
       }
     }
+
+    this._fogCacheKey = newKey;
+
+    // Blit to the main canvas
+    ctx.drawImage(this._fogCanvas, 0, 0);
   }
 
   // ── Internal ──

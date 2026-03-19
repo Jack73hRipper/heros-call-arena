@@ -501,7 +501,7 @@ class TestBloodpact:
         _equip_unique(attacker, "unique_bloodpact")
         defender = _make_player(pid="def", hp=200, max_hp=200, armor=0)
 
-        damage, info = calculate_damage(attacker, defender)
+        damage, info = calculate_damage(attacker, defender, rng=_FixedRng(0.99))
         # At 20% HP, +40% damage → 30 * 1.4 = ~42+
         assert damage > 35
 
@@ -511,11 +511,11 @@ class TestBloodpact:
         _equip_unique(attacker, "unique_bloodpact")
         defender = _make_player(pid="def", hp=200, max_hp=200, armor=0)
 
-        dmg_with, info_with = calculate_damage(attacker, defender)
+        dmg_with, info_with = calculate_damage(attacker, defender, rng=_FixedRng(0.99))
         # At 80% HP, bonus should NOT apply
         attacker2 = _make_player(pid="atk2", hp=80, max_hp=100, attack_damage=30)
         defender2 = _make_player(pid="def2", hp=200, max_hp=200, armor=0)
-        dmg_without, info_without = calculate_damage(attacker2, defender2)
+        dmg_without, info_without = calculate_damage(attacker2, defender2, rng=_FixedRng(0.99))
         assert dmg_with == dmg_without
 
 

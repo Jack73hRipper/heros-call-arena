@@ -77,6 +77,7 @@ def _pursue_memory_target(
     grid_height: int,
     obstacles: set[tuple[int, int]],
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
 ) -> PlayerAction | None:
     """If AI remembers where an enemy was last seen, path toward that spot.
 
@@ -105,9 +106,13 @@ def _pursue_memory_target(
         return None
 
     next_step = get_next_step_toward(
-        ai_pos, (tx, ty), grid_width, grid_height, obstacles, occupied
+        ai_pos, (tx, ty), grid_width, grid_height, obstacles, occupied, door_tiles,
     )
     if next_step:
+        from app.core.ai_stances import _maybe_interact_door
+        door_action = _maybe_interact_door(ai, next_step, door_tiles)
+        if door_action:
+            return door_action
         return PlayerAction(
             player_id=ai_id,
             action_type=ActionType.MOVE,
@@ -131,6 +136,7 @@ def _reinforce_ally(
     grid_height: int,
     obstacles: set[tuple[int, int]],
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
 ) -> PlayerAction | None:
     """If a teammate is in combat (adjacent to an enemy), path toward them.
 
@@ -183,9 +189,13 @@ def _reinforce_ally(
         ai_pos,
         (nearest_ally.position.x, nearest_ally.position.y),
         grid_width, grid_height,
-        obstacles, occupied,
+        obstacles, occupied, door_tiles,
     )
     if next_step:
+        from app.core.ai_stances import _maybe_interact_door
+        door_action = _maybe_interact_door(ai, next_step, door_tiles)
+        if door_action:
+            return door_action
         return PlayerAction(
             player_id=ai_id,
             action_type=ActionType.MOVE,

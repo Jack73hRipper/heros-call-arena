@@ -29,6 +29,17 @@ export class ParticleRenderer {
         this._drawTrail(ctx, p);
       }
 
+      // Fast path: non-rotating circle with no trail — skip save/translate/rotate/restore
+      const isCircle = !p.shape || p.shape === 'circle';
+      if (isCircle && !p.rotation && !(p.trail && p.trail.length > 1)) {
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        continue;
+      }
+
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rotation);

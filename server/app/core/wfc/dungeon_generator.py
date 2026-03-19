@@ -20,12 +20,14 @@ from app.core.wfc.module_utils import expand_modules, MODULE_SIZE
 from app.core.wfc.wfc_engine import run_wfc
 from app.core.wfc.connectivity import ensure_connectivity
 from app.core.wfc.room_decorator import decorate_rooms
+from app.core.wfc.door_placer import insert_room_doors
 from app.core.wfc.map_exporter import export_to_game_map
 from app.core.wfc.presets import get_preset_modules, SIZE_PRESETS
 from app.core.wfc.dungeon_styles import (
     apply_weight_overrides,
     get_archetype_overrides,
     get_decorator_overrides,
+    get_style,
     select_style_for_floor,
     VALID_STYLES,
 )
@@ -604,6 +606,23 @@ def generate_dungeon_floor(
         # Use the DECORATED tile map for export (has E/B/S/X placed)
         decorated_tile_map = decoration_result.get("tileMap", tile_map)
 
+        # 3.5. Insert doors at module boundaries
+        #      Runs after decoration so it knows room roles (spawn/boss/etc.)
+        #      Some entrances get wall separators with a 1-tile door gap,
+        #      others stay wide open for variety.
+        door_settings = {}
+        style_data = get_style(active_style) if active_style else {}
+        if "doorChance" in style_data.get("decorator_overrides", {}):
+            door_settings["doorChance"] = style_data["decorator_overrides"]["doorChance"]
+        door_result = insert_room_doors(
+            tile_map=decorated_tile_map,
+            grid=grid,
+            variants=variants,
+            seed=winning_seed,
+            settings=door_settings,
+            decoration_result=decoration_result,
+        )
+
         # 4. Export to game map dict
         game_map = export_to_game_map(
             tile_map=decorated_tile_map,
@@ -638,6 +657,7 @@ def generate_dungeon_floor(
             "tile_size": f"{game_map['width']}x{game_map['height']}",
             "rooms": len(game_map.get("rooms", [])),
             "doors": len(game_map.get("doors", [])),
+            "door_placement": door_result.get("stats", {}),
             "chests": len(game_map.get("chests", [])),
             "spawn_points": len(game_map.get("spawn_points", [])),
             "corridors_carved": corridors_carved,

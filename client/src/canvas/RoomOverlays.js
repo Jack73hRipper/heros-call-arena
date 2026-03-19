@@ -96,41 +96,7 @@ function _drawBossOverlay(ctx, opts) {
   ctx.fillStyle = hexAlpha(pal.highlight, 0.04);
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
-  // 2. Four corner pillars — identical, symmetrical
-  const corners = [
-    { x: bounds.x_min, y: bounds.y_min },
-    { x: bounds.x_max, y: bounds.y_min },
-    { x: bounds.x_min, y: bounds.y_max },
-    { x: bounds.x_max, y: bounds.y_max },
-  ];
-  const pillarColor = lerpColor(pal.metal || pal.secondary, pal.highlight, 0.3);
-  const pillarShadow = shiftColor(pal.primary, -10);
-  for (const c of corners) {
-    const px = ox + c.x * s;
-    const py = oy + c.y * s;
-    const r = s * 0.28;
-    ctx.fillStyle = pillarShadow;
-    ctx.beginPath(); ctx.arc(px + s / 2 + 1, py + s / 2 + 1, r + 1, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = pillarColor;
-    ctx.beginPath(); ctx.arc(px + s / 2, py + s / 2, r, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = hexAlpha(pal.highlight, 0.35); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.arc(px + s / 2, py + s / 2, r - 2, 0, Math.PI * 2); ctx.stroke();
-  }
-
-  // 3. Center floor sigil — geometric pattern
-  const cx = ox + ((bounds.x_min + bounds.x_max + 1) / 2) * s;
-  const cy = oy + ((bounds.y_min + bounds.y_max + 1) / 2) * s;
-  const sigilR = s * 1.2;
-
-  ctx.strokeStyle = hexAlpha(pal.accent, 0.25); ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.arc(cx, cy, sigilR, 0, Math.PI * 2); ctx.stroke();
-
-  const dr = sigilR * 0.65;
-  ctx.strokeStyle = hexAlpha(pal.highlight, 0.20); ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(cx, cy - dr); ctx.lineTo(cx + dr, cy); ctx.lineTo(cx, cy + dr); ctx.lineTo(cx - dr, cy); ctx.closePath(); ctx.stroke();
-
-  ctx.fillStyle = hexAlpha(pal.highlight, 0.30);
-  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+  // 2–3. Corner pillars + center sigil now handled by prop system
 
   // 4. Wall trim
   ctx.fillStyle = hexAlpha(pal.highlight, 0.15);
@@ -151,43 +117,7 @@ function _drawEnemyOverlay(ctx, opts) {
   const innerW = (bounds.x_max - bounds.x_min + 1) * s;
   const innerH = (bounds.y_max - bounds.y_min + 1) * s;
 
-  // 1. Paired torches on left and right walls
-  const midY = Math.floor((bounds.y_min + bounds.y_max) / 2);
-  const torchPositions = [
-    { x: bounds.x_min, y: midY },
-    { x: bounds.x_max, y: midY },
-  ];
-  for (const t of torchPositions) {
-    const px = ox + t.x * s;
-    const py = oy + t.y * s;
-    const glowX = t.x === bounds.x_min ? px + s : px;
-    ctx.fillStyle = hexAlpha(pal.highlight, 0.06);
-    ctx.beginPath(); ctx.arc(glowX, py + s / 2, s * 1.5, 0, Math.PI * 2); ctx.fill();
-    const bx = t.x === bounds.x_min ? px + s - 6 : px + 2;
-    ctx.fillStyle = shiftColor(pal.metal || pal.secondary, 10);
-    ctx.fillRect(bx, py + s * 0.3, 4, s * 0.4);
-    const fx = t.x === bounds.x_min ? px + s - 4 : px + 4;
-    ctx.fillStyle = hexAlpha(pal.highlight, 0.7);
-    ctx.beginPath(); ctx.arc(fx, py + s * 0.28, 3, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = hexAlpha(pal.accent, 0.4);
-    ctx.beginPath(); ctx.arc(fx, py + s * 0.28, 5, 0, Math.PI * 2); ctx.fill();
-  }
-
-  // 2. Weapon rack lines along top wall
-  const rackColor = shiftColor(pal.metal || pal.secondary, 5);
-  for (let x = bounds.x_min + 1; x < bounds.x_max; x++) {
-    const px = ox + x * s;
-    const py = oy + bounds.y_min * s;
-    ctx.fillStyle = rackColor;
-    ctx.fillRect(px + 4, py + 2, s - 8, 3);
-    ctx.fillStyle = shiftColor(pal.metal || pal.secondary, 12);
-    ctx.fillRect(px + 4, py + 2, s - 8, 1);
-    for (let p = 0; p < 3; p++) {
-      const pegX = px + 8 + p * ((s - 16) / 2);
-      ctx.fillStyle = shiftColor(pal.metal || pal.secondary, 8);
-      ctx.fillRect(pegX, py + 5, 2, 4);
-    }
-  }
+  // 1–2. Torches + weapon racks now handled by prop system
 
   // 3. Worn path between doors
   if (doorPositions && doorPositions.length > 0) {
@@ -316,21 +246,7 @@ function _drawEmptyOverlay(ctx, opts) {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
-  // 2. Corner rubble — bottom-left and top-right
-  const rubbleCorners = [
-    { x: bounds.x_min, y: bounds.y_max },
-    { x: bounds.x_max, y: bounds.y_min },
-  ];
-  for (const c of rubbleCorners) {
-    const px = ox + c.x * s, py = oy + c.y * s;
-    const rubbleColor = shiftColor(pal.secondary, -8);
-    ctx.fillStyle = rubbleColor;
-    ctx.fillRect(px + 4, py + s - 10, 10, 6);
-    ctx.fillRect(px + 8, py + s - 14, 8, 5);
-    ctx.fillRect(px + 2, py + s - 8, 6, 4);
-    ctx.fillStyle = 'rgba(0,0,0,0.15)';
-    ctx.fillRect(px + 3, py + s - 4, 14, 2);
-  }
+  // 2. Corner rubble now handled by prop system
 
   // 3. Darkened wall edges
   ctx.fillStyle = 'rgba(0,0,0,0.08)';
@@ -396,41 +312,7 @@ function _drawShrineOverlay(ctx, opts) {
   ctx.strokeStyle = hexAlpha(pal.accent, 0.25); ctx.lineWidth = 1;
   ctx.strokeRect(innerX + s * 0.4, innerY + s * 0.4, innerW - s * 0.8, innerH - s * 0.8);
 
-  // 3. Center altar
-  const cx = ox + ((bounds.x_min + bounds.x_max + 1) / 2) * s;
-  const cy = oy + ((bounds.y_min + bounds.y_max + 1) / 2) * s;
-  const aw = s * 0.6, ah = s * 0.4;
-  ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.fillRect(cx - aw / 2 + 2, cy - ah / 2 + 2, aw, ah);
-  ctx.fillStyle = shiftColor(pal.furniture || pal.secondary, 5); ctx.fillRect(cx - aw / 2, cy - ah / 2, aw, ah);
-  ctx.fillStyle = hexAlpha(pal.accent, 0.5); ctx.fillRect(cx - aw / 2 + 2, cy - ah / 2 + 2, aw - 4, ah * 0.3);
-  ctx.strokeStyle = shiftColor(pal.furniture || pal.secondary, -10); ctx.lineWidth = 1; ctx.strokeRect(cx - aw / 2, cy - ah / 2, aw, ah);
-  ctx.fillStyle = hexAlpha(pal.highlight, 0.7);
-  ctx.beginPath(); ctx.arc(cx, cy, 2.5, 0, Math.PI * 2); ctx.fill();
-
-  // 4. Flanking braziers
-  const flankDist = s * 1.2;
-  for (const side of [-1, 1]) {
-    const bx = cx + side * flankDist, by = cy;
-    const grad = ctx.createRadialGradient(bx, by, 2, bx, by, s * 0.35);
-    grad.addColorStop(0, 'rgba(255, 160, 40, 0.12)'); grad.addColorStop(1, 'rgba(255, 100, 20, 0)');
-    ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(bx, by, s * 0.35, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = shiftColor(pal.metal || pal.secondary, 5);
-    ctx.beginPath(); ctx.ellipse(bx, by + 4, s * 0.08, s * 0.05, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = 'rgba(255, 180, 50, 0.6)';
-    ctx.beginPath(); ctx.arc(bx, by, 3, 0, Math.PI * 2); ctx.fill();
-  }
-
-  // 5. Banners on top wall
-  for (let tx = bounds.x_min + 1; tx < bounds.x_max; tx += 2) {
-    const bx = ox + tx * s + s * 0.35, by = oy + bounds.y_min * s + 2;
-    const bw = s * 0.3, bh = s * 0.5;
-    ctx.fillStyle = shiftColor(pal.metal || pal.secondary, 5); ctx.fillRect(bx - 2, by, bw + 4, 2);
-    ctx.fillStyle = hexAlpha(pal.accent, 0.5); ctx.fillRect(bx, by + 2, bw, bh - 8);
-    ctx.beginPath(); ctx.moveTo(bx, by + bh - 8);
-    const teeth = 3, toothW = bw / teeth;
-    for (let t = 0; t < teeth; t++) { ctx.lineTo(bx + t * toothW + toothW / 2, by + bh); ctx.lineTo(bx + (t + 1) * toothW, by + bh - 8); }
-    ctx.closePath(); ctx.fill();
-  }
+  // 3–5. Center altar, flanking braziers, and banners now handled by prop system
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -523,32 +405,7 @@ function _drawPrisonOverlay(ctx, opts) {
   ctx.fillRect(innerX, innerY + innerH - s, s, s);
   ctx.fillRect(innerX + innerW - s, innerY + innerH - s, s, s);
 
-  // 3. Chains on walls
-  const chainColor = shiftColor(pal.metal || pal.secondary, 5);
-  const midY = Math.floor((bounds.y_min + bounds.y_max) / 2);
-  const chainPositions = [
-    { x: bounds.x_min, y: midY },
-    { x: bounds.x_max, y: midY },
-  ];
-  if (bounds.y_max - bounds.y_min > 3) {
-    chainPositions.push(
-      { x: bounds.x_min, y: bounds.y_min + 1 },
-      { x: bounds.x_max, y: bounds.y_min + 1 },
-    );
-  }
-  for (const pos of chainPositions) {
-    const px = ox + pos.x * s, py = oy + pos.y * s;
-    const count = 2 + Math.floor(cellHash(seed + pos.x, pos.y, 80) * 2);
-    for (let i = 0; i < count; i++) {
-      const cx = px + s * 0.2 + (i / (count - 1 || 1)) * s * 0.6;
-      const chainLen = s * 0.4 + cellHash(seed, i + pos.x, 81) * s * 0.3;
-      ctx.strokeStyle = chainColor; ctx.lineWidth = 1;
-      for (let ly = 0; ly < chainLen; ly += 4) {
-        const linkX = cx + ((ly / 4) % 2 === 0 ? -0.5 : 0.5);
-        ctx.beginPath(); ctx.moveTo(linkX, py + ly); ctx.lineTo(linkX, py + Math.min(ly + 3, chainLen)); ctx.stroke();
-      }
-    }
-  }
+  // 3. Chains now handled by prop system
 
   // 4. Doorway iron bars
   if (doorPositions && doorPositions.length > 0) {
@@ -585,22 +442,7 @@ function _drawFloodedOverlay(ctx, opts) {
   ctx.fillStyle = 'rgba(15, 60, 90, 0.12)';
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
-  // 2. Puddles
-  const puddleCount = 3 + Math.floor(cellHash(seed, 0, 90) * 3);
-  const floorW = bounds.x_max - bounds.x_min + 1, floorH = bounds.y_max - bounds.y_min + 1;
-  for (let i = 0; i < puddleCount; i++) {
-    const px = bounds.x_min + Math.floor(cellHash(seed, i, 91) * floorW);
-    const py = bounds.y_min + Math.floor(cellHash(seed, i, 92) * floorH);
-    const tileX = ox + px * s, tileY = oy + py * s;
-    const pcx = tileX + s * 0.45 + cellHash(seed, i, 93) * s * 0.1;
-    const pcy = tileY + s * 0.5 + cellHash(seed, i, 94) * s * 0.1;
-    const rx = s * 0.22 + cellHash(seed, i, 95) * s * 0.1;
-    const ry = s * 0.15 + cellHash(seed, i, 96) * s * 0.08;
-    ctx.fillStyle = 'rgba(10, 50, 70, 0.30)';
-    ctx.beginPath(); ctx.ellipse(pcx, pcy, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = 'rgba(120, 200, 240, 0.25)'; ctx.lineWidth = 0.8;
-    ctx.beginPath(); ctx.ellipse(pcx - 1, pcy - 1, rx * 0.7, ry * 0.7, 0, Math.PI * 0.8, Math.PI * 1.4); ctx.stroke();
-  }
+  // 2. Puddles now handled by prop system
 
   // 3. Reflective edge highlights
   ctx.fillStyle = 'rgba(80, 160, 200, 0.08)';

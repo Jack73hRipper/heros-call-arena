@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGameState } from '../../context/GameStateContext';
 import HeroDetailPanel from './HeroDetailPanel';
 import HeroSprite from './HeroSprite';
-import { formatStatBonuses } from '../../utils/itemUtils';
+import { formatStatBonuses, getArmorAffinityInfo, ARMOR_CATEGORY_LABELS } from '../../utils/itemUtils';
 
 /**
  * HeroRoster — displays owned heroes with stats and gear.
@@ -34,9 +34,9 @@ export default function HeroRoster({ availableClasses }) {
     return items;
   };
 
-  const handleEquipTagEnter = (e, item) => {
+  const handleEquipTagEnter = (e, item, classId) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    setTooltip({ item, x: rect.left + rect.width / 2, y: rect.top });
+    setTooltip({ item, x: rect.left + rect.width / 2, y: rect.top, classId });
   };
 
   const handleEquipTagLeave = () => {
@@ -109,16 +109,22 @@ export default function HeroRoster({ availableClasses }) {
                 {/* Equipment preview */}
                 {equipItems.length > 0 && (
                   <div className="hero-card-equipment">
-                    {equipItems.map((eq) => (
-                      <span
-                        key={eq.slot}
-                        className={`hero-equip-tag rarity-${eq.rarity}`}
-                        onMouseEnter={(e) => handleEquipTagEnter(e, eq.item)}
-                        onMouseLeave={handleEquipTagLeave}
-                      >
-                        {eq.name}
-                      </span>
-                    ))}
+                    {equipItems.map((eq) => {
+                      const affinity = eq.slot === 'armor' ? getArmorAffinityInfo(eq.item, hero.class_id) : null;
+                      return (
+                        <span
+                          key={eq.slot}
+                          className={`hero-equip-tag rarity-${eq.rarity}`}
+                          onMouseEnter={(e) => handleEquipTagEnter(e, eq.item, hero.class_id)}
+                          onMouseLeave={handleEquipTagLeave}
+                        >
+                          {eq.name}
+                          {affinity && affinity.isMatch && (
+                            <span className="roster-affinity-badge" title={`${affinity.className} Affinity — +${Math.round(affinity.bonusPct * 100)}% base stats`}>✦</span>
+                          )}
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
 
@@ -195,6 +201,15 @@ export default function HeroRoster({ availableClasses }) {
               {tooltip.item.rarity || 'common'} {tooltip.item.item_type}
               {tooltip.item.equip_slot ? ` — ${tooltip.item.equip_slot}` : ''}
             </div>
+            {tooltip.item.armor_category && ARMOR_CATEGORY_LABELS[tooltip.item.armor_category] && (
+              <div className="gear-tooltip-armor-category">[{ARMOR_CATEGORY_LABELS[tooltip.item.armor_category]}]</div>
+            )}
+            {(() => {
+              const affinity = getArmorAffinityInfo(tooltip.item, tooltip.classId);
+              return affinity && affinity.isMatch ? (
+                <div className="gear-tooltip-affinity">✦ {affinity.className} Affinity — +{Math.round(affinity.bonusPct * 100)}% base stats</div>
+              ) : null;
+            })()}
             {formatStatBonuses(tooltip.item.stat_bonuses).length > 0 && (
               <div className="gear-tooltip-stats">
                 {formatStatBonuses(tooltip.item.stat_bonuses).map((s, i) => (

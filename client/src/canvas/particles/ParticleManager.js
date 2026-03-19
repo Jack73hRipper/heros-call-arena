@@ -11,6 +11,7 @@
 import { ParticleEngine } from './ParticleEngine.js';
 import { ParticleProjectile } from './ParticleProjectile.js';
 import { TILE_SIZE } from '../renderConstants.js';
+import { collectLightSources } from '../PropLighting.js';
 
 export class ParticleManager {
   /**
@@ -62,6 +63,13 @@ export class ParticleManager {
      * @type {Map<string, { emitter: Emitter, x: number, y: number }>}
      */
     this._zoneEmitters = new Map();
+
+    /**
+     * Prop Lighting: Persistent ambient particle emitters for light-emitting props.
+     * Keyed by `${tileX},${tileY}:${propName}`.
+     * @type {Map<string, { emitter: Emitter, x: number, y: number }>}
+     */
+    this._propEmitters = new Map();
 
     /**
      * Phase 14G: Active projectiles in flight.
@@ -274,6 +282,9 @@ export class ParticleManager {
 
     // Phase 23: Clean up dead zone emitters
     this._cleanupZoneEmitters();
+
+    // Prop Lighting: Clean up dead prop emitters
+    this._cleanupPropEmitters();
 
     // Phase 14G: Update active projectiles
     this._updateProjectiles(dt);
@@ -937,6 +948,68 @@ export class ParticleManager {
     }
   }
 
+  // ─── Prop Lighting: Ambient Prop Particle Emitters ──────────────────────
+
+  /** Particle preset lookup for light-emitting props. */
+  static PROP_PRESET_MAP = {
+    torch_sconce:     'torch-flame',
+    brazier:          'prop-brazier-embers',
+    candelabra:       'prop-candelabra-glow',
+    ritual_circle:    'prop-ritual-pulse',
+    mushroom_cluster: 'prop-bioluminescent-spore',
+    fountain:         'prop-fountain-mist',
+  };
+
+  /**
+   * Create/remove looping particle emitters for light-emitting dungeon props.
+   * Called from Arena.jsx whenever dungeonRooms changes.
+   *
+   * @param {Array} dungeonRooms - Array of { archetype, bounds }
+   * @param {Object} theme - ThemeEngine theme object with propAffinities, palette, etc.
+   */
+  updatePropParticles(dungeonRooms, theme) {
+    if (this._hidden) return;
+    if (!dungeonRooms || !theme) return;
+
+    const sources = collectLightSources(dungeonRooms, theme);
+    const activeKeys = new Set();
+
+    // Create emitters for new light sources
+    for (const src of sources) {
+      const presetName = ParticleManager.PROP_PRESET_MAP[src.prop];
+      if (!presetName) continue;
+
+      const key = `${src.x},${src.y}:${src.prop}`;
+      activeKeys.add(key);
+      if (this._propEmitters.has(key)) continue;
+
+      const pos = this._tileToPx(src.x, src.y);
+      const emitter = this.engine.emit(presetName, pos.x, pos.y);
+      if (emitter) {
+        this._propEmitters.set(key, { emitter, x: src.x, y: src.y });
+      }
+    }
+
+    // Stop emitters for props no longer present
+    for (const [key, tracked] of this._propEmitters) {
+      if (!activeKeys.has(key)) {
+        tracked.emitter.loop = false;
+        this._propEmitters.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Cleanup dead prop emitters (safety net).
+   */
+  _cleanupPropEmitters() {
+    for (const [key, tracked] of this._propEmitters) {
+      if (tracked.emitter.isDead) {
+        this._propEmitters.delete(key);
+      }
+    }
+  }
+
   // ─── Phase 14G: Projectile Management ───────────────────────────────────
 
   /**
@@ -1065,6 +1138,8 @@ export class ParticleManager {
     this._ccEmitters.clear();
     this._buffEmitters.clear();
     this._affixEmitters.clear();
+    this._zoneEmitters.clear();
+    this._propEmitters.clear();
     this._playersRef = null;
     this._lastVisibleTiles = null;
   }

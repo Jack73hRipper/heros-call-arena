@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
 import { apiFetch } from '../../utils/serverUrl';
 import HeroSprite from './HeroSprite';
-import { formatStatBonuses } from '../../utils/itemUtils';
+import { formatStatBonuses, getArmorAffinityInfo } from '../../utils/itemUtils';
 
 /**
  * HeroDetailPanel — Full gear management UI for a single hero.
@@ -554,6 +554,7 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose }) {
                   const hClass = availableClasses?.[h.class_id] || {};
                   const hInvCount = (h.inventory || []).length;
                   const isFull = hInvCount >= 10;
+                  const affinity = getArmorAffinityInfo(transferItem.item, h.class_id);
                   return (
                     <button
                       key={h.hero_id}
@@ -573,6 +574,9 @@ export default function HeroDetailPanel({ hero, availableClasses, onClose }) {
                           {hClass.name || h.class_id}
                         </span>
                       </div>
+                      {affinity && affinity.isMatch && (
+                        <span className="transfer-affinity-badge" title={`${affinity.className} Affinity`}>✦</span>
+                      )}
                       <span className={`transfer-hero-bag ${isFull ? 'bag-full' : ''}`}>
                         {hInvCount}/10
                       </span>

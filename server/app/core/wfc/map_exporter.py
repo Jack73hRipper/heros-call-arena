@@ -33,11 +33,10 @@ def _normalize_tile(tile: str) -> str:
 
     E and B markers become F (floor) in the exported tile grid —
     enemies are placed via the rooms[].enemy_spawns array instead.
-    D (door) markers also become F — doors are disabled for now
-    while rooms are being resized; the door collection code is kept
-    intact so it can be re-enabled later.
+    D (door) tiles are preserved — door_placer.py inserts them at
+    module boundaries and they are collected into the doors[] array.
     """
-    if tile in ("E", "B", "D"):
+    if tile in ("E", "B"):
         return "F"
     return tile
 

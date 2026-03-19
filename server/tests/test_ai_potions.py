@@ -1,5 +1,5 @@
 """
-Tests for Phase 8A-1 — AI Potion Usage.
+Tests for Phase 8A-1 & Phase 28A — AI Potion Usage.
 
 Covers:
   - AI drinks potion when HP is below threshold
@@ -10,7 +10,7 @@ Covers:
   - AI does NOT drink at full HP even if below threshold edge case
   - AI ignores non-heal consumables (portal scrolls)
   - Returned USE_ITEM action has correct target_x (inventory index)
-  - Enemy AI units never drink potions (hero_id guard)
+  - Phase 28A: Enemy AI units drink potions via behavior profiles
 """
 
 from app.models.player import PlayerState, Position
@@ -432,40 +432,37 @@ class TestPotionIntegrationWithStance:
 
 
 # ---------------------------------------------------------------------------
-# 4. Enemy AI Exclusion Tests
+# 4. Enemy AI Potion Tests (Phase 28A → 28-FIX)
 # ---------------------------------------------------------------------------
 
-class TestEnemyAIPotionExclusion:
-    """Enemy AI units must NEVER drink potions — only hero allies."""
+class TestEnemyAIPotionUsage:
+    """Phase 28-FIX: Dungeon monsters do NOT drink potions. Only hero party AI does."""
 
-    def test_enemy_ai_never_drinks_potion(self):
-        """Enemy AI at 10% HP with potions → never calls _should_use_potion.
+    def test_monster_does_not_drink_potion(self):
+        """Dungeon monster (enemy_type='demon') at 10% HP with potions → does NOT drink.
 
-        The guard is in decide_ai_action: enemies go to aggressive/ranged/boss
-        behavior, which never calls _should_use_potion. This test verifies
-        _should_use_potion CAN return an action for the state, but
-        decide_ai_action does NOT route enemies through _decide_stance_action.
+        Phase 28-FIX guards potion usage behind enemy_type is None.
+        Monsters should use base stats + rarity for power, not potions.
         """
         enemy = make_enemy(hp=8, max_hp=80, inventory=[_health_potion()])
-        # The helper itself would fire, but the dispatch in decide_ai_action
-        # only calls _decide_stance_action for hero allies (hero_id is not None)
         assert enemy.hero_id is None
+        assert enemy.enemy_type == "demon"
 
-        # If we DID call _should_use_potion directly, it would return an action
-        direct_action = _should_use_potion(enemy, hp_threshold=0.40)
-        assert direct_action is not None  # helper has no hero_id guard itself
+        # _should_use_potion itself works on any unit (pure function)
+        direct_action = _should_use_potion(enemy, hp_threshold=0.30)
+        assert direct_action is not None  # Function still works
 
-        # But decide_ai_action routes enemies to aggressive behavior, not stance
+        # But decide_ai_action guards it — monsters skip the potion check
         all_units = {enemy.player_id: enemy}
         action = decide_ai_action(
             enemy, all_units, grid_width=15, grid_height=15,
             obstacles=set(),
         )
-        # Enemy should get a patrol/wait action, NOT USE_ITEM
+        # Monster should NOT use potion via decide_ai_action
         assert action is None or action.action_type != ActionType.USE_ITEM
 
     def test_enemy_ai_no_hero_id(self):
-        """Verify enemy AI has hero_id=None (exclusion guard)."""
+        """Verify enemy AI has hero_id=None (enemies vs hero allies)."""
         enemy = make_enemy()
         assert enemy.hero_id is None
         assert enemy.ai_stance == "follow"  # default, but not used for enemies

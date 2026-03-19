@@ -58,10 +58,12 @@ class TestDungeonStyleDefinitions:
         assert "decorator_overrides" in style, f"{style_key} missing 'decorator_overrides'"
 
     def test_balanced_has_empty_overrides(self):
-        """Balanced style should have no weight or decorator overrides."""
+        """Balanced style should have no weight overrides and only doorChance decorator override."""
         balanced = DUNGEON_STYLES["balanced"]
         assert balanced["weight_overrides"] == {}
-        assert balanced["decorator_overrides"] == {}
+        # Balanced may have doorChance but no other decorator overrides
+        non_door_overrides = {k: v for k, v in balanced["decorator_overrides"].items() if k != "doorChance"}
+        assert non_door_overrides == {}
 
     @pytest.mark.parametrize("style_key", [
         k for k in DUNGEON_STYLES if k != "balanced"
@@ -169,7 +171,10 @@ class TestDecoratorOverrides:
     """Test decorator override retrieval."""
 
     def test_balanced_returns_empty_overrides(self):
-        assert get_decorator_overrides("balanced") == {}
+        overrides = get_decorator_overrides("balanced")
+        # Balanced may have doorChance but no gameplay-affecting decorator overrides
+        non_door = {k: v for k, v in overrides.items() if k != "doorChance"}
+        assert non_door == {}
 
     def test_dense_catacomb_has_high_enemy_density(self):
         overrides = get_decorator_overrides("dense_catacomb")

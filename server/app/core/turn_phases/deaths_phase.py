@@ -176,6 +176,16 @@ def _resolve_deaths(
                 if death_key not in ground_items:
                     ground_items[death_key] = []
                 ground_items[death_key].extend(item_dicts)
+
+                # Phase 28B: Drop equipped items as additional loot
+                equipped_dicts = []
+                for slot_name, equipped_item in getattr(dead_unit, 'equipment', {}).items():
+                    if equipped_item and isinstance(equipped_item, dict):
+                        equipped_dicts.append(equipped_item)
+                if equipped_dicts:
+                    ground_items[death_key].extend(equipped_dicts)
+                    item_dicts.extend(equipped_dicts)
+
                 loot_drops.append({
                     "x": dead_unit.position.x,
                     "y": dead_unit.position.y,
@@ -183,6 +193,24 @@ def _resolve_deaths(
                     "enemy_name": dead_unit.username,
                     "items": item_dicts,
                 })
+            else:
+                # Phase 28B: Even if no normal loot, drop equipped items
+                equipped_dicts = []
+                for slot_name, equipped_item in getattr(dead_unit, 'equipment', {}).items():
+                    if equipped_item and isinstance(equipped_item, dict):
+                        equipped_dicts.append(equipped_item)
+                if equipped_dicts:
+                    death_key = f"{dead_unit.position.x},{dead_unit.position.y}"
+                    if death_key not in ground_items:
+                        ground_items[death_key] = []
+                    ground_items[death_key].extend(equipped_dicts)
+                    loot_drops.append({
+                        "x": dead_unit.position.x,
+                        "y": dead_unit.position.y,
+                        "enemy_type": enemy_type,
+                        "enemy_name": dead_unit.username,
+                        "items": equipped_dicts,
+                    })
 
             # Phase 18F: Broadcast elite_kill event for rare/super_unique deaths
             if unit_monster_rarity in ("rare", "super_unique") and elite_kills is not None:

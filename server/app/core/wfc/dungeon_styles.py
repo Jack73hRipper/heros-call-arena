@@ -29,7 +29,9 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
         "name": "Balanced",
         "description": "Default balanced dungeon — no weight modifications",
         "weight_overrides": {},
-        "decorator_overrides": {},
+        "decorator_overrides": {
+            "doorChance": 0.45,
+        },
         "archetype_overrides": {},
     },
     "dense_catacomb": {
@@ -50,6 +52,7 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
             "guaranteeBoss": False,
             "scatterEnemies": True,
             "scatterChests": False,
+            "doorChance": 0.60,
         },
         "archetype_overrides": {
             "prison_enemy_chance": 0.25,   # More prison rooms in claustrophobic style
@@ -74,6 +77,7 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
             "guaranteeBoss": True,
             "scatterEnemies": True,
             "scatterChests": True,
+            "doorChance": 0.20,
         },
         "archetype_overrides": {
             "shrine_chance": 0.08,    # Sacred sites in ruins
@@ -99,6 +103,7 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
             "guaranteeBoss": True,
             "scatterEnemies": True,
             "scatterChests": False,
+            "doorChance": 0.55,
         },
         "archetype_overrides": {
             "shrine_chance": 0.06,    # Shrines before boss encounters
@@ -124,6 +129,7 @@ DUNGEON_STYLES: dict[str, dict[str, Any]] = {
             "guaranteeSpawn": True,
             "scatterEnemies": True,
             "scatterChests": True,
+            "doorChance": 0.50,
         },
         "archetype_overrides": {
             "library_chance": 0.10,   # Doubled — archives hold treasure maps

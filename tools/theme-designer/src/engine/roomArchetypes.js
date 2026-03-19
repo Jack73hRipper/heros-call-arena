@@ -68,6 +68,34 @@ export const ROOM_ARCHETYPES = {
     label: 'Flooded Chamber',
     description: 'Water tint, scattered puddles, reflective edges. Eerie and inhospitable.',
   },
+  cathedral: {
+    label: 'Grand Cathedral',
+    description: 'Towering nave with central aisle, rose window motif, candelabra light. A place of dark worship.',
+  },
+  ritual: {
+    label: 'Ritual Chamber',
+    description: 'Arcane sigils pulse on the floor, oppressive darkness at the edges. Something was summoned here.',
+  },
+  torture: {
+    label: 'Torture Chamber',
+    description: 'Blood-stained floor, iron fixtures on the walls, suffocating darkness. Pain lingers in the stones.',
+  },
+  graveyard: {
+    label: 'Burial Ground',
+    description: 'Rows of weathered tombstones, disturbed earth, faint mist. The dead rest uneasy.',
+  },
+  armory: {
+    label: 'Armory',
+    description: 'Orderly weapon racks, barrel supplies, functional torchlight. A garrison supply room.',
+  },
+  ossuary: {
+    label: 'Ossuary',
+    description: 'Walls lined with ancient bones, pale candlelight, alcove recesses. A repository of the dead.',
+  },
+  fungal_grotto: {
+    label: 'Fungal Grotto',
+    description: 'Bioluminescent fungi cast eerie green light over damp stone. Spore-thick air, organic growth.',
+  },
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -107,6 +135,13 @@ export function drawRoomOverlay(ctx, opts) {
     case 'library': return _drawLibraryOverlay(ctx, opts);
     case 'prison':  return _drawPrisonOverlay(ctx, opts);
     case 'flooded': return _drawFloodedOverlay(ctx, opts);
+    case 'cathedral': return _drawCathedralOverlay(ctx, opts);
+    case 'ritual':    return _drawRitualOverlay(ctx, opts);
+    case 'torture':   return _drawTortureOverlay(ctx, opts);
+    case 'graveyard': return _drawGraveyardOverlay(ctx, opts);
+    case 'armory':    return _drawArmoryOverlay(ctx, opts);
+    case 'ossuary':   return _drawOssuaryOverlay(ctx, opts);
+    case 'fungal_grotto': return _drawFungalGrottoOverlay(ctx, opts);
   }
 }
 
@@ -865,5 +900,497 @@ function _drawFloodedOverlay(ctx, opts) {
     ctx.beginPath();
     ctx.arc(rcx, rcy, r, Math.PI * 1.1, Math.PI * 1.7);
     ctx.stroke();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CATHEDRAL — Grand Nave
+// ═══════════════════════════════════════════════════════════
+
+function _drawCathedralOverlay(ctx, opts) {
+  const { theme, tileSize: s, roomOffsetX: ox, roomOffsetY: oy, bounds, seed } = opts;
+  const pal = theme.palette;
+
+  const innerX = bounds.x_min * s + ox;
+  const innerY = bounds.y_min * s + oy;
+  const innerW = (bounds.x_max - bounds.x_min + 1) * s;
+  const innerH = (bounds.y_max - bounds.y_min + 1) * s;
+
+  // 1. Warm ambient tint — grandeur
+  ctx.fillStyle = hexAlpha(pal.highlight, 0.03);
+  ctx.fillRect(innerX, innerY, innerW, innerH);
+
+  // 2. Central aisle — darker strip down the middle (north-south)
+  const cx = ox + ((bounds.x_min + bounds.x_max + 1) / 2) * s;
+  const aisleW = s * 0.7;
+  ctx.fillStyle = 'rgba(0,0,0,0.06)';
+  ctx.fillRect(cx - aisleW / 2, innerY, aisleW, innerH);
+
+  // Aisle border lines
+  ctx.strokeStyle = hexAlpha(pal.highlight, 0.12);
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(cx - aisleW / 2, innerY + s * 0.3);
+  ctx.lineTo(cx - aisleW / 2, innerY + innerH - s * 0.3);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx + aisleW / 2, innerY + s * 0.3);
+  ctx.lineTo(cx + aisleW / 2, innerY + innerH - s * 0.3);
+  ctx.stroke();
+
+  // 3. Rose window motif on top wall — concentric circles + radial spokes
+  const roseX = cx;
+  const roseY = innerY + s * 0.5;
+  const roseR = s * 0.35;
+
+  // Outer ring
+  ctx.strokeStyle = hexAlpha(pal.accent, 0.20);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(roseX, roseY, roseR, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Inner ring
+  ctx.strokeStyle = hexAlpha(pal.highlight, 0.15);
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.arc(roseX, roseY, roseR * 0.55, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Radial spokes (8 lines)
+  ctx.strokeStyle = hexAlpha(pal.accent, 0.12);
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(roseX + Math.cos(angle) * roseR * 0.3, roseY + Math.sin(angle) * roseR * 0.3);
+    ctx.lineTo(roseX + Math.cos(angle) * roseR * 0.9, roseY + Math.sin(angle) * roseR * 0.9);
+    ctx.stroke();
+  }
+
+  // Center gem
+  ctx.fillStyle = hexAlpha(pal.highlight, 0.25);
+  ctx.beginPath();
+  ctx.arc(roseX, roseY, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 4. Tall-wall vertical streaks on side walls (depth illusion)
+  ctx.fillStyle = hexAlpha(pal.accent, 0.06);
+  for (let ty = bounds.y_min + 1; ty < bounds.y_max; ty++) {
+    const py = oy + ty * s;
+    // Left wall
+    ctx.fillRect(ox + bounds.x_min * s + s * 0.35, py + 2, 2, s - 4);
+    ctx.fillRect(ox + bounds.x_min * s + s * 0.55, py + 4, 1.5, s - 8);
+    // Right wall
+    ctx.fillRect(ox + bounds.x_max * s + s * 0.4, py + 2, 2, s - 4);
+    ctx.fillRect(ox + bounds.x_max * s + s * 0.6, py + 4, 1.5, s - 8);
+  }
+
+  // 5. Inset floor border — accent-colored rectangle
+  ctx.strokeStyle = hexAlpha(pal.accent, 0.18);
+  ctx.lineWidth = 1;
+  ctx.strokeRect(innerX + s * 0.4, innerY + s * 0.4, innerW - s * 0.8, innerH - s * 0.8);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RITUAL — Arcane Summoning Chamber
+// ═══════════════════════════════════════════════════════════
+
+function _drawRitualOverlay(ctx, opts) {
+  const { theme, tileSize: s, roomOffsetX: ox, roomOffsetY: oy, bounds, seed } = opts;
+  const pal = theme.palette;
+
+  const innerX = bounds.x_min * s + ox;
+  const innerY = bounds.y_min * s + oy;
+  const innerW = (bounds.x_max - bounds.x_min + 1) * s;
+  const innerH = (bounds.y_max - bounds.y_min + 1) * s;
+  const cx = ox + ((bounds.x_min + bounds.x_max + 1) / 2) * s;
+  const cy = oy + ((bounds.y_min + bounds.y_max + 1) / 2) * s;
+
+  // 1. Dark ambient wash — oppressive
+  ctx.fillStyle = 'rgba(0,0,0,0.10)';
+  ctx.fillRect(innerX, innerY, innerW, innerH);
+
+  // 2. Central arcane glow — radial gradient from center
+  const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, s * 2);
+  glowGrad.addColorStop(0, hexAlpha(pal.accent, 0.08));
+  glowGrad.addColorStop(0.5, hexAlpha(pal.accent, 0.03));
+  glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = glowGrad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, s * 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. Corner darkening — vignette
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fillRect(innerX, innerY, s, s);
+  ctx.fillRect(innerX + innerW - s, innerY, s, s);
+  ctx.fillRect(innerX, innerY + innerH - s, s, s);
+  ctx.fillRect(innerX + innerW - s, innerY + innerH - s, s, s);
+
+  // 4. Arcane floor rune marks — small notches along edge tiles
+  const h = cellHash;
+  ctx.strokeStyle = hexAlpha(pal.accent, 0.22);
+  ctx.lineWidth = 0.7;
+  for (let tx = bounds.x_min + 1; tx < bounds.x_max; tx += 2) {
+    const px = ox + tx * s + s / 2;
+    // Top edge runes
+    const topY = oy + bounds.y_min * s + s * 0.8;
+    ctx.beginPath();
+    ctx.moveTo(px, topY - 3);
+    ctx.lineTo(px, topY + 3);
+    ctx.moveTo(px - 2, topY);
+    ctx.lineTo(px + 2, topY);
+    ctx.stroke();
+    // Bottom edge runes
+    const botY = oy + bounds.y_max * s + s * 0.2;
+    ctx.beginPath();
+    ctx.moveTo(px, botY - 3);
+    ctx.lineTo(px, botY + 3);
+    ctx.stroke();
+  }
+
+  // 5. Outer containment ring — accent circle around center area
+  ctx.strokeStyle = hexAlpha(pal.accent, 0.15);
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, Math.min(innerW, innerH) * 0.38, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TORTURE — Pain Chamber
+// ═══════════════════════════════════════════════════════════
+
+function _drawTortureOverlay(ctx, opts) {
+  const { theme, tileSize: s, roomOffsetX: ox, roomOffsetY: oy, bounds, seed } = opts;
+  const pal = theme.palette;
+
+  const innerX = bounds.x_min * s + ox;
+  const innerY = bounds.y_min * s + oy;
+  const innerW = (bounds.x_max - bounds.x_min + 1) * s;
+  const innerH = (bounds.y_max - bounds.y_min + 1) * s;
+
+  // 1. Heavy dark wash — suffocating
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.fillRect(innerX, innerY, innerW, innerH);
+
+  // 2. Blood-stain accents — 2-3 irregular dark red patches
+  const h = cellHash;
+  for (let i = 0; i < 3; i++) {
+    const stainX = innerX + s * 0.5 + h(seed, i, 150) * (innerW - s);
+    const stainY = innerY + s * 0.5 + h(seed, i, 151) * (innerH - s);
+    const stainR = s * 0.15 + h(seed, i, 152) * s * 0.2;
+    ctx.fillStyle = hexAlpha(pal.accent, 0.08 + h(seed, i, 153) * 0.06);
+    ctx.beginPath();
+    ctx.arc(stainX, stainY, stainR, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 3. Scratched floor marks — thin dark lines
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i < 4; i++) {
+    const sx = innerX + h(seed, i, 154) * innerW;
+    const sy = innerY + h(seed, i, 155) * innerH;
+    const angle = h(seed, i, 156) * Math.PI;
+    const len = s * 0.3 + h(seed, i, 157) * s * 0.4;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(sx + Math.cos(angle) * len, sy + Math.sin(angle) * len);
+    ctx.stroke();
+  }
+
+  // 4. Heavy corner vignette — darker than prison
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillRect(innerX, innerY, s, s);
+  ctx.fillRect(innerX + innerW - s, innerY, s, s);
+  ctx.fillRect(innerX, innerY + innerH - s, s, s);
+  ctx.fillRect(innerX + innerW - s, innerY + innerH - s, s, s);
+
+  // 5. Metal fixture marks on walls — horizontal brackets
+  const metalColor = shiftColor(pal.metal || pal.secondary, 8);
+  ctx.fillStyle = metalColor;
+  for (let ty = bounds.y_min + 1; ty < bounds.y_max; ty += 2) {
+    const py = oy + ty * s;
+    // Left wall brackets
+    ctx.fillRect(ox + bounds.x_min * s + s - 6, py + s * 0.3, 4, 2);
+    ctx.fillRect(ox + bounds.x_min * s + s - 6, py + s * 0.6, 4, 2);
+    // Right wall brackets
+    ctx.fillRect(ox + bounds.x_max * s + 2, py + s * 0.3, 4, 2);
+    ctx.fillRect(ox + bounds.x_max * s + 2, py + s * 0.6, 4, 2);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GRAVEYARD — Burial Ground
+// ═══════════════════════════════════════════════════════════
+
+function _drawGraveyardOverlay(ctx, opts) {
+  const { theme, tileSize: s, roomOffsetX: ox, roomOffsetY: oy, bounds, seed } = opts;
+  const pal = theme.palette;
+
+  const innerX = bounds.x_min * s + ox;
+  const innerY = bounds.y_min * s + oy;
+  const innerW = (bounds.x_max - bounds.x_min + 1) * s;
+  const innerH = (bounds.y_max - bounds.y_min + 1) * s;
+
+  // 1. Earthy muted wash — desaturated brown-green
+  ctx.fillStyle = 'rgba(30, 25, 15, 0.08)';
+  ctx.fillRect(innerX, innerY, innerW, innerH);
+
+  // 2. Disturbed earth patches — irregular darker spots
+  const h = cellHash;
+  for (let i = 0; i < 4; i++) {
+    const patchX = innerX + s * 0.3 + h(seed, i, 160) * (innerW - s * 0.6);
+    const patchY = innerY + s * 0.3 + h(seed, i, 161) * (innerH - s * 0.6);
+    const patchRx = s * 0.2 + h(seed, i, 162) * s * 0.15;
+    const patchRy = s * 0.12 + h(seed, i, 163) * s * 0.1;
+    ctx.fillStyle = 'rgba(20, 15, 8, 0.10)';
+    ctx.beginPath();
+    ctx.ellipse(patchX, patchY, patchRx, patchRy, h(seed, i, 164) * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 3. Faint mist — lighter semi-transparent wash at floor level
+  const mistGrad = ctx.createLinearGradient(innerX, innerY + innerH * 0.5, innerX, innerY + innerH);
+  mistGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  mistGrad.addColorStop(0.4, 'rgba(160, 160, 140, 0.04)');
+  mistGrad.addColorStop(1, 'rgba(180, 180, 160, 0.06)');
+  ctx.fillStyle = mistGrad;
+  ctx.fillRect(innerX, innerY, innerW, innerH);
+
+  // 4. Uneven ground texture — small random dots for soil feeling
+  ctx.fillStyle = shiftColor(pal.floor || pal.primary, -6);
+  for (let d = 0; d < 10; d++) {
+    const dx = innerX + h(seed, d, 165) * innerW;
+    const dy = innerY + h(seed, d, 166) * innerH;
+    ctx.fillRect(dx, dy, 1.5, 1);
+  }
+
+  // 5. Row markers — faint horizontal lines suggesting grave row paths
+  ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+  ctx.lineWidth = 0.6;
+  const rowSpacing = Math.max(2, Math.floor((bounds.y_max - bounds.y_min) / 3));
+  for (let row = 1; row < 3; row++) {
+    const ry = oy + (bounds.y_min + row * rowSpacing) * s;
+    ctx.beginPath();
+    ctx.moveTo(innerX + s * 0.3, ry + s * 0.5);
+    ctx.lineTo(innerX + innerW - s * 0.3, ry + s * 0.5);
+    ctx.stroke();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ARMORY — Garrison Supply Room
+// ═══════════════════════════════════════════════════════════
+
+function _drawArmoryOverlay(ctx, opts) {
+  const { theme, tileSize: s, roomOffsetX: ox, roomOffsetY: oy, bounds, doorPositions, seed } = opts;
+  const pal = theme.palette;
+
+  const innerX = bounds.x_min * s + ox;
+  const innerY = bounds.y_min * s + oy;
+  const innerW = (bounds.x_max - bounds.x_min + 1) * s;
+  const innerH = (bounds.y_max - bounds.y_min + 1) * s;
+
+  // 1. Clean maintained floor — very slight highlight
+  ctx.fillStyle = hexAlpha(pal.highlight, 0.02);
+  ctx.fillRect(innerX, innerY, innerW, innerH);
+
+  // 2. Metal accent wall trim — top and bottom inner edges
+  const trimColor = shiftColor(pal.metal || pal.secondary, 8);
+  ctx.fillStyle = trimColor;
+  ctx.fillRect(innerX + s * 0.3, innerY, innerW - s * 0.6, 2);
+  ctx.fillRect(innerX + s * 0.3, innerY + innerH - 2, innerW - s * 0.6, 2);
+  // Highlight on trim
+  ctx.fillStyle = hexAlpha(pal.highlight, 0.10);
+  ctx.fillRect(innerX + s * 0.3, innerY, innerW - s * 0.6, 1);
+  ctx.fillRect(innerX + s * 0.3, innerY + innerH - 2, innerW - s * 0.6, 1);
+
+  // 3. Organized display marks — evenly spaced pegs on top wall
+  ctx.fillStyle = shiftColor(pal.metal || pal.secondary, 12);
+  for (let tx = bounds.x_min + 1; tx < bounds.x_max; tx++) {
+    const px = ox + tx * s;
+    const py = oy + bounds.y_min * s;
+    ctx.fillRect(px + s * 0.3, py + 4, 2, 5);
+    ctx.fillRect(px + s * 0.6, py + 4, 2, 5);
+  }
+
+  // 4. Functional lighting glow — warm spots on left and right walls
+  const midY = Math.floor((bounds.y_min + bounds.y_max) / 2);
+  for (const wallX of [bounds.x_min, bounds.x_max]) {
+    const glowX = ox + wallX * s + s / 2;
+    const glowY = oy + midY * s + s / 2;
+    const grad = ctx.createRadialGradient(glowX, glowY, 2, glowX, glowY, s * 1.2);
+    grad.addColorStop(0, 'rgba(255, 180, 80, 0.06)');
+    grad.addColorStop(1, 'rgba(255, 120, 40, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(glowX, glowY, s * 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 5. Floor path from door toward center — worn stone strip
+  if (doorPositions && doorPositions.length > 0) {
+    const door = doorPositions[0];
+    const pathX = door.x;
+    const centerY = Math.floor((bounds.y_min + bounds.y_max) / 2);
+    const startY = Math.min(door.y + 1, centerY);
+    const endY = Math.max(door.y - 1, centerY);
+    for (let y = startY; y <= endY; y++) {
+      ctx.fillStyle = 'rgba(0,0,0,0.04)';
+      ctx.fillRect(ox + pathX * s + s * 0.2, oy + y * s, s * 0.6, s);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  OSSUARY — Bone Repository
+// ═══════════════════════════════════════════════════════════
+
+function _drawOssuaryOverlay(ctx, opts) {
+  const { theme, tileSize: s, roomOffsetX: ox, roomOffsetY: oy, bounds, seed } = opts;
+  const pal = theme.palette;
+
+  const innerX = bounds.x_min * s + ox;
+  const innerY = bounds.y_min * s + oy;
+  const innerW = (bounds.x_max - bounds.x_min + 1) * s;
+  const innerH = (bounds.y_max - bounds.y_min + 1) * s;
+
+  // 1. Pale desaturated wash — bone-white undertone
+  ctx.fillStyle = 'rgba(200, 190, 170, 0.04)';
+  ctx.fillRect(innerX, innerY, innerW, innerH);
+
+  // 2. Bone-stack wall texture — horizontal lines on side walls suggesting stacked remains
+  const boneColor = 'rgba(180, 170, 150, 0.10)';
+  for (let ty = bounds.y_min; ty <= bounds.y_max; ty++) {
+    const py = oy + ty * s;
+    // Left wall bone layers
+    const lx = ox + bounds.x_min * s;
+    for (let row = 0; row < 5; row++) {
+      const ly = py + 2 + row * ((s - 4) / 5);
+      ctx.fillStyle = boneColor;
+      ctx.fillRect(lx + 2, ly, s - 4, 1.5);
+    }
+    // Right wall bone layers
+    const rx = ox + bounds.x_max * s;
+    for (let row = 0; row < 5; row++) {
+      const ly = py + 2 + row * ((s - 4) / 5);
+      ctx.fillStyle = boneColor;
+      ctx.fillRect(rx + 2, ly, s - 4, 1.5);
+    }
+  }
+
+  // 3. Wall alcove recesses — darker inset rectangles on top/bottom walls
+  const alcoveColor = shiftColor(pal.primary, -5);
+  for (let tx = bounds.x_min + 1; tx < bounds.x_max; tx += 2) {
+    // Top wall alcoves
+    const topX = ox + tx * s;
+    const topY = oy + bounds.y_min * s;
+    ctx.fillStyle = alcoveColor;
+    ctx.fillRect(topX + 4, topY + 3, s - 8, s * 0.4);
+    ctx.strokeStyle = shiftColor(pal.secondary, 5);
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(topX + 4, topY + 3, s - 8, s * 0.4);
+    // Bottom wall alcoves
+    const botY = oy + bounds.y_max * s;
+    ctx.fillStyle = alcoveColor;
+    ctx.fillRect(topX + 4, botY + s * 0.5, s - 8, s * 0.4);
+    ctx.strokeStyle = shiftColor(pal.secondary, 5);
+    ctx.strokeRect(topX + 4, botY + s * 0.5, s - 8, s * 0.4);
+  }
+
+  // 4. Candle warm spots — two warm glow points flanking center
+  const cx = ox + ((bounds.x_min + bounds.x_max + 1) / 2) * s;
+  const cy = oy + ((bounds.y_min + bounds.y_max + 1) / 2) * s;
+  for (const side of [-1, 1]) {
+    const glowX = cx + side * s * 1.0;
+    const grad = ctx.createRadialGradient(glowX, cy, 1, glowX, cy, s * 0.6);
+    grad.addColorStop(0, 'rgba(255, 200, 100, 0.08)');
+    grad.addColorStop(1, 'rgba(255, 150, 50, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(glowX, cy, s * 0.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 5. Floor border — thin pale inset line
+  ctx.strokeStyle = 'rgba(180, 170, 150, 0.08)';
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(innerX + s * 0.3, innerY + s * 0.3, innerW - s * 0.6, innerH - s * 0.6);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FUNGAL GROTTO — Bioluminescent Cave
+// ═══════════════════════════════════════════════════════════
+
+function _drawFungalGrottoOverlay(ctx, opts) {
+  const { theme, tileSize: s, roomOffsetX: ox, roomOffsetY: oy, bounds, seed } = opts;
+  const pal = theme.palette;
+
+  const innerX = bounds.x_min * s + ox;
+  const innerY = bounds.y_min * s + oy;
+  const innerW = (bounds.x_max - bounds.x_min + 1) * s;
+  const innerH = (bounds.y_max - bounds.y_min + 1) * s;
+  const h = cellHash;
+
+  // 1. Green-tinted ambient wash — bioluminescent atmosphere
+  const glowColor = pal.accent;
+  ctx.fillStyle = hexAlpha(glowColor, 0.05);
+  ctx.fillRect(innerX, innerY, innerW, innerH);
+
+  // 2. Bioluminescent glow pools — 2-3 radial glows on floor
+  for (let i = 0; i < 3; i++) {
+    const gx = innerX + s * 0.5 + h(seed, i, 170) * (innerW - s);
+    const gy = innerY + s * 0.5 + h(seed, i, 171) * (innerH - s);
+    const gr = s * 0.4 + h(seed, i, 172) * s * 0.3;
+    const grad = ctx.createRadialGradient(gx, gy, 1, gx, gy, gr);
+    grad.addColorStop(0, hexAlpha(glowColor, 0.10));
+    grad.addColorStop(0.6, hexAlpha(glowColor, 0.03));
+    grad.addColorStop(1, hexAlpha(glowColor, 0));
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(gx, gy, gr, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // 3. Damp sheen — reflective highlights near walls
+  ctx.fillStyle = 'rgba(100, 180, 120, 0.04)';
+  ctx.fillRect(innerX, innerY, innerW, s * 0.3);
+  ctx.fillRect(innerX, innerY + innerH - s * 0.3, innerW, s * 0.3);
+  ctx.fillRect(innerX, innerY, s * 0.3, innerH);
+  ctx.fillRect(innerX + innerW - s * 0.3, innerY, s * 0.3, innerH);
+
+  // 4. Organic wall edges — uneven blobs along walls suggesting growth
+  ctx.fillStyle = hexAlpha(glowColor, 0.06);
+  for (let ty = bounds.y_min; ty <= bounds.y_max; ty++) {
+    const py = oy + ty * s;
+    // Left wall organic bumps
+    if (h(seed, ty, 173) > 0.4) {
+      const blobR = s * 0.06 + h(seed, ty, 174) * s * 0.06;
+      const blobY = py + h(seed, ty, 175) * s;
+      ctx.beginPath();
+      ctx.arc(ox + bounds.x_min * s + s - 2, blobY, blobR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // Right wall organic bumps
+    if (h(seed, ty, 176) > 0.4) {
+      const blobR = s * 0.06 + h(seed, ty, 177) * s * 0.06;
+      const blobY = py + h(seed, ty, 178) * s;
+      ctx.beginPath();
+      ctx.arc(ox + bounds.x_max * s + 2, blobY, blobR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // 5. Spore dust motes — tiny bright dots floating in the room
+  ctx.fillStyle = hexAlpha(pal.highlight, 0.15);
+  for (let i = 0; i < 6; i++) {
+    const dx = innerX + h(seed, i, 179) * innerW;
+    const dy = innerY + h(seed, i, 180) * innerH;
+    ctx.beginPath();
+    ctx.arc(dx, dy, 0.8 + h(seed, i, 181) * 0.6, 0, Math.PI * 2);
+    ctx.fill();
   }
 }

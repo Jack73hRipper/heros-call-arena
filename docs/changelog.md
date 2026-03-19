@@ -5,6 +5,329 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.8] - 2026-03-18 - Dungeon Lighting, Door System, HUD Overhaul & AI Upgrades
+
+**Published release** rolling up v0.1.7a through v0.1.7p. Major additions: prop lighting system with ambient darkness and fog-of-war light modulation, room door system with chokepoint separators, 7 new room archetypes with focal prop budget system, complete HUD overhaul (player/party HP bars, minimap relocation, 4-row grid layout), 7 new skill particle effects, door-aware AI pathfinding for all units, AI chest seeking for hero allies, unique class composition for AI parties, PVPVE location-based chest tiers, loot rarity rebalance, and multiple bug fixes. 3987 tests passing.
+
+See sub-entries below (v0.1.7a--v0.1.7p) for full technical details.
+
+---
+
+## [v0.1.7p] - 2026-03-18 - Unique Class Composition for AI Parties
+
+### Changed
+- **AI parties no longer have duplicate classes** — Each AI team (allies, opponents, PVPVE teams) now spawns with all-unique class compositions. Previously `random.choice()` selected classes independently per slot, frequently producing duplicate classes on the same team (e.g. two Crusaders, three Rangers). Now classes are pre-selected as a unique set per team using `random.sample()`-style logic before spawning.
+- **Manually specified class slots respected** — When a player locks in specific classes via the lobby config (`ai_ally_classes` / `ai_opponent_classes`), those are honored first. Remaining random slots are filled from the pool of unused classes, ensuring no duplicates against manually-picked classes either.
+- **Cross-team duplicates still allowed** — Only intra-team duplicates are prevented. Team A and Team B can still independently field the same class (mirror matches are fine). Each team gets its own unique draw from the 11-class pool.
+- **PVPVE AI teams included** — The same unique-composition logic applies to PVPVE AI hero teams, which previously also used pure random selection per unit.
+
+### Technical Details
+- With 11 classes and max party size of 5, there are 462 unique team compositions possible (C(11,5)), ensuring strong variety across matches
+- Fallback to `random.choice()` exists for the impossible edge case where slots exceed available classes (11 classes, 5 max team = never triggered)
+- The `class_name_counts` naming logic (e.g. "Mage 2") is retained as a safety net but should no longer activate in normal play
+
+### Files Changed
+- `server/app/core/match_manager.py` — `_spawn_ai_units()`: replaced per-slot `random.choice()` with pre-selected unique class lists for both ally and opponent loops; `_spawn_pvpve_ai_teams()`: replaced per-unit `random.choice()` with per-team shuffled unique picks
+
+---
+
+## [v0.1.7o] - 2026-03-18 - PVPVE Team Leader Deadlock Fix
+
+### Fixed
+- **PVPVE AI teams no longer freeze at spawn in narrow corridors** — One of the 3 AI opponent teams would consistently stand idle at their spawn point for the entire match. This was most visible when a team spawned in a 2-tile wide hallway: the leader would oscillate between two tiles while all 4 followers stood still.
+
+### Root Cause
+The PVPVE team leader uses aggressive AI behavior (`_decide_aggressive_action`), which calls `_build_occupied_set` **without** `allow_team_swap`. This means the leader treated its own 4 followers as impassable obstacles. In a compact BFS spawn formation within a narrow corridor, A* pathfinding would fail because followers blocked every viable path. The leader would fall back to `_random_adjacent_move`, oscillating between the 1-2 free adjacent tiles. Meanwhile, followers use `_decide_follow_action` which WAITs when the leader is within 2 tiles (Chebyshev distance). Result: permanent deadlock — leader can't escape, followers won't move.
+
+The follower stance system (`_decide_stance_action`) already used `allow_team_swap=ai.team` to let followers path through allies. The leader's aggressive behavior path was missing the same treatment.
+
+### Fix
+- `_decide_aggressive_action` now computes `allow_swap = ai.team` for hero party AI (`enemy_type is None`) and passes it to all `_build_occupied_set` calls. Dungeon enemies (`enemy_type` set) retain the original behavior.
+- `_patrol_action` now accepts an `allow_team_swap` parameter and propagates it to `_build_occupied_set`, so patrol waypoint pathfinding also respects team swap.
+- The movement resolver's existing friendly swap injection (Phase 1B) handles the actual tile collision at resolution time — no new swap logic needed.
+
+### Files Changed
+- `server/app/core/ai_behavior.py` — 6 `_build_occupied_set` calls in `_decide_aggressive_action` now pass `allow_team_swap` for hero party AI
+- `server/app/core/ai_patrol.py` — `_patrol_action` accepts and forwards `allow_team_swap`
+- `server/tests/test_movement_prediction.py` — Updated pending_moves test to use dungeon enemies (enemy_type set) so it tests the prediction feature in isolation; added new test verifying hero party AI can path through same-team allies
+
+---
+
+## [v0.1.7n] - 2026-03-18 - AI Chest Seeking (Hero Allies)
+
+### Added
+- **Hero AI parties now open treasure chests** — When idle (no visible enemies), AI-controlled hero allies will seek out and open nearby unopened chests. Previously only the human player could open chests; AI heroes would walk past them.
+- **Per-stance seek ranges** — Each stance has a tuned maximum chest-seeking range: Follow (4 tiles), Aggressive (6 tiles), Defensive (3 tiles). Hold stance never moves but will loot chests it happens to be adjacent to.
+- **Defensive tether respected** — Defensive heroes will only path toward chests if doing so keeps them within 2 tiles of their owner, preserving the defensive tether constraint.
+- **Inventory-full guard** — AI will not seek chests when inventory is full (`INVENTORY_MAX_CAPACITY`), avoiding pointless pathfinding.
+- **Two-tick chest interaction** — When not adjacent, AI pathfinds toward the chest (MOVE). Once adjacent (Chebyshev distance 1), AI emits `ActionType.LOOT` targeting the chest tile, which is resolved by the existing `_resolve_loot()` interaction phase.
+
+### Technical Details
+- `tick_loop.py`: Now passes `chest_states` to `run_ai_decisions()`
+- `ai_behavior.py`: `run_ai_decisions()` and `decide_ai_action()` accept and forward `chest_states` to stance dispatch
+- `ai_stances.py`: New utility functions `_find_nearest_unopened_chest()` and `_try_loot_adjacent_chest()`; `_decide_stance_action()` forwards `chest_states` to all four stance handlers
+- `_decide_follow_action()`: Seeks chests when idle and close to owner (Priority 4, after combat/regroup)
+- `_decide_aggressive_stance_action()`: Seeks chests when idle after memory pursuit and ally reinforcement
+- `_decide_defensive_action()`: Seeks chests when idle, respects 2-tile owner tether
+- `_decide_hold_action()`: Loots adjacent chests in the no-enemies early-return path (never moves)
+- Priority order preserved: Potions → Portal → Retreat → Skills → Combat → Regroup → Chest Seeking → Wait
+
+### Files Changed
+- `server/app/services/tick_loop.py` — Pass `chest_states` to AI layer
+- `server/app/core/ai_behavior.py` — Thread `chest_states` through `run_ai_decisions()` → `decide_ai_action()`
+- `server/app/core/ai_stances.py` — Chest-seeking helpers + per-stance chest behavior
+- `server/tests/test_ai_chest_seeking.py` — 26 new tests
+
+### Test Results
+- 3986 tests passing (26 new, 0 regressions)
+
+---
+
+## [v0.1.7m] - 2026-03-17 - AI Door Opening (All Units)
+
+### Changed
+- **All AI can now open doors** — Enemy AI (aggressive, ranged, boss, support) and allied party members all use door-aware A* pathfinding and will open closed doors when they are on the planned path. Previously only hero ally stances (follow/aggressive/defensive) could interact with doors; enemy AI was explicitly blocked from doing so, causing enemies to get stuck behind closed doors in dungeon layouts.
+- **Door-aware pathfinding propagated to AI sub-systems** — `_pursue_memory_target()`, `_reinforce_ally()`, and `_patrol_action()` now accept and forward `door_tiles`, so AI memory pursuit, ally reinforcement, and patrol scouting all path through closed doors at elevated cost (+3 vs +1).
+- **A* still prefers open routes** — The existing weighted cost system (door step = 3, normal step = 1) remains, so AI will always prefer open paths but won't get stuck when a door is the only option.
+- **Multi-tick door crossing preserved** — The existing pattern (tick 1: INTERACT to open door → tick 2: MOVE through) applies identically to enemy AI as it does to hero allies.
+
+### Technical Details
+- `decide_ai_action()`: Removed enemy-exclusion gate; all behaviors now receive `door_tiles`
+- `_decide_aggressive_action()`: Added `door_tiles` param, door-aware `get_next_step_toward()` calls, `_maybe_interact_door()` checks at all movement decision points
+- `_decide_ranged_action()`: Same door-awareness additions
+- `_decide_boss_action()`: Same door-awareness additions (room-leashed pathfinding also door-aware)
+- `_decide_support_behavior()`: Same door-awareness additions
+- `ai_memory.py`: `_pursue_memory_target()` and `_reinforce_ally()` now accept `door_tiles`, use door-aware pathfinding, and check for door interaction
+- `ai_patrol.py`: `_patrol_action()` now accepts `door_tiles`, passes to both `a_star()` and `get_next_step_toward()`, checks for door interaction
+- Lazy imports used in `ai_memory.py` and `ai_patrol.py` to avoid circular dependency with `ai_stances.py`
+- Tests updated: old "enemy cannot open doors" regression tests converted to "enemy can open doors" positive tests
+
+### Files Changed
+- `server/app/core/ai_behavior.py` — Door-aware enemy AI behaviors
+- `server/app/core/ai_memory.py` — Door-aware memory pursuit + ally reinforcement
+- `server/app/core/ai_patrol.py` — Door-aware patrol scouting
+- `server/app/core/ai_stances.py` — Pass `door_tiles` to memory/reinforce helpers
+- `server/tests/test_ai_door_opening.py` — Updated enemy door tests
+- `server/tests/test_door_pathfinding.py` — Updated enemy door tests
+
+### Test Results
+- 3792 tests passing (0 regressions)
+
+---
+
+## [v0.1.7l] - 2026-03-17 - Loot Rarity Rebalance
+
+### Changed
+- **Base rarity weights rebalanced** — Rare items drop ~7% on floor 1 (down from ~12%), making yellow-name items feel special again. Full weight changes:
+  | Rarity | Old Weight | New Weight |
+  |--------|-----------|-----------|
+  | Common | 60.0 | 70.0 |
+  | Magic | 25.0 | 20.0 |
+  | Rare | 12.0 | 7.0 |
+  | Epic | 2.5 | 1.2 |
+  | Unique | 0.5 | 0.3 |
+- **Steeper floor bonus curve** — Deeper floors now feel significantly more rewarding. Floor 1→9 Rare delta increased from +7.8pp to +9.7pp:
+  | Floors | Old Bonus | New Bonus |
+  |--------|----------|----------|
+  | 1–2 | 0.00 | 0.00 |
+  | 3–4 | 0.15 | 0.20 |
+  | 5–6 | 0.35 | 0.50 |
+  | 7–8 | 0.60 | 0.90 |
+  | 9+ | 1.00 | 1.40 |
+- **Common weight reduction formula** — Multiplier changed from `0.3` to `0.4`, making common items fall off faster on deeper floors.
+- **Chest tier mapping fix** — Wooden/Iron chests now use `fodder` tier instead of `mid`, Gold uses `mid`, Obsidian uses `elite`, Boss uses `boss`. Early chests no longer inflate rarity beyond what killing a normal enemy would give.
+
+### Files Changed
+- `server/app/core/item_generator.py` — `_BASE_RARITY_WEIGHTS`, `_FLOOR_BONUS`, common weight formula in `roll_rarity()`
+- `server/app/core/loot.py` — Chest-to-enemy-tier mapping in `generate_chest_loot()`
+- `server/configs/loot_tables.json` — `rarity_config.base_rates` and `rarity_config.floor_bonuses`
+- `docs/Phase Docs/loot-rarity-rebalance-proposal.md` — Design proposal (reference)
+
+---
+
+## [v0.1.7k] - 2026-03-17 - Ambient Darkness Pass (Torch Light Contrast)
+
+### Added
+- **`drawAmbientDarknessPass()`** in `PropLighting.js` — New rendering pass that overlays semi-transparent darkness on all **visible** tiles, then carves out bright pools around light-emitting props. Creates genuine contrast so torches, braziers, and candelabras feel like real illumination rather than faint color washes on an already-bright scene.
+  - Uses a wider carve-out radius (1.3× the glow radius) with quadratic falloff so the light-to-dark transition is smooth and natural.
+  - Darkness alpha is fully removed at light source centers and gradually restored at the falloff edge.
+  - Cached per theme/room configuration — no per-frame recalculation.
+- **Per-theme `ambientDarkness`** config value in `ambient` section of all 11 dungeon themes. Controls the base darkness level (0.0 = no effect, higher = darker). Thematically darker dungeons (Bleeding Catacombs 0.40, Cursed Shrine 0.42, Fungal Grotto 0.40) are gloomier than lighter ones (Forgotten Cellar 0.30, Pale Ossuary 0.30).
+
+### Changed
+- **Light source intensities boosted** — All prop light sources increased 2–3× to pop against the darker ambient:
+  | Prop | Old Intensity → New | Old Radius → New |
+  |------|---------------------|------------------|
+  | torch_sconce | 0.08 → 0.22 | 2.5 → 3.0 |
+  | brazier | 0.10 → 0.28 | 3.0 → 3.5 |
+  | candelabra | 0.09 → 0.24 | 3.0 → 3.5 |
+  | ritual_circle | 0.10 → 0.22 | 3.5 → 4.0 |
+  | mushroom_cluster | 0.07 → 0.16 | 2.0 → 2.5 |
+  | fountain | 0.05 → 0.14 | 1.8 → 2.5 |
+  | altar | 0.04 → 0.12 | 1.5 → 2.0 |
+- **`ArenaRenderer.js`** — Ambient darkness pass inserted into render pipeline after unit rendering, before fog overlay. Only activates for dungeon maps with rooms and an active theme.
+- **`PropLighting.js`** — `clearLightCache()` now also clears the ambient light map cache.
+
+### Per-Theme Ambient Darkness Values
+| Theme | ambientDarkness | Feel |
+|-------|----------------|------|
+| Bleeding Catacombs | 0.40 | Heavy gloom |
+| Ashen Undercroft | 0.35 | Moderate |
+| Drowned Sanctum | 0.38 | Deep underwater murk |
+| Hollowed Cathedral | 0.32 | Slightly lighter (candelabras) |
+| Iron Depths | 0.38 | Industrial dark |
+| Forgotten Cellar | 0.30 | Lighter rustic |
+| Pale Ossuary | 0.30 | Lighter bone-white |
+| Silent Vault | 0.35 | Moderate |
+| Fungal Grotto | 0.40 | Heavy (bioluminescent contrast) |
+| Frozen Crypt | 0.35 | Moderate icy |
+| Cursed Shrine | 0.42 | Heaviest (ritual darkness) |
+
+### Files Changed
+- `client/src/canvas/PropLighting.js` — `drawAmbientDarknessPass()` function + ambient light map cache + boosted LIGHT_SOURCES intensities/radii
+- `client/src/canvas/ArenaRenderer.js` — import + call `drawAmbientDarknessPass()` before fog pass
+- `client/src/canvas/ThemeEngine.js` — `ambientDarkness` added to all 11 built-in theme `ambient` configs
+- `server/configs/themes/*.json` — `ambientDarkness` added to all 11 theme JSON files
+
+---
+
+## [v0.1.7j] - 2026-03-17 - Prop Lighting System (Multi-Tile Glow + Fog Modulation + Particles)
+
+### Added
+- **`PropLighting.js`** — New rendering module that gives light-emitting props (torches, braziers, candelabras, ritual circles, mushroom clusters, fountains, altars) multi-tile radial glow effects. Uses additive blending (`globalCompositeOperation: 'lighter'`) with radial gradients that span 1.5–3.5 tiles from the prop center, creating warm pools of light visible across adjacent tiles.
+  - `collectLightSources()` — Mirrors TileProps.js deterministic placement logic (cellHash, `_resolvePosition`, focal/accent priority, budget) to identify which props land on which tiles. No server changes required.
+  - `drawPropGlowPass()` — Renders the actual glow: additive radial gradients with per-prop color, radius, and intensity. Fire-type props (torch, brazier, candelabra) have randomized flicker via sine-wave offsets. Magic-type props (ritual circle, mushroom cluster) have smooth pulse animation.
+  - `buildFogLightMap()` / `getFogLightMap()` — Returns a `Map<string, number>` of tile-key → fog alpha reduction. Props carve a soft hole in the fog-of-war overlay, making revealed tiles near light sources appear brighter. Uses quadratic falloff, capped at 0.3 alpha reduction per tile.
+  - Light source cache keyed by theme ID + room count to avoid recalculating every frame.
+- **Fog-of-war light modulation** — `ThemeEngine.drawFog()` now accepts a `fogLightMap` parameter. For revealed tiles near light sources, the explored-fog alpha is reduced proportionally, creating visible light pockets that penetrate the fog. Unrevealed and invisible tiles are unaffected.
+- **5 new particle presets** in `ambient.json`:
+  - `prop-candelabra-glow` — Warm yellow-orange flame particles drifting upward
+  - `prop-ritual-pulse` — Ring-shaped accent-colored magic particles
+  - `prop-bioluminescent-spore` — Slow green drifting spore particles for mushroom clusters
+  - `prop-brazier-embers` — Hot fire embers with upward drift
+  - `prop-fountain-mist` — Cool blue mist particles for fountain props
+- **Prop particle attachment** in `ParticleManager.js` — New `updatePropParticles(dungeonRooms, theme)` method follows the established zone emitter pattern to create persistent looping particle emitters at light-emitting prop positions. `PROP_PRESET_MAP` routes each prop type to its particle preset. Emitters are automatically created and destroyed as room data changes.
+
+### Changed
+- **`dungeonRenderer.js`** — Rendering pipeline now includes a glow pass after room overlays and before fog. `drawFog()` signature updated to accept `dungeonRooms` for fog light map construction.
+- **`ArenaRenderer.js`** — `drawFog()` call updated to pass `dungeonRooms` through to the fog renderer.
+- **`ThemeEngine.js`** — `drawFog()` rewritten to support per-tile fog alpha modulation. Parses base explored-fog alpha from the theme tint string, then reduces it for tiles intersected by the fog light map (minimum alpha floor of 0.15).
+- **`ParticleManager.js`** — Added `_propEmitters` Map, `PROP_PRESET_MAP` static, `updatePropParticles()` method, `_cleanupPropEmitters()` safety net in tick loop, and cleanup in `destroy()`.
+- **`Arena.jsx`** — New `useEffect` wires `updatePropParticles()` when `dungeonRooms` changes, following the same pattern as ground zone emitters.
+
+### Light Source Configuration
+| Prop | Radius (tiles) | Intensity | Color | Animation |
+|------|----------------|-----------|-------|-----------|
+| torch_sconce | 2.5 | 0.08 | Warm orange | Fire flicker |
+| brazier | 3.0 | 0.10 | Deep orange | Fire flicker |
+| candelabra | 3.0 | 0.09 | Bright gold | Fire flicker |
+| ritual_circle | 3.5 | 0.10 | Theme accent | Pulse (1.2s) |
+| mushroom_cluster | 2.0 | 0.07 | Theme accent | Pulse (0.8s) |
+| fountain | 1.8 | 0.05 | Cool blue | None |
+| altar | 1.5 | 0.04 | Theme accent | None |
+
+### Files Changed
+- `client/src/canvas/PropLighting.js` — **NEW** (~270 lines) — glow pass rendering, fog light map, light source collection
+- `client/src/canvas/dungeonRenderer.js` — import + glow pass call + drawFog signature update
+- `client/src/canvas/ThemeEngine.js` — `drawFog()` rewritten for light-modulated fog
+- `client/src/canvas/ArenaRenderer.js` — pass dungeonRooms to drawFog
+- `client/public/particle-presets/ambient.json` — 5 new prop particle presets
+- `client/src/canvas/particles/ParticleManager.js` — prop emitter management system
+- `client/src/components/Arena/Arena.jsx` — useEffect wiring for prop particles
+
+### Notes
+- FoV bonus (light sources increasing visible tile radius) is deferred to a future phase.
+- No server changes required — all prop positions are resolved client-side using the existing deterministic placement algorithm.
+- Pre-existing test failure in `TestBloodpact.test_low_hp_bonus_inactive_above_threshold` (unrelated unique item damage test). 3710 other tests passing.
+
+---
+
+## [v0.1.7i] - 2026-03-17 - Room Door System (Chokepoint Separators)
+
+### Added
+- **`door_placer.py`** — New post-decoration pass in the WFC generation pipeline that scans module boundaries and inserts wall separators with 1-tile door gaps at room entrances. Runs between `decorate_rooms()` and `export_to_game_map()`, so it has full knowledge of room roles.
+- **Per-boundary door rolling** — Each module boundary is independently evaluated via seeded PRNG. Some entrances get a wall separator creating a tactical chokepoint, others stay wide open for variety.
+- **Role-aware door chances** — Door probability is context-sensitive:
+  - Spawn rooms: never doored (0%) — avoids frustrating the player at start
+  - Boss rooms: high door chance (70%) — dramatic chokepoint before the boss
+  - Grand interior joins (6+ tile openings): never doored (0%) — preserves multi-module rooms
+  - Narrow openings (2-wide): slightly elevated (55%) — natural door spot
+  - Corridor↔corridor: low chance (15%) — corridors stay open
+  - Standard room entrances: 45% base chance
+- **Per-style `doorChance` tuning** — Each dungeon style now overrides the base door probability:
+  - Balanced: 0.45 (default)
+  - Dense Catacomb: 0.60 (claustrophobic, more chokepoints)
+  - Open Ruins: 0.20 (spacious, fewer barriers)
+  - Boss Rush: 0.55 (tactical gates before encounters)
+  - Treasure Vault: 0.50 (guarded rooms)
+- **Door tiles re-enabled in map export** — `_normalize_tile()` no longer strips `D` tiles to `F`. Door tiles now survive to the exported game map and are collected into the `doors[]` array with `state: "closed"`.
+
+### Changed
+- **`dungeon_generator.py`** — Pipeline now runs `insert_room_doors()` as step 3.5 between decoration and export. Door placement stats included in generation metadata.
+- **`map_exporter.py`** — `_normalize_tile()` updated: `D` tiles are preserved (previously converted to `F` with "doors disabled" comment). Only `E` and `B` markers are normalized to `F`.
+- **`dungeon_styles.py`** — All 5 dungeon styles now include `doorChance` in their `decorator_overrides` dict.
+
+### Notes
+- Door gameplay mechanics (interaction_phase.py `_resolve_doors`) were already fully implemented — closed doors block movement, players toggle via INTERACT. This change provides the doors for it to operate on.
+- Client rendering (dungeonRenderer.js door tile handling, ThemeEngine door drawing, RoomOverlays.js door archway highlights) was already implemented — doors will render immediately with no client changes needed.
+- 3792 tests passing.
+
+---
+
+## [v0.1.7h] - 2026-03-17 - Prop Placement Overhaul (Budget + Focal System)
+
+### Changed
+- **Prop budget system** — Every room archetype now has a `maxProps` cap that limits how many prop slots can activate. Prevents visual clutter by stopping placement once the budget is reached. Budgets tuned per archetype: boss=5, enemy=3, empty=2, shrine=3, library=2, etc.
+- **Focal prop groups** — Boss, prison, cathedral, ritual, torture, and ossuary archetypes now have a `focal` array of mutually exclusive center props. Exactly one is chosen via weighted random (seeded), giving each room instance a unique identity — e.g. a boss room might feature an altar OR a throne OR a ritual circle, never all three. Weights are scaled by theme affinity so thematically inappropriate props are filtered out.
+- **Overlay-prop deduplication** — Removed props from `ARCHETYPE_PROP_SLOTS` that were already drawn by the archetype overlay functions, eliminating visual doubling:
+  - Boss: removed `pillar` at corners (overlay draws corner pillars)
+  - Shrine: removed `altar`, `brazier`, `banner` (overlay draws altar+braziers+banners)
+  - Library: removed `bookshelf` on all walls (overlay draws full wall bookshelves)
+  - Prison: removed `chains` on L/R walls (overlay draws chains+iron bars)
+  - Flooded: removed `puddle` at random_floor/center (overlay draws floor puddles)
+  - Empty: removed `rubble` at corners (overlay draws corner rubble)
+  - Enemy: removed `weapon_rack` at wall_top and `torch_sconce` (overlay draws torches+rack lines)
+  - Armory: removed `weapon_rack` at wall_top (overlay draws weapon pegs there)
+- **Reduced prop chances** — Lowered base chance values across all archetypes. Enemy braziers from 0.7→0.5, loot barrels from 0.4→0.3, empty rubble from 0.5→0.4, graveyard tombstones from 0.8→0.75, etc. Combined with the budget cap, rooms now feel deliberately furnished rather than randomly scattered.
+- **Restructured `ARCHETYPE_PROP_SLOTS` data format** — Changed from flat arrays to `{ maxProps, focal?, accents }` objects. Focal props are always placed at center; accents sorted by position priority (structural first, scatter last) before budget evaluation.
+- **New `_pickFocal()` helper** — Weighted random selection from focal group, filtered by theme affinity. Ensures each room type feels distinct across playthroughs while respecting theme constraints.
+- **Updated `drawRoomProps()` engine** — Now processes focal prop first (claiming 1 budget slot), then iterates accent props in priority order, stopping when `maxProps` is reached. Each slot activation counts as 1 toward budget regardless of how many tiles it covers (corners=4 tiles but 1 budget slot).
+
+### Fixed
+- Boss rooms no longer spawn altar + throne + ritual circle simultaneously (focal group picks exactly one)
+- Shrine rooms no longer double-draw altar/braziers/banners (overlay handles those, props removed)
+- Library rooms no longer draw bookshelf props on walls where the overlay already renders full bookshelves
+- Prison rooms no longer double-draw chains on left/right walls
+- Empty rooms no longer draw rubble at corners on top of the overlay's hand-placed corner rubble
+- Enemy rooms no longer draw torch sconces and weapon racks that overlap with overlay torches and rack lines
+
+### Files Changed
+- `tools/theme-designer/src/engine/tileProps.js` — restructured `ARCHETYPE_PROP_SLOTS` (array→object with maxProps/focal/accents), added `_pickFocal()`, rewrote `drawRoomProps()` with budget system
+- `tools/theme-designer/src/components/ObjectBrowser.jsx` — updated archetype placement iteration to handle new focal/accents data shape
+- `client/src/canvas/TileProps.js` — mirrored all structural changes (budget, focal, drawRoomProps rewrite)
+
+---
+
+## [v0.1.7g] - 2026-03-17 - Room Archetype Expansion (7 New Archetypes)
+
+### Added
+- **7 new room archetypes** for the Dungeon Theme Designer, bringing total from 10 to 17:
+  - **Grand Cathedral** — towering nave with central aisle, rose window motif on top wall, vertical wall streaks for height illusion, accent floor border
+  - **Ritual Chamber** — arcane summoning room with dark ambient wash, central radial glow, floor rune marks, corner darkening, containment ring
+  - **Torture Chamber** — blood-stained floor patches, scratched floor marks, heavy corner vignette, metal fixture brackets on walls
+  - **Burial Ground** — earthy muted wash, disturbed soil patches, faint ground mist gradient, grave row path markers
+  - **Armory** — clean maintained floor, metal wall trim with highlight, organized weapon pegs on walls, warm torchlight glow spots, door-to-center path
+  - **Ossuary** — pale bone-white undertone, horizontal bone-stack texture on side walls, wall alcove recesses, flanking candle warm spots
+  - **Fungal Grotto** — bioluminescent accent wash, radial glow pools, damp wall sheen, organic wall-edge blobs, floating spore dust motes
+- **Prop slot definitions** for armory (weapon_rack, barrel, torch_sconce, chains), ossuary (skull_pile, coffin, candelabra, tombstone, altar), and fungal_grotto (mushroom_cluster, puddle, web, rubble)
+- Cathedral, ritual, torture, and graveyard archetypes already had prop slots defined — now fully registered with labels, descriptions, and overlay draw functions
+
+### Files Changed
+- `tools/theme-designer/src/engine/roomArchetypes.js` — added 7 entries to `ROOM_ARCHETYPES`, 7 overlay draw functions, 7 switch cases in `drawRoomOverlay()`
+- `tools/theme-designer/src/engine/tileProps.js` — added `ARCHETYPE_PROP_SLOTS` entries for armory, ossuary, fungal_grotto
+
+---
+
 ## [v0.1.7f] - 2026-03-16 - Party HP Panel Centering & Instant Population Fix
 
 ### Fixed

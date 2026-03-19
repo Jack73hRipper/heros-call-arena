@@ -31,6 +31,32 @@ from app.models.items import (
     StatBonuses,
 )
 
+# ---------- Phase 21C: Armor Category Affix Weights ----------
+
+# When rolling affixes for armor items, multiply affix weights by these factors
+# based on the armor's category. All affixes can still appear — this biases
+# thematically appropriate stats without restricting.
+ARMOR_CATEGORY_AFFIX_WEIGHTS: dict[str, dict[str, float]] = {
+    "heavy": {
+        # Weighted UP (1.5×)
+        "thorns": 1.5, "max_hp": 1.5, "armor": 1.5, "damage_reduction_pct": 1.5,
+        # Weighted DOWN (0.5×)
+        "dodge_chance": 0.5, "skill_damage_pct": 0.5,
+    },
+    "light": {
+        # Weighted UP (1.5×)
+        "dodge_chance": 1.5, "crit_chance": 1.5, "move_speed": 1.5, "armor_pen": 1.5,
+        # Weighted DOWN (0.5×)
+        "thorns": 0.5, "heal_power_pct": 0.5,
+    },
+    "cloth": {
+        # Weighted UP (1.5×)
+        "skill_damage_pct": 1.5, "cooldown_reduction_pct": 1.5, "heal_power_pct": 1.5, "magic_find_pct": 1.5,
+        # Weighted DOWN (0.5×)
+        "thorns": 0.5, "armor": 0.5,
+    },
+}
+
 # ---------- Config Paths ----------
 
 _configs_dir = Path(__file__).resolve().parent.parent.parent / "configs"
@@ -175,11 +201,25 @@ def _get_eligible_affixes(
     return eligible
 
 
-def _weighted_pick(affixes: list[dict], rng: random.Random) -> dict | None:
-    """Pick one affix from a list using weighted random selection."""
+def _weighted_pick(
+    affixes: list[dict],
+    rng: random.Random,
+    armor_category: str = "",
+) -> dict | None:
+    """Pick one affix from a list using weighted random selection.
+
+    Phase 21C: When armor_category is set, affix weights are multiplied by
+    category-specific factors to bias thematically appropriate stats.
+    """
     if not affixes:
         return None
-    weights = [a.get("weight", 100) for a in affixes]
+    category_weights = ARMOR_CATEGORY_AFFIX_WEIGHTS.get(armor_category, {})
+    weights = []
+    for a in affixes:
+        base_weight = a.get("weight", 100)
+        stat = a.get("stat", "")
+        multiplier = category_weights.get(stat, 1.0)
+        weights.append(base_weight * multiplier)
     return rng.choices(affixes, weights=weights, k=1)[0]
 
 
@@ -189,8 +229,11 @@ def roll_affixes(
     item_level: int,
     rng: random.Random,
     affixes_config: dict | None = None,
+    armor_category: str = "",
 ) -> list[dict]:
     """Roll random affixes for an item based on rarity and slot.
+
+    Phase 21C: armor_category biases affix weights for thematic drops.
 
     Returns a list of affix result dicts:
       [{affix_id, type: "prefix"|"suffix", name, stat, value}, ...]
@@ -212,7 +255,7 @@ def roll_affixes(
     num_prefixes = rng.randint(min_pre, max_pre)
     for _ in range(num_prefixes):
         eligible = _get_eligible_affixes(prefixes_pool, equip_slot, used_ids, used_stats)
-        picked = _weighted_pick(eligible, rng)
+        picked = _weighted_pick(eligible, rng, armor_category)
         if picked is None:
             break
         value = roll_affix_value(picked, item_level, rng)
@@ -230,7 +273,7 @@ def roll_affixes(
     num_suffixes = rng.randint(min_suf, max_suf)
     for _ in range(num_suffixes):
         eligible = _get_eligible_affixes(suffixes_pool, equip_slot, used_ids, used_stats)
-        picked = _weighted_pick(eligible, rng)
+        picked = _weighted_pick(eligible, rng, armor_category)
         if picked is None:
             break
         value = roll_affix_value(picked, item_level, rng)
@@ -263,7 +306,7 @@ def roll_affixes(
             if not eligible:
                 break  # No more affixes available
 
-        picked = _weighted_pick(eligible, rng)
+        picked = _weighted_pick(eligible, rng, armor_category)
         if picked is None:
             break
 
@@ -431,20 +474,20 @@ def _combine_stats(base_stats: StatBonuses, affixes: list[dict]) -> StatBonuses:
 
 # Base drop rates (applied when using roll_rarity for generated items)
 _BASE_RARITY_WEIGHTS: dict[str, float] = {
-    "common":  60.0,
-    "magic":   25.0,
-    "rare":    12.0,
-    "epic":     2.5,
-    "unique":   0.5,
+    "common":  70.0,
+    "magic":   20.0,
+    "rare":     7.0,
+    "epic":     1.2,
+    "unique":   0.3,
 }
 
 # Floor bonus multipliers for rarity chances
 _FLOOR_BONUS: dict[tuple[int, int], float] = {
-    (1, 2):   0.0,
-    (3, 4):   0.15,
-    (5, 6):   0.35,
-    (7, 8):   0.60,
-    (9, 99):  1.00,
+    (1, 2):   0.00,
+    (3, 4):   0.20,
+    (5, 6):   0.50,
+    (7, 8):   0.90,
+    (9, 99):  1.40,
 }
 
 
@@ -488,7 +531,7 @@ def roll_rarity(
     for rarity_name, base_weight in _BASE_RARITY_WEIGHTS.items():
         if rarity_name == "common":
             # Common weight decreases as bonuses increase
-            effective = base_weight * max(0.2, 1.0 - (floor_bonus + tier_bonus) * 0.3)
+            effective = base_weight * max(0.2, 1.0 - (floor_bonus + tier_bonus) * 0.4)
         else:
             # Rarer tiers get boosted
             effective = base_weight * (1.0 + floor_bonus + tier_bonus) * (1.0 + magic_find_bonus)
@@ -562,6 +605,7 @@ def generate_item(
     item_type = raw.get("item_type", "weapon")
     equip_slot = raw.get("equip_slot")
     weapon_category = raw.get("weapon_category", "")  # Phase 16: class-lock category
+    armor_category = raw.get("armor_category", "")    # Phase 21A: armor category
     raw_bonuses = raw.get("stat_bonuses", {})
     base_stats = StatBonuses(**raw_bonuses)
     base_sell_value = raw.get("sell_value", 0)
@@ -595,7 +639,8 @@ def generate_item(
     # Roll affixes (only for equippable items)
     aff_config = affixes_config or load_affixes_config()
     slot_str = equip_slot or item_type  # Use item_type as fallback for slot filtering
-    affixes = roll_affixes(rarity, slot_str, item_level, rng, aff_config)
+    # Phase 21C: Pass armor_category for category-weighted affix selection
+    affixes = roll_affixes(rarity, slot_str, item_level, rng, aff_config, armor_category)
 
     # Combine base stats + affix stats
     final_stats = _combine_stats(base_stats, affixes)
@@ -640,6 +685,7 @@ def generate_item(
         affixes=affixes,
         item_level=item_level,
         weapon_category=weapon_category,
+        armor_category=armor_category,
     )
 
 
@@ -841,6 +887,7 @@ def generate_unique(
     stat_bonuses = StatBonuses(**raw.get("stat_bonuses", {}))
     equip_slot = raw.get("equip_slot")
     weapon_category = raw.get("weapon_category", "")  # Phase 16: class-lock category
+    armor_category = raw.get("armor_category", "")    # Phase 21A: armor category
 
     # Build special effect metadata stored in affixes list for transport
     special_effect = raw.get("special_effect", {})
@@ -874,6 +921,7 @@ def generate_unique(
         affixes=affixes_data,
         item_level=raw.get("item_level", 14),
         weapon_category=weapon_category,
+        armor_category=armor_category,
     )
 
 
@@ -1083,6 +1131,7 @@ def generate_set_piece(
     equip_slot = piece_def.get("equip_slot")
     item_type = piece_def.get("item_type", equip_slot or "weapon")
     weapon_category = piece_def.get("weapon_category", "")  # Phase 16: class-lock category
+    armor_category = piece_def.get("armor_category", "")    # Phase 21A: armor category
 
     # Set item affixes carry set metadata for client display
     affixes_data = [{
@@ -1112,6 +1161,7 @@ def generate_set_piece(
         affixes=affixes_data,
         item_level=piece_def.get("item_level", 14),
         weapon_category=weapon_category,
+        armor_category=armor_category,
     )
 
 

@@ -96,6 +96,9 @@ class PlayerState(BaseModel):
     # Phase 16E: Active set bonuses — recalculated whenever equipment changes
     active_set_bonuses: list[dict] = Field(default_factory=list)
 
+    # Phase 21B: Tracks applied affinity bonus on core stats for clean reversal on recalc
+    armor_affinity_applied: dict = Field(default_factory=dict)
+
     # Phase 18A: Monster rarity system
     monster_rarity: str | None = None          # "normal", "champion", "rare", "super_unique"
     champion_type: str | None = None           # "berserker", "fanatic", "ghostly", "resilient", "possessed"
@@ -119,6 +122,9 @@ class ClassDefinition(BaseModel):
     ranged_range: int = 5
     # Phase 16: Weapon class-lock — which weapon categories this class can equip
     allowed_weapon_categories: list[str] = Field(default_factory=list)
+    # Phase 21B: Armor affinity — preferred armor category and bonus percentage
+    preferred_armor: str = ""  # "heavy", "light", "cloth", or "" for no preference
+    armor_affinity_bonus: float = 0.0  # e.g. 0.15 = +15% base stats on matching armor
     color: str = "#ffffff"
     shape: str = "circle"  # circle, square, triangle, diamond, star
 
@@ -149,6 +155,8 @@ class EnemyDefinition(BaseModel):
     excluded_affixes: list[str] = Field(default_factory=list)
     # Phase 18A: Whether this enemy can be upgraded to champion/rare
     allow_rarity_upgrade: bool = True  # False for training_dummy, bosses handled separately
+    # Phase 28B: Optional equipment loadout config (weapon/armor/accessory/potions)
+    loadout: dict | None = None
 
 
 # ---------- Class Config Loader ----------

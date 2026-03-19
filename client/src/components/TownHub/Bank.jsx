@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
 import { apiFetch } from '../../utils/serverUrl';
 import HeroSprite from './HeroSprite';
-import { formatStatBonuses } from '../../utils/itemUtils';
+import { formatStatBonuses, ARMOR_CATEGORY_LABELS } from '../../utils/itemUtils';
 
 /**
  * Bank — account-wide shared stash for item storage.
@@ -44,6 +44,9 @@ function BankItemTooltip({ item, x, y }) {
         <div className="gear-tooltip-type">
           {rarity} {item.item_type}{item.equip_slot ? ` — ${item.equip_slot}` : ''}
         </div>
+        {item.armor_category && ARMOR_CATEGORY_LABELS[item.armor_category] && (
+          <div className="gear-tooltip-armor-category">[{ARMOR_CATEGORY_LABELS[item.armor_category]}]</div>
+        )}
         {stats.length > 0 && (
           <div className="gear-tooltip-stats">
             {stats.map((s, i) => <span key={i}>{s}</span>)}
@@ -288,6 +291,9 @@ export default function Bank({ availableClasses }) {
                             {item.name || item.item_id}
                           </span>
                           <span className="bank-item-stats">{getStatSummary(item)}</span>
+                          {item.armor_category && ARMOR_CATEGORY_LABELS[item.armor_category] && (
+                            <span className="bank-armor-category">[{ARMOR_CATEGORY_LABELS[item.armor_category]}]</span>
+                          )}
                         </div>
                         <div className="bank-item-action">
                           <button
@@ -341,6 +347,9 @@ export default function Bank({ availableClasses }) {
                             {item.name || item.item_id}
                           </span>
                           <span className="bank-item-stats">{getStatSummary(item)}</span>
+                          {item.armor_category && ARMOR_CATEGORY_LABELS[item.armor_category] && (
+                            <span className="bank-armor-category">[{ARMOR_CATEGORY_LABELS[item.armor_category]}]</span>
+                          )}
                           {item.description && (
                             <span className="bank-item-desc">{item.description}</span>
                           )}

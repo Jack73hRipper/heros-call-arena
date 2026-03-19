@@ -107,6 +107,7 @@ def _resolve_loot(
     chest_opened: list[dict],
     items_picked_up: list[dict],
     floor_number: int = 1,
+    match_id: str = "",
 ) -> None:
     """Phase 1.75 — Chest interaction + ground item pickup."""
     for action in loot_actions:
@@ -226,3 +227,114 @@ def _resolve_loot(
             success=False,
             message=f"{player.username} nothing to loot here",
         ))
+
+    # ------------------------------------------------------------------
+    # Phase 28C: Passive auto-pickup — sweep alive units standing on
+    # ground items.  HERO PARTIES ONLY — dungeon monsters (enemy_type set)
+    # do not auto-pickup ground loot.  Human players + AI hero parties only.
+    # ------------------------------------------------------------------
+    if ground_items:
+        # Build set of player_ids already handled above to avoid double pickup
+        handled_ids = {a.player_id for a in loot_actions}
+        for player in players.values():
+            if not player.is_alive:
+                continue
+            if player.player_id in handled_ids:
+                continue
+            # Skip dungeon monsters — they should not auto-pickup loot
+            if getattr(player, 'enemy_type', None) is not None:
+                continue
+            player_key = f"{player.position.x},{player.position.y}"
+            tile_items = ground_items.get(player_key)
+            if not tile_items:
+                continue
+            if len(player.inventory) >= INVENTORY_MAX_CAPACITY:
+                continue
+
+            picked_up = []
+            remaining = []
+            for item_dict in tile_items:
+                if len(player.inventory) < INVENTORY_MAX_CAPACITY:
+                    player.inventory.append(item_dict)
+                    picked_up.append(item_dict)
+                else:
+                    remaining.append(item_dict)
+
+            if picked_up:
+                if remaining:
+                    ground_items[player_key] = remaining
+                else:
+                    ground_items.pop(player_key, None)
+
+                items_picked_up.append({
+                    "player_id": player.player_id,
+                    "items": picked_up,
+                })
+                results.append(ActionResult(
+                    player_id=player.player_id,
+                    username=player.username,
+                    action_type=ActionType.LOOT,
+                    success=True,
+                    message=f"{player.username} picked up {len(picked_up)} item(s)",
+                ))
+
+                # Phase 28F: Distribute equippable items to best party member
+                trade_recipients = set()
+                is_ai_hero = player.unit_type == "ai" and getattr(player, 'enemy_type', None) is None
+                if is_ai_hero:
+                    from app.core.equipment_manager import find_best_party_recipient
+                    team_members = [
+                        p for p in players.values()
+                        if p.team == player.team and p.is_alive and p.player_id != player.player_id
+                        and getattr(p, 'enemy_type', None) is None
+                    ]
+                    if team_members:
+                        items_to_trade = []
+                        for item in list(picked_up):
+                            if item.get("item_type") == "consumable":
+                                continue
+                            best = find_best_party_recipient(item, team_members + [player])
+                            if best and best.player_id != player.player_id:
+                                items_to_trade.append((item, best))
+                        for item, recipient in items_to_trade:
+                            if item in player.inventory:
+                                player.inventory.remove(item)
+                                recipient.inventory.append(item)
+                                trade_recipients.add(recipient.player_id)
+                                results.append(ActionResult(
+                                    player_id=recipient.player_id,
+                                    username=recipient.username,
+                                    action_type=ActionType.LOOT,
+                                    success=True,
+                                    message=f"{recipient.username} received {item.get('name', 'item')} from {player.username}",
+                                ))
+
+                # Phase 28E: Auto-equip for AI hero party units after pickup/trade
+                if is_ai_hero and match_id:
+                    from app.core.equipment_manager import try_auto_equip
+                    equip_results = try_auto_equip(player, match_id)
+                    for er in equip_results:
+                        equipped_item = er.get("equipped", {})
+                        item_name = equipped_item.get("name", "item") if isinstance(equipped_item, dict) else "item"
+                        results.append(ActionResult(
+                            player_id=player.player_id,
+                            username=player.username,
+                            action_type=ActionType.LOOT,
+                            success=True,
+                            message=f"{player.username} equipped {item_name}",
+                        ))
+                    # Phase 28F: Auto-equip for recipients who received traded items
+                    for rid in trade_recipients:
+                        recipient = players.get(rid)
+                        if recipient and recipient.is_alive:
+                            re_results = try_auto_equip(recipient, match_id)
+                            for er in re_results:
+                                equipped_item = er.get("equipped", {})
+                                item_name = equipped_item.get("name", "item") if isinstance(equipped_item, dict) else "item"
+                                results.append(ActionResult(
+                                    player_id=recipient.player_id,
+                                    username=recipient.username,
+                                    action_type=ActionType.LOOT,
+                                    success=True,
+                                    message=f"{recipient.username} equipped {item_name}",
+                                ))

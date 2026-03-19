@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useGameState, useGameDispatch, useCombatStats } from '../../context/GameStateContext';
 import ItemTooltip from './ItemTooltip';
-import { getItemSetInfo } from '../../utils/itemUtils';
+import { getItemSetInfo, getArmorAffinityInfo, getPartyFitRoster, getBestFitBadge } from '../../utils/itemUtils';
 import { CLASS_SHAPES, CLASS_COLORS } from '../../canvas/renderConstants';
 import HeroSprite from '../TownHub/HeroSprite';
 
@@ -181,6 +181,7 @@ export default function Inventory({ sendAction, onClose }) {
   const [showAdvancedStats, setShowAdvancedStats] = useState(false);
   const [bagSortMode, setBagSortMode] = useState(null); // null | 'type' | 'rarity' | 'name'
   const [confirmDestroyId, setConfirmDestroyId] = useState(null); // item_id awaiting confirm
+  const [compareTargetIndex, setCompareTargetIndex] = useState(null); // Phase 21G-2: null = default hero, 0..N = index into alive partyTabs
   const panelRef = useRef(null);
 
   // Determine which unit's inventory to show
@@ -210,7 +211,39 @@ export default function Inventory({ sendAction, onClose }) {
     }
   }, [onClose, transferItem]);
 
-  // Close on Escape or I key
+  // Party quick-switch tabs — all controllable units (self + party members)
+  // NOTE: Must be declared BEFORE the keydown useEffect that references partyTabs
+  const partyTabs = useMemo(() => {
+    const tabs = [];
+    // Always include self
+    const selfUnit = players?.[playerId];
+    if (selfUnit) {
+      tabs.push({
+        unit_id: playerId,
+        username: selfUnit.username || 'You',
+        class_id: selfUnit.class_id || '',
+        is_alive: selfUnit.is_alive !== false,
+        isSelf: true,
+      });
+    }
+    // Add party members
+    if (partyMembers && partyMembers.length > 0) {
+      for (const pm of partyMembers) {
+        tabs.push({
+          unit_id: pm.unit_id,
+          username: pm.username || players?.[pm.unit_id]?.username || 'Ally',
+          class_id: pm.class_id || players?.[pm.unit_id]?.class_id || '',
+          is_alive: pm.is_alive !== false,
+          isSelf: false,
+        });
+      }
+    }
+    return tabs;
+  }, [playerId, players, partyMembers]);
+
+  const showPartyTabs = partyTabs.length > 1;
+
+  // Close on Escape or I key; Phase 21G-2: Q to cycle comparison target
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -230,10 +263,23 @@ export default function Inventory({ sendAction, onClose }) {
           onClose?.();
         }
       }
+      // Phase 21G-2: Q key cycles comparison target through party members
+      if ((e.key === 'q' || e.key === 'Q') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (!hoveredItem || hoveredItem.source !== 'bag') return;
+        if (!hoveredItem.item?.equip_slot) return;
+        const aliveMembers = partyTabs.filter(m => m.is_alive);
+        if (aliveMembers.length <= 1) return;
+        e.preventDefault();
+        setCompareTargetIndex(prev => {
+          if (prev === null) return 0;
+          return (prev + 1) % aliveMembers.length;
+        });
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose, transferItem]);
+  }, [onClose, transferItem, hoveredItem, partyTabs]);
 
   const handleEquip = useCallback((item) => {
     if (!isAlive || !item?.item_id) return;
@@ -282,10 +328,12 @@ export default function Inventory({ sendAction, onClose }) {
     if (!item) return;
     const rect = e.currentTarget.getBoundingClientRect();
     setHoveredItem({ item, source, slotKey, rect });
+    setCompareTargetIndex(null); // Phase 21G-2: reset cycle on hover change
   };
 
   const handleSlotMouseLeave = () => {
     setHoveredItem(null);
+    setCompareTargetIndex(null); // Phase 21G-2: reset cycle on hover leave
   };
 
   // Build list of transfer targets (alive party members + self if viewing party member)
@@ -353,37 +401,6 @@ export default function Inventory({ sendAction, onClose }) {
     return info;
   }, [viewEquipment]);
 
-  // Party quick-switch tabs — all controllable units (self + party members)
-  const partyTabs = useMemo(() => {
-    const tabs = [];
-    // Always include self
-    const selfUnit = players[playerId];
-    if (selfUnit) {
-      tabs.push({
-        unit_id: playerId,
-        username: selfUnit.username || 'You',
-        class_id: selfUnit.class_id || '',
-        is_alive: selfUnit.is_alive !== false,
-        isSelf: true,
-      });
-    }
-    // Add party members
-    if (partyMembers && partyMembers.length > 0) {
-      for (const pm of partyMembers) {
-        tabs.push({
-          unit_id: pm.unit_id,
-          username: pm.username || players[pm.unit_id]?.username || 'Ally',
-          class_id: pm.class_id || players[pm.unit_id]?.class_id || '',
-          is_alive: pm.is_alive !== false,
-          isSelf: false,
-        });
-      }
-    }
-    return tabs;
-  }, [playerId, players, partyMembers]);
-
-  const showPartyTabs = partyTabs.length > 1;
-
   const handlePartyTabClick = useCallback((unitId) => {
     if (unitId === playerId) {
       // Switch back to self
@@ -393,6 +410,7 @@ export default function Inventory({ sendAction, onClose }) {
     }
     setHoveredItem(null);
     setTransferItem(null);
+    setCompareTargetIndex(null); // Phase 21G-2: reset cycle on tab switch
   }, [playerId, dispatch]);
 
   // ---------- Character Stats ----------
@@ -441,6 +459,31 @@ export default function Inventory({ sendAction, onClose }) {
   const hasAdvancedStats = critChance > 0.05 || critDamage > 1.5 || dodgeChance > 0 ||
     dmgReduction > 0 || hpRegen > 0 || lifeOnHit > 0 || cdrPct > 0 ||
     thorns > 0 || goldFind > 0 || magicFind > 0 || armorPen > 0 || skillDmg > 0;
+
+  // Phase 21G-1: Merged inventories including self player for party fit comparisons
+  const allPartyInventories = useMemo(() => {
+    const merged = { ...partyInventories };
+    if (playerId && !merged[playerId]) {
+      merged[playerId] = { inventory: inventory || [], equipment: equipment || {} };
+    }
+    return merged;
+  }, [partyInventories, playerId, inventory, equipment]);
+
+  // Phase 21G-3: Memoized party fit results for bag item badges
+  const bagFitResults = useMemo(() => {
+    if (!partyTabs || partyTabs.length <= 1) return {};
+    const results = {};
+    const items = sortedBag ? sortedBag.map(e => e?.item) : viewInventory;
+    for (const bagItem of items) {
+      if (!bagItem?.equip_slot) continue;
+      const key = bagItem.instance_id || bagItem.item_id || bagItem.name;
+      if (results[key]) continue;
+      results[key] = getPartyFitRoster(
+        bagItem, partyTabs, allPartyInventories, players, effectiveUnitId
+      );
+    }
+    return results;
+  }, [viewInventory, sortedBag, partyTabs, allPartyInventories, players, effectiveUnitId]);
 
   return (
     <div className="inventory-overlay-backdrop" onClick={handleBackdropClick}>
@@ -676,6 +719,14 @@ export default function Inventory({ sendAction, onClose }) {
                   <span className="set-badge-count">{setInfo.equipped}</span>
                 </span>
               )}
+              {slot === 'armor' && item && (() => {
+                const affinity = getArmorAffinityInfo(item, unitClassId);
+                return affinity && affinity.isMatch ? (
+                  <span className="equip-affinity-badge" title={`${affinity.className} Affinity — +${Math.round(affinity.bonusPct * 100)}% base stats`}>
+                    <span className="affinity-badge-icon">✦</span>
+                  </span>
+                ) : null;
+              })()}
               {item && <span className="equip-slot-unequip-hint">x</span>}
             </div>
           );
@@ -720,6 +771,21 @@ export default function Inventory({ sendAction, onClose }) {
             >
               {item ? (
                 <div className="bag-slot-content">
+                  {/* Phase 21G-3: Best-fit badge overlay */}
+                  {(() => {
+                    const itemKey = item.instance_id || item.item_id || item.name;
+                    const roster = bagFitResults[itemKey];
+                    const badge = getBestFitBadge(roster);
+                    if (!badge) return null;
+                    return (
+                      <span
+                        className={`bag-fit-badge badge-${badge.color}`}
+                        title={badge.tooltip}
+                      >
+                        {badge.label}
+                      </span>
+                    );
+                  })()}
                   <div
                     className="bag-slot-item-info"
                     onClick={() => {
@@ -785,6 +851,7 @@ export default function Inventory({ sendAction, onClose }) {
             <div className="transfer-hero-list">
               {transferTargets.map((target) => {
                 const isFull = target.bagCount >= 10;
+                const affinity = getArmorAffinityInfo(transferItem.item, target.class_id);
                 return (
                   <button
                     key={target.unit_id}
@@ -801,6 +868,9 @@ export default function Inventory({ sendAction, onClose }) {
                       </span>
                       <span className="transfer-hero-class">{target.class_id || 'Hero'}</span>
                     </span>
+                    {affinity && affinity.isMatch && (
+                      <span className="transfer-affinity-badge" title={`${affinity.className} Affinity`}>✦</span>
+                    )}
                     <span className={`transfer-hero-bag ${isFull ? 'bag-full' : ''}`}>
                       {target.bagCount}/10
                     </span>
@@ -817,27 +887,57 @@ export default function Inventory({ sendAction, onClose }) {
       </div>
 
       {/* Item Tooltip — rendered outside the scrollable panel to prevent layout shaking */}
-      {hoveredItem && hoveredItem.item && (
-        <ItemTooltip
-          item={hoveredItem.item}
-          equippedItem={
-            // Phase 16G: Pass the equipped item in the same slot for comparison
-            hoveredItem.source === 'bag' && hoveredItem.item.equip_slot
-              ? viewEquipment[hoveredItem.item.equip_slot] || null
-              : null
-          }
-          hint={
-            isViewingPartyMember
-              ? 'Viewing party member inventory'
-              : hoveredItem.source === 'equipment'
-              ? 'Click to unequip'
-              : hoveredItem.item.item_type === 'consumable'
-              ? 'Click to use'
-              : 'Click to equip'
-          }
-          rect={hoveredItem.rect}
-        />
-      )}
+      {hoveredItem && hoveredItem.item && (() => {
+        // Phase 21G-2: Resolve comparison target (Q-to-Cycle)
+        const aliveMembers = partyTabs.filter(m => m.is_alive);
+        let compareUnitId = effectiveUnitId;
+        let compareClassId = unitClassId;
+        let compareHeroName = null;
+        let compareHeroIndex = null;
+        const compareHeroTotal = aliveMembers.length;
+
+        if (compareTargetIndex !== null && aliveMembers[compareTargetIndex]) {
+          const target = aliveMembers[compareTargetIndex];
+          compareUnitId = target.unit_id;
+          compareClassId = target.class_id;
+          compareHeroName = target.username;
+          compareHeroIndex = compareTargetIndex + 1;
+        }
+
+        const compareEquipment = compareUnitId === effectiveUnitId
+          ? viewEquipment
+          : allPartyInventories[compareUnitId]?.equipment || {};
+
+        return (
+          <ItemTooltip
+            item={hoveredItem.item}
+            equippedItem={
+              // Phase 16G: Pass the equipped item in the same slot for comparison
+              hoveredItem.source === 'bag' && hoveredItem.item.equip_slot
+                ? compareEquipment[hoveredItem.item.equip_slot] || null
+                : null
+            }
+            hint={
+              isViewingPartyMember
+                ? 'Viewing party member inventory'
+                : hoveredItem.source === 'equipment'
+                ? 'Click to unequip'
+                : hoveredItem.item.item_type === 'consumable'
+                ? 'Click to use'
+                : 'Click to equip'
+            }
+            rect={hoveredItem.rect}
+            classId={compareClassId}
+            compareHeroName={compareHeroName}
+            compareHeroIndex={compareHeroIndex}
+            compareHeroTotal={compareHeroTotal}
+            partyMembers={partyTabs}
+            partyInventories={allPartyInventories}
+            players={players}
+            currentUnitId={compareUnitId}
+          />
+        );
+      })()}
     </div>
   );
 }

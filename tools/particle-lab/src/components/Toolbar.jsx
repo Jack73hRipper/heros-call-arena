@@ -5,12 +5,17 @@
 import React from 'react';
 
 export default function Toolbar({
-  onNew, onSave, onDuplicate, onExport, onExportAll, onImport,
+  onNew, onSave, onSaveToGame, saveToGameStatus, gamePresetsLoaded,
+  onDuplicate, onExport, onExportAll, onImport,
   onCopy, onPaste, onUndo, onRedo, onRandomize,
   canUndo, canRedo, presetName, particleCount, fps,
   viewMode, compoundMode, onToggleCompound, compoundLayerCount,
   projectileMode, onToggleProjectile,
 }) {
+  const saveToGameLabel = saveToGameStatus === 'saving' ? '⏳ Saving…'
+    : saveToGameStatus === 'ok' ? '✅ Saved!'
+    : saveToGameStatus === 'error' ? '❌ Failed'
+    : '🎮 Save to Game';
   return (
     <div className="toolbar">
       <div className="toolbar-left">
@@ -39,6 +44,12 @@ export default function Toolbar({
       <div className="toolbar-actions">
         <button onClick={onNew} title="New blank preset">New</button>
         <button onClick={onSave} title="Save preset (Ctrl+S)">Save</button>
+        <button
+          onClick={onSaveToGame}
+          disabled={!gamePresetsLoaded || saveToGameStatus === 'saving'}
+          title="Save preset directly to game files (Ctrl+Shift+S)"
+          className={`btn-save-game${saveToGameStatus === 'ok' ? ' btn-success' : saveToGameStatus === 'error' ? ' btn-error' : ''}`}
+        >{saveToGameLabel}</button>
         <button onClick={onDuplicate} title="Duplicate current preset">Duplicate</button>
         <div className="toolbar-sep" />
         <button onClick={onUndo} disabled={!canUndo} title="Undo (Ctrl+Z)">Undo</button>

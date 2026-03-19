@@ -1,8 +1,11 @@
 import React, { useRef, useLayoutEffect, useState } from 'react';
 import {
-  getRarityColor, getRarityDisplayName,
+  getRarityDisplayName,
   formatStatBonuses, formatItemStatSections,
-  compareItems, getItemSetInfo, formatSetBonuses,
+  compareItemsInline, getComparisonVerdict,
+  getItemSetInfo, formatSetBonuses,
+  getArmorAffinityInfo, getPartyFitRoster,
+  STAT_DISPLAY_GROUPS,
 } from '../../utils/itemUtils';
 
 /**
@@ -34,27 +37,59 @@ const ITEM_ICONS = {
  *   rect          - (optional) DOMRect for fixed positioning
  *   showComparison - (optional) Whether to show stat comparison panel
  */
-export default function ItemTooltip({ item, equippedItem, activeSets, hint, rect, showComparison = true }) {
+export default function ItemTooltip({ item, equippedItem, activeSets, hint, rect, showComparison = true, classId, compareHeroName, compareHeroIndex, compareHeroTotal, partyMembers, partyInventories, players, currentUnitId }) {
   if (!item) return null;
 
   const rarity = item.rarity || 'common';
-  const rarityColor = getRarityColor(rarity);
   const rarityLabel = getRarityDisplayName(rarity);
-  const displayName = item.display_name || item.name;
   const baseTypeName = item.display_name ? `${rarityLabel} ${item.display_name}` : `${rarityLabel} ${item.item_type || ''}`;
-  const hasAffixes = item.affixes && item.affixes.length > 0;
-
-  // Stat sections — base vs affix
-  const { baseLines, affixLines } = hasAffixes
-    ? formatItemStatSections(item)
-    : { baseLines: formatStatBonuses(item.stat_bonuses), affixLines: [] };
 
   // Set info
   const setInfo = getItemSetInfo(item);
   const formattedSets = setInfo && activeSets ? formatSetBonuses(activeSets).filter(s => s.setId === setInfo.setId) : [];
 
-  // Item comparison
-  const comparison = showComparison && equippedItem ? compareItems(item, equippedItem) : [];
+  // Phase 21B: Armor affinity info
+  const affinityInfo = getArmorAffinityInfo(item, classId);
+
+  // Phase 21D: Inline comparison
+  const isComparing = showComparison && !!equippedItem;
+  const inlineComparison = isComparing ? compareItemsInline(item, equippedItem) : null;
+  const verdict = inlineComparison && inlineComparison.length > 0
+    ? getComparisonVerdict(inlineComparison)
+    : null;
+
+  // Group comparison by tier
+  const comparisonGroups = inlineComparison
+    ? STAT_DISPLAY_GROUPS
+        .map(group => ({
+          label: group.label,
+          stats: inlineComparison.filter(s => s.tier === group.label),
+        }))
+        .filter(g => g.stats.length > 0)
+    : [];
+
+  // Phase 21G-1: Party Fit Roster
+  const showPartyFit = partyMembers && partyMembers.length > 1 && !!item.equip_slot;
+  const partyFitRoster = showPartyFit
+    ? getPartyFitRoster(item, partyMembers, partyInventories, players, currentUnitId)
+    : [];
+
+  // Source tracking for color coding (base=gray, affix=blue)
+  const baseStatKeys = new Set(
+    Object.entries(item.base_stats || {})
+      .filter(([, v]) => v && v !== 0)
+      .map(([k]) => k)
+  );
+
+  // Compact mode: merged stat list (no comparison)
+  let compactStatLines = [];
+  if (!isComparing) {
+    compactStatLines = formatStatBonuses(item.stat_bonuses);
+    if (compactStatLines.length === 0) {
+      const sections = formatItemStatSections(item);
+      compactStatLines = [...sections.baseLines, ...sections.affixLines];
+    }
+  }
 
   // Phase 19: Edge-clamped tooltip positioning
   const tooltipRef = useRef(null);
@@ -107,7 +142,7 @@ export default function ItemTooltip({ item, equippedItem, activeSets, hint, rect
   const tooltipStyle = clampedStyle || baseStyle;
 
   return (
-    <div ref={tooltipRef} className={`item-tooltip rarity-${rarity}`} style={tooltipStyle}>
+    <div ref={tooltipRef} className={`item-tooltip rarity-${rarity}${isComparing ? ' has-comparison' : ''}`} style={tooltipStyle}>
       {/* Name */}
       <div className={`item-tooltip-name rarity-${rarity}`}>
         {ITEM_ICONS[item.item_type] || '?'} {item.name}
@@ -123,22 +158,72 @@ export default function ItemTooltip({ item, equippedItem, activeSets, hint, rect
         <div className="item-tooltip-ilvl">Item Level: {item.item_level}</div>
       )}
 
-      {/* Base stats (gray) */}
-      {baseLines.length > 0 && (
-        <div className="item-tooltip-stats item-tooltip-base-stats">
-          {baseLines.map((s, i) => <span key={`b${i}`}>{s}</span>)}
+      {/* Phase 21B: Armor category tag */}
+      {affinityInfo && (
+        <div className="item-tooltip-armor-category">
+          [{affinityInfo.categoryLabel}]
         </div>
       )}
 
-      {/* Separator between base and affix stats */}
-      {baseLines.length > 0 && affixLines.length > 0 && (
-        <div className="item-tooltip-separator" />
+      {/* Phase 21B: Affinity bonus line (gold accent when matched) */}
+      {affinityInfo && affinityInfo.isMatch && (
+        <div className="item-tooltip-affinity-bonus">
+          ✦ {affinityInfo.className} Affinity — +{Math.round(affinityInfo.bonusPct * 100)}% base stats
+        </div>
       )}
 
-      {/* Affix stats (blue) */}
-      {affixLines.length > 0 && (
-        <div className="item-tooltip-stats item-tooltip-affix-stats">
-          {affixLines.map((s, i) => <span key={`a${i}`}>{s}</span>)}
+      {/* Phase 21G-2: Comparison target header (Q-to-Cycle) */}
+      {compareHeroName && (
+        <div className="tooltip-compare-target">
+          Comparing for: <span className="compare-target-name">{compareHeroName}</span>
+          <span className="compare-target-index">({compareHeroIndex}/{compareHeroTotal})</span>
+          <span className="compare-target-hint">[Q]</span>
+        </div>
+      )}
+
+      {/* COMPARISON MODE: Tier-grouped inline comparison */}
+      {comparisonGroups.length > 0 && (
+        <div className="tooltip-inline-comparison">
+          {comparisonGroups.map(group => (
+            <div key={group.label} className="tooltip-stat-group">
+              <div className="tooltip-stat-group-header">{group.label}</div>
+              {group.stats.map(stat => (
+                <div key={stat.key} className={`tooltip-stat-row stat-dir-${stat.direction}`}>
+                  <span className={`tooltip-stat-value ${baseStatKeys.has(stat.key) ? 'stat-source-base' : 'stat-source-affix'}`}>
+                    {stat.direction !== 'lost' ? stat.newValFormatted : ''}
+                  </span>
+                  <span className="tooltip-stat-label">{stat.label}</span>
+                  <span className="tooltip-stat-compare">
+                    {(stat.direction === 'up' || stat.direction === 'down' || stat.direction === 'same') && (
+                      <span className="tooltip-stat-equipped">(eq: {stat.oldValFormatted})</span>
+                    )}
+                    {stat.direction === 'new' && <span className="tooltip-stat-new-tag">(new)</span>}
+                    {stat.direction === 'lost' && <span className="tooltip-stat-lost-tag">(losing {stat.oldValFormatted})</span>}
+                  </span>
+                  <span className={`tooltip-stat-delta delta-${stat.direction}`}>
+                    {stat.direction === 'up' || stat.direction === 'down' || stat.direction === 'lost'
+                      ? stat.deltaFormatted
+                      : stat.direction === 'same' ? '—' : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+          {verdict && (
+            <>
+              <div className="item-tooltip-separator" />
+              <div className={`tooltip-verdict verdict-${verdict.color}`}>
+                {verdict.label}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* COMPACT MODE: Merged stat list */}
+      {!isComparing && compactStatLines.length > 0 && (
+        <div className="item-tooltip-stats item-tooltip-compact-stats">
+          {compactStatLines.map((s, i) => <span key={`c${i}`}>{s}</span>)}
         </div>
       )}
 
@@ -183,23 +268,35 @@ export default function ItemTooltip({ item, equippedItem, activeSets, hint, rect
         </div>
       )}
 
-      {/* Item Comparison */}
-      {comparison.length > 0 && (
-        <div className="item-tooltip-comparison">
-          <div className="item-tooltip-separator" />
-          <div className="item-tooltip-compare-header">vs Equipped</div>
-          {comparison.map((c, i) => (
-            <div key={i} className={`compare-row compare-${c.direction}`}>
-              <span className="compare-label">{c.label}</span>
-              <span className="compare-delta">
-                {c.direction === 'new' && <span className="compare-new">(new) {c.newVal}</span>}
-                {c.direction === 'lost' && <span className="compare-lost">(lost) -{c.oldVal}</span>}
-                {c.direction === 'up' && <span className="compare-up">▲ {c.deltaText}</span>}
-                {c.direction === 'down' && <span className="compare-down">▼ {c.deltaText}</span>}
-                {c.direction === 'same' && <span className="compare-same">—</span>}
-              </span>
-            </div>
-          ))}
+      {/* Phase 21G-1: Party Fit Roster */}
+      {partyFitRoster.length > 0 && (
+        <div className={`tooltip-party-fit${partyFitRoster.length === 1 ? ' single-hero' : ''}`}>
+          <div className="tooltip-party-fit-header">Party Fit</div>
+          {partyFitRoster.map(r => {
+            let verdictClass = 'fit-same';
+            let verdictText = '— same';
+            if (r.fitScore > 0) {
+              verdictClass = 'fit-upgrade';
+              verdictText = r.verdict.label === '▲ empty slot' ? '▲ empty slot' : '▲ upgrade';
+            } else if (r.fitScore < 0) {
+              verdictClass = 'fit-worse';
+              verdictText = '▼ worse';
+            } else if (r.verdict.upgrades > 0 && r.verdict.downgrades > 0) {
+              verdictClass = 'fit-tradeoff';
+              verdictText = '↔ trade-off';
+            }
+            return (
+              <div key={r.unitId} className="party-fit-row">
+                <span className="party-fit-name">{r.displayName}</span>
+                <span className={`party-fit-verdict ${verdictClass}`}>{verdictText}</span>
+                <span className="party-fit-badges">
+                  {r.isBestFit && <span className="party-fit-best" title="Best fit">★ best fit</span>}
+                  {r.isAffinityMatch && <span className="party-fit-affinity" title="Armor affinity match">✦</span>}
+                </span>
+                {r.isCurrentHero && <span className="party-fit-current">(current)</span>}
+              </div>
+            );
+          })}
         </div>
       )}
 

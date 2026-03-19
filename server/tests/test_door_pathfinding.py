@@ -352,15 +352,15 @@ class TestAIHeroAllyDoorOpening:
 # Enemy AI Cannot Open Doors
 # ===================================================================
 
-class TestEnemyAICannotOpenDoors:
-    """Verify enemy AI does NOT receive door_tiles and cannot open doors."""
+class TestAllAICanOpenDoors:
+    """Verify all AI (enemies and allies) can open doors via door_tiles."""
 
-    def test_enemy_does_not_get_door_tiles(self):
-        """decide_ai_action does NOT pass door_tiles to enemy AI behaviors."""
+    def test_enemy_opens_door_when_adjacent(self):
+        """decide_ai_action passes door_tiles to enemy AI — enemy opens door."""
         obstacles = set()
         for x in range(10):
             obstacles.add((x, 5))
-        # Complete wall — enemy cannot path through
+        # Complete wall — enemy cannot path through without door
         enemy = make_player("enemy1", "Goblin", 5, 4,
                             team="b", unit_type="enemy", ai_behavior="aggressive",
                             hero_id=None, ai_stance="follow")
@@ -368,13 +368,14 @@ class TestEnemyAICannotOpenDoors:
                              team="a", unit_type="human")
         all_units = {"enemy1": enemy, "player1": player}
 
-        # Even though we pass door_tiles, enemy AI should not use them
+        # Enemy AI now receives door_tiles and can open doors
         door_tiles = {(5, 5)}
         action = decide_ai_action(enemy, all_units, 10, 10, obstacles,
                                   door_tiles=door_tiles)
-        # Enemy cannot reach player through wall — should not generate INTERACT
-        if action is not None:
-            assert action.action_type != ActionType.INTERACT
+        assert action is not None
+        assert action.action_type == ActionType.INTERACT
+        assert action.target_x == 5
+        assert action.target_y == 5
 
     def test_hero_ally_gets_door_tiles(self):
         """decide_ai_action passes door_tiles to hero ally stance functions."""

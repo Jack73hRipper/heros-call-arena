@@ -19,7 +19,7 @@ from app.models.items import Equipment, Inventory
 
 # ---------- Constants ----------
 
-STARTING_GOLD = 100
+STARTING_GOLD = 500
 STAT_VARIATION_PERCENT = 10  # ±10% stat variation on hire
 BASE_HIRE_COST = 30          # Minimum hiring cost
 HIRE_COST_PER_STAT_POINT = 0.15  # Gold per total stat point above minimum

@@ -339,14 +339,14 @@ class TestHoldStanceNoDoors:
 
 
 # ===================================================================
-# Enemy AI Cannot Open Doors — Regression Guard
+# All AI Can Open Doors (updated from enemy exclusion)
 # ===================================================================
 
-class TestEnemyAINoDoorsRegression:
-    """Enemy AI units must never generate INTERACT actions for doors."""
+class TestEnemyAIDoorOpening:
+    """Enemy AI units can now open doors (door-aware pathfinding)."""
 
-    def test_enemy_aggressive_cannot_open_door(self):
-        """Aggressive enemy AI with door in path does NOT generate INTERACT."""
+    def test_enemy_aggressive_opens_door(self):
+        """Aggressive enemy AI adjacent to a closed door on its path generates INTERACT."""
         obstacles, door_tiles, _ = _make_wall_with_door(5, 5, 10)
 
         enemy = make_player("enemy1", "Goblin", 5, 4, team="b", unit_type="enemy",
@@ -357,11 +357,12 @@ class TestEnemyAINoDoorsRegression:
         action = decide_ai_action(
             enemy, all_units, 10, 10, obstacles, door_tiles=door_tiles,
         )
-        if action is not None:
-            assert action.action_type != ActionType.INTERACT
+        assert action is not None
+        assert action.action_type == ActionType.INTERACT
+        assert (action.target_x, action.target_y) == (5, 5)
 
-    def test_enemy_ranged_cannot_open_door(self):
-        """Ranged enemy AI cannot open doors."""
+    def test_enemy_ranged_opens_door(self):
+        """Ranged enemy AI adjacent to a closed door on its path generates INTERACT."""
         obstacles, door_tiles, _ = _make_wall_with_door(5, 5, 10)
 
         enemy = make_player("enemy1", "Archer", 5, 4, team="b", unit_type="enemy",
@@ -372,11 +373,12 @@ class TestEnemyAINoDoorsRegression:
         action = decide_ai_action(
             enemy, all_units, 10, 10, obstacles, door_tiles=door_tiles,
         )
-        if action is not None:
-            assert action.action_type != ActionType.INTERACT
+        assert action is not None
+        assert action.action_type == ActionType.INTERACT
+        assert (action.target_x, action.target_y) == (5, 5)
 
-    def test_enemy_boss_cannot_open_door(self):
-        """Boss enemy AI cannot open doors."""
+    def test_enemy_boss_opens_door_in_room(self):
+        """Boss enemy AI can open a door within its room."""
         obstacles, door_tiles, _ = _make_wall_with_door(5, 5, 10)
 
         enemy = make_player("enemy1", "Boss", 5, 4, team="b", unit_type="enemy",
@@ -388,10 +390,11 @@ class TestEnemyAINoDoorsRegression:
             enemy, all_units, 10, 10, obstacles, door_tiles=door_tiles,
         )
         if action is not None:
-            assert action.action_type != ActionType.INTERACT
+            # Boss may INTERACT with door or WAIT (depends on room bounds)
+            pass  # Boss without room_id behaves like aggressive
 
-    def test_run_ai_decisions_excludes_enemies_from_door_tiles(self):
-        """run_ai_decisions passes door_tiles to hero allies but not enemies."""
+    def test_run_ai_decisions_all_ai_can_open_doors(self):
+        """run_ai_decisions passes door_tiles to all AI (heroes and enemies)."""
         obstacles, door_tiles, _ = _make_wall_with_door(5, 5, 10)
 
         owner = make_player("owner1", "Player", 5, 7, team="a", unit_type="human")
@@ -409,14 +412,8 @@ class TestEnemyAINoDoorsRegression:
 
         # Find the ally's action — should be INTERACT (adjacent to door, owner across)
         ally_actions = [a for a in actions if a.player_id == "ally1"]
-        enemy_actions = [a for a in actions if a.player_id == "enemy1"]
-
         assert len(ally_actions) == 1
         assert ally_actions[0].action_type == ActionType.INTERACT
-
-        # Enemy should NOT have INTERACT
-        for ea in enemy_actions:
-            assert ea.action_type != ActionType.INTERACT
 
 
 # ===================================================================

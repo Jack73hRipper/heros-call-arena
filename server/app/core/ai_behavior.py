@@ -24,6 +24,7 @@ import random
 
 from app.models.player import PlayerState, Position
 from app.models.actions import PlayerAction, ActionType
+from app.models.items import INVENTORY_MAX_CAPACITY
 from app.core.fov import compute_fov, has_line_of_sight
 from app.core.combat import is_adjacent, is_in_range, get_combat_config
 
@@ -93,6 +94,63 @@ from app.core.ai_stances import (  # noqa: F401
     _decide_defensive_action,
     _decide_hold_action,
 )
+
+
+# ---------------------------------------------------------------------------
+# Phase 28A: Enemy potion thresholds — per-behavior HP% at or below which
+# the enemy AI will drink a health potion (if one is in inventory).
+# ---------------------------------------------------------------------------
+_ENEMY_POTION_THRESHOLDS: dict[str, float] = {
+    "aggressive": 0.30,  # Reckless — fights hard, drinks late
+    "ranged":     0.40,  # Fragile — drinks earlier to survive
+    "boss":       0.25,  # Tough — high HP pool, only drinks when critical
+    "support":    0.50,  # Cautious — drinks early to keep healing allies
+}
+
+
+# ---------------------------------------------------------------------------
+# Phase 28C: Loot scavenging — per-behavior max range for seeking ground loot
+# when idle (no visible enemies). Bosses never scavenge.
+# ---------------------------------------------------------------------------
+_SCAVENGE_MAX_RANGE: dict[str, int] = {
+    "aggressive": 5,
+    "ranged":     3,
+    "support":    3,
+}
+
+
+def _find_nearest_ground_loot(
+    ai: PlayerState,
+    ground_items: dict[str, list] | None,
+    max_range: int = 5,
+) -> tuple[int, int] | None:
+    """Find the nearest tile with ground items within max_range (Manhattan).
+
+    Returns (x, y) of the best loot tile, or None if nothing reachable.
+    Skips search if the AI's inventory is full.
+    """
+    if not ground_items:
+        return None
+    if len(ai.inventory) >= INVENTORY_MAX_CAPACITY:
+        return None
+
+    ai_x, ai_y = ai.position.x, ai.position.y
+    best: tuple[int, int] | None = None
+    best_dist = max_range + 1
+
+    for key, items in ground_items.items():
+        if not items:
+            continue
+        parts = key.split(",")
+        if len(parts) != 2:
+            continue
+        x, y = int(parts[0]), int(parts[1])
+        dist = abs(x - ai_x) + abs(y - ai_y)
+        if dist < best_dist and dist <= max_range:
+            best = (x, y)
+            best_dist = dist
+
+    return best
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +296,8 @@ def decide_ai_action(
     door_tiles: set[tuple[int, int]] | None = None,
     portal: dict | None = None,
     match_state=None,
+    ground_items: dict[str, list] | None = None,
+    chest_states: dict[str, str] | None = None,
 ) -> PlayerAction | None:
     """Decide the next action for an AI unit based on its behavior profile.
 
@@ -295,7 +355,7 @@ def decide_ai_action(
     # the enemy AI behavior profiles (aggressive/ranged/boss).
     # Phase 7D-1: Pass door_tiles so hero allies can path through closed doors.
     if ai.hero_id is not None and ai.ai_stance:
-        return _decide_stance_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, portal=portal, match_state=match_state)
+        return _decide_stance_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, portal=portal, match_state=match_state, chest_states=chest_states)
 
     # ── Cross-room aggro fix: suppress team-shared FOV for leashed enemies ──
     # Enemies inside their assigned room should only detect players via their
@@ -306,21 +366,24 @@ def decide_ai_action(
         if _rb and _is_in_room(ai.position.x, ai.position.y, _rb):
             team_fov = None
 
-    # Enemy AI does NOT receive door_tiles — enemies cannot open doors.
+    # All AI (enemies + allies) receive door_tiles so they can path through
+    # and open closed doors.  A* treats doors as elevated-cost tiles (+3),
+    # so open routes are still preferred.  When adjacent to a closed door on
+    # the planned path, AI emits INTERACT to open it before moving through.
     behavior = ai.ai_behavior or "aggressive"
 
     if behavior == "dummy":
         # Training dummy: stand in place, never move, never attack.
         return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
     elif behavior == "ranged":
-        return _decide_ranged_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves)
+        return _decide_ranged_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, ground_items=ground_items)
     elif behavior == "boss":
-        return _decide_boss_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves)
+        return _decide_boss_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles)
     elif behavior == "support":
-        return _decide_support_behavior(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves)
+        return _decide_support_behavior(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, ground_items=ground_items)
     else:
         # "aggressive" or any unknown behavior → default aggressive
-        return _decide_aggressive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves)
+        return _decide_aggressive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, ground_items=ground_items)
 
 
 # ---------------------------------------------------------------------------
@@ -336,6 +399,8 @@ def _decide_support_behavior(
     team_fov: set[tuple[int, int]] | None = None,
     match_id: str | None = None,
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+    ground_items: dict[str, list] | None = None,
 ) -> PlayerAction | None:
     """Support enemy AI — heal/buff allies first, then ranged attack, stay back.
 
@@ -351,6 +416,13 @@ def _decide_support_behavior(
     Support enemies are priority targets — designed to be killed first.
     They extend fights by healing allies, creating interesting tactical decisions.
     """
+    # Phase 28A: Potion check before any combat decisions — HERO PARTIES ONLY
+    if getattr(ai, 'enemy_type', None) is None:
+        threshold = _ENEMY_POTION_THRESHOLDS.get("support", 0.50)
+        potion_action = _should_use_potion(ai, hp_threshold=threshold)
+        if potion_action:
+            return potion_action
+
     config = get_combat_config()
     ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
     ai_id = ai.player_id
@@ -396,9 +468,12 @@ def _decide_support_behavior(
                 next_step = get_next_step_toward(
                     ai_pos, (center_x, center_y),
                     grid_width, grid_height,
-                    obstacles, occupied,
+                    obstacles, occupied, door_tiles,
                 )
                 if next_step:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
                     return PlayerAction(
                         player_id=ai_id,
                         action_type=ActionType.MOVE,
@@ -413,15 +488,40 @@ def _decide_support_behavior(
             next_step = get_next_step_toward(
                 ai_pos, move_target,
                 grid_width, grid_height,
-                effective_obstacles, occupied,
+                effective_obstacles, occupied, door_tiles,
             )
             if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
                 return PlayerAction(
                     player_id=ai_id,
                     action_type=ActionType.MOVE,
                     target_x=next_step[0],
                     target_y=next_step[1],
                 )
+
+        # Phase 28C: Opportunistic loot seeking when idle & no allies to group with — HERO PARTIES ONLY
+        if getattr(ai, 'enemy_type', None) is None:
+            scavenge_range = _SCAVENGE_MAX_RANGE.get("support", 3)
+            loot_target = _find_nearest_ground_loot(ai, ground_items, max_range=scavenge_range)
+            if loot_target:
+                occupied = _build_occupied_set(all_units, ai_id, pending_moves, ghostly=is_ghostly)
+                next_step = get_next_step_toward(
+                    ai_pos, loot_target,
+                    grid_width, grid_height, effective_obstacles, occupied, door_tiles,
+                )
+                if next_step:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
+                    return PlayerAction(
+                        player_id=ai_id,
+                        action_type=ActionType.MOVE,
+                        target_x=next_step[0],
+                        target_y=next_step[1],
+                    )
+
         return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
 
     _patrol_targets.pop(ai_id, None)
@@ -435,9 +535,12 @@ def _decide_support_behavior(
             occupied = _build_occupied_set(all_units, ai_id, pending_moves, ghostly=is_ghostly)
             next_step = get_next_step_toward(
                 ai_pos, (center_x, center_y),
-                grid_width, grid_height, obstacles, occupied,
+                grid_width, grid_height, obstacles, occupied, door_tiles,
             )
             if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
                 return PlayerAction(
                     player_id=ai_id,
                     action_type=ActionType.MOVE,
@@ -503,9 +606,12 @@ def _decide_support_behavior(
         next_step = get_next_step_toward(
             ai_pos, move_target,
             grid_width, grid_height,
-            effective_obstacles, occupied,
+            effective_obstacles, occupied, door_tiles,
         )
         if next_step:
+            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if door_action:
+                return door_action
             return PlayerAction(
                 player_id=ai_id,
                 action_type=ActionType.MOVE,
@@ -535,6 +641,8 @@ def _decide_aggressive_action(
     team_fov: set[tuple[int, int]] | None = None,
     match_id: str | None = None,
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+    ground_items: dict[str, list] | None = None,
 ) -> PlayerAction | None:
     """Aggressive AI behavior — chase → melee → ranged → patrol.
 
@@ -560,6 +668,13 @@ def _decide_aggressive_action(
 
     Returns a PlayerAction, or None if no action needed.
     """
+    # Phase 28A: Potion check before any combat decisions — HERO PARTIES ONLY
+    # (dungeon monsters have enemy_type set; hero party AI has enemy_type=None)
+    if getattr(ai, 'enemy_type', None) is None:
+        threshold = _ENEMY_POTION_THRESHOLDS.get(ai.ai_behavior or "aggressive", 0.30)
+        potion_action = _should_use_potion(ai, hp_threshold=threshold)
+        if potion_action:
+            return potion_action
 
     config = get_combat_config()
     # Use per-unit ranged_range from class stats, fallback to global config
@@ -567,6 +682,13 @@ def _decide_aggressive_action(
     ai_id = ai.player_id
     # Phase 18D: Ghostly champions can phase through occupied tiles
     is_ghostly = getattr(ai, 'champion_type', None) == "ghostly"
+
+    # Phase 27C fix: PVPVE hero team leaders must be able to path through
+    # their own followers.  Without this, the leader treats compact-spawned
+    # followers as obstacles, causing deadlock in narrow corridors (leader
+    # oscillates while followers WAIT because the leader is nearby).
+    # Dungeon enemies (enemy_type set) keep the default behavior.
+    allow_swap = ai.team if getattr(ai, 'enemy_type', None) is None else None
 
     # Step 1: Compute own FOV, then merge with team shared FOV
     own_fov = compute_fov(
@@ -614,13 +736,16 @@ def _decide_aggressive_action(
             ai_pos = (ai.position.x, ai.position.y)
             if not _is_in_room(ai.position.x, ai.position.y, room_bounds):
                 # Outside room — path back home
-                occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly)
+                occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
                 next_step = get_next_step_toward(
                     ai_pos, (center_x, center_y),
                     grid_width, grid_height,
-                    obstacles, occupied,
+                    obstacles, occupied, door_tiles,
                 )
                 if next_step:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
                     return PlayerAction(
                         player_id=ai.player_id,
                         action_type=ActionType.MOVE,
@@ -631,14 +756,14 @@ def _decide_aggressive_action(
 
         # 4a: Check last-known enemy positions (pursue memory targets)
         memory_action = _pursue_memory_target(
-            ai, all_units, grid_width, grid_height, obstacles, pending_moves
+            ai, all_units, grid_width, grid_height, obstacles, pending_moves, door_tiles,
         )
         if memory_action:
             return memory_action
 
         # 4b: Check if any ally is fighting — go help them
         reinforce_action = _reinforce_ally(
-            ai, all_units, grid_width, grid_height, obstacles, pending_moves
+            ai, all_units, grid_width, grid_height, obstacles, pending_moves, door_tiles,
         )
         if reinforce_action:
             return reinforce_action
@@ -648,8 +773,29 @@ def _decide_aggressive_action(
         if ai.hero_id is not None:
             return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
 
-        # 4d: Fall back to patrol (enemy AI only)
-        return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves)
+        # 4d: Phase 28C — Opportunistic loot seeking when idle — HERO PARTIES ONLY
+        if getattr(ai, 'enemy_type', None) is None:
+            scavenge_range = _SCAVENGE_MAX_RANGE.get(ai.ai_behavior or "aggressive", 5)
+            loot_target = _find_nearest_ground_loot(ai, ground_items, max_range=scavenge_range)
+            if loot_target:
+                occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
+                next_step = get_next_step_toward(
+                    (ai.position.x, ai.position.y), loot_target,
+                    grid_width, grid_height, obstacles, occupied, door_tiles,
+                )
+                if next_step:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
+                    return PlayerAction(
+                        player_id=ai.player_id,
+                        action_type=ActionType.MOVE,
+                        target_x=next_step[0],
+                        target_y=next_step[1],
+                    )
+
+        # 4e: Fall back to patrol (enemy AI only)
+        return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves, door_tiles, allow_team_swap=allow_swap)
 
     # Enemies found — clear patrol waypoint so AI doesn't resume old patrol
     _patrol_targets.pop(ai_id, None)
@@ -660,12 +806,15 @@ def _decide_aggressive_action(
         center_y = (room_bounds["y_min"] + room_bounds["y_max"]) // 2
         chase_dist = abs(ai.position.x - center_x) + abs(ai.position.y - center_y)
         if chase_dist > _MAX_LEASH_CHASE_DISTANCE:
-            occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly)
+            occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
             next_step = get_next_step_toward(
                 (ai.position.x, ai.position.y), (center_x, center_y),
-                grid_width, grid_height, obstacles, occupied,
+                grid_width, grid_height, obstacles, occupied, door_tiles,
             )
             if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
                 return PlayerAction(
                     player_id=ai.player_id,
                     action_type=ActionType.MOVE,
@@ -689,7 +838,7 @@ def _decide_aggressive_action(
 
     # Pre-compute occupied tiles and pathing for movement decisions
     # Phase 7A-3: Use _build_occupied_set with pending_moves prediction
-    occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly)
+    occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
 
     # Chebyshev distance to target (max of dx, dy — matches diagonal movement)
     dist_to_target = max(
@@ -756,9 +905,12 @@ def _decide_aggressive_action(
             (ai.position.x, ai.position.y),
             (target.position.x, target.position.y),
             grid_width, grid_height,
-            effective_obstacles, occupied,
+            effective_obstacles, occupied, door_tiles,
         )
         if next_step:
+            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if door_action:
+                return door_action
             return PlayerAction(
                 player_id=ai.player_id,
                 action_type=ActionType.MOVE,
@@ -812,10 +964,13 @@ def _decide_aggressive_action(
         (ai.position.x, ai.position.y),
         (target.position.x, target.position.y),
         grid_width, grid_height,
-        effective_obstacles, occupied,
+        effective_obstacles, occupied, door_tiles,
     )
 
     if next_step:
+        door_action = _maybe_interact_door(ai, next_step, door_tiles)
+        if door_action:
+            return door_action
         return PlayerAction(
             player_id=ai.player_id,
             action_type=ActionType.MOVE,
@@ -883,6 +1038,8 @@ def _decide_ranged_action(
     team_fov: set[tuple[int, int]] | None = None,
     match_id: str | None = None,
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+    ground_items: dict[str, list] | None = None,
 ) -> PlayerAction | None:
     """Ranged AI behavior — maintain distance, ranged attack, retreat if close.
 
@@ -900,6 +1057,13 @@ def _decide_ranged_action(
     it stays in / returns to its room. When enemies ARE visible, the
     leash is broken and the AI chases freely (prevents room-edge cheese).
     """
+    # Phase 28A: Potion check before any combat decisions — HERO PARTIES ONLY
+    if getattr(ai, 'enemy_type', None) is None:
+        threshold = _ENEMY_POTION_THRESHOLDS.get("ranged", 0.40)
+        potion_action = _should_use_potion(ai, hp_threshold=threshold)
+        if potion_action:
+            return potion_action
+
     config = get_combat_config()
     ranged_range = getattr(ai, 'ranged_range', config.get("ranged_range", 5))
     ai_id = ai.player_id
@@ -944,9 +1108,12 @@ def _decide_ranged_action(
                 next_step = get_next_step_toward(
                     ai_pos, (center_x, center_y),
                     grid_width, grid_height,
-                    obstacles, occupied,
+                    obstacles, occupied, door_tiles,
                 )
                 if next_step:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
                     return PlayerAction(
                         player_id=ai_id,
                         action_type=ActionType.MOVE,
@@ -957,7 +1124,29 @@ def _decide_ranged_action(
         # Party members (hero allies) hold position instead of patrolling
         if ai.hero_id is not None:
             return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
-        return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves)
+
+        # Phase 28C: Opportunistic loot seeking when idle — HERO PARTIES ONLY
+        if getattr(ai, 'enemy_type', None) is None:
+            scavenge_range = _SCAVENGE_MAX_RANGE.get("ranged", 3)
+            loot_target = _find_nearest_ground_loot(ai, ground_items, max_range=scavenge_range)
+            if loot_target:
+                occupied = _build_occupied_set(all_units, ai_id, pending_moves, ghostly=is_ghostly)
+                next_step = get_next_step_toward(
+                    ai_pos, loot_target,
+                    grid_width, grid_height, obstacles, occupied, door_tiles,
+                )
+                if next_step:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
+                    return PlayerAction(
+                        player_id=ai_id,
+                        action_type=ActionType.MOVE,
+                        target_x=next_step[0],
+                        target_y=next_step[1],
+                    )
+
+        return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves, door_tiles)
 
     _patrol_targets.pop(ai_id, None)
 
@@ -970,9 +1159,12 @@ def _decide_ranged_action(
             occupied = _build_occupied_set(all_units, ai_id, pending_moves, ghostly=is_ghostly)
             next_step = get_next_step_toward(
                 ai_pos, (center_x, center_y),
-                grid_width, grid_height, obstacles, occupied,
+                grid_width, grid_height, obstacles, occupied, door_tiles,
             )
             if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
                 return PlayerAction(
                     player_id=ai_id,
                     action_type=ActionType.MOVE,
@@ -1051,9 +1243,12 @@ def _decide_ranged_action(
             ai_pos,
             (target.position.x, target.position.y),
             grid_width, grid_height,
-            effective_obstacles, occupied,
+            effective_obstacles, occupied, door_tiles,
         )
         if next_step:
+            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if door_action:
+                return door_action
             return PlayerAction(
                 player_id=ai_id,
                 action_type=ActionType.MOVE,
@@ -1136,6 +1331,7 @@ def _decide_boss_action(
     team_fov: set[tuple[int, int]] | None = None,
     match_id: str | None = None,
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
 ) -> PlayerAction | None:
     """Boss AI behavior — guard room, attack intruders, never leave room.
 
@@ -1151,6 +1347,13 @@ def _decide_boss_action(
       - Melee-only (ranged_range=1 typically), but will use ranged if configured
       - Won't pursue outside room bounds — returns to center when idle
     """
+    # Phase 28A: Potion check before any combat decisions — HERO PARTIES ONLY
+    if getattr(ai, 'enemy_type', None) is None:
+        threshold = _ENEMY_POTION_THRESHOLDS.get("boss", 0.25)
+        potion_action = _should_use_potion(ai, hp_threshold=threshold)
+        if potion_action:
+            return potion_action
+
     ai_id = ai.player_id
     ai_pos = (ai.position.x, ai.position.y)
     # Phase 18D: Ghostly champions can phase through occupied tiles
@@ -1201,9 +1404,12 @@ def _decide_boss_action(
                 next_step = get_next_step_toward(
                     ai_pos, (center_x, center_y),
                     grid_width, grid_height,
-                    effective_obstacles, occupied,
+                    effective_obstacles, occupied, door_tiles,
                 )
                 if next_step:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
                     return PlayerAction(
                         player_id=ai_id,
                         action_type=ActionType.MOVE,
@@ -1257,9 +1463,12 @@ def _decide_boss_action(
         ai_pos,
         (target.position.x, target.position.y),
         grid_width, grid_height,
-        effective_obstacles, occupied,
+        effective_obstacles, occupied, door_tiles,
     )
     if next_step:
+        door_action = _maybe_interact_door(ai, next_step, door_tiles)
+        if door_action:
+            return door_action
         return PlayerAction(
             player_id=ai_id,
             action_type=ActionType.MOVE,
@@ -1287,6 +1496,8 @@ def run_ai_decisions(
     door_tiles: set[tuple[int, int]] | None = None,
     portal: dict | None = None,
     match_state=None,
+    ground_items: dict[str, list] | None = None,
+    chest_states: dict[str, str] | None = None,
 ) -> list[PlayerAction]:
     """Run AI decision logic for all AI units and return their actions.
 
@@ -1347,6 +1558,8 @@ def run_ai_decisions(
             door_tiles=door_tiles,
             portal=portal,
             match_state=match_state,
+            ground_items=ground_items,
+            chest_states=chest_states,
         )
         if action:
             actions.append(action)

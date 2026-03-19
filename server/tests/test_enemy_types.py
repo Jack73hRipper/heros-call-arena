@@ -282,8 +282,8 @@ class TestDungeonEnemySpawning:
         for d in demons:
             assert d.ai_behavior == "aggressive"
             assert d.room_id == "enemy_room_1"
-            assert d.hp == 240
-            assert d.attack_damage == 18
+            assert d.hp >= 240  # Phase 28B: equipment may add bonus HP
+            assert d.attack_damage >= 18  # Phase 28B: weapon adds bonus damage
             assert d.team == "b"
 
     def test_skeleton_enemies_in_skeleton_hall(self, dungeon_match):
@@ -293,8 +293,8 @@ class TestDungeonEnemySpawning:
         for s in skeletons:
             assert s.ai_behavior == "ranged"
             assert s.room_id == "enemy_room_2"
-            assert s.hp == 125
-            assert s.ranged_damage == 14
+            assert s.hp >= 125  # Phase 28B: equipment may add bonus HP
+            assert s.ranged_damage >= 14  # Phase 28B: weapon adds bonus damage
 
     def test_boss_in_boss_room(self, dungeon_match):
         all_players = get_match_players(dungeon_match)

@@ -81,7 +81,9 @@ export const THEMES = {
     propAffinities: {
       pillar: 0.6, rubble: 0.4, brazier: 0.8, coffin: 1.0,
       bookshelf: 0.0, altar: 0.7, puddle: 0.0, barrel: 0.2,
-      chains: 0.8, banner: 0.3,
+      chains: 0.8, banner: 0.3,      statue: 0.5, throne: 0.2, cage: 0.6, weapon_rack: 0.3,
+      torch_sconce: 0.7, skull_pile: 0.9, mushroom_cluster: 0.0, web: 0.5,
+      fountain: 0.2, candelabra: 0.3, ritual_circle: 0.3, iron_maiden: 0.4, tombstone: 0.8,
     },
   },
 
@@ -152,7 +154,9 @@ export const THEMES = {
     propAffinities: {
       pillar: 0.3, rubble: 0.6, brazier: 0.8, coffin: 0.0,
       bookshelf: 0.0, altar: 0.4, puddle: 0.0, barrel: 0.6,
-      chains: 0.2, banner: 0.2,
+      chains: 0.2, banner: 0.2,      statue: 0.2, throne: 0.1, cage: 0.3, weapon_rack: 0.5,
+      torch_sconce: 0.9, skull_pile: 0.3, mushroom_cluster: 0.0, web: 0.3,
+      fountain: 0.1, candelabra: 0.2, ritual_circle: 0.1, iron_maiden: 0.2, tombstone: 0.1,
     },
   },
 
@@ -224,7 +228,9 @@ export const THEMES = {
     propAffinities: {
       pillar: 0.7, rubble: 0.3, brazier: 0.4, coffin: 0.0,
       bookshelf: 0.0, altar: 0.5, puddle: 1.0, barrel: 0.1,
-      chains: 0.6, banner: 0.1,
+      chains: 0.6, banner: 0.1,      statue: 0.6, throne: 0.1, cage: 0.2, weapon_rack: 0.0,
+      torch_sconce: 0.3, skull_pile: 0.1, mushroom_cluster: 0.9, web: 0.0,
+      fountain: 0.8, candelabra: 0.3, ritual_circle: 0.2, iron_maiden: 0.0, tombstone: 0.2,
     },
   },
 
@@ -297,7 +303,9 @@ export const THEMES = {
     propAffinities: {
       pillar: 0.5, rubble: 0.3, brazier: 0.5, coffin: 0.2,
       bookshelf: 0.8, altar: 0.8, puddle: 0.1, barrel: 0.1,
-      chains: 0.2, banner: 1.0,
+      chains: 0.2, banner: 1.0,      statue: 1.0, throne: 0.7, cage: 0.1, weapon_rack: 0.2,
+      torch_sconce: 0.6, skull_pile: 0.2, mushroom_cluster: 0.0, web: 0.4,
+      fountain: 0.7, candelabra: 0.9, ritual_circle: 0.3, iron_maiden: 0.0, tombstone: 0.4,
     },
   },
 
@@ -369,7 +377,9 @@ export const THEMES = {
     propAffinities: {
       pillar: 0.7, rubble: 0.3, brazier: 0.5, coffin: 0.1,
       bookshelf: 0.1, altar: 0.3, puddle: 0.2, barrel: 0.7,
-      chains: 0.9, banner: 0.2,
+      chains: 0.9, banner: 0.2,      statue: 0.2, throne: 0.1, cage: 0.9, weapon_rack: 0.8,
+      torch_sconce: 0.8, skull_pile: 0.4, mushroom_cluster: 0.0, web: 0.2,
+      fountain: 0.1, candelabra: 0.2, ritual_circle: 0.1, iron_maiden: 0.9, tombstone: 0.2,
     },
   },
 
@@ -427,7 +437,9 @@ export const THEMES = {
     propAffinities: {
       pillar: 0.4, rubble: 0.7, brazier: 0.7, coffin: 0.0,
       bookshelf: 0.0, altar: 0.3, puddle: 0.1, barrel: 0.9,
-      chains: 0.3, banner: 0.1,
+      chains: 0.3, banner: 0.1,      statue: 0.1, throne: 0.0, cage: 0.2, weapon_rack: 0.3,
+      torch_sconce: 0.8, skull_pile: 0.1, mushroom_cluster: 0.2, web: 0.8,
+      fountain: 0.1, candelabra: 0.1, ritual_circle: 0.0, iron_maiden: 0.1, tombstone: 0.1,
     },
   },
 
@@ -487,7 +499,9 @@ export const THEMES = {
     propAffinities: {
       pillar: 0.6, rubble: 0.2, brazier: 0.4, coffin: 0.9,
       bookshelf: 0.1, altar: 0.8, puddle: 0.1, barrel: 0.2,
-      chains: 0.5, banner: 0.3,
+      chains: 0.5, banner: 0.3,      statue: 0.8, throne: 0.4, cage: 0.3, weapon_rack: 0.1,
+      torch_sconce: 0.5, skull_pile: 1.0, mushroom_cluster: 0.0, web: 0.3,
+      fountain: 0.3, candelabra: 0.4, ritual_circle: 0.2, iron_maiden: 0.3, tombstone: 0.9,
     },
   },
 
@@ -549,6 +563,9 @@ export const THEMES = {
       pillar: 0.8, rubble: 0.2, brazier: 0.3, coffin: 0.1,
       bookshelf: 0.9, altar: 0.5, puddle: 0.0, barrel: 0.3,
       chains: 0.2, banner: 0.7,
+      statue: 0.7, throne: 0.3, cage: 0.1, weapon_rack: 0.2,
+      torch_sconce: 0.4, skull_pile: 0.1, mushroom_cluster: 0.0, web: 0.5,
+      fountain: 0.5, candelabra: 0.7, ritual_circle: 0.1, iron_maiden: 0.0, tombstone: 0.1,
     },
   },
 
@@ -601,6 +618,9 @@ export const THEMES = {
       pillar: 0.4, rubble: 0.5, brazier: 0.3, coffin: 0.0,
       bookshelf: 0.0, altar: 0.4, puddle: 0.8, barrel: 0.3,
       chains: 0.2, banner: 0.0,
+      statue: 0.3, throne: 0.0, cage: 0.1, weapon_rack: 0.0,
+      torch_sconce: 0.2, skull_pile: 0.1, mushroom_cluster: 1.0, web: 0.1,
+      fountain: 0.4, candelabra: 0.0, ritual_circle: 0.2, iron_maiden: 0.0, tombstone: 0.1,
     },
   },
 
@@ -653,6 +673,9 @@ export const THEMES = {
       pillar: 0.7, rubble: 0.4, brazier: 0.2, coffin: 0.3,
       bookshelf: 0.0, altar: 0.5, puddle: 0.0, barrel: 0.2,
       chains: 0.6, banner: 0.3,
+      statue: 0.6, throne: 0.3, cage: 0.4, weapon_rack: 0.3,
+      torch_sconce: 0.6, skull_pile: 0.5, mushroom_cluster: 0.0, web: 0.2,
+      fountain: 0.3, candelabra: 0.4, ritual_circle: 0.2, iron_maiden: 0.3, tombstone: 0.7,
     },
   },
 
@@ -708,6 +731,9 @@ export const THEMES = {
       pillar: 0.5, rubble: 0.3, brazier: 0.8, coffin: 0.4,
       bookshelf: 0.2, altar: 1.0, puddle: 0.0, barrel: 0.1,
       chains: 0.7, banner: 0.9,
+      statue: 0.8, throne: 0.9, cage: 0.5, weapon_rack: 0.4,
+      torch_sconce: 0.7, skull_pile: 0.8, mushroom_cluster: 0.0, web: 0.2,
+      fountain: 0.3, candelabra: 0.7, ritual_circle: 0.9, iron_maiden: 0.5, tombstone: 0.6,
     },
   },
 };

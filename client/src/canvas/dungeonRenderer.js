@@ -17,6 +17,7 @@ import { themeEngine } from './ThemeEngine.js';
 import { parseChestState } from '../utils/chestUtils.js';
 import { drawChestIcon } from './chestRenderer.js';
 import { drawRoomOverlay } from './RoomOverlays.js';
+import { drawPropGlowPass, getFogLightMap } from './PropLighting.js';
 
 /**
  * Draw the full dungeon tile grid using the tiles array and tile_legend.
@@ -251,6 +252,9 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
         });
       }
     }
+
+    // ── Prop lighting: Multi-tile glow pass (additive, after props, before fog) ──
+    drawPropGlowPass(ctx, dungeonRooms, themeEngine.theme, offsetX, offsetY);
   }
 }
 
@@ -263,12 +267,17 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
  *
  * For arena maps (no revealedTiles), all non-visible tiles get the same dim fog.
  */
-export function drawFog(ctx, gridWidth, gridHeight, visibleTiles, offsetX = 0, offsetY = 0, revealedTiles = null) {
+export function drawFog(ctx, gridWidth, gridHeight, visibleTiles, offsetX = 0, offsetY = 0, revealedTiles = null, dungeonRooms = []) {
   if (!visibleTiles) return; // No FOV data = show everything
+
+  // Build fog light modulation map (cached) for light-near-prop brightening
+  const fogLightMap = (themeEngine.isReady() && dungeonRooms.length > 0)
+    ? getFogLightMap(dungeonRooms, themeEngine.theme)
+    : null;
 
   // Use theme fog colors when available
   if (themeEngine.isReady()) {
-    themeEngine.drawFog(ctx, gridWidth, gridHeight, visibleTiles, offsetX, offsetY, revealedTiles);
+    themeEngine.drawFog(ctx, gridWidth, gridHeight, visibleTiles, offsetX, offsetY, revealedTiles, fogLightMap);
     return;
   }
 

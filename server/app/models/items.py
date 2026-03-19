@@ -42,6 +42,13 @@ class ConsumableType(str, Enum):
     BUFF_DAMAGE = "buff_damage"
 
 
+# Phase 21A — Armor category system
+class ArmorCategory(str, Enum):
+    HEAVY = "heavy"
+    LIGHT = "light"
+    CLOTH = "cloth"
+
+
 # ---------- Sub-models ----------
 
 class StatBonuses(BaseModel):
@@ -110,6 +117,8 @@ class Item(BaseModel):
     item_level: int = 1                # Determines affix roll ranges
     # Phase 16 — Weapon class-lock system
     weapon_category: str = ""          # "melee", "ranged", "caster", "hybrid", or "" for non-weapons
+    # Phase 21A — Armor category system
+    armor_category: str = ""           # "heavy", "light", "cloth", or "" for non-armor items
 
 
 # ---------- Inventory ----------

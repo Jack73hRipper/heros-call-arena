@@ -66,6 +66,9 @@ _controlled_hero_map: dict[str, dict[str, str]] = {}
 # Wave spawner state: match_id -> {current_wave, total_waves, wave_config, spawning_active}
 _wave_state: dict[str, dict] = {}
 
+# Dev mode: match_id -> set of player_ids with dev mode enabled (skips FOV filtering)
+_dev_mode_players: dict[str, set[str]] = {}
+
 MAX_QUEUE_SIZE = 10
 
 
@@ -315,6 +318,30 @@ def _spawn_ai_units(match_id: str) -> None:
     # Track how many of each class name are used so duplicates get numbered
     class_name_counts: dict[str, int] = {}
 
+    # Pre-select unique classes for ally slots (no duplicates within the team)
+    ally_classes: list[str] = []
+    if all_class_ids:
+        # Lock in any manually-specified classes first
+        specified: list[str] = []
+        random_slots: list[int] = []
+        for i in range(num_allies):
+            if i < len(config.ai_ally_classes) and config.ai_ally_classes[i] and config.ai_ally_classes[i] in all_class_ids:
+                specified.append(config.ai_ally_classes[i])
+            else:
+                specified.append("")
+                random_slots.append(i)
+        # Build pool excluding already-specified classes
+        used = {c for c in specified if c}
+        pool = [c for c in all_class_ids if c not in used]
+        random.shuffle(pool)
+        for idx in random_slots:
+            if pool:
+                specified[idx] = pool.pop()
+            else:
+                # More slots than classes — fallback to full pool (shouldn't happen with 11 classes / 5 max)
+                specified[idx] = random.choice(all_class_ids)
+        ally_classes = specified
+
     # Spawn AI allies (team A)
     for i in range(num_allies):
         ai_id = f"ai-{str(uuid.uuid4())[:6]}"
@@ -335,13 +362,19 @@ def _spawn_ai_units(match_id: str) -> None:
         ai_unit.hero_id = f"generic-{ai_id}"
         ai_unit.ai_stance = "follow"
 
-        # Use specified class if available, otherwise random
-        if all_class_ids:
-            if i < len(config.ai_ally_classes) and config.ai_ally_classes[i] and config.ai_ally_classes[i] in all_class_ids:
-                ai_class = config.ai_ally_classes[i]
-            else:
-                ai_class = random.choice(all_class_ids)
+        # Assign pre-selected unique class
+        if ally_classes:
+            ai_class = ally_classes[i]
             apply_class_stats(ai_unit, ai_class)
+            # Phase 28E: Give AI allies class-appropriate equipment
+            eq, inv = generate_hero_loadout(
+                class_id=ai_class,
+                class_def=all_classes.get(ai_class),
+                floor_number=1,
+                match_tier="mid",
+            )
+            if eq or inv:
+                _apply_loadout_to_unit(ai_unit, eq, inv)
             # Name AI after its class (e.g. "Crusader", "Mage 2")
             cls_name = all_classes[ai_class].name if ai_class in all_classes else ai_class
             class_name_counts[cls_name] = class_name_counts.get(cls_name, 0) + 1
@@ -354,6 +387,27 @@ def _spawn_ai_units(match_id: str) -> None:
         match.ai_ids.append(ai_id)
         match.player_ids.append(ai_id)
         match.team_a.append(ai_id)
+
+    # Pre-select unique classes for opponent slots (no duplicates within the team)
+    opponent_classes: list[str] = []
+    if all_class_ids:
+        specified_opp: list[str] = []
+        random_slots_opp: list[int] = []
+        for i in range(num_opponents):
+            if i < len(config.ai_opponent_classes) and config.ai_opponent_classes[i] and config.ai_opponent_classes[i] in all_class_ids:
+                specified_opp.append(config.ai_opponent_classes[i])
+            else:
+                specified_opp.append("")
+                random_slots_opp.append(i)
+        used_opp = {c for c in specified_opp if c}
+        pool_opp = [c for c in all_class_ids if c not in used_opp]
+        random.shuffle(pool_opp)
+        for idx in random_slots_opp:
+            if pool_opp:
+                specified_opp[idx] = pool_opp.pop()
+            else:
+                specified_opp[idx] = random.choice(all_class_ids)
+        opponent_classes = specified_opp
 
     # Spawn AI opponents (team B)
     offset = human_count + num_allies
@@ -371,13 +425,19 @@ def _spawn_ai_units(match_id: str) -> None:
             is_ready=True,  # AI are always ready
         )
 
-        # Use specified class if available, otherwise random
-        if all_class_ids:
-            if i < len(config.ai_opponent_classes) and config.ai_opponent_classes[i] and config.ai_opponent_classes[i] in all_class_ids:
-                ai_class = config.ai_opponent_classes[i]
-            else:
-                ai_class = random.choice(all_class_ids)
+        # Assign pre-selected unique class
+        if opponent_classes:
+            ai_class = opponent_classes[i]
             apply_class_stats(ai_unit, ai_class)
+            # Phase 28E: Give AI opponents class-appropriate equipment
+            eq, inv = generate_hero_loadout(
+                class_id=ai_class,
+                class_def=all_classes.get(ai_class),
+                floor_number=1,
+                match_tier="mid",
+            )
+            if eq or inv:
+                _apply_loadout_to_unit(ai_unit, eq, inv)
             # Name AI after its class (e.g. "Crusader", "Mage 2")
             cls_name = all_classes[ai_class].name if ai_class in all_classes else ai_class
             class_name_counts[cls_name] = class_name_counts.get(cls_name, 0) + 1
@@ -545,6 +605,7 @@ def remove_match(match_id: str) -> None:
     _combat_stats.pop(match_id, None)
     _match_timeline.pop(match_id, None)
     _wave_state.pop(match_id, None)
+    _dev_mode_players.pop(match_id, None)
     clear_room_bounds(match_id)  # Phase 4C: clean up AI room bounds
 
     # Phase 12-5: clean up runtime-generated dungeon map
@@ -1137,6 +1198,22 @@ def get_team_fov(match_id: str, team_member_ids: list[str]) -> set[tuple[int, in
     return combined
 
 
+def set_dev_mode(match_id: str, player_id: str, enabled: bool) -> None:
+    """Enable or disable dev mode for a player (skips FOV filtering)."""
+    if enabled:
+        if match_id not in _dev_mode_players:
+            _dev_mode_players[match_id] = set()
+        _dev_mode_players[match_id].add(player_id)
+    else:
+        if match_id in _dev_mode_players:
+            _dev_mode_players[match_id].discard(player_id)
+
+
+def is_dev_mode(match_id: str, player_id: str) -> bool:
+    """Check if a player has dev mode enabled."""
+    return player_id in _dev_mode_players.get(match_id, set())
+
+
 def get_match_teams(match_id: str) -> tuple[list[str], list[str], list[str], list[str]]:
     """Return (team_a, team_b, team_c, team_d) ID lists for a match."""
     match = _active_matches.get(match_id)
@@ -1534,10 +1611,15 @@ def _spawn_pvpve_ai_teams(match_id: str) -> None:
         logger.info("PVPVE match %s: spawning AI team %s with %d units",
                     match_id, team_label, team_size)
 
+        # Pre-select unique classes for this PVPVE team (no duplicates within a team)
+        team_pool = list(all_class_ids)
+        random.shuffle(team_pool)
+        team_class_picks = team_pool[:team_size]
+
         for i in range(team_size):
             ai_id = f"pvpve-ai-{team_key}-{str(uuid.uuid4())[:6]}"
 
-            ai_class = random.choice(all_class_ids)
+            ai_class = team_class_picks[i] if i < len(team_class_picks) else random.choice(all_class_ids)
             cls_name = all_classes[ai_class].name if ai_class in all_classes else ai_class
             class_name_counts[cls_name] = class_name_counts.get(cls_name, 0) + 1
             if class_name_counts[cls_name] == 1:
@@ -2489,6 +2571,266 @@ def advance_floor(match_id: str) -> dict | None:
     }
 
 
+# ---------- Phase 28B: Enemy Spawn Loadouts ----------
+
+# Rarity tier names in ascending order for rarity offset clamping
+_RARITY_TIERS = ["common", "magic", "rare", "epic"]
+
+# Rarity bonus by monster rarity tier
+_MONSTER_RARITY_BONUS: dict[str, int] = {
+    "normal": 0,
+    "champion": 1,
+    "rare": 2,
+}
+
+
+def generate_enemy_loadout(
+    enemy_def,
+    floor_number: int = 1,
+    monster_rarity: str | None = None,
+    rng: random.Random | None = None,
+) -> tuple[dict, list]:
+    """Generate equipment dict and inventory list for an enemy.
+
+    Args:
+        enemy_def: EnemyDefinition with optional loadout config.
+        floor_number: Dungeon floor (scales item_level and rarity).
+        monster_rarity: champion/rare → boosts item rarity tier.
+        rng: Optional seeded RNG for deterministic generation.
+
+    Returns:
+        (equipment_dict, inventory_list) ready to assign to PlayerState.
+    """
+    from app.core.item_generator import generate_item, roll_rarity
+    from app.core.loot import load_items_config
+
+    loadout_cfg = getattr(enemy_def, "loadout", None)
+    if not loadout_cfg:
+        return {}, []
+
+    if rng is None:
+        rng = random.Random()
+
+    items_config = load_items_config()
+    equipment: dict = {}
+    inventory: list = []
+
+    rarity_bonus = _MONSTER_RARITY_BONUS.get(monster_rarity or "normal", 0)
+
+    # Generate equipment for each slot
+    for slot_name in ("weapon", "armor", "accessory"):
+        slot_cfg = loadout_cfg.get(slot_name)
+        if not slot_cfg:
+            continue
+
+        pool = slot_cfg.get("pool", [])
+        if not pool:
+            continue
+
+        slot_rarity_offset = slot_cfg.get("rarity_offset", 0)
+
+        # Find matching base_type_ids from items_config
+        category_key = "weapon_category" if slot_name == "weapon" else "armor_category" if slot_name == "armor" else None
+        candidates = []
+        for item_id, item_data in items_config.items():
+            if item_data.get("equip_slot") != slot_name:
+                continue
+            if item_data.get("item_type") == "consumable":
+                continue
+            if category_key:
+                if item_data.get(category_key) in pool:
+                    candidates.append(item_id)
+            else:
+                # Accessory: pool contains base_type_ids directly
+                if item_id in pool or not pool:
+                    candidates.append(item_id)
+
+        if not candidates:
+            continue
+
+        base_type_id = rng.choice(candidates)
+
+        # Roll rarity with floor scaling + monster rarity bonus
+        rolled_rarity = roll_rarity(floor_number=floor_number, enemy_tier="mid", rng=rng)
+
+        # Apply rarity offset + monster rarity bonus
+        rarity_idx = _RARITY_TIERS.index(rolled_rarity) if rolled_rarity in _RARITY_TIERS else 0
+        final_idx = max(0, min(len(_RARITY_TIERS) - 1, rarity_idx + slot_rarity_offset + rarity_bonus))
+        final_rarity = _RARITY_TIERS[final_idx]
+
+        item = generate_item(
+            base_type_id=base_type_id,
+            rarity=final_rarity,
+            item_level=floor_number,
+            seed=rng.randint(0, 2**31),
+        )
+        if item:
+            equipment[slot_name] = item.model_dump()
+
+    # Generate potions
+    potion_cfg = loadout_cfg.get("potions")
+    if potion_cfg:
+        potion_type = potion_cfg.get("type", "health_potion")
+        count_range = potion_cfg.get("count", [0, 0])
+        if isinstance(count_range, list) and len(count_range) == 2:
+            potion_count = rng.randint(count_range[0], count_range[1])
+        else:
+            potion_count = 0
+
+        for _ in range(potion_count):
+            potion = generate_item(base_type_id=potion_type, rarity="common", item_level=1)
+            if potion:
+                inventory.append(potion.model_dump())
+
+    return equipment, inventory
+
+
+def _apply_loadout_to_unit(unit: PlayerState, equipment: dict, inventory: list) -> None:
+    """Directly assign equipment and inventory to a unit, then recalculate stats.
+
+    Bypasses equip_item() match lookup since unit may not be in match dict yet.
+    """
+    from app.core.equipment_manager import _recalculate_effective_stats
+    from app.models.items import StatBonuses
+
+    unit.equipment = equipment
+    unit.inventory = inventory
+
+    # Apply core stat bonuses from equipment (attack_damage, ranged_damage, armor, max_hp)
+    for slot_name, item_data in equipment.items():
+        if not item_data:
+            continue
+        bonuses = StatBonuses(**item_data.get("stat_bonuses", {}))
+        unit.attack_damage += bonuses.attack_damage
+        unit.ranged_damage += bonuses.ranged_damage
+        unit.armor += bonuses.armor
+        if bonuses.max_hp > 0:
+            unit.max_hp += bonuses.max_hp
+            unit.hp += bonuses.max_hp
+
+    # Recalculate derived stats (crit, dodge, etc.) from full equipment set
+    _recalculate_effective_stats(unit)
+
+
+# ---------- Phase 28E: Hero Party Loadout Generation ----------
+
+# Preferred armor by class — maps class preferred_armor to armor_category pool
+_CLASS_ARMOR_POOL: dict[str, list[str]] = {
+    "heavy": ["heavy"],
+    "light": ["light"],
+    "cloth": ["cloth"],
+}
+
+# Match tier → rarity tier index offset (controls baseline gear quality)
+_MATCH_TIER_BONUS: dict[str, int] = {
+    "low": 0,
+    "mid": 1,
+    "high": 2,
+}
+
+
+def generate_hero_loadout(
+    class_id: str,
+    class_def=None,
+    floor_number: int = 1,
+    match_tier: str = "mid",
+    rng: random.Random | None = None,
+) -> tuple[dict, list]:
+    """Generate class-appropriate equipment + potions for an AI hero.
+
+    Uses the class's allowed_weapon_categories and preferred_armor to
+    produce a loadout that mirrors what a real player might have.
+
+    Args:
+        class_id: The hero's class (e.g., "crusader", "ranger").
+        class_def: ClassDefinition (optional — loaded if not provided).
+        floor_number: Scales item_level and rarity.
+        match_tier: "low"/"mid"/"high" — controls baseline rarity.
+        rng: Optional seeded RNG.
+
+    Returns:
+        (equipment_dict, inventory_list) — ready to assign to PlayerState.
+    """
+    from app.core.item_generator import generate_item, roll_rarity
+    from app.core.loot import load_items_config
+    from app.models.player import get_class_definition
+
+    if class_def is None:
+        class_def = get_class_definition(class_id)
+    if class_def is None:
+        return {}, []
+
+    if rng is None:
+        rng = random.Random()
+
+    items_config = load_items_config()
+    equipment: dict = {}
+    inventory: list = []
+
+    tier_bonus = _MATCH_TIER_BONUS.get(match_tier, 1)
+
+    # --- Weapon ---
+    weapon_cats = getattr(class_def, 'allowed_weapon_categories', None) or []
+    if weapon_cats:
+        weapon_candidates = []
+        for item_id, item_data in items_config.items():
+            if item_data.get("equip_slot") != "weapon":
+                continue
+            if item_data.get("item_type") == "consumable":
+                continue
+            if item_data.get("weapon_category") in weapon_cats:
+                weapon_candidates.append(item_id)
+        if weapon_candidates:
+            base_type_id = rng.choice(weapon_candidates)
+            rolled_rarity = roll_rarity(floor_number=floor_number, enemy_tier="mid", rng=rng)
+            rarity_idx = _RARITY_TIERS.index(rolled_rarity) if rolled_rarity in _RARITY_TIERS else 0
+            final_idx = max(0, min(len(_RARITY_TIERS) - 1, rarity_idx + tier_bonus))
+            final_rarity = _RARITY_TIERS[final_idx]
+            item = generate_item(
+                base_type_id=base_type_id,
+                rarity=final_rarity,
+                item_level=max(1, floor_number),
+                seed=rng.randint(0, 2**31),
+            )
+            if item:
+                equipment["weapon"] = item.model_dump()
+
+    # --- Armor ---
+    preferred_armor = getattr(class_def, 'preferred_armor', '') or ''
+    armor_pool = _CLASS_ARMOR_POOL.get(preferred_armor, ["light"])
+    armor_candidates = []
+    for item_id, item_data in items_config.items():
+        if item_data.get("equip_slot") != "armor":
+            continue
+        if item_data.get("item_type") == "consumable":
+            continue
+        if item_data.get("armor_category") in armor_pool:
+            armor_candidates.append(item_id)
+    if armor_candidates:
+        base_type_id = rng.choice(armor_candidates)
+        rolled_rarity = roll_rarity(floor_number=floor_number, enemy_tier="mid", rng=rng)
+        rarity_idx = _RARITY_TIERS.index(rolled_rarity) if rolled_rarity in _RARITY_TIERS else 0
+        final_idx = max(0, min(len(_RARITY_TIERS) - 1, rarity_idx + tier_bonus))
+        final_rarity = _RARITY_TIERS[final_idx]
+        item = generate_item(
+            base_type_id=base_type_id,
+            rarity=final_rarity,
+            item_level=max(1, floor_number),
+            seed=rng.randint(0, 2**31),
+        )
+        if item:
+            equipment["armor"] = item.model_dump()
+
+    # --- Potions (2-3 health potions) ---
+    potion_count = rng.randint(2, 3)
+    for _ in range(potion_count):
+        potion = generate_item(base_type_id="health_potion", rarity="common", item_level=1)
+        if potion:
+            inventory.append(potion.model_dump())
+
+    return equipment, inventory
+
+
 def _spawn_dungeon_enemies(match_id: str) -> None:
     """Spawn typed enemies in dungeon rooms based on room enemy_spawns data.
 
@@ -2500,6 +2842,7 @@ def _spawn_dungeon_enemies(match_id: str) -> None:
     Phase 4C: Static spawns only — enemies do not respawn.
     Phase 18C: Apply monster rarity upgrades (champion/rare) from spawn data,
     spawn champion packs, and place rare minions on adjacent tiles.
+    Phase 28B: Generate and apply equipment loadouts after rarity upgrades.
     """
     from app.core.monster_rarity import (
         apply_rarity_to_player,
@@ -2665,6 +3008,10 @@ def _spawn_dungeon_enemies(match_id: str) -> None:
                     affixes=affixes,
                     display_name=display_name,
                 )
+
+            # Phase 28B: Monster loadout generation DISABLED (Phase 28-FIX).
+            # Dungeon monsters should NOT spawn with player-style gear.
+            # generate_enemy_loadout() is kept for reuse by Phase 28E (hero party loadouts).
 
             _register_enemy(ai_id, enemy_unit)
 

@@ -4,7 +4,20 @@
 // ─────────────────────────────────────────────────────────
 
 import { Particle } from './Particle.js';
-import { randomRange, getSpawnOffset, getEmitVelocity } from './MathUtils.js';
+import { randomRange, getSpawnOffset, getEmitVelocity, sampleGradient } from './MathUtils.js';
+
+// ── P-D: Pre-computed color gradient LUT ──
+const COLOR_LUT_SIZE = 64;
+
+function buildColorLUT(gradient) {
+  if (!gradient || gradient.length === 0) return null;
+  const lut = new Array(COLOR_LUT_SIZE);
+  for (let i = 0; i < COLOR_LUT_SIZE; i++) {
+    const t = i / (COLOR_LUT_SIZE - 1);
+    lut[i] = sampleGradient(gradient, t);
+  }
+  return lut;
+}
 
 /**
  * An Emitter is a source of particles. It owns a pool of Particle objects
@@ -52,6 +65,10 @@ export class Emitter {
 
     // Max particle cap (performance)
     this.maxParticles = preset.maxParticles || 500;
+
+    // P-D: Pre-compute color gradient LUT (shared by all particles from this emitter)
+    const pc = preset.particle || {};
+    this._colorLUT = buildColorLUT(pc.color?.gradient);
 
     // Object pool
     this.particles = [];
@@ -158,7 +175,10 @@ export class Emitter {
       if (!alive) {
         // Return to pool
         this._pool.push(p);
-        this.particles.splice(i, 1);
+        // P-F: Swap-and-pop — O(1) removal (order doesn't matter for particles)
+        const last = this.particles.length - 1;
+        if (i !== last) this.particles[i] = this.particles[last];
+        this.particles.pop();
       }
     }
   }
@@ -207,6 +227,7 @@ export class Emitter {
         rotationStart: randomRange(pc.rotation?.start?.min ?? 0, pc.rotation?.start?.max ?? 0),
         rotationSpeed: randomRange(pc.rotation?.speed?.min ?? 0, pc.rotation?.speed?.max ?? 0),
         trailLength: pc.trail?.length || 0,
+        colorLUT: this._colorLUT,
       };
 
       // If heading is set, orient particles along the flight direction
@@ -253,5 +274,9 @@ export class Emitter {
     this.friction = em.friction || 0;
     this.wind = em.wind || { x: 0 };
     this.maxParticles = preset.maxParticles || 500;
+
+    // P-D: Rebuild color gradient LUT on preset change
+    const pc = preset.particle || {};
+    this._colorLUT = buildColorLUT(pc.color?.gradient);
   }
 }

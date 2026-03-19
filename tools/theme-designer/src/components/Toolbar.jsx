@@ -44,8 +44,14 @@ export default function Toolbar({ activeThemeId, sampleMapId, onSelectMap, onExp
           >
             Room Archetypes
           </button>
+          <button
+            className={`toolbar-btn view-btn ${viewMode === 'objects' ? 'active' : ''}`}
+            onClick={() => onViewModeChange('objects')}
+          >
+            Object Browser
+          </button>
         </div>
-        {viewMode === 'dungeon' && (
+        {viewMode !== 'archetypes' && viewMode !== 'objects' && (
           <>
             <label className="toolbar-label">Sample Map:</label>
             <select

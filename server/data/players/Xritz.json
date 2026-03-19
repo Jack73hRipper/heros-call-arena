@@ -1,7 +1,7 @@
 {
   "player_id": "7f2bc6c7-b6a",
   "username": "Xritz",
-  "gold": 4627,
+  "gold": 4501,
   "heroes": [
     {
       "hero_id": "58cd77bf",
@@ -949,7 +949,7 @@
       },
       "equipment": {},
       "inventory": [],
-      "is_alive": true,
+      "is_alive": false,
       "hire_cost": 59,
       "matches_survived": 0,
       "enemies_killed": 0
@@ -970,7 +970,7 @@
       },
       "equipment": {},
       "inventory": [],
-      "is_alive": true,
+      "is_alive": false,
       "hire_cost": 53,
       "matches_survived": 0,
       "enemies_killed": 0
@@ -1012,42 +1012,63 @@
       },
       "equipment": {},
       "inventory": [],
-      "is_alive": true,
+      "is_alive": false,
       "hire_cost": 55,
       "matches_survived": 1,
       "enemies_killed": 1
-    }
-  ],
-  "tavern_pool": [
+    },
     {
-      "hero_id": "d26020c1",
-      "name": "Ulric Battleborn",
-      "class_id": "crusader",
-      "sprite_variant": 1,
+      "hero_id": "54b118d6",
+      "name": "Fenris the Watcher",
+      "class_id": "inquisitor",
+      "sprite_variant": 3,
       "stats": {
-        "hp": 144,
-        "max_hp": 144,
-        "attack_damage": 22,
+        "hp": 98,
+        "max_hp": 98,
+        "attack_damage": 11,
+        "ranged_damage": 13,
+        "armor": 5,
+        "vision_range": 8,
+        "ranged_range": 5
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 61,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "b3eceb4b",
+      "name": "Theron Dawnplate",
+      "class_id": "crusader",
+      "sprite_variant": 2,
+      "stats": {
+        "hp": 142,
+        "max_hp": 142,
+        "attack_damage": 15,
         "ranged_damage": 0,
         "armor": 7,
-        "vision_range": 5,
+        "vision_range": 6,
         "ranged_range": 1
       },
       "equipment": {},
       "inventory": [],
       "is_alive": true,
-      "hire_cost": 68,
+      "hire_cost": 65,
       "matches_survived": 0,
       "enemies_killed": 0
-    },
+    }
+  ],
+  "tavern_pool": [
     {
-      "hero_id": "771d81ff",
-      "name": "Mother Ildara",
+      "hero_id": "0301a1e2",
+      "name": "Brother Cael",
       "class_id": "confessor",
-      "sprite_variant": 6,
+      "sprite_variant": 2,
       "stats": {
-        "hp": 109,
-        "max_hp": 109,
+        "hp": 95,
+        "max_hp": 95,
         "attack_damage": 9,
         "ranged_damage": 0,
         "armor": 2,
@@ -1057,23 +1078,23 @@
       "equipment": {},
       "inventory": [],
       "is_alive": true,
-      "hire_cost": 53,
+      "hire_cost": 51,
       "matches_survived": 0,
       "enemies_killed": 0
     },
     {
-      "hero_id": "a068e223",
-      "name": "Vex the All-Seeing",
-      "class_id": "inquisitor",
-      "sprite_variant": 4,
+      "hero_id": "ce2d823d",
+      "name": "Faelin the Marksman",
+      "class_id": "ranger",
+      "sprite_variant": 3,
       "stats": {
-        "hp": 86,
-        "max_hp": 86,
-        "attack_damage": 11,
-        "ranged_damage": 9,
-        "armor": 3,
-        "vision_range": 10,
-        "ranged_range": 5
+        "hp": 88,
+        "max_hp": 88,
+        "attack_damage": 7,
+        "ranged_damage": 17,
+        "armor": 2,
+        "vision_range": 6,
+        "ranged_range": 6
       },
       "equipment": {},
       "inventory": [],
@@ -1083,37 +1104,16 @@
       "enemies_killed": 0
     },
     {
-      "hero_id": "100ae643",
-      "name": "Faelin the Marksman",
-      "class_id": "ranger",
-      "sprite_variant": 3,
-      "stats": {
-        "hp": 87,
-        "max_hp": 87,
-        "attack_damage": 7,
-        "ranged_damage": 19,
-        "armor": 2,
-        "vision_range": 8,
-        "ranged_range": 6
-      },
-      "equipment": {},
-      "inventory": [],
-      "is_alive": true,
-      "hire_cost": 58,
-      "matches_survived": 0,
-      "enemies_killed": 0
-    },
-    {
-      "hero_id": "c3229d84",
-      "name": "Azrael Doomweaver",
+      "hero_id": "2c25268f",
+      "name": "Jinx Blightcaster",
       "class_id": "hexblade",
-      "sprite_variant": 6,
+      "sprite_variant": 8,
       "stats": {
-        "hp": 103,
-        "max_hp": 103,
-        "attack_damage": 16,
+        "hp": 112,
+        "max_hp": 112,
+        "attack_damage": 15,
         "ranged_damage": 12,
-        "armor": 6,
+        "armor": 5,
         "vision_range": 5,
         "ranged_range": 4
       },
@@ -1125,80 +1125,17 @@
       "enemies_killed": 0
     },
     {
-      "hero_id": "03330ff9",
-      "name": "Zephyr Runespark",
+      "hero_id": "da153fd2",
+      "name": "Ignis the Pyroclast",
       "class_id": "mage",
-      "sprite_variant": 4,
-      "stats": {
-        "hp": 67,
-        "max_hp": 67,
-        "attack_damage": 5,
-        "ranged_damage": 14,
-        "armor": 2,
-        "vision_range": 6,
-        "ranged_range": 5
-      },
-      "equipment": {},
-      "inventory": [],
-      "is_alive": true,
-      "hire_cost": 51,
-      "matches_survived": 0,
-      "enemies_killed": 0
-    },
-    {
-      "hero_id": "50ebac28",
-      "name": "Vesper Grimlute",
-      "class_id": "bard",
-      "sprite_variant": 1,
-      "stats": {
-        "hp": 88,
-        "max_hp": 88,
-        "attack_damage": 10,
-        "ranged_damage": 10,
-        "armor": 3,
-        "vision_range": 8,
-        "ranged_range": 4
-      },
-      "equipment": {},
-      "inventory": [],
-      "is_alive": true,
-      "hire_cost": 56,
-      "matches_survived": 0,
-      "enemies_killed": 0
-    },
-    {
-      "hero_id": "17810b12",
-      "name": "Fenric the Exsanguinator",
-      "class_id": "blood_knight",
-      "sprite_variant": 4,
-      "stats": {
-        "hp": 92,
-        "max_hp": 92,
-        "attack_damage": 16,
-        "ranged_damage": 0,
-        "armor": 5,
-        "vision_range": 7,
-        "ranged_range": 0
-      },
-      "equipment": {},
-      "inventory": [],
-      "is_alive": true,
-      "hire_cost": 56,
-      "matches_survived": 0,
-      "enemies_killed": 0
-    },
-    {
-      "hero_id": "433edec9",
-      "name": "Oberon the Contagion",
-      "class_id": "plague_doctor",
       "sprite_variant": 2,
       "stats": {
-        "hp": 84,
-        "max_hp": 84,
-        "attack_damage": 9,
-        "ranged_damage": 11,
+        "hp": 83,
+        "max_hp": 83,
+        "attack_damage": 6,
+        "ranged_damage": 14,
         "armor": 1,
-        "vision_range": 6,
+        "vision_range": 8,
         "ranged_range": 5
       },
       "equipment": {},
@@ -1209,23 +1146,107 @@
       "enemies_killed": 0
     },
     {
-      "hero_id": "c7fe30c7",
-      "name": "Nyx Corpseknight",
-      "class_id": "revenant",
+      "hero_id": "afc09cbd",
+      "name": "Brynn Deathcanto",
+      "class_id": "bard",
       "sprite_variant": 1,
       "stats": {
-        "hp": 123,
-        "max_hp": 123,
-        "attack_damage": 14,
-        "ranged_damage": 0,
-        "armor": 6,
-        "vision_range": 6,
-        "ranged_range": 0
+        "hp": 113,
+        "max_hp": 113,
+        "attack_damage": 10,
+        "ranged_damage": 11,
+        "armor": 4,
+        "vision_range": 8,
+        "ranged_range": 4
       },
       "equipment": {},
       "inventory": [],
       "is_alive": true,
       "hire_cost": 61,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "d7be057c",
+      "name": "Ravenna Veinreaper",
+      "class_id": "blood_knight",
+      "sprite_variant": 2,
+      "stats": {
+        "hp": 99,
+        "max_hp": 99,
+        "attack_damage": 17,
+        "ranged_damage": 0,
+        "armor": 5,
+        "vision_range": 7,
+        "ranged_range": 0
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 58,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "4fd8a597",
+      "name": "Nocturne Plaguehand",
+      "class_id": "plague_doctor",
+      "sprite_variant": 2,
+      "stats": {
+        "hp": 92,
+        "max_hp": 92,
+        "attack_damage": 9,
+        "ranged_damage": 12,
+        "armor": 3,
+        "vision_range": 7,
+        "ranged_range": 5
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 57,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "8051329e",
+      "name": "Ashur the Twice-Dead",
+      "class_id": "revenant",
+      "sprite_variant": 1,
+      "stats": {
+        "hp": 121,
+        "max_hp": 121,
+        "attack_damage": 17,
+        "ranged_damage": 0,
+        "armor": 5,
+        "vision_range": 4,
+        "ranged_range": 0
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 60,
+      "matches_survived": 0,
+      "enemies_killed": 0
+    },
+    {
+      "hero_id": "fd674462",
+      "name": "Fenrik Duskrattle",
+      "class_id": "shaman",
+      "sprite_variant": 1,
+      "stats": {
+        "hp": 95,
+        "max_hp": 95,
+        "attack_damage": 8,
+        "ranged_damage": 11,
+        "armor": 4,
+        "vision_range": 7,
+        "ranged_range": 4
+      },
+      "equipment": {},
+      "inventory": [],
+      "is_alive": true,
+      "hire_cost": 57,
       "matches_survived": 0,
       "enemies_killed": 0
     }

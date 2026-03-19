@@ -23,6 +23,9 @@ import EscapeMenu from '../EscapeMenu/EscapeMenu';
 import LootNotification from '../HUD/LootNotification';
 import EliteKillNotification from '../HUD/EliteKillNotification';
 import { isNotableRarity } from '../../utils/itemUtils';
+import useDevOverlay from '../../hooks/useDevOverlay';
+import DevOverlayPanel from '../DevOverlay/DevOverlayPanel';
+import { drawDevGridCoords, drawDevRoomBounds, drawDevSpawnMarkers, drawDevUnitLabels } from '../../canvas/devRenderer';
 
 /**
  * Arena screen — the main game view with canvas grid, HUD, combat log, and actions.
@@ -246,6 +249,14 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
     selectedTargetId, autoSkillId, partyAutoSkills,
   });
 
+  // ---------- Dev Overlay ----------
+  const devOverlay = useDevOverlay({
+    gridWidth, gridHeight, viewport, matchStatus,
+    canvasPixelW, canvasPixelH, players, sendAction,
+  });
+  const effectiveViewport = devOverlay.effectiveViewport;
+  const effectiveVisibleTiles = devOverlay.fogDisabled ? null : visibleTiles;
+
   // ---------- Damage Floater Cleanup ----------
   useEffect(() => {
     if (damageFloaters.length === 0) return;
@@ -321,9 +332,9 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
   // ---------- Phase 9E: Sync Particle Viewport ----------
   useEffect(() => {
     if (particleManagerRef.current) {
-      particleManagerRef.current.setViewport(viewport.offsetX, viewport.offsetY);
+      particleManagerRef.current.setViewport(effectiveViewport.offsetX, effectiveViewport.offsetY);
     }
-  }, [viewport]);
+  }, [effectiveViewport]);
 
   // ---------- Phase 9E: Sync Player Positions for Tracked Effects ----------
   useEffect(() => {
@@ -352,6 +363,12 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
     particleManagerRef.current.updateGroundZones(groundZones || []);
   }, [groundZones]);
 
+  // ---------- Prop Lighting: Ambient Prop Particle Emitters ----------
+  useEffect(() => {
+    if (!particleManagerRef.current || !isDungeon) return;
+    particleManagerRef.current.updatePropParticles(dungeonRooms || [], themeEngine.theme);
+  }, [dungeonRooms, isDungeon]);
+
   // ---------- Phase 15D: Audio Effects on Turn Result ----------
   useAudioEvents(audioManager, lastTurnActions, players);
 
@@ -372,10 +389,11 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
   renderParamsRef.current = {
     gridWidth, gridHeight, obstacles, players,
     moveHighlights, attackHighlights, rangedHighlights, skillHighlights,
-    hoveredTile, queuePreviewTiles, damageFloaters, visibleTiles,
-    revealedTiles: isDungeon ? revealedTiles : null,
+    hoveredTile, queuePreviewTiles, damageFloaters,
+    visibleTiles: effectiveVisibleTiles,
+    revealedTiles: (isDungeon && !devOverlay.fogDisabled) ? revealedTiles : null,
     playerId, myTeam, isDungeon, tiles, tileLegend, doorStates, chestStates,
-    viewport, groundItems, lootHighlightTile, effectiveUnitId,
+    viewport: effectiveViewport, groundItems, lootHighlightTile, effectiveUnitId,
     selectedUnitIds, partyMembers: partyMembers || [],
     hoverPreviews, autoTargetId, partyAutoTargets: partyAutoTargets || {},
     selectedTargetId, autoSkillId, partyAutoSkills: partyAutoSkills || {},
@@ -387,6 +405,12 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
     groundZones: groundZones || [],
     // Phase 21F: Room data for props rendering
     dungeonRooms: dungeonRooms || [],
+    // Dev overlay
+    showAllUnits: devOverlay.showAllUnits,
+    devMode: devOverlay.devMode,
+    devShowGridCoords: devOverlay.showGridCoords,
+    devShowRoomBounds: devOverlay.showRoomBounds,
+    devShowSpawns: devOverlay.showSpawns,
   };
 
   // Dirty flag: set true whenever React state changes that affect rendering.
@@ -397,11 +421,14 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
   }, [players, obstacles, gridWidth, gridHeight, moveHighlights, attackHighlights,
       rangedHighlights, skillHighlights, hoveredTile, queuePreviewTiles, damageFloaters, visibleTiles,
       revealedTiles, selectedUnitIds,
-      playerId, myTeam, isDungeon, tiles, tileLegend, doorStates, chestStates, viewport,
+      playerId, myTeam, isDungeon, tiles, tileLegend, doorStates, chestStates, effectiveViewport,
       groundItems, lootHighlightTile, effectiveUnitId, partyMembers, hoverPreviews,
       autoTargetId, partyAutoTargets, selectedTargetId,
       autoSkillId, partyAutoSkills, allClassSkills, classSkills, altHeld,
-      portal, channeling, currentTurn, totems, groundZones]);
+      portal, channeling, currentTurn, totems, groundZones,
+      devOverlay.devMode, devOverlay.fogDisabled, devOverlay.showAllUnits,
+      devOverlay.showGridCoords, devOverlay.showRoomBounds, devOverlay.showSpawns,
+      effectiveViewport]);
 
   useEffect(() => {
     let rafId = null;
@@ -442,6 +469,7 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
           chestStates: p.chestStates,
           viewportOffsetX: p.viewport.offsetX,
           viewportOffsetY: p.viewport.offsetY,
+          showAllUnits: p.showAllUnits || false,
           groundItems: p.isDungeon ? p.groundItems : null,
           lootHighlightTile: p.lootHighlightTile,
           activeUnitId: p.effectiveUnitId,
@@ -468,6 +496,24 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
           // Pass interpolated positions for smooth movement
           interpolatedPositions: lerpPositions,
         });
+
+        // Dev overlay canvas rendering (drawn on top of everything)
+        if (p.devMode) {
+          const devOx = p.viewport.offsetX;
+          const devOy = p.viewport.offsetY;
+          if (p.devShowRoomBounds) {
+            drawDevRoomBounds(ctxRef.current, p.dungeonRooms, devOx, devOy);
+          }
+          if (p.devShowSpawns && p.isDungeon) {
+            drawDevSpawnMarkers(ctxRef.current, p.tiles, p.tileLegend, devOx, devOy);
+          }
+          if (p.devShowGridCoords) {
+            drawDevGridCoords(ctxRef.current, p.gridWidth, p.gridHeight, devOx, devOy);
+          }
+          if (p.showAllUnits) {
+            drawDevUnitLabels(ctxRef.current, p.players, devOx, devOy, p.playerId);
+          }
+        }
       }
 
       rafId = requestAnimationFrame(renderLoop);
@@ -485,7 +531,7 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
     handleCanvasClick, handleContextMenu,
     handleCanvasMouseMove, handleCanvasMouseLeave,
   } = useCanvasInput({
-    canvasRef, viewport,
+    canvasRef, viewport: effectiveViewport,
     matchStatus, isAlive, actionMode,
     activeUnit, effectiveUnitId, playerId, myTeam,
     isControllingAlly, activeUnitId,
@@ -505,6 +551,28 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
   const handleAction = useCallback((action) => {
     sendAction(action);
   }, [sendAction]);
+
+  // ---------- Dev Overlay: Click-to-Inspect ----------
+  const handleDevCanvasClick = useCallback((e) => {
+    // When inspect mode is active, plain click inspects the unit on the clicked tile
+    if (devOverlay.inspectMode && canvasRef.current) {
+      const rect = canvasRef.current.getBoundingClientRect();
+      const px = e.clientX - rect.left;
+      const py = e.clientY - rect.top;
+      const tileX = Math.floor(px / TILE_SIZE) + effectiveViewport.offsetX;
+      const tileY = Math.floor(py / TILE_SIZE) + effectiveViewport.offsetY;
+      const key = `${tileX},${tileY}`;
+      // O(1) lookup via occupiedMap
+      const occupant = occupiedMap[key];
+      if (occupant && occupant.pid) {
+        devOverlay.inspectUnit(occupant.pid);
+      } else {
+        devOverlay.inspectUnit(null);
+      }
+      return;
+    }
+    handleCanvasClick(e);
+  }, [devOverlay, effectiveViewport, occupiedMap, handleCanvasClick]);
 
   // ---------- Leave Match ----------
   const handleLeave = () => {
@@ -590,11 +658,13 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
             id="arena-canvas"
             width={canvasPixelW}
             height={canvasPixelH}
-            onClick={handleCanvasClick}
+            onClick={handleDevCanvasClick}
             onContextMenu={handleContextMenu}
             onMouseMove={handleCanvasMouseMove}
             onMouseLeave={handleCanvasMouseLeave}
             style={{ cursor: (() => {
+              // Dev overlay inspect mode — magnifying glass cursor
+              if (devOverlay.inspectMode) return 'help';
               if (actionMode) return 'crosshair';
               // Phase 10E-4: Crosshair cursor when hovering over an enemy (hints right-click auto-target)
               if (hoveredTile && isAlive) {
@@ -671,8 +741,8 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
           revealedTiles={isDungeon ? revealedTiles : null}
           myPlayerId={playerId}
           myTeam={myTeam}
-          viewportOffsetX={viewport.offsetX}
-          viewportOffsetY={viewport.offsetY}
+          viewportOffsetX={effectiveViewport.offsetX}
+          viewportOffsetY={effectiveViewport.offsetY}
           canvasPixelW={canvasPixelW}
           canvasPixelH={canvasPixelH}
           portal={portal}
@@ -689,6 +759,33 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
       {isDungeon && showInventory && (
         <Inventory sendAction={sendAction} onClose={() => setShowInventory(false)} />
       )}
+
+      {/* Dev Overlay Panel */}
+      <DevOverlayPanel
+        devMode={devOverlay.devMode}
+        fogDisabled={devOverlay.fogDisabled}
+        toggleFog={devOverlay.toggleFog}
+        freeCam={devOverlay.freeCam}
+        toggleFreeCam={devOverlay.toggleFreeCam}
+        resetCamera={devOverlay.resetCamera}
+        showGridCoords={devOverlay.showGridCoords}
+        toggleGridCoords={devOverlay.toggleGridCoords}
+        showAllUnits={devOverlay.showAllUnits}
+        toggleShowUnits={devOverlay.toggleShowUnits}
+        showRoomBounds={devOverlay.showRoomBounds}
+        toggleRoomBounds={devOverlay.toggleRoomBounds}
+        showSpawns={devOverlay.showSpawns}
+        toggleSpawns={devOverlay.toggleSpawns}
+        inspectMode={devOverlay.inspectMode}
+        toggleInspectMode={devOverlay.toggleInspectMode}
+        inspectedUnit={devOverlay.inspectedUnit}
+        inspectUnit={devOverlay.inspectUnit}
+        freeCamOffset={devOverlay.freeCamOffset}
+        hoveredTile={hoveredTile}
+        currentTurn={currentTurn}
+        players={players}
+        dungeonRooms={dungeonRooms}
+      />
 
       {/* Phase 15: ESC Menu Overlay */}
       {showEscMenu && (

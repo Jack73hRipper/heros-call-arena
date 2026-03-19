@@ -125,6 +125,30 @@
   color: #fff;
 }
 
+.toolbar-actions .btn-save-game {
+  background: #1a3320;
+  border-color: #33aa55;
+  color: #88eea0;
+  font-weight: 600;
+}
+
+.toolbar-actions .btn-save-game:hover:not(:disabled) {
+  background: #33aa55;
+  color: #fff;
+}
+
+.toolbar-actions .btn-save-game.btn-success {
+  background: #226633;
+  border-color: #44cc66;
+  color: #88ffaa;
+}
+
+.toolbar-actions .btn-save-game.btn-error {
+  background: #331a1a;
+  border-color: #cc4444;
+  color: #ff8888;
+}
+
 .toolbar-sep {
   width: 1px;
   height: 20px;

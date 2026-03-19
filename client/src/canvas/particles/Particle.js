@@ -122,8 +122,13 @@ export class Particle {
       this.alpha = lerp(cfg.alphaStart, cfg.alphaEnd, t);
     }
 
-    // ── Color gradient ──
-    if (cfg.gradient && cfg.gradient.length > 0) {
+    // ── Color gradient (P-D: LUT fast path) ──
+    if (cfg.colorLUT) {
+      const lut = cfg.colorLUT;
+      const idx = Math.floor(t * (lut.length - 1));
+      const c = lut[idx];
+      this.color = `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a * this.alpha})`;
+    } else if (cfg.gradient && cfg.gradient.length > 0) {
       const rgba = sampleGradient(cfg.gradient, t);
       this.color = rgbaToString({ ...rgba, a: rgba.a * this.alpha });
     } else {

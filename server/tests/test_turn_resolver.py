@@ -21,6 +21,7 @@ def make_player(pid, username, x, y, hp=100, damage=15, armor=0) -> PlayerState:
         max_hp=100,
         attack_damage=damage,
         armor=armor,
+        crit_chance=0.0,
     )
 
 

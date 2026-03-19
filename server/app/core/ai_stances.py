@@ -19,6 +19,7 @@ from __future__ import annotations
 
 from app.models.player import PlayerState, Position
 from app.models.actions import PlayerAction, ActionType
+from app.models.items import INVENTORY_MAX_CAPACITY
 from app.core.fov import compute_fov, has_line_of_sight
 from app.core.combat import is_adjacent, is_in_range, get_combat_config
 from app.core.ai_pathfinding import (
@@ -86,6 +87,80 @@ _TOTEM_KITE_BIAS_WEIGHT = 2
 # ---------------------------------------------------------------------------
 
 VALID_STANCES = {"follow", "aggressive", "defensive", "hold"}
+
+
+# ---------------------------------------------------------------------------
+# Phase 29A: AI Chest Seeking — max range per stance for seeking unopened
+# chests when idle (no visible enemies). Hold stance never seeks chests
+# (it never moves).
+# ---------------------------------------------------------------------------
+_CHEST_SEEK_MAX_RANGE: dict[str, int] = {
+    "follow": 4,
+    "aggressive": 6,
+    "defensive": 3,
+}
+
+
+def _find_nearest_unopened_chest(
+    ai: PlayerState,
+    chest_states: dict[str, str] | None,
+    max_range: int = 5,
+) -> tuple[int, int] | None:
+    """Find the nearest unopened chest within *max_range* (Manhattan distance).
+
+    Returns ``(x, y)`` of the best chest tile, or ``None`` if nothing reachable.
+    Skips search if the AI's inventory is full or no chest_states provided.
+    """
+    if not chest_states:
+        return None
+    if len(ai.inventory) >= INVENTORY_MAX_CAPACITY:
+        return None
+
+    ai_x, ai_y = ai.position.x, ai.position.y
+    best: tuple[int, int] | None = None
+    best_dist = max_range + 1
+
+    for key, state in chest_states.items():
+        is_unopened = state == "unopened" or state.startswith("unopened:")
+        if not is_unopened:
+            continue
+        parts = key.split(",")
+        if len(parts) != 2:
+            continue
+        x, y = int(parts[0]), int(parts[1])
+        dist = abs(x - ai_x) + abs(y - ai_y)
+        if dist < best_dist and dist <= max_range:
+            best = (x, y)
+            best_dist = dist
+
+    return best
+
+
+def _try_loot_adjacent_chest(
+    ai: PlayerState,
+    chest_states: dict[str, str],
+) -> PlayerAction | None:
+    """If AI is adjacent (Chebyshev 1) to an unopened chest, emit LOOT action.
+
+    Returns a LOOT PlayerAction targeting the chest, or None.
+    """
+    ai_x, ai_y = ai.position.x, ai.position.y
+    for key, state in chest_states.items():
+        is_unopened = state == "unopened" or state.startswith("unopened:")
+        if not is_unopened:
+            continue
+        parts = key.split(",")
+        if len(parts) != 2:
+            continue
+        cx, cy = int(parts[0]), int(parts[1])
+        if max(abs(cx - ai_x), abs(cy - ai_y)) <= 1:
+            return PlayerAction(
+                player_id=ai.player_id,
+                action_type=ActionType.LOOT,
+                target_x=cx,
+                target_y=cy,
+            )
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -617,6 +692,7 @@ def _decide_stance_action(
     door_tiles: set[tuple[int, int]] | None = None,
     portal: dict | None = None,
     match_state=None,
+    chest_states: dict[str, str] | None = None,
 ) -> PlayerAction | None:
     """Dispatch to the correct stance handler for hero allies (Phase 7C).
 
@@ -726,14 +802,14 @@ def _decide_stance_action(
 
     # --- Stance dispatch (pass pre-computed FOV + enemies + occupied to avoid redundant computation) ---
     if stance == "hold":
-        return _decide_hold_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies)
+        return _decide_hold_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, chest_states=chest_states)
     elif stance == "defensive":
-        return _decide_defensive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied, match_state=match_state)
+        return _decide_defensive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied, match_state=match_state, chest_states=chest_states)
     elif stance == "aggressive":
-        return _decide_aggressive_stance_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied, match_state=match_state)
+        return _decide_aggressive_stance_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied, match_state=match_state, chest_states=chest_states)
     else:
         # "follow" or unknown → follow behavior
-        return _decide_follow_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied, match_state=match_state)
+        return _decide_follow_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, precomputed_visible_tiles=visible_tiles, precomputed_enemies=pre_enemies, precomputed_occupied=occupied, match_state=match_state, chest_states=chest_states)
 
 
 # ---------------------------------------------------------------------------
@@ -754,6 +830,7 @@ def _decide_follow_action(
     precomputed_enemies: list[PlayerState] | None = None,
     precomputed_occupied: set[tuple[int, int]] | None = None,
     match_state=None,
+    chest_states: dict[str, str] | None = None,
 ) -> PlayerAction | None:
     """Follow stance: stay close to owner, fight nearby enemies, regroup after combat.
 
@@ -1018,7 +1095,28 @@ def _decide_follow_action(
                 target_x=next_step[0], target_y=next_step[1],
             )
 
-    # Close enough, no enemies — wait
+    # Close enough, no enemies — Phase 29A: seek nearby unopened chests
+    if chest_states:
+        # If already adjacent to an unopened chest, loot it immediately
+        loot_action = _try_loot_adjacent_chest(ai, chest_states)
+        if loot_action:
+            return loot_action
+        # Otherwise, pathfind toward the nearest unopened chest
+        max_range = _CHEST_SEEK_MAX_RANGE.get("follow", 4)
+        chest_target = _find_nearest_unopened_chest(ai, chest_states, max_range)
+        if chest_target:
+            next_step = get_next_step_toward(
+                ai_pos, chest_target, grid_width, grid_height, obstacles, occupied, door_tiles,
+            )
+            if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=next_step[0], target_y=next_step[1],
+                )
+
     return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
 
 
@@ -1040,6 +1138,7 @@ def _decide_aggressive_stance_action(
     precomputed_enemies: list[PlayerState] | None = None,
     precomputed_occupied: set[tuple[int, int]] | None = None,
     match_state=None,
+    chest_states: dict[str, str] | None = None,
 ) -> PlayerAction | None:
     """Aggressive stance: pursue enemies freely within 5 tiles of owner.
 
@@ -1249,13 +1348,33 @@ def _decide_aggressive_stance_action(
             )
 
     # Within range — try to reinforce allies or pursue memory
-    memory_action = _pursue_memory_target(ai, all_units, grid_width, grid_height, obstacles, pending_moves)
+    memory_action = _pursue_memory_target(ai, all_units, grid_width, grid_height, obstacles, pending_moves, door_tiles)
     if memory_action:
         return memory_action
 
-    reinforce = _reinforce_ally(ai, all_units, grid_width, grid_height, obstacles, pending_moves)
+    reinforce = _reinforce_ally(ai, all_units, grid_width, grid_height, obstacles, pending_moves, door_tiles)
     if reinforce:
         return reinforce
+
+    # Phase 29A: Seek nearby unopened chests when idle
+    if chest_states:
+        loot_action = _try_loot_adjacent_chest(ai, chest_states)
+        if loot_action:
+            return loot_action
+        max_range = _CHEST_SEEK_MAX_RANGE.get("aggressive", 6)
+        chest_target = _find_nearest_unopened_chest(ai, chest_states, max_range)
+        if chest_target:
+            next_step = get_next_step_toward(
+                ai_pos, chest_target, grid_width, grid_height, obstacles, occupied, door_tiles,
+            )
+            if next_step:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=next_step[0], target_y=next_step[1],
+                )
 
     return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
 
@@ -1278,6 +1397,7 @@ def _decide_defensive_action(
     precomputed_enemies: list[PlayerState] | None = None,
     precomputed_occupied: set[tuple[int, int]] | None = None,
     match_state=None,
+    chest_states: dict[str, str] | None = None,
 ) -> PlayerAction | None:
     """Defensive stance: stay within 2 tiles of owner, fight conservatively.
 
@@ -1491,7 +1611,28 @@ def _decide_defensive_action(
                     target_x=next_step[0], target_y=next_step[1],
                 )
 
-    # No engageable threats — wait near owner
+    # No engageable threats — Phase 29A: seek nearby unopened chests (within tether)
+    if chest_states:
+        loot_action = _try_loot_adjacent_chest(ai, chest_states)
+        if loot_action:
+            return loot_action
+        max_range = _CHEST_SEEK_MAX_RANGE.get("defensive", 3)
+        chest_target = _find_nearest_unopened_chest(ai, chest_states, max_range)
+        if chest_target:
+            next_step = get_next_step_toward(
+                ai_pos, chest_target, grid_width, grid_height, obstacles, occupied, door_tiles,
+            )
+            if next_step:
+                # Respect defensive tether — only move if staying within 2 of owner
+                if _chebyshev(next_step, owner_pos) <= 2:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
+                    return PlayerAction(
+                        player_id=ai_id, action_type=ActionType.MOVE,
+                        target_x=next_step[0], target_y=next_step[1],
+                    )
+
     return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
 
 
@@ -1510,6 +1651,7 @@ def _decide_hold_action(
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
     precomputed_visible_tiles: set[tuple[int, int]] | None = None,
     precomputed_enemies: list[PlayerState] | None = None,
+    chest_states: dict[str, str] | None = None,
 ) -> PlayerAction | None:
     """Hold Position stance: never move, attack enemies in range.
 
@@ -1544,6 +1686,11 @@ def _decide_hold_action(
                 enemies.append(unit)
 
     if not enemies:
+        # Phase 29A: Hold stance can loot adjacent chests even with no enemies
+        if chest_states:
+            loot_action = _try_loot_adjacent_chest(ai, chest_states)
+            if loot_action:
+                return loot_action
         return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
 
     # Phase S1-B: Use _pick_best_target for smart melee selection

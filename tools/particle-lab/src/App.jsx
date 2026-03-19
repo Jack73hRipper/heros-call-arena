@@ -60,6 +60,20 @@ function createBlankPreset() {
   };
 }
 
+/** Guess the best category file for a preset based on its tags. */
+function guessCategory(preset) {
+  const tags = (preset.tags || []).map(t => t.toLowerCase());
+  if (tags.includes('affix'))       return 'affixes';
+  if (tags.includes('projectile'))  return 'projectiles';
+  if (tags.includes('portal'))      return 'portal';
+  if (tags.includes('compound'))    return 'compound';
+  if (tags.includes('buff') || tags.includes('persistent') || tags.includes('aura')) return 'buffs';
+  if (tags.includes('ambient') || tags.includes('environment') || tags.includes('prop')) return 'ambient';
+  if (tags.includes('skill') || tags.includes('cast'))  return 'skills';
+  if (tags.includes('combat'))      return 'combat';
+  return 'skills'; // default
+}
+
 export default function App() {
   // Engine ref (persists across renders)
   const engineRef = useRef(null);
@@ -70,18 +84,52 @@ export default function App() {
   // ── State ──
   const [preset, setPreset] = useState(() => deepClone(PRESETS[0]));
   const [presetLibrary, setPresetLibrary] = useState(() => {
-    // Load user presets from localStorage, merge with built-ins
+    // Start with built-in presets; game presets loaded async below
     const saved = localStorage.getItem('particleLab_userPresets');
     const userPresets = saved ? JSON.parse(saved) : [];
     return [...PRESETS.map(p => ({ ...deepClone(p), builtIn: true })), ...userPresets];
   });
   const [selectedPresetName, setSelectedPresetName] = useState(PRESETS[0].name);
+  const [gamePresetsLoaded, setGamePresetsLoaded] = useState(false);
+  const [saveToGameStatus, setSaveToGameStatus] = useState(null); // null | 'saving' | 'ok' | 'error'
   const [showGrid, setShowGrid] = useState(true);
   const [autoEmit, setAutoEmit] = useState(true);
   const [timeScale, setTimeScale] = useState(1);
   const [bgMode, setBgMode] = useState('dark'); // 'dark' | 'grid' | 'grey'
   const [particleCount, setParticleCount] = useState(0);
   const [fps, setFps] = useState(60);
+
+  // ── Load game presets on startup ──
+  useEffect(() => {
+    let cancelled = false;
+    async function loadGamePresets() {
+      try {
+        const res = await fetch('/api/game-presets');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const byCategory = await res.json(); // { skills: [...], buffs: [...], ... }
+        if (cancelled) return;
+        const gamePresets = [];
+        for (const [category, presets] of Object.entries(byCategory)) {
+          for (const p of presets) {
+            gamePresets.push({ ...deepClone(p), builtIn: true, _gameCategory: category });
+          }
+        }
+        setPresetLibrary(prev => {
+          // Merge: game presets replace lab built-ins when names match
+          const byName = new Map();
+          for (const p of prev) byName.set(p.name, p);
+          for (const gp of gamePresets) byName.set(gp.name, gp);
+          return Array.from(byName.values());
+        });
+        setGamePresetsLoaded(true);
+        console.log(`[ParticleLab] Loaded ${gamePresets.length} game presets from ${Object.keys(byCategory).length} category files`);
+      } catch (err) {
+        console.warn('[ParticleLab] Could not load game presets (API unavailable):', err.message);
+      }
+    }
+    loadGamePresets();
+    return () => { cancelled = true; };
+  }, []);
 
   // ── View Mode ── ('single' | 'compound' | 'projectile')
   const [viewMode, setViewMode] = useState('single');
@@ -230,6 +278,39 @@ export default function App() {
       localStorage.setItem('particleLab_userPresets', JSON.stringify(userPresets));
       return next;
     });
+  }, [preset]);
+
+  /** Save the current preset directly to the game's category JSON file. */
+  const saveToGame = useCallback(async () => {
+    const category = preset._gameCategory || guessCategory(preset);
+    setSaveToGameStatus('saving');
+    try {
+      const res = await fetch('/api/game-presets/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preset, category }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+      // Update local library to reflect the new category tag
+      setPresetLibrary(prev => {
+        const idx = prev.findIndex(p => p.name === preset.name);
+        const entry = { ...deepClone(preset), builtIn: true, _gameCategory: category };
+        if (idx !== -1) {
+          const next = [...prev];
+          next[idx] = entry;
+          return next;
+        }
+        return [...prev, entry];
+      });
+      setSaveToGameStatus('ok');
+      console.log(`[ParticleLab] Saved "${preset.name}" → ${category}.json (${data.action})`);
+      setTimeout(() => setSaveToGameStatus(null), 2000);
+    } catch (err) {
+      console.error('[ParticleLab] Save to game failed:', err);
+      setSaveToGameStatus('error');
+      setTimeout(() => setSaveToGameStatus(null), 3000);
+    }
   }, [preset]);
 
   const deletePreset = useCallback((name) => {
@@ -414,14 +495,15 @@ export default function App() {
       // Ctrl+Z = Undo, Ctrl+Y / Ctrl+Shift+Z = Redo
       if (e.ctrlKey && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
       if (e.ctrlKey && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
-      if (e.ctrlKey && e.key === 's') { e.preventDefault(); savePreset(); }
+      if (e.ctrlKey && e.key === 's' && e.shiftKey) { e.preventDefault(); saveToGame(); }
+      if (e.ctrlKey && e.key === 's' && !e.shiftKey) { e.preventDefault(); savePreset(); }
       if (e.ctrlKey && e.key === 'e') { e.preventDefault(); exportPreset(); }
       if (e.key === 'g' && !e.ctrlKey && e.target.tagName !== 'INPUT') { setShowGrid(g => !g); }
       if (e.key === 'l' && !e.ctrlKey && e.target.tagName !== 'INPUT') { setAutoEmit(a => !a); }
     };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [undo, redo, savePreset, exportPreset]);
+  }, [undo, redo, savePreset, saveToGame, exportPreset]);
 
   // ── Drag & Drop import ──
   useEffect(() => {
@@ -467,6 +549,9 @@ export default function App() {
       <Toolbar
         onNew={newPreset}
         onSave={savePreset}
+        onSaveToGame={saveToGame}
+        saveToGameStatus={saveToGameStatus}
+        gamePresetsLoaded={gamePresetsLoaded}
         onDuplicate={duplicatePreset}
         onExport={exportPreset}
         onExportAll={exportAll}

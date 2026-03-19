@@ -48,6 +48,8 @@ def _patrol_action(
     obstacles: set[tuple[int, int]],
     all_units: dict[str, PlayerState],
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
+    door_tiles: set[tuple[int, int]] | None = None,
+    allow_team_swap: str | None = None,
 ) -> PlayerAction:
     """Generate a scouting/patrol movement for an idle AI.
 
@@ -73,7 +75,7 @@ def _patrol_action(
     if len(_visited_history[ai_id]) > _MAX_VISIT_HISTORY:
         _visited_history[ai_id] = _visited_history[ai_id][-_MAX_VISIT_HISTORY:]
 
-    occupied = _build_occupied_set(all_units, ai_id, pending_moves)
+    occupied = _build_occupied_set(all_units, ai_id, pending_moves, allow_team_swap=allow_team_swap)
 
     # Check if we have an existing waypoint and whether we've reached it
     current_target = _patrol_targets.get(ai_id)
@@ -87,7 +89,7 @@ def _patrol_action(
         need_new_target = True
     else:
         # Check if our existing target is still reachable
-        path = a_star(ai_pos, current_target, grid_width, grid_height, obstacles, occupied)
+        path = a_star(ai_pos, current_target, grid_width, grid_height, obstacles, occupied, door_tiles)
         if path is None:
             need_new_target = True
 
@@ -106,10 +108,14 @@ def _patrol_action(
     next_step = get_next_step_toward(
         ai_pos, current_target,
         grid_width, grid_height,
-        obstacles, occupied,
+        obstacles, occupied, door_tiles,
     )
 
     if next_step:
+        from app.core.ai_stances import _maybe_interact_door
+        door_action = _maybe_interact_door(ai, next_step, door_tiles)
+        if door_action:
+            return door_action
         return PlayerAction(
             player_id=ai_id,
             action_type=ActionType.MOVE,

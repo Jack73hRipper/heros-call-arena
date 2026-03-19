@@ -48,6 +48,7 @@ from app.core.match_manager import (
     set_all_stances,
     clear_auto_target,
     set_auto_target,
+    set_dev_mode,
 )
 from app.services.scheduler import scheduler_manager
 
@@ -834,6 +835,12 @@ async def handle_clear_auto_target(ws_manager, match_id: str, player_id: str, da
     })
 
 
+async def handle_dev_mode(ws_manager, match_id: str, player_id: str, data: dict):
+    """Toggle dev mode for a player — enables full map visibility (skips FOV filtering)."""
+    enabled = bool(data.get("enabled", False))
+    set_dev_mode(match_id, player_id, enabled)
+
+
 # ---------------------------------------------------------------------------
 # Dispatch table
 # ---------------------------------------------------------------------------
@@ -865,6 +872,7 @@ MESSAGE_HANDLERS = {
     "destroy_item": handle_destroy_item,
     "set_auto_target": handle_set_auto_target,
     "clear_auto_target": handle_clear_auto_target,
+    "dev_mode": handle_dev_mode,
 }
 
 

@@ -34,6 +34,7 @@ export { themeEngine, ThemeEngine };
 // --- Local imports for renderFrame orchestrator ---
 import { TILE_SIZE, ENEMY_NAMES } from './renderConstants.js';
 import { drawDungeonTiles, drawFog, drawPortal, drawChanneling } from './dungeonRenderer.js';
+import { drawAmbientDarknessPass } from './PropLighting.js';
 import { getUnitColor, drawPlayer, drawBuffIcons, drawCrowdControlIndicators, drawStanceIndicators, drawUnderfootGlow, drawNameplateGlow, drawSelectedTargetIndicator, drawTargetReticle, _findSkillDef, drawUnitShadow } from './unitRenderer.js';
 import { drawHighlights, drawSkillHighlights, drawQueuePreview, drawHoverPathPreviews, drawGroundItems, drawLootHighlight, drawDamageFloaters, drawGroundItemLabels, drawTotems, drawGroundZones, drawRootEffects, drawSoulAnchorEffects } from './overlayRenderer.js';
 
@@ -219,6 +220,8 @@ export function renderFrame(ctx, {
   groundZones = [],
   // Phase 21F: Room data for props rendering
   dungeonRooms = [],
+  // Dev overlay: show all units regardless of FOV
+  showAllUnits = false,
 }) {
   clearCanvas(ctx, gridWidth, gridHeight);
 
@@ -337,7 +340,7 @@ export function renderFrame(ctx, {
 
     // If FOV is active, only draw units within visible tiles (always draw self)
     // FOV check uses authoritative integer tile position, not interpolated
-    if (visibleTiles && pid !== myPlayerId) {
+    if (visibleTiles && pid !== myPlayerId && !showAllUnits) {
       if (!visibleTiles.has(`${p.position.x},${p.position.y}`)) {
         return; // Skip — not in FOV
       }
@@ -491,9 +494,15 @@ export function renderFrame(ctx, {
   // Phase 26E: Draw soul anchor indicators on anchored units
   drawSoulAnchorEffects(ctx, players, ox, oy, visibleTiles, interpolatedPositions);
 
-  // Draw FOV fog overlay on top
+  // Ambient darkness: darken visible tiles, let light sources carve out bright pools
+  if (isDungeon && dungeonRooms.length > 0 && visibleTiles && themeEngine.isReady()) {
+    const ambientDarkness = themeEngine.theme?.ambient?.ambientDarkness ?? 0.35;
+    drawAmbientDarknessPass(ctx, gridWidth, gridHeight, visibleTiles, ox, oy, dungeonRooms, themeEngine.theme, ambientDarkness);
+  }
+
+  // Draw FOV fog overlay on top (pass dungeonRooms for light-modulated fog)
   if (visibleTiles) {
-    drawFog(ctx, gridWidth, gridHeight, visibleTiles, ox, oy, revealedTiles);
+    drawFog(ctx, gridWidth, gridHeight, visibleTiles, ox, oy, revealedTiles, dungeonRooms);
   }
 
   // Loot-System-Overhaul 3.3: Draw ground item labels when ALT is held

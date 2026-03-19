@@ -2,7 +2,7 @@
 
 Turn-based multiplayer combat arena & grimdark dungeon crawler — MMO Project.
 
-**Current status:** Launcher Phase L7 complete (Polish & Hardening — settings panel with install dir/browse/auto-check/minimize-to-tray/repair, system tray icon, window position persistence, loading spinner, smooth animated progress bar, file logging with rotation, keyboard shortcuts Enter/Esc, tray update notifications) · Launcher Phase L6 complete (Launcher Self-Update — electron-updater integration, auto-download background install, GitHub Releases publish config, notification bar with Restart Now, dev-mode skip, separate launcher v1.x / game v0.x versioning) · Launcher Phase L5 complete (Publish Pipeline — host-agnostic publish-config.json supporting R2/GitHub/local, publish-update.bat full build+hash+manifest+upload pipeline, write-patch-notes.bat template generator, bump-version.bat semver helper, start-publish.bat convenience wrapper) · Launcher Phase L4 complete (Download & Install — Downloader with progress/cancellation, SHA-256 Verifier, Extractor with atomic update swap, GameLauncher with auto-detect exe/minimize/foreground-on-exit, full UI progress bar with status pipeline, disk space check, installed.json write-back) · Launcher Phase L3 complete (Manifest & Version Check — VersionChecker module fetches remote latest.json, compares with local installed.json, UI state machine for not-installed/up-to-date/update-available/check-failed, patch notes markdown rendering, test manifest server) · Launcher Phase L2 complete (Game Packaging — PyInstaller spec for server bundling, Electron main.cjs spawns/kills bundled server in PROD mode with /health polling, electron-builder extraResources config, 5-step build-game-package.bat pipeline) · Launcher Phase L1 complete (Launcher Shell — frameless Electron window, grimdark theme, custom title bar, PLAY button) · Arena Analyst Phase D complete (Advanced Views — Composition Analysis with ranked comps + filterable table, Timeline Replay with SVG damage curves + turn event scrubber, Trend Charts with match volume/damage creep/win distribution) · Arena Analyst Phase C complete (Core Views — MatchList with filters, MatchDetail scoreboard/team comparison/MVP/kill feed, ClassBalance with sortable win rates/stat charts/class matrix) · Arena Analyst Phase B complete (Tool Scaffold — React+Vite app, Express API server, match history endpoints) · WFC Integration Phase C complete (Shared Module Format — canonical library.json, tool→server export pipeline, JSON loading with builtin fallback, round-trip import/export, 38 tests) · WFC Integration Phase B complete (Batch Generation — Best-of-N candidate selection, quality scoring, 33 tests) · WFC Integration Phase A complete (Dungeon Style Templates — 5 styles, auto-selection, floor-scaled weight/decorator overrides — 51 tests) · Phase 20 complete (Turn Resolver File Split — 2,240→267 line orchestrator, 10 sub-modules in turn_phases/, 61 smoke tests, 19 test imports migrated) · Phase 19 complete (Inventory/Stats Panel Overhaul — bag sort, set bonus badges, responsive width, class portrait, party quick-switch tabs) · Phase 18F complete (Loot Integration — rarity-scaled drops, bonus items, guaranteed rarity, gold multiplier, elite kill broadcast + client notifications — 38 tests) · Phase 18E complete (Client Visual Feedback — name colors, glow, tints, ghostly, minimap, combat log, enemy panel, affix ambient particles, death explosions, death celebrations) · Phase 18I complete (Enemy Identity Skills — 42 tests) · Phase 18G complete (Super Uniques — 63 tests) · Phase 18H complete (Enemy Forge Tool) · Phase 18D complete (Combat Integration — auras, on-hit effects, on-death explosions, ghostly phase-through, teleporter auto-cast, minion unlinking, 33 tests) · Phase 18C complete (Spawn Integration — 28 tests) · Phase 18B complete (Affix Engine — 150 tests) · Phase 18A complete (Monster Rarity Data Model) · Phase 16G complete (Client UI & Loot Presentation) · CSS split complete · 2933 tests passing
+**Current status:** Launcher Phase L7 complete (Polish & Hardening — settings panel with install dir/browse/auto-check/minimize-to-tray/repair, system tray icon, window position persistence, loading spinner, smooth animated progress bar, file logging with rotation, keyboard shortcuts Enter/Esc, tray update notifications) · Launcher Phase L6 complete (Launcher Self-Update — electron-updater integration, auto-download background install, GitHub Releases publish config, notification bar with Restart Now, dev-mode skip, separate launcher v1.x / game v0.x versioning) · Launcher Phase L5 complete (Publish Pipeline — host-agnostic publish-config.json supporting R2/GitHub/local, publish-update.bat full build+hash+manifest+upload pipeline, write-patch-notes.bat template generator, bump-version.bat semver helper, start-publish.bat convenience wrapper) · Launcher Phase L4 complete (Download & Install — Downloader with progress/cancellation, SHA-256 Verifier, Extractor with atomic update swap, GameLauncher with auto-detect exe/minimize/foreground-on-exit, full UI progress bar with status pipeline, disk space check, installed.json write-back) · Launcher Phase L3 complete (Manifest & Version Check — VersionChecker module fetches remote latest.json, compares with local installed.json, UI state machine for not-installed/up-to-date/update-available/check-failed, patch notes markdown rendering, test manifest server) · Launcher Phase L2 complete (Game Packaging — PyInstaller spec for server bundling, Electron main.cjs spawns/kills bundled server in PROD mode with /health polling, electron-builder extraResources config, 5-step build-game-package.bat pipeline) · Launcher Phase L1 complete (Launcher Shell — frameless Electron window, grimdark theme, custom title bar, PLAY button) · Arena Analyst Phase D complete (Advanced Views — Composition Analysis with ranked comps + filterable table, Timeline Replay with SVG damage curves + turn event scrubber, Trend Charts with match volume/damage creep/win distribution) · Arena Analyst Phase C complete (Core Views — MatchList with filters, MatchDetail scoreboard/team comparison/MVP/kill feed, ClassBalance with sortable win rates/stat charts/class matrix) · Arena Analyst Phase B complete (Tool Scaffold — React+Vite app, Express API server, match history endpoints) · WFC Integration Phase C complete (Shared Module Format — canonical library.json, tool→server export pipeline, JSON loading with builtin fallback, round-trip import/export, 38 tests) · WFC Integration Phase B complete (Batch Generation — Best-of-N candidate selection, quality scoring, 33 tests) · WFC Integration Phase A complete (Dungeon Style Templates — 5 styles, auto-selection, floor-scaled weight/decorator overrides — 51 tests) · Phase 20 complete (Turn Resolver File Split — 2,240→267 line orchestrator, 10 sub-modules in turn_phases/, 61 smoke tests, 19 test imports migrated) · Phase 19 complete (Inventory/Stats Panel Overhaul — bag sort, set bonus badges, responsive width, class portrait, party quick-switch tabs) · Phase 18F complete (Loot Integration — rarity-scaled drops, bonus items, guaranteed rarity, gold multiplier, elite kill broadcast + client notifications — 38 tests) · Phase 18E complete (Client Visual Feedback — name colors, glow, tints, ghostly, minimap, combat log, enemy panel, affix ambient particles, death explosions, death celebrations) · Phase 18I complete (Enemy Identity Skills — 42 tests) · Phase 18G complete (Super Uniques — 63 tests) · Phase 18H complete (Enemy Forge Tool) · Phase 18D complete (Combat Integration — auras, on-hit effects, on-death explosions, ghostly phase-through, teleporter auto-cast, minion unlinking, 33 tests) · Phase 18C complete (Spawn Integration — 28 tests) · Phase 18B complete (Affix Engine — 150 tests) · Phase 18A complete (Monster Rarity Data Model) · Phase 16G complete (Client UI & Loot Presentation) · CSS split complete · 3987 tests passing
 
 ## Project Structure
 
@@ -26,12 +26,14 @@ Arena/
 ├── start-publish.bat       # Build + publish game update
 │
 ├── docs/                   # Project documentation
+│   ├── DOCS-ARCHITECTURE.md        # ★ Master index — start here to find any doc
 │   ├── Current Phase.md            # Phase tracker — all milestones & test counts
+│   ├── changelog.md                # Permanent versioned changelog
+│   ├── class-overview.md           # Source of truth: all 11 playable classes
 │   ├── bug-log.md                  # Bug tracking log
 │   ├── websocket-protocol.md       # All WS message types and data shapes
-│   ├── project-audit-feb-2026.md   # Feb 2026 project audit
-│   ├── project-audit-file-splitting.md # File splitting audit
-│   ├── Phase Docs/                 # Design specs per phase
+│   ├── project-audit-march-2026.md # Current project health audit
+│   ├── Phase Docs/                 # Design specs per phase (57 files)
 │   │   ├── phase1-design-document-updated.md
 │   │   ├── phase2-arena-plus-v2.md
 │   │   ├── phase3-arena-refined.md
@@ -95,7 +97,7 @@ Arena/
 │   │   └── arena-analyst.md
 │   ├── Game stats references/
 │   │   └── game-balance-reference.md
-│   └── Achieve/                    # Archived docs (currently empty)
+│   └── Achieve/                    # Archived docs (completed/superseded)
 │
 ├── server/                 # Python backend (FastAPI)
 │   ├── pyproject.toml
@@ -480,76 +482,49 @@ start-enemy-forge.bat       # Enemy Forge
 
 ## Documentation
 
-### Phase Specs
-- [Phase 1](docs/Phase%20Docs/phase1-design-document-updated.md) — Original scope & timeline
-- [Phase 2](docs/Phase%20Docs/phase2-arena-plus-v2.md) — Arena Plus features, design & bug fix tracking
-- [Phase 3](docs/Phase%20Docs/phase3-arena-refined.md) — Larger maps, spawn system, performance monitoring
-- [Phase 4](docs/Phase%20Docs/phase4-grimdark-dungeon.md) — Grimdark dungeon crawler design
-- [Phase 4 Implementation](docs/Phase%20Docs/phase4-implementation-plan.md) — Sub-phase breakdown (4A–4G)
-- [Phase 5](docs/Phase%20Docs/phase5-qol-and-completion.md) — QoL improvements, merchant, portal scrolls, AI parties
-- [Phase 5 Feature 7](docs/Phase%20Docs/phase5-feature7-gear-management.md) — Town gear management
-- [Phase 6](docs/Phase%20Docs/phase6-skills-and-ui-overhaul.md) — Skills/spells system & dungeon UI overhaul
-- [Phase 6E](docs/Phase%20Docs/phase6E-dungeon-gui-plan.md) — Dungeon GUI reorganization
-- [Phase 7](docs/Phase%20Docs/phase7-party-movement-overhaul.md) — Party movement & AI overhaul
-- [Phase 8](docs/Phase%20Docs/phase8-party-ai-combat-intelligence.md) — Party AI combat intelligence
-- [Phase 8K](docs/Phase%20Docs/phase8K-ai-retreat-and-kiting.md) — AI retreat behavior & ranged kiting
-- [Phase 9](docs/Phase%20Docs/phase9-particle-effects-lab.md) — Particle effects system
-- [Phase 10](docs/Phase%20Docs/phase10-auto-target-pursuit.md) — Auto-target pursuit
-- [Phase 10G](docs/Phase%20Docs/phase10G-skill-auto-target.md) — Skill & ability auto-target pursuit
-- [Phase 11](docs/Phase%20Docs/phase11-class-identity.md) — Class identity design
-- [Phase 11 Log](docs/Phase%20Docs/phase11-implementation-log.md) — Phase 11 implementation log
-- [Phase 12](docs/Phase%20Docs/phase12-dungeon-run.md) — The Dungeon Run (multi-floor, extraction, CC, loot, audio)
-- [Phase 12 Procedural](docs/Phase%20Docs/phase12-feature5-procedural-dungeon.md) — Procedural dungeon generation feature
-- [Phase 13](docs/Phase%20Docs/phase13-path-forward.md) — Path Forward (cleanup, content depth, polish)
-- [Phase 14](docs/Phase%20Docs/phase14-visual-feedback.md) — Visual Feedback & Combat Clarity
-- [Phase 15](docs/Phase%20Docs/phase15-complete-experience.md) — Complete Experience
-- [Phase 15 Menu](docs/Phase%20Docs/phase15-menu-overhaul.md) — Menu overhaul
-- [Phase 16](docs/Phase%20Docs/phase16-item-equipment-overhaul.md) — Item & Equipment Overhaul (16A–16E complete)
-- [Phase 17](docs/Phase%20Docs/phase17-mage-class.md) — Mage Class
-- [Phase 18 Core](docs/Phase%20Docs/phase18-monster-rarity-core.md) — Monster Rarity & Affix System (18A–18D complete)
-- [Phase 18 Content](docs/Phase%20Docs/phase18-monster-rarity-content.md) — Monster Rarity Content & Visuals (18F complete, 18G complete, 18I complete, 18E complete, 18H complete)
-- [Phase 18J](docs/Phase%20Docs/phase18J-enemy-forge-skill-integration.md) — Enemy Forge Skill Integration
-- [Phase 19](docs/Phase%20Docs/phase19-inventory-panel-overhaul.md) — Inventory/Stats Panel Overhaul (Batch 3 complete)
-- [Phase 20](docs/Phase%20Docs/phase20-turn-resolver-split.md) — Turn Resolver File Split (all 6 phases complete)
-- [Enemy HP Rebalance](docs/Phase%20Docs/enemy-hp-rebalance-and-identity.md) — Enemy HP rebalance & identity
-- [Enemy Roster](docs/Phase%20Docs/enemy-roster-system.md) — Enemy roster system
-- [Loot System](docs/Phase%20Docs/loot-system-overhaul.md) — Loot system overhaul
-- [Party Control](docs/Phase%20Docs/party-control-system.md) — Party control system design
-- [WFC Integration](docs/Phase%20Docs/wfc-in-game-integration-plan.md) — WFC in-game integration plan (Phase A complete — dungeon style templates, 51 tests; Phase B complete — batch generation, 33 tests; Phase C complete — shared module format, 38 tests)
+> **📖 Full documentation map:** [docs/DOCS-ARCHITECTURE.md](docs/DOCS-ARCHITECTURE.md) — Master index of all project documentation. Agents and contributors should start there to navigate the docs tree.
 
-### Architecture
-- [CSS Split Plan](docs/css-split-plan.md) — Monolith CSS decomposition into 24 partials
-
-### Systems & References
-- [WebSocket Protocol](docs/websocket-protocol.md) — All message types and data shapes
-- [Action & Intent System](docs/Systems/action-intent-system.md) — Action and intent system design
-- [Combat System](docs/Systems/combat-system-overview.md) — Combat mechanics overview
-- [Combat Meter](docs/Systems/combat-meter.md) — Live combat statistics panel with per-skill breakdown drill-in
-- [Input & Targeting](docs/Systems/input-targeting-systems.md) — Input and targeting system design
-- [Projectile Travel](docs/Systems/projectile-travel-system.md) — Ranged projectile travel system (Phase 14G)
-- [Electron Desktop App](docs/Systems/electron-desktop-app.md) — Desktop app setup & packaging
-- [Minimap System](docs/Systems/minimap.md) — Minimap panel with normal/expanded modes
-- [Buff Particle Overhaul](docs/Systems/buff-particle-overhaul.md) — Buff particle effect redesign
-- [Particle Visibility Lifecycle](docs/Systems/particle-visibility-lifecycle.md) — Particle visibility & lifecycle system
-- [Audio Workbench](docs/Systems/audio-workbench.md) — Sound testing, categorization & config editor system
-- [Enemy Forge](docs/Systems/enemy-forge.md) — Monster rarity editing, affix tuning, TTK simulation & spawn preview system
-- [Affix System](docs/Systems/affix-system.md) — Item affix system design
-- [Audio System](docs/Systems/audio-system.md) — Audio system architecture
-- [Monster Rarity Visuals](docs/Systems/monster-rarity-visual-improvements.md) — Monster rarity visual improvements
-- [Weapon Class Lock](docs/Systems/weapon-class-lock-system.md) — Weapon class lock system
-- [Game Balance](docs/Game%20stats%20references/game-balance-reference.md) — Balance reference data
+### Key References
 - [Current Phase](docs/Current%20Phase.md) — Full milestone tracker with test counts
+- [Class Overview](docs/class-overview.md) — Source of truth for all 11 playable classes
+- [WebSocket Protocol](docs/websocket-protocol.md) — All message types and data shapes
+- [Project Health Audit](docs/project-audit-march-2026.md) — Current architecture health assessment
 
-### Tools
+### Phase Specs (57 docs)
+Design specs per feature phase — see [DOCS-ARCHITECTURE.md § Phase Docs](docs/DOCS-ARCHITECTURE.md#phase-docs--design-specs) for the full indexed list.
+
+Highlights:
+- [Phase 1](docs/Phase%20Docs/phase1-design-document-updated.md) — Original scope & timeline
+- [Phase 4](docs/Phase%20Docs/phase4-grimdark-dungeon.md) — Grimdark dungeon crawler design
+- [Phase 12](docs/Phase%20Docs/phase12-dungeon-run.md) — The Dungeon Run (multi-floor, extraction, CC, loot, audio)
+- [Phase 16](docs/Phase%20Docs/phase16-item-equipment-overhaul.md) — Item & Equipment Overhaul
+- [Phase 18 Core](docs/Phase%20Docs/phase18-monster-rarity-core.md) — Monster Rarity & Affix System
+- [Phase 20](docs/Phase%20Docs/phase20-turn-resolver-split.md) — Turn Resolver File Split
+- [Phase 21–26](docs/Phase%20Docs/phase21-bard-class.md) — New classes (Bard, Blood Knight, Plague Doctor, Revenant, Shaman)
+- [Phase 27](docs/Phase%20Docs/phase27-pvpve-dungeon-map.md) — PvPvE Dungeon
+
+### Systems & References (16 docs)
+Technical reference docs for current-state architecture — see [DOCS-ARCHITECTURE.md § Systems](docs/DOCS-ARCHITECTURE.md#systems--technical-references) for the full categorized list.
+
+- [Combat System](docs/Systems/combat-system-overview.md) — Master combat reference
+- [Action & Intent](docs/Systems/action-intent-system.md) — Action queueing pipeline
+- [Audio System](docs/Systems/audio-system.md) — Audio engine architecture
+- [Electron Desktop App](docs/Systems/electron-desktop-app.md) — Desktop app setup & packaging
+- [Affix System](docs/Systems/affix-system.md) — Item affix system design
+- [Game Balance](docs/Game%20stats%20references/game-balance-reference.md) — Balance reference data
+
+### Tools (9 docs)
+Dev tool user guides — see [DOCS-ARCHITECTURE.md § Tools](docs/DOCS-ARCHITECTURE.md#tools--development-tool-guides) for the full list with launch commands.
+
 - [WFC Dungeon Lab](docs/Tools/wfc-dungeon-lab.md) — Procedural dungeon generator
-- [Cave Automata Lab](docs/Tools/cave-automata-lab.md) — Cellular automata cave generator
-- [Sprite Cataloger](docs/Tools/sprite-cataloger.md) — Sprite sheet browser
-- [Module Sprite Decorator](docs/Tools/module-sprite-decorator.md) — Visual tile painting for WFC modules
-- [Dungeon Theme Designer](docs/Tools/theme-designer.md) — Procedural grimdark tile rendering + preview
-- [Audio Workbench](docs/Tools/audio-workbench.md) — Sound testing, categorization & config editor
-- [Item Forge](docs/Tools/item-forge.md) — Item/equipment creation, balancing & simulation tool
-- [Enemy Forge](docs/Tools/enemy-forge.md) — Monster rarity, affixes, champion types, TTK simulation & spawn preview
+- [Item Forge](docs/Tools/item-forge.md) — Item/equipment creation, balancing & simulation
+- [Enemy Forge](docs/Tools/enemy-forge.md) — Monster rarity, affixes, champion types, TTK simulation
 - [Arena Analyst](docs/Tools/arena-analyst.md) — Match tracker, balance analysis & trend visualization
+
+### Workflows
+- [Publish Workflow](docs/publish-workflow.md) — Publishing steps, versioning, build pipeline
+- [Launcher Pipeline](docs/launcher-pipeline.md) — Launcher versioning & update manifest flow
+- [New Class Template](docs/new-class-implementation-template.md) — Step-by-step protocol for implementing new classes
 
 ## Test Suite
 

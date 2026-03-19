@@ -448,16 +448,14 @@ class TestPriorityChain:
 # ---------------------------------------------------------------------------
 
 class TestEnemyAIExclusion:
-    """Enemy AI must never use potions or skills — the hero_id guard in
-    decide_ai_action routes enemies to aggressive/ranged/boss behavior,
-    NOT to _decide_stance_action."""
+    """Enemy AI behavior guards — enemies use aggressive/ranged/boss
+    behavior profiles, not stance-based _decide_stance_action."""
 
-    def test_enemy_ai_no_potions(self):
-        """Enemy AI at 10% HP with potions in inventory → never drinks.
+    def test_enemy_ai_does_not_drink_potions_phase28fix(self):
+        """Phase 28-FIX: Dungeon monsters (enemy_type set) do NOT drink potions.
 
-        decide_ai_action dispatches enemies to _decide_aggressive_action,
-        which has no potion logic. Even though _should_use_potion would
-        fire if called directly, the dispatch guard prevents it.
+        decide_ai_action guards potion usage behind enemy_type is None.
+        Monsters use base stats + rarity for power, not player-style potions.
         """
         enemy = make_enemy(hp=8, max_hp=80, inventory=[_health_potion()])
         all_units = {enemy.player_id: enemy}
@@ -467,7 +465,7 @@ class TestEnemyAIExclusion:
             obstacles=set(),
         )
 
-        # Enemy should get WAIT/MOVE/ATTACK — never USE_ITEM
+        # Phase 28-FIX: Monster should NOT drink potions
         assert action is None or action.action_type != ActionType.USE_ITEM
 
     def test_enemy_ai_with_class_uses_skills(self):
