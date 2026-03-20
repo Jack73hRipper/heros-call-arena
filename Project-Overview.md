@@ -22,7 +22,7 @@
 
 ---
 
-## The Pitch
+## The Arena
 
 You don't get to be the chosen one. You get to hire some poor bastard from a tavern, strap a rusty sword to his back, and shove him into a dungeon full of things that want to eat him. If he makes it out alive, you keep the loot. If he doesn't — and he probably won't — you lose him and everything he was carrying. Permanently.
 
