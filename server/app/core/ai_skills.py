@@ -134,6 +134,7 @@ def _try_skill(
         target_x=target_x,
         target_y=target_y,
         target_id=target_id,
+        reason=f"skill_{skill_id}",
     )
 
 

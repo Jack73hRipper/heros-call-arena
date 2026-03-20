@@ -159,6 +159,7 @@ def _try_loot_adjacent_chest(
                 action_type=ActionType.LOOT,
                 target_x=cx,
                 target_y=cy,
+                reason="loot_adjacent_chest",
             )
     return None
 
@@ -361,6 +362,7 @@ def _maybe_interact_door(
             action_type=ActionType.INTERACT,
             target_x=next_step[0],
             target_y=next_step[1],
+            reason="open_door",
         )
     return None
 
@@ -525,6 +527,7 @@ def _find_retreat_destination(
                     action_type=ActionType.MOVE,
                     target_x=next_step[0],
                     target_y=next_step[1],
+                    reason="retreat_to_support",
                 )
 
     # --- Priority 1.5: Move toward an active healing totem (Phase 26D) ---
@@ -555,6 +558,7 @@ def _find_retreat_destination(
                     action_type=ActionType.MOVE,
                     target_x=next_step[0],
                     target_y=next_step[1],
+                    reason="retreat_to_totem",
                 )
 
     # --- Priority 2: Move toward owner ---
@@ -577,6 +581,7 @@ def _find_retreat_destination(
                     action_type=ActionType.MOVE,
                     target_x=next_step[0],
                     target_y=next_step[1],
+                    reason="retreat_to_owner",
                 )
 
     # --- Priority 3: Generic flee — move away from nearest enemy ---
@@ -601,6 +606,7 @@ def _find_retreat_destination(
                 action_type=ActionType.MOVE,
                 target_x=retreat_tile[0],
                 target_y=retreat_tile[1],
+                reason="retreat_flee",
             )
 
     # Completely stuck — cornered, surrounded. Return None so caller
@@ -673,6 +679,7 @@ def _should_use_potion(
         player_id=ai.player_id,
         action_type=ActionType.USE_ITEM,
         target_x=best_index,
+        reason="potion_use",
     )
 
 
@@ -730,6 +737,7 @@ def _decide_stance_action(
                 player_id=ai.player_id,
                 action_type=ActionType.INTERACT,
                 target_id="enter_portal",
+                reason="portal_enter",
             )
 
         # Not on portal — pathfind toward it
@@ -754,6 +762,7 @@ def _decide_stance_action(
                 action_type=ActionType.MOVE,
                 target_x=sx,
                 target_y=sy,
+                reason="portal_path",
             )
         # If pathfinding failed (blocked), fall through to normal behavior
         # so the hero still fights instead of standing still
@@ -856,7 +865,7 @@ def _decide_follow_action(
     owner = _find_owner(ai, all_units)
     if not owner:
         # No owner found — fall back to wait
-        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="follow_no_owner")
 
     owner_pos = (owner.position.x, owner.position.y)
     dist_to_owner = _chebyshev(ai_pos, owner_pos)
@@ -904,8 +913,9 @@ def _decide_follow_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.MOVE,
                 target_x=next_step[0], target_y=next_step[1],
+                reason="follow_regroup",
             )
-        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="follow_regroup_stuck")
 
     # Priority 2: If enemies visible and close to owner, fight
     if enemies:
@@ -984,11 +994,13 @@ def _decide_follow_action(
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=best_tile[0], target_y=best_tile[1],
+                    reason="follow_kite_totem",
                 )
             if retreat_tile:
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=retreat_tile[0], target_y=retreat_tile[1],
+                    reason="follow_kite",
                 )
             # Can't step back — fall through to melee as last resort
 
@@ -997,6 +1009,7 @@ def _decide_follow_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.ATTACK,
                 target_x=target.position.x, target_y=target.position.y,
+                reason="follow_melee_adjacent",
             )
 
         if is_support:
@@ -1031,6 +1044,7 @@ def _decide_follow_action(
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=next_step[0], target_y=next_step[1],
+                    reason="follow_rush_melee",
                 )
 
         # Ranged attack if available
@@ -1042,6 +1056,7 @@ def _decide_follow_action(
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
                     target_x=target.position.x, target_y=target.position.y,
+                    reason="follow_ranged_attack",
                 )
 
         # Fix 2: Controller hold-position — when skills and ranged are on CD,
@@ -1057,7 +1072,7 @@ def _decide_follow_action(
             )
             if nearest_enemy_dist <= 4:
                 # Enemies within medium range — hold position, don't advance
-                return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+                return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="follow_controller_hold")
 
         # Move toward target (support: toward ally; others: toward enemy)
         next_step = get_next_step_toward(
@@ -1077,12 +1092,15 @@ def _decide_follow_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.MOVE,
                 target_x=next_step[0], target_y=next_step[1],
+                reason="follow_move_to_target",
             )
 
-        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="follow_path_failed")
 
-    # Priority 3: No enemies — if too far from owner (>2), path toward them
-    if dist_to_owner > 2:
+    # Priority 3: No enemies — if too far from owner (>1), path toward them
+    # Phase 29D fix: Reduced from >2 to >1 to prevent spawn congestion
+    # (followers idled in a 2-tile radius instead of trailing the leader).
+    if dist_to_owner > 1:
         next_step = get_next_step_toward(
             ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
         )
@@ -1093,7 +1111,30 @@ def _decide_follow_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.MOVE,
                 target_x=next_step[0], target_y=next_step[1],
+                reason="follow_trail_owner",
             )
+
+    # Phase 29D fix: Leader-is-moving tether — if the owner moved since last
+    # tick (position changed), followers keep trailing even at distance 1.
+    # This prevents corridor gridlock where 3–4 units cluster on the leader
+    # and can't resolve paths. Uses _position_history from ai_behavior.
+    if dist_to_owner <= 1:
+        from app.core.ai_behavior import _position_history
+        owner_history = _position_history.get(owner.player_id, [])
+        if len(owner_history) >= 2 and owner_history[-1] != owner_history[-2]:
+            # Owner moved last tick — trail them to keep formation loose
+            next_step = get_next_step_toward(
+                ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
+            )
+            if next_step and next_step != ai_pos:
+                door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=next_step[0], target_y=next_step[1],
+                    reason="follow_trail_moving",
+                )
 
     # Close enough, no enemies — Phase 29A: seek nearby unopened chests
     if chest_states:
@@ -1115,9 +1156,10 @@ def _decide_follow_action(
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=next_step[0], target_y=next_step[1],
+                    reason="follow_chest_seek",
                 )
 
-    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="follow_idle")
 
 
 # ---------------------------------------------------------------------------
@@ -1247,11 +1289,13 @@ def _decide_aggressive_stance_action(
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=best_tile[0], target_y=best_tile[1],
+                    reason="agg_kite_totem",
                 )
             if retreat_tile:
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=retreat_tile[0], target_y=retreat_tile[1],
+                    reason="agg_kite",
                 )
             # Can't step back — fall through to melee as last resort
 
@@ -1260,6 +1304,7 @@ def _decide_aggressive_stance_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.ATTACK,
                 target_x=target.position.x, target_y=target.position.y,
+                reason="agg_melee_adjacent",
             )
 
         # Close → rush to melee (non-ranged, non-support only)
@@ -1275,6 +1320,7 @@ def _decide_aggressive_stance_action(
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=next_step[0], target_y=next_step[1],
+                    reason="agg_rush_melee",
                 )
 
         # Ranged if available
@@ -1286,6 +1332,7 @@ def _decide_aggressive_stance_action(
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
                     target_x=target.position.x, target_y=target.position.y,
+                    reason="agg_ranged_attack",
                 )
 
         # Fix 2: Controller hold-position in aggressive stance — same idea as follow stance.
@@ -1296,7 +1343,7 @@ def _decide_aggressive_stance_action(
                 default=999,
             )
             if nearest_enemy_dist <= 4:
-                return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+                return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="agg_controller_hold")
 
         # Phase S3-A: Support roles position near allies, not toward enemies.
         # "Aggressive" for supports means "roam freely" not "become melee warrior."
@@ -1328,9 +1375,10 @@ def _decide_aggressive_stance_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.MOVE,
                 target_x=next_step[0], target_y=next_step[1],
+                reason="agg_move_to_target",
             )
 
-        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="agg_path_failed")
 
     # No enemies — check distance to owner
     if dist_to_owner > 5:
@@ -1345,6 +1393,7 @@ def _decide_aggressive_stance_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.MOVE,
                 target_x=next_step[0], target_y=next_step[1],
+                reason="agg_return_to_owner",
             )
 
     # Within range — try to reinforce allies or pursue memory
@@ -1374,9 +1423,10 @@ def _decide_aggressive_stance_action(
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=next_step[0], target_y=next_step[1],
+                    reason="agg_chest_seek",
                 )
 
-    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="agg_idle")
 
 
 # ---------------------------------------------------------------------------
@@ -1419,7 +1469,7 @@ def _decide_defensive_action(
 
     owner = _find_owner(ai, all_units)
     if not owner:
-        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="def_no_owner")
 
     owner_pos = (owner.position.x, owner.position.y)
     dist_to_owner = _chebyshev(ai_pos, owner_pos)
@@ -1468,6 +1518,7 @@ def _decide_defensive_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.MOVE,
                 target_x=next_step[0], target_y=next_step[1],
+                reason="def_return_to_owner",
             )
 
     # Priority 2: Engage enemies — role-aware
@@ -1537,11 +1588,13 @@ def _decide_defensive_action(
                     return PlayerAction(
                         player_id=ai_id, action_type=ActionType.MOVE,
                         target_x=best_tile[0], target_y=best_tile[1],
+                        reason="def_kite_totem",
                     )
             elif retreat_tile and _chebyshev(retreat_tile, owner_pos) <= 2:
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=retreat_tile[0], target_y=retreat_tile[1],
+                    reason="def_kite",
                 )
             # Can't kite without breaking tether — fall through to ranged/melee
 
@@ -1550,6 +1603,7 @@ def _decide_defensive_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.ATTACK,
                 target_x=target.position.x, target_y=target.position.y,
+                reason="def_melee_adjacent",
             )
 
         # Ranged attack if available and in range + LOS
@@ -1561,6 +1615,7 @@ def _decide_defensive_action(
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
                     target_x=target.position.x, target_y=target.position.y,
+                    reason="def_ranged_attack",
                 )
 
         # Controller hold-position when ranged on CD + enemies near
@@ -1570,7 +1625,7 @@ def _decide_defensive_action(
                 default=999,
             )
             if nearest_enemy_dist <= 4:
-                return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+                return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="def_controller_hold")
 
         # S2-D: Support positioning — stay near allies, not charge enemies
         if is_support:
@@ -1605,10 +1660,11 @@ def _decide_defensive_action(
                     )
                     # Re-check tether after totem bias
                     if _chebyshev(next_step, owner_pos) > 2:
-                        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+                        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="def_tether_hold")
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.MOVE,
                     target_x=next_step[0], target_y=next_step[1],
+                    reason="def_move_to_target",
                 )
 
     # No engageable threats — Phase 29A: seek nearby unopened chests (within tether)
@@ -1631,9 +1687,10 @@ def _decide_defensive_action(
                     return PlayerAction(
                         player_id=ai_id, action_type=ActionType.MOVE,
                         target_x=next_step[0], target_y=next_step[1],
+                        reason="def_chest_seek",
                     )
 
-    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="def_idle")
 
 
 # ---------------------------------------------------------------------------
@@ -1691,7 +1748,7 @@ def _decide_hold_action(
             loot_action = _try_loot_adjacent_chest(ai, chest_states)
             if loot_action:
                 return loot_action
-        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="hold_no_enemies")
 
     # Phase S1-B: Use _pick_best_target for smart melee selection
     # (scores by HP, threat, distance instead of arbitrary iteration order)
@@ -1704,6 +1761,7 @@ def _decide_hold_action(
         return PlayerAction(
             player_id=ai_id, action_type=ActionType.ATTACK,
             target_x=target.position.x, target_y=target.position.y,
+            reason="hold_melee",
         )
 
     # Phase S1-B: Use _pick_best_target for smart ranged selection
@@ -1722,7 +1780,8 @@ def _decide_hold_action(
             return PlayerAction(
                 player_id=ai_id, action_type=ActionType.RANGED_ATTACK,
                 target_x=target.position.x, target_y=target.position.y,
+                reason="hold_ranged",
             )
 
     # No targets in range — hold position
-    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="hold_idle")

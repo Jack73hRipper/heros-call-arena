@@ -177,10 +177,17 @@ def resolve_turn(
     )
 
     # Phase 1: Movement (returns pre-move snapshot for melee tracking)
+    # Phase 30A: Pass INTERACT player IDs so swap injection won't displace
+    # units that are about to open a door (resolved in Phase 1.5).
+    door_interacting_pids = {
+        a.player_id for a in interact_actions
+        if a.target_id not in ("enter_portal", "enter_stairs")
+    }
     pre_move_occupants = _resolve_movement(
         move_actions, players, grid_width, grid_height, obstacles, results,
         portal_context=portal_context,
         current_turn=turn_number,
+        interacting_pids=door_interacting_pids or None,
     )
 
     # Phase 1.5: Door Interactions (filter out enter_portal and enter_stairs actions)

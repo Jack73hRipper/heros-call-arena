@@ -8,8 +8,8 @@ per tick, and skill range helpers.
 
 from __future__ import annotations
 
-# Shared state dicts — imported from match_manager
-from app.core.match_manager import (
+# Shared state dicts — imported from match_store (single source of truth)
+from app.core.match_store import (
     _player_states,
 )
 

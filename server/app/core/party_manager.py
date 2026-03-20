@@ -8,11 +8,14 @@ multi-select, stance changes, and party member info.
 
 from __future__ import annotations
 
-# Shared state dicts — imported from match_manager
-from app.core.match_manager import (
+# Shared state dicts — imported from match_store (single source of truth)
+from app.core.match_store import (
     _player_states,
     _hero_ally_map,
     _action_queues,
+)
+# Functions still imported from match_manager
+from app.core.match_manager import (
     queue_action,
     clear_player_queue,
 )

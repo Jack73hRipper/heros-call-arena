@@ -5,11 +5,226 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.9] - 2026-03-20 - Match Manager Modularization
+
+**Architecture refactoring** - broke down the monolithic `match_manager.py` (3,220 lines, 55+ functions) into 9 focused sub-modules. Zero gameplay changes; purely internal code quality improvement enabling faster future development.
+
+### Refactored
+- **Phase 0:** Created `match_manager_BACKUP.py` safety copy (3,220 lines, 125 KB)
+- **Phase 1:** Extracted `match_store.py` - single source of truth for all 14 shared state dicts + `MAX_QUEUE_SIZE` constant
+  - `_active_matches`, `_player_states`, `_action_queues`, `_fov_cache`, `_lobby_chat`, `_class_selections`, `_hero_selections`, `_hero_ally_map`, `_username_map`, `_kill_tracker`, `_combat_stats`, `_match_timeline`, `_controlled_hero_map`, `_wave_state`, `_dev_mode_players`
+  - Updated 5 already-extracted modules (`hero_manager`, `party_manager`, `equipment_manager`, `wave_spawner`, `auto_target`) to import from `match_store` instead of `match_manager`
+- **Phase 2:** Extracted `action_queue.py` - 6 functions for persistent player action queue operations (queue, pop, clear, remove, get) with auto-target-aware clearing
+- **Phase 3:** Extracted `fov_manager.py` - FOV cache accessors, team FOV union, dev mode toggles
+- **Phase 4:** Extracted `match_payloads.py` - WebSocket payload builders (match start, game state, turn update); pure serializers with no side effects
+- **Phase 5:** Extracted `lobby_config.py` - lobby chat, class selection, match config operations
+- **Phase 6:** Extracted `loadout_generator.py` - enemy and hero equipment generation with rarity/floor scaling
+- **Phase 7:** Extracted `dungeon_manager.py` - dungeon lifecycle, WFC procedural generation, room-based enemy spawning, floor progression
+- **Phase 8:** Extracted `pvpve_manager.py` - PVPVE match flow orchestration with team distribution and diagonal-opposite spawn zones
+
+### Added
+- `ai_exploration.py` - room graph construction (`build_room_graph`), per-team room discovery/clearance tracking, unexplored room queries; foundation for strategic room-aware exploration
+- `batch_pvpve.py` - batch PVPVE simulation runner for validation
+- `match-manager-split-plan.md` - architecture plan document
+- `phase-strategic-exploration.md` - strategic exploration design spec
+- AI behavior audit and stalling analysis documentation
+
+### Maintained
+- Backward compatible - `match_manager.py` re-exports all symbols, zero import changes needed in callers
+- 4040 tests passing - zero regressions
+
+---
+
 ## [v0.1.8] - 2026-03-18 - Dungeon Lighting, Door System, HUD Overhaul & AI Upgrades
 
 **Published release** rolling up v0.1.7a through v0.1.7p. Major additions: prop lighting system with ambient darkness and fog-of-war light modulation, room door system with chokepoint separators, 7 new room archetypes with focal prop budget system, complete HUD overhaul (player/party HP bars, minimap relocation, 4-row grid layout), 7 new skill particle effects, door-aware AI pathfinding for all units, AI chest seeking for hero allies, unique class composition for AI parties, PVPVE location-based chest tiers, loot rarity rebalance, and multiple bug fixes. 3987 tests passing.
 
 See sub-entries below (v0.1.7a--v0.1.7p) for full technical details.
+
+---
+
+## [v0.1.7w] - 2026-03-20 - AI Oscillation Fix (Explore / Chest-Seek / Patrol Conflict)
+
+### Fixed
+- **Root cause**: `explore_room`, `aggro_chest_seek`, and `patrol_move` fought over the leader's movement on alternating turns, causing parties to permanently oscillate between 2 tiles (especially after opening a door or spotting a chest).
+- **Chest-seek oscillation** — Added `_chest_seek_suppressed` set parallel to `_explore_suppressed`. When oscillation is detected and the leader is stuck in a 2-tile cycle or confined to a 3×3 bounding box, both `explore_room` and `aggro_chest_seek` are suppressed so patrol's stale-area detector can force a distant waypoint. Adjacent chest looting (`_try_loot_adjacent_chest`) remains unaffected.
+- **Premature lift prevention** — Suppression now requires a minimum 20-turn cool-down (`_MIN_SUPPRESS_TURNS`) before the centroid-distance lift check (Manhattan ≥ 5) is evaluated. This prevents the explore/patrol sweep where the leader would move 5 tiles toward patrol, lift suppression, then immediately get pulled back by explore.
+- **Position history extended** — `_POSITION_HISTORY_LEN` increased from 4 to 8 for better pattern detection across longer oscillation cycles.
+- **Cross-system visited history** — `explore_room` moves now feed into patrol's `_visited_history`, letting the stale-area detector count explore_room positions toward its 10-turn threshold.
+- **Duplicate discard bug** — Fixed an unconditional `_explore_suppressed.discard()` that was bypassing the centroid-distance gate on every MOVE action.
+- 4040 tests passing.
+
+### Impact (10-seed PVPVE validation, 6×6 grid, 200 turns)
+- **Before**: All teams stuck at full HP for 200 turns; 0 PVE kills; no combat.
+- **After**: Average 13.5 PVE kills/match; team wipes in 8/10 seeds; 4 matches ended early due to elimination; every seed shows active exploration, chest looting, and combat.
+
+---
+
+## [v0.1.7v] - 2026-03-19 - Movement Deadlock Fix (Leader Priority + Stall Breaker)
+
+### Fixed
+- **Parties no longer get permanently stuck due to same-target movement deadlocks** — When a team leader and a follower (or multiple followers) both targeted the same tile in the same turn, the movement batch resolver picked one winner by alphabetical player_id. If a follower won, the leader's intent was removed, breaking the movement chain for all downstream units — every unit stayed in place, made the same decisions next turn, and remained deadlocked forever. A 20-seed diagnostic scan found **112 instances** of units issuing 10+ consecutive identical failed moves, with the worst cases lasting 98 turns.
+
+### Root Cause
+`resolve_movement_batch()` in combat.py resolved same-target conflicts with a flat priority: `(0 if human else 1, player_id)`. All AI units shared the same tier, so a random follower could beat its own team leader in a tile conflict. This removed the leader's move intent, which broke the chain resolver — nobody moved, and the same AI decisions repeated indefinitely.
+
+### Fix (Phase 30)
+- **Leader Priority (Fix A):** The same-target conflict priority now uses three tiers: `human (0) > team leader (1) > follower (2)`, with alphabetical player_id as tiebreaker within tiers. Leaders always win tile conflicts against their own followers, ensuring they keep moving. Once the leader moves, followers pathfind to the leader's new position, naturally breaking cascading deadlocks.
+- **Stall Breaker (Fix B):** Non-leader units that have been at the same position for 3+ consecutive turns while issuing MOVE actions are forced to WAIT on alternating turns, using a deterministic parity derived from the player_id. This ensures that when two followers deadlock on the same target tile, they yield on different turns — one passes while the other waits — breaking follower-vs-follower stalemates that leader priority alone doesn't resolve.
+
+### Simulation Results (PvPvE, 100 turns, 16 seeds)
+
+| Metric | Before Fix | After Fix | Change |
+|--------|-----------|-----------|--------|
+| Units with 10+ repeated identical moves | 112 | ~10 | **~91% reduction** |
+| Worst-case streak (turns stuck) | 98 | ~37 | **62% shorter** |
+| Seed 400 Team A final distance from spawn | ~3 tiles (stuck) | ~16 tiles (progressing) | **Fixed** |
+
+### Files Changed
+- `server/app/core/combat.py` — `_priority()` in `resolve_movement_batch()` now returns 3-tier priority: human (0) > team leader (1) > follower (2)
+- `server/app/core/ai_behavior.py` — Added stall breaker after oscillation suppression: forces WAIT on alternating turns when position unchanged for 3+ turns
+
+### Test Results
+- 3,993 tests passing (0 failures)
+
+---
+
+## [v0.1.7u] - 2026-03-19 - Door Swap Displacement Fix
+
+### Fixed
+- **AI units no longer get stuck at doors due to friendly swap injection** — When a party leader chose INTERACT to open a door, a trailing follower could MOVE onto the leader's tile in the same turn. The Friendly Swap Injection system (Phase 1 — movement) would then displace the leader backward to make room. By the time Phase 1.5 (door interactions) resolved, the leader was no longer adjacent to the door, causing the INTERACT to fail silently. The leader would re-queue INTERACT next turn, get swapped again, and loop — sometimes failing 3+ consecutive times at the same door while the rest of the party went idle.
+
+### Root Cause
+Phase ordering: Movement (Phase 1) resolves before Door Interactions (Phase 1.5). The swap injection had no awareness of pending INTERACT actions, so it would displace any stationary same-team unit — including one about to open a door.
+
+### Fix
+- **Swap Protection (Fix A):** Before resolving movement, collect all `player_id`s with pending INTERACT actions (door opens, not portal/stairs). During Friendly Swap Injection, skip any occupant in that set — they must not be displaced from their door-adjacent tile.
+- **Failure Logging (Fix C):** Surface `⚠ INTERACT FAILED` lines in batch PvPvE verbose output whenever a door interaction doesn't resolve, for future diagnostics.
+
+### Simulation Results (PvPvE, 200 turns)
+
+| Seed | Pre-Fix Failures | Post-Fix Failures |
+|------|-----------------|------------------|
+| 100 | 7 / 11 (64%) | 0 / 4 (0%) |
+| 200 | 5 / 19 (26%) | 0 / 9 (0%) |
+| 500 | 1 / 7 (14%) | 0 / 6 (0%) |
+| **5-match batch (seed 1000)** | — | **0 / 38 (0%)** |
+
+### Files Changed
+- `server/app/core/turn_phases/movement_phase.py` — Added `interacting_pids` parameter to `_resolve_movement()`; swap injection skips occupants with pending INTERACT actions
+- `server/app/core/turn_resolver.py` — Computes `door_interacting_pids` set from interact actions; passes to `_resolve_movement()`
+- `server/batch_pvpve.py` — Added failed INTERACT logging to `log_turn_results()`
+
+### Test Results
+- 3,911 tests passing (1 pre-existing unrelated failure in TestGreedSigil)
+
+---
+
+## [v0.1.7t] - 2026-03-19 - AI Hero Stalling Fixes (Follow Tightening, Leader Tether, Idle Trailing)
+
+### Fixed
+- **AI hero followers no longer stall for 5–17+ consecutive turns** — Three distinct stalling patterns were identified via PvPvE batch simulation analysis and fixed. Combined, these eliminate the worst hero idle behavior across all game modes (PvP, PvE, PvPvE, and human player parties).
+
+### Pattern 1: Follower Spawn Congestion (biggest impact)
+- **Before:** Followers evaluated `dist_to_owner <= 2` at spawn and hit the WAIT fallback. Teams would idle for 5–9 turns at match start while the leader walked far enough away to trigger the regroup threshold.
+- **Fix:** Reduced the follow-stance idle threshold from `dist_to_owner > 2` to `> 1` in `_decide_follow_action()`. Followers now only WAIT when literally adjacent (distance 1), not within a 2-tile radius.
+- **Impact:** Early game (T1–T20) went from 5–9 consecutive WAITs per follower down to 0–2 scattered WAITs. Applies to all hero allies including human player party companions.
+
+### Pattern 2: Corridor Gridlock / Leader Tether
+- **Before:** When a leader was moving and followers were already adjacent, followers would idle even as the leader walked away. In corridors, 3–4 followers would cluster on the same tile trying to reach the leader.
+- **Fix:** Added a "leader-is-moving" tether in `_decide_follow_action()`. When the owner's position changed since last tick (checked via `_position_history` from `ai_behavior.py`), adjacent followers attempt to trail the leader to maintain loose formation.
+- **Impact:** Prevents formation pile-ups in corridors. The 17-turn streak (Team D Hexblade 2) is eliminated entirely.
+
+### Pattern 3: Post-Combat / Idle Stalling
+- **Before:** After combat ended, hero allies in the aggressive behavior path hit an explicit `WAIT` at step 4c ("hold position instead of patrolling"). Combined with the follow-stance idle threshold, entire parties would freeze until the leader found a new target.
+- **Fix:** Hero allies at step 4c now trail their leader when idle instead of WAITing permanently. They path toward the owner when distance > 1, matching the follow-stance behavior. Only WAIT when already adjacent.
+- **Impact:** Eliminates 10–94 turn idle streaks that occurred when followers lost sight of all enemies.
+
+### Batch Simulation Results (PvPvE, 6x6 grid, 150 turns)
+
+| Metric | Pre-Fix | Post-Fix |
+|--------|---------|----------|
+| Worst WAIT streak | 17 turns | **4 turns** |
+| Team A WAIT% | 15.2% | **12.7%** |
+| Team B WAIT% | 9.0% | **6.3%** |
+| Team C WAIT% | 12.8% | **5.7%** |
+| Team D WAIT% | 17.4% | **3.3%** |
+
+### Files Changed
+- `server/app/core/ai_stances.py` — `_decide_follow_action()`: Priority 3 idle threshold `> 2` → `> 1`; added leader-is-moving tether block that checks `_position_history` for owner movement
+- `server/app/core/ai_behavior.py` — Added `_last_combat_tick` dict, `_ai_tick_counter`, `_POST_COMBAT_FOLLOW_GRACE` for post-combat tracking; step 4c in `_decide_aggressive_action()` now trails owner instead of permanent WAIT; cleanup in `run_ai_decisions()` and `clear_ai_patrol_state()`
+
+### Test Results
+- 3993 tests passing (0 new, 0 regressions)
+
+---
+
+## [v0.1.7s] - 2026-03-19 - Batch PVPVE Accuracy Fixes
+
+### Fixed
+- **Batch PVPVE AI teams now use follow-stance behavior matching live matches** — All 4 teams had their followers forcibly converted to independent aggressive AI, causing every unit to scatter solo across the dungeon. In live PVPVE, each team has 1 leader (aggressive) and 4 followers (follow-stance) who cluster within 2-4 tiles of their leader. Teams B/C/D now keep their original stance setup. Team A followers are re-parented to Team A's leader instead of the removed dummy host, preserving follow-stance behavior.
+- **Batch PVPVE AI can now see and loot ground items and chests** — `run_ai_decisions()` was missing `ground_items` and `chest_states` parameters that the live tick loop passes. AI units in batch simulations would ignore treasure chests and ground loot entirely, diverging from live dungeon behavior.
+
+### Impact
+These two fixes eliminate the most significant behavioral divergences between batch PVPVE simulations and live PVPVE dungeons. Batch results will now show coordinated team movement, group engagements, and chest/loot interaction — matching what players actually experience.
+
+### Files Changed
+- `server/batch_pvpve.py` — Replaced blanket aggressive conversion with leader re-parenting for Team A; removed unnecessary follower conversion for Teams B/C/D; added `ground_items` and `chest_states` kwargs to `run_ai_decisions()` call
+
+---
+
+## [v0.1.7r] - 2026-03-18 - PVPVE AI Team Chest Seeking Fix
+
+### Fixed
+- **PVPVE AI opponent hero parties now open and loot treasure chests** — In PVPVE mode, the 3 AI opponent hero teams would walk past treasure chests without ever interacting with them. The v0.1.7n chest-seeking feature only worked for hero allies (stance-based AI); PVPVE team leaders and their followers were completely excluded.
+
+### Root Cause
+PVPVE team leaders are spawned without `hero_id` or `ai_stance` (both `None`), so they bypass the stance-based AI gate in `decide_ai_action()` and fall through to `_decide_aggressive_action()`. That function's signature did not accept `chest_states` at all — it had no chest-seeking logic of any kind. PVPVE followers do enter the stance path (they have `hero_id` + `ai_stance="follow"`), but since the leader never stops near chests, followers are perpetually chasing and never reach their idle chest-seeking priority.
+
+| Unit | Code Path | Had chest_states? | Result |
+|------|-----------|-------------------|--------|
+| PVPVE Leader | `_decide_aggressive_action` | **No** | Never looted |
+| PVPVE Follower | `_decide_stance_action` → follow | Yes | Rarely — always chasing leader |
+
+### Fix
+- Added `chest_states` parameter to `_decide_aggressive_action()`
+- Added chest-seeking logic (step 4b2) in the idle section for hero party AI (`enemy_type is None`): first checks for adjacent chests to loot (`_try_loot_adjacent_chest`), then pathfinds toward the nearest unopened chest (`_find_nearest_unopened_chest`) within the aggressive seek range (6 tiles)
+- Threaded `chest_states` from `decide_ai_action()` through to `_decide_aggressive_action()`
+- Imported `_CHEST_SEEK_MAX_RANGE`, `_find_nearest_unopened_chest`, and `_try_loot_adjacent_chest` from `ai_stances.py` into `ai_behavior.py`
+- Dungeon enemies (`enemy_type` set) are excluded from chest seeking — only hero party AI units (PVPVE teams, player allies) can loot
+- Priority order preserved: Potions → Skills → Combat → Memory Pursuit → Reinforce Ally → **Chest Seeking** → Hero Wait → Ground Loot → Patrol
+- With leaders now stopping at chests, followers naturally end up nearby and can trigger their own stance-based chest looting
+
+### Files Changed
+- `server/app/core/ai_behavior.py` — Added `chest_states` param to `_decide_aggressive_action`; added step 4b2 chest-seeking logic for hero party AI; imported chest helpers from `ai_stances`
+- `server/tests/test_ai_chest_seeking.py` — 6 new tests: PVPVE leader loots adjacent chest, moves toward chest, ignores opened chests, combat takes priority, dungeon enemies excluded, no crash without chest_states
+
+### Test Results
+- 3993 tests passing (6 new, 0 regressions)
+
+---
+
+## [v0.1.7q] - 2026-03-18 - AI Hero Anti-Oscillation Fix
+
+### Fixed
+- **AI hero parties no longer oscillate (swap places) when patrolling or exploring** — Units would get stuck in an A→B→A loop, bouncing between two positions on alternating turns. This was most visible when a party of heroes was navigating corridors or open areas with no enemies nearby — the entire group would stall out with members endlessly trading tiles.
+
+### Root Cause
+The `allow_team_swap` flag (added in v0.1.7o) correctly lets A* path through same-team allies, but the cooperative movement prediction system (`pending_moves`) causes A* to compute different optimal paths each turn as the occupied-set shifts. On turn N, unit A vacates tile X and moves to tile Y; on turn N+1, the occupied set is reversed so A* sends the unit right back to X. No per-unit memory existed to detect or prevent this backtracking.
+
+### Fix
+- Added per-unit **position history** tracking (`_position_history`) in the AI decision orchestrator (`run_ai_decisions`). Each unit's last 4 positions are recorded across turns.
+- After each AI MOVE decision, the system checks whether the target tile matches the unit's position from the previous turn (A→B→A detection).
+- If oscillation is detected **and** no enemy is within 3 tiles (Chebyshev distance), the MOVE is suppressed to a WAIT. This breaks the oscillation loop while preserving legitimate combat maneuvers (kiting, retreating, chasing).
+- Position history is cleaned up alongside patrol/memory state on unit death and match end.
+
+### Technical Details
+- The combat exemption range (`_OSCILLATION_COMBAT_RANGE = 3`) ensures kiting, retreat, and pursuit behaviors are never disrupted — oscillation is only suppressed during idle exploration/patrolling
+- The fix is applied universally to all AI units (hero parties and PVE enemies) at the orchestrator level, requiring no changes to individual behavior functions
+- One-turn WAIT from suppression is sufficient to break the cycle: the next turn, the occupied set will have shifted enough for A* to find a non-oscillating path
+
+### Files Changed
+- `server/app/core/ai_behavior.py` — Added `_position_history` dict, `_POSITION_HISTORY_LEN`, `_OSCILLATION_COMBAT_RANGE` constants; added oscillation detection post-processing in `run_ai_decisions`; added history cleanup in `clear_ai_patrol_state`
 
 ---
 

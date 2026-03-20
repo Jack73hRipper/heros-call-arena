@@ -16,9 +16,8 @@ import uuid
 from app.models.player import PlayerState, Position, apply_enemy_stats, get_enemy_definition
 from app.core.map_loader import get_wave_spawner_config
 
-# Wave spawner state: match_id -> {current_wave, total_waves, wave_config, spawning_active}
-# Imported from match_manager at module level to share state
-from app.core.match_manager import (
+# Shared state dicts — imported from match_store (single source of truth)
+from app.core.match_store import (
     _wave_state,
     _active_matches,
     _player_states,

@@ -34,7 +34,13 @@ _patrol_targets: dict[str, tuple[int, int]] = {}
 _visited_history: dict[str, list[tuple[int, int]]] = {}
 
 # Max history length before oldest entries are dropped
-_MAX_VISIT_HISTORY = 15
+_MAX_VISIT_HISTORY = 30
+
+# Stale-position detector: if the AI stays within a 3×3 area for this many
+# consecutive patrol turns, force a distant waypoint (Option C).
+_STALE_AREA_THRESHOLD = 10
+_STALE_FORCE_MIN_DIST = 15  # minimum Manhattan distance for the forced waypoint
+_stale_area_counter: dict[str, int] = {}  # {ai_id: consecutive turns in same area}
 
 
 # ---------------------------------------------------------------------------
@@ -75,13 +81,35 @@ def _patrol_action(
     if len(_visited_history[ai_id]) > _MAX_VISIT_HISTORY:
         _visited_history[ai_id] = _visited_history[ai_id][-_MAX_VISIT_HISTORY:]
 
+    # --- Option C: Stale-position detector ---
+    # If the AI has stayed within a 3×3 area for _STALE_AREA_THRESHOLD
+    # consecutive patrol turns, force a distant waypoint to break out.
+    force_distant = False
+    history = _visited_history.get(ai_id, [])
+    if len(history) >= _STALE_AREA_THRESHOLD:
+        recent = history[-_STALE_AREA_THRESHOLD:]
+        xs = [p[0] for p in recent]
+        ys = [p[1] for p in recent]
+        area_width = max(xs) - min(xs)
+        area_height = max(ys) - min(ys)
+        if area_width <= 2 and area_height <= 2:
+            # Stuck in a tiny area — force distant waypoint
+            force_distant = True
+            _stale_area_counter[ai_id] = _stale_area_counter.get(ai_id, 0) + 1
+        else:
+            _stale_area_counter[ai_id] = 0
+    # ------------------------------------------------
+
     occupied = _build_occupied_set(all_units, ai_id, pending_moves, allow_team_swap=allow_team_swap)
 
     # Check if we have an existing waypoint and whether we've reached it
     current_target = _patrol_targets.get(ai_id)
     need_new_target = False
 
-    if current_target is None:
+    if force_distant:
+        # Stale-position detector triggered — must pick a far-away waypoint
+        need_new_target = True
+    elif current_target is None:
         need_new_target = True
     elif ai_pos == current_target:
         need_new_target = True
@@ -95,7 +123,8 @@ def _patrol_action(
 
     if need_new_target:
         new_target = _pick_patrol_waypoint(
-            ai_id, ai_pos, grid_width, grid_height, obstacles, occupied
+            ai_id, ai_pos, grid_width, grid_height, obstacles, occupied,
+            min_distance=_STALE_FORCE_MIN_DIST if force_distant else None,
         )
         if new_target:
             _patrol_targets[ai_id] = new_target
@@ -111,6 +140,29 @@ def _patrol_action(
         obstacles, occupied, door_tiles,
     )
 
+    # --- Option B: Reject back-step to previous tile ---
+    # If the next step would take us back to the tile we just came from,
+    # discard the current waypoint and pick a new one to break the oscillation.
+    if next_step and len(history) >= 2 and next_step == history[-2]:
+        _patrol_targets.pop(ai_id, None)
+        new_target = _pick_patrol_waypoint(
+            ai_id, ai_pos, grid_width, grid_height, obstacles, occupied,
+            min_distance=_STALE_FORCE_MIN_DIST if force_distant else 5,
+        )
+        if new_target:
+            _patrol_targets[ai_id] = new_target
+            next_step = get_next_step_toward(
+                ai_pos, new_target,
+                grid_width, grid_height,
+                obstacles, occupied, door_tiles,
+            )
+            # If the new waypoint ALSO back-steps, fall back to random move
+            if next_step and len(history) >= 2 and next_step == history[-2]:
+                return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied)
+        else:
+            return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied)
+    # ---------------------------------------------------
+
     if next_step:
         from app.core.ai_stances import _maybe_interact_door
         door_action = _maybe_interact_door(ai, next_step, door_tiles)
@@ -121,6 +173,7 @@ def _patrol_action(
             action_type=ActionType.MOVE,
             target_x=next_step[0],
             target_y=next_step[1],
+            reason="patrol_move",
         )
 
     # A* couldn't find a path — pick a new target next tick, random move now
@@ -135,6 +188,7 @@ def _pick_patrol_waypoint(
     grid_height: int,
     obstacles: set[tuple[int, int]],
     occupied: set[tuple[int, int]],
+    min_distance: int | None = None,
 ) -> tuple[int, int] | None:
     """Pick a patrol waypoint that encourages map exploration.
 
@@ -143,6 +197,10 @@ def _pick_patrol_waypoint(
       - Are far from the AI's current position (avoid local shuffle)
       - Have not been recently visited
       - Are walkable (not obstacles or occupied)
+
+    If *min_distance* is set, only consider candidates at least that many
+    Manhattan tiles away from the AI's current position (used by the
+    stale-position detector to force a breakout move).
 
     Falls back to closer tiles if no distant ones are available.
     """
@@ -158,9 +216,19 @@ def _pick_patrol_waypoint(
                 continue
             if (x, y) == ai_pos:
                 continue
+            # Enforce minimum distance when breaking out of stale area
+            if min_distance is not None:
+                if abs(x - ai_pos[0]) + abs(y - ai_pos[1]) < min_distance:
+                    continue
             candidates.append((x, y))
 
     if not candidates:
+        # If min_distance filtered everything out, retry without it
+        if min_distance is not None:
+            return _pick_patrol_waypoint(
+                ai_id, ai_pos, grid_width, grid_height, obstacles, occupied,
+                min_distance=None,
+            )
         return None
 
     # Score candidates: prefer center-biased + far from self + unvisited
@@ -170,8 +238,8 @@ def _pick_patrol_waypoint(
         # Closeness to map center — want to patrol toward center/contested areas
         dist_to_center = abs(tile[0] - center_x) + abs(tile[1] - center_y)
         center_bonus = max(0, (grid_width - dist_to_center))  # Higher when closer to center
-        # Visited penalty
-        visited_penalty = -5.0 if tile in visited_set else 0.0
+        # Visited penalty — strong enough to overcome center-bonus (Bug 2 fix)
+        visited_penalty = -15.0 if tile in visited_set else 0.0
         return dist_from_self + center_bonus * 0.5 + visited_penalty
 
     # Sort by score descending, then pick from the top candidates with some
@@ -201,10 +269,12 @@ def _random_adjacent_move(
                     action_type=ActionType.MOVE,
                     target_x=nx,
                     target_y=ny,
+                    reason="random_adjacent_move",
                 )
 
     # Completely surrounded — wait
     return PlayerAction(
         player_id=ai.player_id,
         action_type=ActionType.WAIT,
+        reason="patrol_surrounded",
     )

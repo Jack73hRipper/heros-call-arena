@@ -701,10 +701,19 @@ def resolve_movement_batch(
     for tile, claimants in list(target_claimants.items()):
         if len(claimants) <= 1:
             continue
-        # Priority: human > AI, then alphabetical player_id as tiebreaker
+        # Priority: human > AI team leader > AI follower, then alphabetical pid.
+        # Phase 30 fix: Team leaders must beat their followers in same-target
+        # conflicts.  Without this, a follower can win the tile the leader is
+        # patrolling toward, stranding both in a permanent deadlock (leader's
+        # intent is removed → chain breaks → everyone fails → same AI
+        # decisions next turn → infinite loop).
         def _priority(pid: str) -> tuple:
             p = players[pid]
-            return (0 if p.unit_type == "human" else 1, pid)
+            if p.unit_type == "human":
+                return (0, pid)
+            if p.is_team_leader:
+                return (1, pid)
+            return (2, pid)
 
         claimants.sort(key=_priority)
         winner = claimants[0]

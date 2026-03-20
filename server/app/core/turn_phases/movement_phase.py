@@ -39,11 +39,16 @@ def _resolve_movement(
     results: list[ActionResult],
     portal_context: dict | None = None,
     current_turn: int = 0,
+    interacting_pids: set[str] | None = None,
 ) -> dict[tuple[int, int], str]:
     """Phase 1 — Cooperative batch movement resolution.
 
     Args:
         current_turn: The current turn number (used for AI swap cooldown).
+        interacting_pids: Player IDs with pending INTERACT actions this turn
+            (e.g. opening doors). These units must not be displaced by swap
+            injection — doing so would move them away from the door before
+            Phase 1.5 resolves their INTERACT, causing it to fail.
 
     Returns:
         pre_move_occupants: Snapshot of unit positions before movement,
@@ -145,6 +150,12 @@ def _resolve_movement(
             if is_stunned(p) or is_slowed(p) or is_rooted(p):
                 break
             if portal_context and _is_channeling(p.player_id, portal_context):
+                break
+            # Phase 30A: Don't swap units that have a pending INTERACT action
+            # (e.g. opening a door). The swap would displace them before
+            # Phase 1.5 resolves the INTERACT, causing the adjacency check
+            # to fail silently.
+            if interacting_pids and p.player_id in interacting_pids:
                 break
             # Phase 2E: AI anti-oscillation cooldown — only for AI movers.
             # Player-initiated swaps are always allowed.

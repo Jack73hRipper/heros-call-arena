@@ -1,0 +1,8483 @@
+{
+  "match_id": "6162e628",
+  "timestamp": "2026-03-19T21:46:23.504473+00:00",
+  "duration_turns": 60,
+  "map_id": "pvpve_6162e628",
+  "match_type": "pvpve",
+  "winner": "party_wipe",
+  "config": {
+    "max_players": 120,
+    "tick_rate": 1.0,
+    "ai_opponents": 0,
+    "ai_allies": 5,
+    "ai_opponent_classes": [],
+    "ai_ally_classes": []
+  },
+  "teams": {
+    "team_a": [
+      {
+        "unit_id": "ai-de51b0",
+        "username": "Mage",
+        "class_id": "mage",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "ai-e643ba",
+        "username": "Bard",
+        "class_id": "bard",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 122,
+        "base_melee_damage": 0,
+        "base_armor": 8
+      },
+      {
+        "unit_id": "ai-c76c10",
+        "username": "Ranger",
+        "class_id": "ranger",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 92,
+        "base_melee_damage": 0,
+        "base_armor": 6
+      },
+      {
+        "unit_id": "ai-26fb40",
+        "username": "Plague Doctor",
+        "class_id": "plague_doctor",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 107,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "ai-02848b",
+        "username": "Inquisitor",
+        "class_id": "inquisitor",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 101,
+        "base_melee_damage": 0,
+        "base_armor": 9
+      }
+    ],
+    "team_b": [
+      {
+        "unit_id": "pvpve-ai-b-fc7fee",
+        "username": "Shaman",
+        "class_id": "shaman",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 104,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "pvpve-ai-b-40af7d",
+        "username": "Bard",
+        "class_id": "bard",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 127,
+        "base_melee_damage": 0,
+        "base_armor": 7
+      },
+      {
+        "unit_id": "pvpve-ai-b-0e86b9",
+        "username": "Ranger",
+        "class_id": "ranger",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 93,
+        "base_melee_damage": 0,
+        "base_armor": 6
+      },
+      {
+        "unit_id": "pvpve-ai-b-4d734d",
+        "username": "Plague Doctor",
+        "class_id": "plague_doctor",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 105,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "pvpve-ai-b-b6f2fd",
+        "username": "Crusader",
+        "class_id": "crusader",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 145,
+        "base_melee_damage": 0,
+        "base_armor": 11
+      },
+      {
+        "unit_id": "enemy-5a108b",
+        "username": "Undead Caster-1",
+        "class_id": "undead_caster",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 120,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-ad498b",
+        "username": "Demon-1",
+        "class_id": "demon_enrage",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 240,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "enemy-3fa73d",
+        "username": "Dark Priest-1",
+        "class_id": "dark_priest",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 170,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-65f84b",
+        "username": "Undead Caster-2",
+        "class_id": "undead_caster",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 120,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-5bd7b8",
+        "username": "Goblin Spearman-1",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 90,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-3d8890",
+        "username": "Insectoid-1",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-cc74a1",
+        "username": "Insectoid-2",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-8afb58",
+        "username": "Skeleton-1",
+        "class_id": "skeleton",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 125,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-7c1b6d",
+        "username": "Medusa-1",
+        "class_id": "medusa",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-170884",
+        "username": "Imp Lord-1",
+        "class_id": "imp_lord",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-524f1c",
+        "username": "Shade-1",
+        "class_id": "shade",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 130,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-062c2c",
+        "username": "Ghoul-1",
+        "class_id": "ghoul",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 100,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-4b3b32",
+        "username": "Insectoid-3",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-a21f0a",
+        "username": "Insectoid-4",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-4a8edb",
+        "username": "Acolyte-1",
+        "class_id": "acolyte",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 150,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-bb690e",
+        "username": "Ghoul-2",
+        "class_id": "ghoul",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 100,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-5af5fa",
+        "username": "Skeleton-2",
+        "class_id": "skeleton",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 125,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-5e3eb1",
+        "username": "Shade-2",
+        "class_id": "shade",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 130,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-e5b6b9",
+        "username": "Imp Lord-2",
+        "class_id": "imp_lord",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-6dcf0b",
+        "username": "Goblin Spearman-2",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 90,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-9d92e4",
+        "username": "Imp Lord-3",
+        "class_id": "imp_lord",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-f461e2",
+        "username": "Dark Priest-2",
+        "class_id": "dark_priest",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 170,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-b2fc44",
+        "username": "Undead Caster-3",
+        "class_id": "undead_caster",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 120,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-19c265",
+        "username": "Ghoul-3",
+        "class_id": "ghoul",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 100,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-6091b3",
+        "username": "Dark Priest-3",
+        "class_id": "dark_priest",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 170,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-8f12cd",
+        "username": "Medusa-2",
+        "class_id": "medusa",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-10c3f4",
+        "username": "Dark Priest-4",
+        "class_id": "dark_priest",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 170,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-e984c7",
+        "username": "Medusa-3",
+        "class_id": "medusa",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-17cdb0",
+        "username": "Medusa-4",
+        "class_id": "medusa",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-83a8a2",
+        "username": "Medusa-5",
+        "class_id": "medusa",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-1f81c1",
+        "username": "Ghoul-4",
+        "class_id": "ghoul",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 100,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-ce5fb4",
+        "username": "Goblin Spearman-3",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 90,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-ea1889",
+        "username": "Goblin Spearman-4",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 90,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-df6d63",
+        "username": "Medusa-6",
+        "class_id": "medusa",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-49fcf9",
+        "username": "Demon-2",
+        "class_id": "demon_enrage",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 240,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "enemy-50910e",
+        "username": "Imp Lord-4",
+        "class_id": "imp_lord",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-d15b24",
+        "username": "Medusa-7",
+        "class_id": "medusa",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-b48bfa",
+        "username": "Undead Knight",
+        "class_id": "undead_knight",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 425,
+        "base_melee_damage": 0,
+        "base_armor": 12
+      },
+      {
+        "unit_id": "enemy-717441",
+        "username": "Ghoul-5",
+        "class_id": "ghoul",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 100,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-202bd1",
+        "username": "Skeleton-3",
+        "class_id": "skeleton",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 125,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-523d00",
+        "username": "Undead Caster-4",
+        "class_id": "undead_caster",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 120,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-983fa5",
+        "username": "Insectoid-5",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-8ec631",
+        "username": "Insectoid-6",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-39401b",
+        "username": "Demon-3",
+        "class_id": "demon_enrage",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 240,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "enemy-2c2f5a",
+        "username": "Skeleton-4",
+        "class_id": "skeleton",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 125,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-a7def5",
+        "username": "Imp Lord-5",
+        "class_id": "imp_lord",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-a7c3c3",
+        "username": "Ghoul-6",
+        "class_id": "ghoul",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 100,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-c9b27b",
+        "username": "Insectoid-7",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-d2e2b6",
+        "username": "Demon-4",
+        "class_id": "demon_enrage",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 240,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "enemy-effd4a",
+        "username": "Dark Priest-5",
+        "class_id": "dark_priest",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 170,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-66416f",
+        "username": "Acolyte-2",
+        "class_id": "acolyte",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 150,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-e22626",
+        "username": "Insectoid-8",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-3f451b",
+        "username": "Ghoul-7",
+        "class_id": "ghoul",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 100,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-49be25",
+        "username": "Goblin Spearman-5",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 90,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-f1c260",
+        "username": "Medusa-8",
+        "class_id": "medusa",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 180,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "enemy-ec734a",
+        "username": "Demon-5",
+        "class_id": "demon_enrage",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 240,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "enemy-7cffc2",
+        "username": "Ghoul-8",
+        "class_id": "ghoul",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 100,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-584329",
+        "username": "Skeleton-5",
+        "class_id": "skeleton",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 125,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-b7cf7a",
+        "username": "Goblin Spearman-6",
+        "class_id": null,
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 90,
+        "base_melee_damage": 0,
+        "base_armor": 3
+      },
+      {
+        "unit_id": "enemy-44efe3",
+        "username": "Undead Caster-5",
+        "class_id": "undead_caster",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 120,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      },
+      {
+        "unit_id": "enemy-fff8fc",
+        "username": "Undead Caster-6",
+        "class_id": "undead_caster",
+        "team": "pve",
+        "is_ai": true,
+        "base_hp": 120,
+        "base_melee_damage": 0,
+        "base_armor": 2
+      }
+    ],
+    "team_c": [
+      {
+        "unit_id": "pvpve-ai-c-f246d1",
+        "username": "Bard 2",
+        "class_id": "bard",
+        "team": "c",
+        "is_ai": true,
+        "base_hp": 129,
+        "base_melee_damage": 0,
+        "base_armor": 7
+      },
+      {
+        "unit_id": "pvpve-ai-c-ca88cb",
+        "username": "Confessor",
+        "class_id": "confessor",
+        "team": "c",
+        "is_ai": true,
+        "base_hp": 128,
+        "base_melee_damage": 0,
+        "base_armor": 7
+      },
+      {
+        "unit_id": "pvpve-ai-c-b19950",
+        "username": "Inquisitor",
+        "class_id": "inquisitor",
+        "team": "c",
+        "is_ai": true,
+        "base_hp": 102,
+        "base_melee_damage": 0,
+        "base_armor": 8
+      },
+      {
+        "unit_id": "pvpve-ai-c-e7f2e4",
+        "username": "Crusader 2",
+        "class_id": "crusader",
+        "team": "c",
+        "is_ai": true,
+        "base_hp": 168,
+        "base_melee_damage": 0,
+        "base_armor": 10
+      },
+      {
+        "unit_id": "pvpve-ai-c-66126b",
+        "username": "Mage",
+        "class_id": "mage",
+        "team": "c",
+        "is_ai": true,
+        "base_hp": 97,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      }
+    ],
+    "team_d": [
+      {
+        "unit_id": "pvpve-ai-d-6340fe",
+        "username": "Mage 2",
+        "class_id": "mage",
+        "team": "d",
+        "is_ai": true,
+        "base_hp": 93,
+        "base_melee_damage": 0,
+        "base_armor": 4
+      },
+      {
+        "unit_id": "pvpve-ai-d-d5528c",
+        "username": "Bard 3",
+        "class_id": "bard",
+        "team": "d",
+        "is_ai": true,
+        "base_hp": 141,
+        "base_melee_damage": 0,
+        "base_armor": 7
+      },
+      {
+        "unit_id": "pvpve-ai-d-f3b27b",
+        "username": "Plague Doctor 2",
+        "class_id": "plague_doctor",
+        "team": "d",
+        "is_ai": true,
+        "base_hp": 95,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "pvpve-ai-d-e97b9e",
+        "username": "Shaman 2",
+        "class_id": "shaman",
+        "team": "d",
+        "is_ai": true,
+        "base_hp": 108,
+        "base_melee_damage": 0,
+        "base_armor": 5
+      },
+      {
+        "unit_id": "pvpve-ai-d-5d3d62",
+        "username": "Blood Knight",
+        "class_id": "blood_knight",
+        "team": "d",
+        "is_ai": true,
+        "base_hp": 123,
+        "base_melee_damage": 0,
+        "base_armor": 10
+      }
+    ]
+  },
+  "unit_stats": {
+    "ai-de51b0": {
+      "unit_id": "ai-de51b0",
+      "username": "Mage",
+      "class_id": "mage",
+      "team": "a",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 138,
+      "damage_taken": 90,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 31,
+      "items_looted": 0,
+      "highest_hit": 68,
+      "overkill_damage": 0
+    },
+    "ai-e643ba": {
+      "unit_id": "ai-e643ba",
+      "username": "Bard",
+      "class_id": "bard",
+      "team": "a",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 27,
+      "damage_taken": 272,
+      "healing_done": 120,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 59,
+      "items_looted": 0,
+      "highest_hit": 8,
+      "overkill_damage": 0
+    },
+    "ai-c76c10": {
+      "unit_id": "ai-c76c10",
+      "username": "Ranger",
+      "class_id": "ranger",
+      "team": "a",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 156,
+      "damage_taken": 77,
+      "healing_done": 46,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 44,
+      "items_looted": 0,
+      "highest_hit": 42,
+      "overkill_damage": 0
+    },
+    "ai-26fb40": {
+      "unit_id": "ai-26fb40",
+      "username": "Plague Doctor",
+      "class_id": "plague_doctor",
+      "team": "a",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 14,
+      "damage_taken": 182,
+      "healing_done": 129,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 47,
+      "items_looted": 0,
+      "highest_hit": 14,
+      "overkill_damage": 0
+    },
+    "ai-02848b": {
+      "unit_id": "ai-02848b",
+      "username": "Inquisitor",
+      "class_id": "inquisitor",
+      "team": "a",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 149,
+      "damage_taken": 117,
+      "healing_done": 2,
+      "kills": 1,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 36,
+      "items_looted": 0,
+      "highest_hit": 50,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-b-fc7fee": {
+      "unit_id": "pvpve-ai-b-fc7fee",
+      "username": "Shaman",
+      "class_id": "shaman",
+      "team": "b",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 38,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 1,
+      "highest_hit": 21,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-b-40af7d": {
+      "unit_id": "pvpve-ai-b-40af7d",
+      "username": "Bard",
+      "class_id": "bard",
+      "team": "b",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-b-0e86b9": {
+      "unit_id": "pvpve-ai-b-0e86b9",
+      "username": "Ranger",
+      "class_id": "ranger",
+      "team": "b",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 286,
+      "damage_taken": 17,
+      "healing_done": 17,
+      "kills": 1,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 85,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-b-4d734d": {
+      "unit_id": "pvpve-ai-b-4d734d",
+      "username": "Plague Doctor",
+      "class_id": "plague_doctor",
+      "team": "b",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-b-b6f2fd": {
+      "unit_id": "pvpve-ai-b-b6f2fd",
+      "username": "Crusader",
+      "class_id": "crusader",
+      "team": "b",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 267,
+      "damage_taken": 25,
+      "healing_done": 0,
+      "kills": 2,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 23,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-c-f246d1": {
+      "unit_id": "pvpve-ai-c-f246d1",
+      "username": "Bard 2",
+      "class_id": "bard",
+      "team": "c",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-c-ca88cb": {
+      "unit_id": "pvpve-ai-c-ca88cb",
+      "username": "Confessor",
+      "class_id": "confessor",
+      "team": "c",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-c-b19950": {
+      "unit_id": "pvpve-ai-c-b19950",
+      "username": "Inquisitor",
+      "class_id": "inquisitor",
+      "team": "c",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-c-e7f2e4": {
+      "unit_id": "pvpve-ai-c-e7f2e4",
+      "username": "Crusader 2",
+      "class_id": "crusader",
+      "team": "c",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-c-66126b": {
+      "unit_id": "pvpve-ai-c-66126b",
+      "username": "Mage",
+      "class_id": "mage",
+      "team": "c",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-d-6340fe": {
+      "unit_id": "pvpve-ai-d-6340fe",
+      "username": "Mage 2",
+      "class_id": "mage",
+      "team": "d",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 1006,
+      "damage_taken": 50,
+      "healing_done": 0,
+      "kills": 8,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 1,
+      "highest_hit": 90,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-d-d5528c": {
+      "unit_id": "pvpve-ai-d-d5528c",
+      "username": "Bard 3",
+      "class_id": "bard",
+      "team": "d",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-d-f3b27b": {
+      "unit_id": "pvpve-ai-d-f3b27b",
+      "username": "Plague Doctor 2",
+      "class_id": "plague_doctor",
+      "team": "d",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 10,
+      "damage_taken": 0,
+      "healing_done": 4,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 6,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-d-e97b9e": {
+      "unit_id": "pvpve-ai-d-e97b9e",
+      "username": "Shaman 2",
+      "class_id": "shaman",
+      "team": "d",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 4,
+      "damage_taken": 0,
+      "healing_done": 144,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 2,
+      "overkill_damage": 0
+    },
+    "pvpve-ai-d-5d3d62": {
+      "unit_id": "pvpve-ai-d-5d3d62",
+      "username": "Blood Knight",
+      "class_id": "blood_knight",
+      "team": "d",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 322,
+      "damage_taken": 180,
+      "healing_done": 99,
+      "kills": 1,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 1,
+      "highest_hit": 114,
+      "overkill_damage": 0
+    },
+    "enemy-5a108b": {
+      "unit_id": "enemy-5a108b",
+      "username": "Undead Caster-1",
+      "class_id": "undead_caster",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-ad498b": {
+      "unit_id": "enemy-ad498b",
+      "username": "Demon-1",
+      "class_id": "demon_enrage",
+      "team": "pve",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 8,
+      "damage_taken": 226,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 3,
+      "items_looted": 0,
+      "highest_hit": 8,
+      "overkill_damage": 0
+    },
+    "enemy-3fa73d": {
+      "unit_id": "enemy-3fa73d",
+      "username": "Dark Priest-1",
+      "class_id": "dark_priest",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-65f84b": {
+      "unit_id": "enemy-65f84b",
+      "username": "Undead Caster-2",
+      "class_id": "undead_caster",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-5bd7b8": {
+      "unit_id": "enemy-5bd7b8",
+      "username": "Goblin Spearman-1",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-3d8890": {
+      "unit_id": "enemy-3d8890",
+      "username": "Insectoid-1",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-cc74a1": {
+      "unit_id": "enemy-cc74a1",
+      "username": "Insectoid-2",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-8afb58": {
+      "unit_id": "enemy-8afb58",
+      "username": "Skeleton-1",
+      "class_id": "skeleton",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-7c1b6d": {
+      "unit_id": "enemy-7c1b6d",
+      "username": "Medusa-1",
+      "class_id": "medusa",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-170884": {
+      "unit_id": "enemy-170884",
+      "username": "Imp Lord-1",
+      "class_id": "imp_lord",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-524f1c": {
+      "unit_id": "enemy-524f1c",
+      "username": "Shade-1",
+      "class_id": "shade",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-062c2c": {
+      "unit_id": "enemy-062c2c",
+      "username": "Ghoul-1",
+      "class_id": "ghoul",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-4b3b32": {
+      "unit_id": "enemy-4b3b32",
+      "username": "Insectoid-3",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-a21f0a": {
+      "unit_id": "enemy-a21f0a",
+      "username": "Insectoid-4",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-4a8edb": {
+      "unit_id": "enemy-4a8edb",
+      "username": "Acolyte-1",
+      "class_id": "acolyte",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-bb690e": {
+      "unit_id": "enemy-bb690e",
+      "username": "Ghoul-2",
+      "class_id": "ghoul",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-5af5fa": {
+      "unit_id": "enemy-5af5fa",
+      "username": "Skeleton-2",
+      "class_id": "skeleton",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-5e3eb1": {
+      "unit_id": "enemy-5e3eb1",
+      "username": "Shade-2",
+      "class_id": "shade",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-e5b6b9": {
+      "unit_id": "enemy-e5b6b9",
+      "username": "Imp Lord-2",
+      "class_id": "imp_lord",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-6dcf0b": {
+      "unit_id": "enemy-6dcf0b",
+      "username": "Goblin Spearman-2",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-9d92e4": {
+      "unit_id": "enemy-9d92e4",
+      "username": "Imp Lord-3",
+      "class_id": "imp_lord",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-f461e2": {
+      "unit_id": "enemy-f461e2",
+      "username": "Dark Priest-2",
+      "class_id": "dark_priest",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-b2fc44": {
+      "unit_id": "enemy-b2fc44",
+      "username": "Undead Caster-3",
+      "class_id": "undead_caster",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-19c265": {
+      "unit_id": "enemy-19c265",
+      "username": "Ghoul-3",
+      "class_id": "ghoul",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-6091b3": {
+      "unit_id": "enemy-6091b3",
+      "username": "Dark Priest-3",
+      "class_id": "dark_priest",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-8f12cd": {
+      "unit_id": "enemy-8f12cd",
+      "username": "Medusa-2",
+      "class_id": "medusa",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-10c3f4": {
+      "unit_id": "enemy-10c3f4",
+      "username": "Dark Priest-4",
+      "class_id": "dark_priest",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-e984c7": {
+      "unit_id": "enemy-e984c7",
+      "username": "Medusa-3",
+      "class_id": "medusa",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-17cdb0": {
+      "unit_id": "enemy-17cdb0",
+      "username": "Medusa-4",
+      "class_id": "medusa",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-83a8a2": {
+      "unit_id": "enemy-83a8a2",
+      "username": "Medusa-5",
+      "class_id": "medusa",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-1f81c1": {
+      "unit_id": "enemy-1f81c1",
+      "username": "Ghoul-4",
+      "class_id": "ghoul",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-ce5fb4": {
+      "unit_id": "enemy-ce5fb4",
+      "username": "Goblin Spearman-3",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-ea1889": {
+      "unit_id": "enemy-ea1889",
+      "username": "Goblin Spearman-4",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-df6d63": {
+      "unit_id": "enemy-df6d63",
+      "username": "Medusa-6",
+      "class_id": "medusa",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-49fcf9": {
+      "unit_id": "enemy-49fcf9",
+      "username": "Demon-2",
+      "class_id": "demon_enrage",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-50910e": {
+      "unit_id": "enemy-50910e",
+      "username": "Imp Lord-4",
+      "class_id": "imp_lord",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-d15b24": {
+      "unit_id": "enemy-d15b24",
+      "username": "Medusa-7",
+      "class_id": "medusa",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-b48bfa": {
+      "unit_id": "enemy-b48bfa",
+      "username": "Undead Knight",
+      "class_id": "undead_knight",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-717441": {
+      "unit_id": "enemy-717441",
+      "username": "Ghoul-5",
+      "class_id": "ghoul",
+      "team": "pve",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 0,
+      "damage_taken": 112,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 6,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-202bd1": {
+      "unit_id": "enemy-202bd1",
+      "username": "Skeleton-3",
+      "class_id": "skeleton",
+      "team": "pve",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 7,
+      "damage_taken": 130,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 23,
+      "items_looted": 0,
+      "highest_hit": 7,
+      "overkill_damage": 0
+    },
+    "enemy-523d00": {
+      "unit_id": "enemy-523d00",
+      "username": "Undead Caster-4",
+      "class_id": "undead_caster",
+      "team": "pve",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 27,
+      "damage_taken": 131,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 10,
+      "items_looted": 0,
+      "highest_hit": 8,
+      "overkill_damage": 0
+    },
+    "enemy-983fa5": {
+      "unit_id": "enemy-983fa5",
+      "username": "Insectoid-5",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 8,
+      "damage_taken": 112,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 1,
+      "items_looted": 0,
+      "highest_hit": 8,
+      "overkill_damage": 0
+    },
+    "enemy-8ec631": {
+      "unit_id": "enemy-8ec631",
+      "username": "Insectoid-6",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 0,
+      "damage_taken": 114,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 2,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-39401b": {
+      "unit_id": "enemy-39401b",
+      "username": "Demon-3",
+      "class_id": "demon_enrage",
+      "team": "pve",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 35,
+      "damage_taken": 240,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 20,
+      "items_looted": 0,
+      "highest_hit": 8,
+      "overkill_damage": 0
+    },
+    "enemy-2c2f5a": {
+      "unit_id": "enemy-2c2f5a",
+      "username": "Skeleton-4",
+      "class_id": "skeleton",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-a7def5": {
+      "unit_id": "enemy-a7def5",
+      "username": "Imp Lord-5",
+      "class_id": "imp_lord",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-a7c3c3": {
+      "unit_id": "enemy-a7c3c3",
+      "username": "Ghoul-6",
+      "class_id": "ghoul",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-c9b27b": {
+      "unit_id": "enemy-c9b27b",
+      "username": "Insectoid-7",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-d2e2b6": {
+      "unit_id": "enemy-d2e2b6",
+      "username": "Demon-4",
+      "class_id": "demon_enrage",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-effd4a": {
+      "unit_id": "enemy-effd4a",
+      "username": "Dark Priest-5",
+      "class_id": "dark_priest",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-66416f": {
+      "unit_id": "enemy-66416f",
+      "username": "Acolyte-2",
+      "class_id": "acolyte",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-e22626": {
+      "unit_id": "enemy-e22626",
+      "username": "Insectoid-8",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-3f451b": {
+      "unit_id": "enemy-3f451b",
+      "username": "Ghoul-7",
+      "class_id": "ghoul",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-49be25": {
+      "unit_id": "enemy-49be25",
+      "username": "Goblin Spearman-5",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-f1c260": {
+      "unit_id": "enemy-f1c260",
+      "username": "Medusa-8",
+      "class_id": "medusa",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 23,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-ec734a": {
+      "unit_id": "enemy-ec734a",
+      "username": "Demon-5",
+      "class_id": "demon_enrage",
+      "team": "pve",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 39,
+      "damage_taken": 248,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 56,
+      "items_looted": 0,
+      "highest_hit": 10,
+      "overkill_damage": 0
+    },
+    "enemy-7cffc2": {
+      "unit_id": "enemy-7cffc2",
+      "username": "Ghoul-8",
+      "class_id": "ghoul",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-584329": {
+      "unit_id": "enemy-584329",
+      "username": "Skeleton-5",
+      "class_id": "skeleton",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-b7cf7a": {
+      "unit_id": "enemy-b7cf7a",
+      "username": "Goblin Spearman-6",
+      "class_id": null,
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-44efe3": {
+      "unit_id": "enemy-44efe3",
+      "username": "Undead Caster-5",
+      "class_id": "undead_caster",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "enemy-fff8fc": {
+      "unit_id": "enemy-fff8fc",
+      "username": "Undead Caster-6",
+      "class_id": "undead_caster",
+      "team": "pve",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 0,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 60,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    }
+  },
+  "timeline": [
+    {
+      "turn": 1,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            2,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            57,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            4,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-b48bfa",
+          "to": [
+            41,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-523d00",
+          "to": [
+            4,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-983fa5",
+          "to": [
+            2,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-8ec631",
+          "to": [
+            4,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            1,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            5,
+            49
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "enemy-983fa5",
+          "dmg": 65,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "enemy-983fa5",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "enemy-202bd1",
+          "tgt": "enemy-202bd1",
+          "buff": "bone_shield"
+        }
+      ]
+    },
+    {
+      "turn": 2,
+      "events": [
+        {
+          "type": "damage",
+          "src": "enemy-983fa5",
+          "tgt": "enemy-983fa5",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            3,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            57,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            55,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            58,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-ad498b",
+          "to": [
+            1,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-b48bfa",
+          "to": [
+            42,
+            36
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            1,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-8ec631",
+          "to": [
+            3,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            2,
+            2
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-de51b0",
+          "tgt": "enemy-ad498b",
+          "dmg": 68,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-de51b0",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "ai-02848b",
+          "tgt": "enemy-ad498b",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "bulwark"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crimson_veil"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "enemy-983fa5",
+          "dmg": 39,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-523d00",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 1,
+          "skill": "ranged_attack",
+          "crit": true
+        },
+        {
+          "type": "death",
+          "unit": "enemy-983fa5",
+          "killer": "pvpve-ai-d-6340fe"
+        }
+      ]
+    },
+    {
+      "turn": 3,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 1,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            55,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            50
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-ad498b",
+          "to": [
+            1,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-b48bfa",
+          "to": [
+            43,
+            35
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-26fb40",
+          "tgt": "enemy-ad498b",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "damage",
+          "src": "ai-02848b",
+          "tgt": "enemy-ad498b",
+          "dmg": 47,
+          "skill": "rebuke",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "dirge_of_weakness"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "pvpve-ai-d-f3b27b",
+          "buff": "enfeeble"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "enemy-8ec631",
+          "dmg": 114,
+          "skill": "blood_strike",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "enemy-8ec631",
+          "buff": "blood_strike"
+        },
+        {
+          "type": "damage",
+          "src": "ai-de51b0",
+          "tgt": "enemy-ad498b",
+          "dmg": 28,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "enemy-8ec631",
+          "killer": "pvpve-ai-d-5d3d62"
+        }
+      ]
+    },
+    {
+      "turn": 4,
+      "events": [
+        {
+          "type": "damage",
+          "src": "enemy-ad498b",
+          "tgt": "enemy-ad498b",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            1,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            54,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            3,
+            50
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            4,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-ad498b",
+          "to": [
+            1,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            4,
+            50
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-c76c10",
+          "tgt": "enemy-ad498b",
+          "dmg": 25,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-c76c10",
+          "tgt": "enemy-ad498b",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "damage",
+          "src": "ai-02848b",
+          "tgt": "enemy-ad498b",
+          "dmg": 50,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "death",
+          "unit": "enemy-ad498b",
+          "killer": "ai-02848b"
+        }
+      ]
+    },
+    {
+      "turn": 5,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            2,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            55,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            4,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            49
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-717441",
+          "to": [
+            50,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            5,
+            49
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "enemy-523d00",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "wither"
+        },
+        {
+          "type": "damage",
+          "src": "enemy-202bd1",
+          "tgt": "pvpve-ai-d-6340fe",
+          "dmg": 7,
+          "skill": "ranged_attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 6,
+      "events": [
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            2,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            2,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            1,
+            45
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-717441",
+          "to": [
+            51,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            1,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            3,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            57,
+            42
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-717441",
+          "dmg": 25,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-717441",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "enemy-202bd1",
+          "dmg": 65,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "inoculate"
+        },
+        {
+          "type": "damage",
+          "src": "enemy-523d00",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 1,
+          "skill": "ranged_attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 7,
+      "events": [
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-717441",
+          "dmg": 2,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            3,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            57,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            4,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            1,
+            42
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "earthgrasp"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-717441",
+          "dmg": 85,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "bulwark"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crimson_veil"
+        },
+        {
+          "type": "death",
+          "unit": "enemy-717441",
+          "killer": "pvpve-ai-b-0e86b9"
+        }
+      ]
+    },
+    {
+      "turn": 8,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            2,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            2,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            53,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            55,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            1,
+            44
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            47
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-02848b",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "enemy-523d00",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "enemy-202bd1",
+          "tgt": "enemy-202bd1",
+          "buff": "bone_shield"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "enemy-523d00",
+          "dmg": 40,
+          "skill": "ranged_attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 9,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 3,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "damage",
+          "src": "enemy-523d00",
+          "tgt": "enemy-523d00",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            2,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            3,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            1,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            52,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            54,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            1,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            1,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-39401b",
+          "to": [
+            50,
+            40
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 10,
+      "events": [
+        {
+          "type": "damage",
+          "src": "enemy-523d00",
+          "tgt": "enemy-523d00",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-39401b",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            3,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            1,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            55,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            53,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            1,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            2,
+            40
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-39401b",
+          "dmg": 21,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-523d00",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 1,
+          "skill": "ranged_attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 11,
+      "events": [
+        {
+          "type": "damage",
+          "src": "enemy-523d00",
+          "tgt": "enemy-523d00",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "enemy-523d00",
+          "dmg": 2,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            2,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            51,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            55,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            52,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            1,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            2,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "enemy-523d00",
+          "dmg": 65,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "enemy-523d00",
+          "killer": "pvpve-ai-d-6340fe"
+        }
+      ]
+    },
+    {
+      "turn": 12,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            2,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            2,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            50,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            2,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            1,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            4,
+            48
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-4d734d",
+          "tgt": "enemy-39401b",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "taunt"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "verse_of_haste"
+        }
+      ]
+    },
+    {
+      "turn": 13,
+      "events": [
+        {
+          "type": "damage",
+          "src": "enemy-39401b",
+          "tgt": "enemy-39401b",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            2,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            1,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            1,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            1,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            2,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-39401b",
+          "to": [
+            51,
+            39
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-39401b",
+          "dmg": 33,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-39401b",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "bulwark"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        }
+      ]
+    },
+    {
+      "turn": 14,
+      "events": [
+        {
+          "type": "damage",
+          "src": "enemy-39401b",
+          "tgt": "enemy-39401b",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-39401b",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            1,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            1,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            49,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            1,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            1,
+            45
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            2,
+            36
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            57,
+            42
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-39401b",
+          "dmg": 9,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-39401b",
+          "buff": "shield_bash"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crimson_veil"
+        }
+      ]
+    },
+    {
+      "turn": 15,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 1,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "damage",
+          "src": "enemy-39401b",
+          "tgt": "enemy-39401b",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-39401b",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            3,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            1,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            1,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            55,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            1,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            1,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            1,
+            45
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            1,
+            44
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "enemy-202bd1",
+          "tgt": "enemy-202bd1",
+          "buff": "bone_shield"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-39401b",
+          "dmg": 15,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 16,
+      "events": [
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-39401b",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            4,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            2,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            2,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            1,
+            45
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            1,
+            44
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            1,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            2,
+            35
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-39401b",
+          "dmg": 15,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-39401b",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 1,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 17,
+      "events": [
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-39401b",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            4,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            1,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            3,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            1,
+            44
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            1,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            1,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            36
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            3,
+            34
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            57,
+            42
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-39401b",
+          "dmg": 15,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-39401b",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 1,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 18,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            1,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            3,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            1,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            1,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            35
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            3,
+            33
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-39401b",
+          "dmg": 58,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "taunt"
+        },
+        {
+          "type": "damage",
+          "src": "enemy-39401b",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 1,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 19,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            3,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            2,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            1,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            34
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            3,
+            32
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            57,
+            42
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-39401b",
+          "dmg": 14,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-39401b",
+          "buff": "shield_bash"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        }
+      ]
+    },
+    {
+      "turn": 20,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            4,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            1,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            2,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            1,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            2,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            1,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            33
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-4d734d",
+          "tgt": "enemy-39401b",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "bulwark"
+        }
+      ]
+    },
+    {
+      "turn": 21,
+      "events": [
+        {
+          "type": "damage",
+          "src": "enemy-39401b",
+          "tgt": "enemy-39401b",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            5,
+            17
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            1,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            1,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            2,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            3,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            2,
+            36
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            1,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            3,
+            30
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crimson_veil"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-39401b",
+          "dmg": 23,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "enemy-39401b",
+          "killer": "pvpve-ai-b-b6f2fd"
+        }
+      ]
+    },
+    {
+      "turn": 22,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            6,
+            18
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            2,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            3,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            4,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            50,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            51,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            2,
+            35
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            1,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            32
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-202bd1",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "verse_of_haste"
+        }
+      ]
+    },
+    {
+      "turn": 23,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            6,
+            19
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            1,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            3,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            4,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            5,
+            17
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            51,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            54,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            56,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            55,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            50,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            34
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            36
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "enemy-202bd1",
+          "tgt": "enemy-202bd1",
+          "buff": "evasion"
+        }
+      ]
+    },
+    {
+      "turn": 24,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            6,
+            20
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            3,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            4,
+            17
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            5,
+            18
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            50,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            53,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            55,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            54,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            51,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            36
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            37
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "enemy-202bd1",
+          "dmg": 65,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "enemy-202bd1",
+          "killer": "pvpve-ai-d-6340fe"
+        }
+      ]
+    },
+    {
+      "turn": 25,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            6,
+            21
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            3,
+            17
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            4,
+            18
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            5,
+            19
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            49,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            50,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            35
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            33
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        }
+      ]
+    },
+    {
+      "turn": 26,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            5,
+            22
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            3,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            3,
+            18
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            4,
+            19
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            5,
+            20
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            49,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            52,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            54,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            53,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            49,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            33
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            38
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            36
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            34
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 27,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            5,
+            23
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            2,
+            19
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            3,
+            20
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            4,
+            21
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            49,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            51,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            53,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            52,
+            39
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            49,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            32
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "verse_of_haste"
+        }
+      ]
+    },
+    {
+      "turn": 28,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            5,
+            24
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            17
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            2,
+            20
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            3,
+            21
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            4,
+            22
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            49,
+            44
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            50,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            52,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            51,
+            40
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            49,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            37
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            3,
+            34
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            35
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            33
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 29,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            5,
+            25
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            18
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            2,
+            21
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            3,
+            22
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            4,
+            23
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            49,
+            45
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            49,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            51,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            50,
+            41
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            49,
+            44
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            4,
+            32
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            36
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            3,
+            33
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            34
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 30,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            19
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            2,
+            22
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            2,
+            21
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            49,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            49,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            50,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            49,
+            45
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            4,
+            33
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            35
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            4,
+            32
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 31,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-de51b0",
+          "to": [
+            3,
+            29
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            2,
+            23
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            2,
+            22
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            2,
+            27
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            50,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            49,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            49,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            49,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            32
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            4,
+            33
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            33
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            50,
+            41
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        }
+      ]
+    },
+    {
+      "turn": 32,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            20
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c76c10",
+          "to": [
+            2,
+            24
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-26fb40",
+          "to": [
+            2,
+            23
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-02848b",
+          "to": [
+            2,
+            28
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            50,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            49,
+            44
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            49,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            50,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            34
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-de51b0",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 42,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-de51b0",
+          "dmg": 90,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crimson_veil"
+        },
+        {
+          "type": "death",
+          "unit": "ai-de51b0",
+          "killer": "pvpve-ai-d-6340fe"
+        }
+      ]
+    },
+    {
+      "turn": 33,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            51,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            49,
+            42
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            49,
+            45
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            49,
+            44
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            50,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            3,
+            32
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            30
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "healing_totem"
+        }
+      ]
+    },
+    {
+      "turn": 34,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 7,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            52,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            49,
+            43
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            50,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            49,
+            45
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            51,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            30
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            33
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            3,
+            29
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            34
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-c76c10",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 9,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-c76c10",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crippling_shot"
+        }
+      ]
+    },
+    {
+      "turn": 35,
+      "events": [
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            49,
+            44
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            50,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            50,
+            46
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            32
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-c76c10",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "ai-02848b",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "bulwark"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "ai-02848b",
+          "dmg": 36,
+          "skill": "blood_strike",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "ai-02848b",
+          "buff": "blood_strike"
+        }
+      ]
+    },
+    {
+      "turn": 36,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-02848b",
+          "tgt": "ai-02848b",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            50,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            50,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            33
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-02848b",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 16,
+          "skill": "rebuke",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "ai-02848b",
+          "dmg": 22,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 37,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-02848b",
+          "tgt": "ai-02848b",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            49,
+            49
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            50,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            3,
+            32
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            4,
+            32
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "damage",
+          "src": "ai-02848b",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 36,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-02848b",
+          "dmg": 59,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crimson_veil"
+        },
+        {
+          "type": "death",
+          "unit": "ai-02848b",
+          "killer": "pvpve-ai-d-6340fe"
+        }
+      ]
+    },
+    {
+      "turn": 38,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            51,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            49,
+            45
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            48,
+            50
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            49,
+            49
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            50,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            30
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            28
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-ec734a",
+          "to": [
+            47,
+            50
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "inoculate"
+        }
+      ]
+    },
+    {
+      "turn": 39,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            50,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            49,
+            49
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "enemy-f1c260",
+          "to": [
+            43,
+            48
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-c76c10",
+          "tgt": null,
+          "dmg": 17,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "buff": "volley"
+        },
+        {
+          "type": "buff",
+          "src": "ai-26fb40",
+          "tgt": "pvpve-ai-d-6340fe",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-f1c260",
+          "dmg": 23,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-f1c260",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": null,
+          "dmg": 84,
+          "skill": "arcane_barrage",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "pvpve-ai-d-6340fe",
+          "buff": "arcane_barrage"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-6340fe",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "dmg": 10,
+          "skill": "attack",
+          "crit": true
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-ec734a",
+          "dmg": 2,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 40,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "pvpve-ai-d-6340fe",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-4d734d",
+          "to": [
+            51,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            27
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            50,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            32
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            2,
+            28
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-c76c10",
+          "tgt": "pvpve-ai-d-6340fe",
+          "dmg": 19,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-c76c10",
+          "tgt": "pvpve-ai-d-6340fe",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "buff",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "buff": "enfeeble"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-ec734a",
+          "dmg": 58,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "bulwark"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-26fb40",
+          "dmg": 47,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "dmg": 7,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "enemy-ec734a",
+          "dmg": 2,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 41,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "pvpve-ai-d-6340fe",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-d5528c",
+          "amt": 6,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            49,
+            49
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            3,
+            30
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            26
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-b6f2fd",
+          "to": [
+            48,
+            50
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-c76c10",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "damage",
+          "src": "ai-c76c10",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 42,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "taunt"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-26fb40",
+          "dmg": 17,
+          "skill": "ranged_attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 42,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "pvpve-ai-d-6340fe",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-0e86b9",
+          "to": [
+            50,
+            48
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            3,
+            29
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-fc7fee",
+          "to": [
+            49,
+            49
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 10,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "buff": "shield_bash"
+        }
+      ]
+    },
+    {
+      "turn": 43,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            25
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            32
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "damage",
+          "src": "ai-26fb40",
+          "tgt": null,
+          "dmg": 14,
+          "skill": "miasma",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "buff": "miasma"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "earthgrasp"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": null,
+          "dmg": 43,
+          "skill": "arcane_barrage",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "pvpve-ai-d-6340fe",
+          "buff": "arcane_barrage"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "ai-c76c10",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 17,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 44,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "pvpve-ai-d-f3b27b",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "damage",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-f3b27b",
+          "amt": 6,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            4,
+            30
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-26fb40",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crimson_veil"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 17,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 1,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 45,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "damage",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            4,
+            29
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-c76c10",
+          "tgt": null,
+          "dmg": 28,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-c76c10",
+          "tgt": "ai-c76c10",
+          "buff": "volley"
+        },
+        {
+          "type": "buff",
+          "src": "ai-26fb40",
+          "tgt": "ai-c76c10",
+          "buff": "inoculate"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-c76c10",
+          "dmg": 61,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-6340fe",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 17,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 1,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "ai-c76c10",
+          "killer": "pvpve-ai-d-6340fe"
+        }
+      ]
+    },
+    {
+      "turn": 46,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "pvpve-ai-d-f3b27b",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            31
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            28
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            24
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "buff": "enfeeble"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "bulwark"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-26fb40",
+          "dmg": 23,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 1,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 47,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "pvpve-ai-d-f3b27b",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-6340fe",
+          "to": [
+            2,
+            27
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            30
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            28
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "dirge_of_weakness"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 10,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "buff": "shield_bash"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "ai-26fb40",
+          "dmg": 32,
+          "skill": "blood_strike",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "ai-26fb40",
+          "buff": "blood_strike"
+        }
+      ]
+    },
+    {
+      "turn": 48,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-26fb40",
+          "tgt": "ai-26fb40",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "pvpve-ai-d-f3b27b",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-f3b27b",
+          "amt": 6,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "amt": 6,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            3,
+            29
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-26fb40",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "taunt"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-26fb40",
+          "dmg": 63,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "death",
+          "unit": "ai-26fb40",
+          "killer": "pvpve-ai-d-6340fe"
+        }
+      ]
+    },
+    {
+      "turn": 49,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            23
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 17,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 1,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 50,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            27
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            22
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "earthgrasp"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-e643ba",
+          "dmg": 18,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 17,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 1,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 51,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            27
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            26
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-e643ba",
+          "tgt": null,
+          "dmg": 3,
+          "skill": "cacophony",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "cacophony"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crimson_veil"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 17,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 10,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 52,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            28
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            26
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            27
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 10,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "buff": "shield_bash"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "healing_totem"
+        }
+      ]
+    },
+    {
+      "turn": 53,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            25
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            21
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "bulwark"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-e643ba",
+          "dmg": 60,
+          "skill": "fireball",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 54,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "heal",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-6340fe",
+          "amt": 6,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            27
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            26
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "buff": "taunt"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "ai-e643ba",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "ai-e643ba",
+          "dmg": 38,
+          "skill": "blood_strike",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "ai-e643ba",
+          "buff": "blood_strike"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-e643ba",
+          "dmg": 18,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 2,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 55,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "damage",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            3,
+            25
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-40af7d",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-c-ca88cb",
+          "tgt": "pvpve-ai-c-f246d1",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-d5528c",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": null,
+          "dmg": 6,
+          "skill": "miasma",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "pvpve-ai-d-f3b27b",
+          "buff": "miasma"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 17,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "ai-e643ba",
+          "dmg": 24,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 2,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 56,
+      "events": [
+        {
+          "type": "heal",
+          "src": "pvpve-ai-b-0e86b9",
+          "tgt": "pvpve-ai-b-0e86b9",
+          "amt": 1,
+          "skill": "hp_regen"
+        },
+        {
+          "type": "damage",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            26
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "earthgrasp"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-f3b27b",
+          "tgt": "ai-e643ba",
+          "dmg": 4,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 17,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "ai-e643ba",
+          "dmg": 24,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "enemy-ec734a",
+          "tgt": "pvpve-ai-b-b6f2fd",
+          "dmg": 3,
+          "skill": "attack",
+          "crit": true
+        }
+      ]
+    },
+    {
+      "turn": 57,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "dmg": 8,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-fc7fee",
+          "tgt": "enemy-ec734a",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "ai-e643ba",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            19
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            24
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-b-b6f2fd",
+          "tgt": "enemy-ec734a",
+          "dmg": 10,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-d5528c",
+          "tgt": "pvpve-ai-d-f3b27b",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "death",
+          "unit": "enemy-ec734a",
+          "killer": "pvpve-ai-b-b6f2fd"
+        }
+      ]
+    },
+    {
+      "turn": 58,
+      "events": [
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "ai-e643ba",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-e643ba",
+          "to": [
+            2,
+            18
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            49,
+            46
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-e97b9e",
+          "tgt": "pvpve-ai-d-e97b9e",
+          "buff": "earthgrasp"
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-d-5d3d62",
+          "tgt": "pvpve-ai-d-5d3d62",
+          "buff": "crimson_veil"
+        }
+      ]
+    },
+    {
+      "turn": 59,
+      "events": [
+        {
+          "type": "move",
+          "unit": "pvpve-ai-b-40af7d",
+          "to": [
+            50,
+            47
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            25
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            24
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            23
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            20
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-e643ba",
+          "tgt": "ai-e643ba",
+          "buff": "dirge_of_weakness"
+        }
+      ]
+    },
+    {
+      "turn": 60,
+      "events": [
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-d5528c",
+          "to": [
+            2,
+            24
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-f3b27b",
+          "to": [
+            2,
+            23
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-e97b9e",
+          "to": [
+            2,
+            22
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "pvpve-ai-d-5d3d62",
+          "to": [
+            2,
+            19
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "pvpve-ai-b-40af7d",
+          "tgt": "pvpve-ai-b-fc7fee",
+          "buff": "verse_of_haste"
+        },
+        {
+          "type": "damage",
+          "src": "pvpve-ai-d-6340fe",
+          "tgt": "ai-e643ba",
+          "dmg": 60,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "ai-e643ba",
+          "killer": "pvpve-ai-d-6340fe"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "team_a_total_damage": 484,
+    "team_a_total_healing": 297,
+    "team_a_kills": 1,
+    "team_a_deaths": 5,
+    "team_b_total_damage": 591,
+    "team_b_total_healing": 17,
+    "team_b_kills": 3,
+    "team_b_deaths": 0,
+    "team_c_total_damage": 0,
+    "team_c_total_healing": 0,
+    "team_c_kills": 0,
+    "team_c_deaths": 0,
+    "team_d_total_damage": 1342,
+    "team_d_total_healing": 247,
+    "team_d_kills": 9,
+    "team_d_deaths": 0,
+    "first_blood_turn": 2,
+    "first_blood_killer": "pvpve-ai-d-6340fe",
+    "first_blood_victim": "enemy-983fa5",
+    "mvp": "pvpve-ai-d-6340fe",
+    "mvp_damage": 1006,
+    "mvp_kills": 8
+  }
+}

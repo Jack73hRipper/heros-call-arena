@@ -419,3 +419,136 @@ class TestChestStatesIntegration:
         )
         assert len(actions) == 1
         assert actions[0].action_type == ActionType.WAIT
+
+
+# ---------------------------------------------------------------------------
+# Phase 29B — PVPVE Team Leader Chest Seeking
+# ---------------------------------------------------------------------------
+
+def _make_pvpve_leader(pid, x, y, team="b", class_id=None) -> PlayerState:
+    """Create a PVPVE team leader: no hero_id, no ai_stance, no enemy_type."""
+    return PlayerState(
+        player_id=pid,
+        username=pid,
+        position=Position(x=x, y=y),
+        hp=100,
+        max_hp=100,
+        attack_damage=15,
+        armor=0,
+        team=team,
+        unit_type="ai",
+        ai_behavior="aggressive",
+        class_id=class_id or "crusader",
+        ranged_range=5,
+        vision_range=7,
+    )
+
+
+def _make_pvpve_follower(pid, x, y, team="b", leader_id="leader1",
+                         class_id=None) -> PlayerState:
+    """Create a PVPVE follower: hero_id set, ai_stance='follow', no enemy_type."""
+    p = PlayerState(
+        player_id=pid,
+        username=pid,
+        position=Position(x=x, y=y),
+        hp=100,
+        max_hp=100,
+        attack_damage=15,
+        armor=0,
+        team=team,
+        unit_type="ai",
+        hero_id=f"pvpve-team-{leader_id}",
+        ai_stance="follow",
+        class_id=class_id or "confessor",
+        ranged_range=5,
+        vision_range=7,
+    )
+    return p
+
+
+class TestPvpveLeaderChestSeeking:
+    """Phase 29B — PVPVE team leaders (no hero_id, no ai_stance) should seek
+    and loot chests via _decide_aggressive_action when idle."""
+
+    def test_leader_loots_adjacent_chest(self):
+        """Leader adjacent to an unopened chest should emit LOOT."""
+        leader = _make_pvpve_leader("leader1", 5, 5)
+        all_units = {leader.player_id: leader}
+        chest_states = {"5,6": "unopened"}
+
+        action = decide_ai_action(
+            leader, all_units, 15, 15, set(),
+            chest_states=chest_states,
+        )
+        assert action is not None
+        assert action.action_type == ActionType.LOOT
+        assert action.target_x == 5
+        assert action.target_y == 6
+
+    def test_leader_moves_toward_chest(self):
+        """Leader should pathfind toward a nearby unopened chest when idle."""
+        leader = _make_pvpve_leader("leader1", 5, 5)
+        all_units = {leader.player_id: leader}
+        chest_states = {"5,9": "unopened"}  # 4 tiles away
+
+        action = decide_ai_action(
+            leader, all_units, 15, 15, set(),
+            chest_states=chest_states,
+        )
+        assert action is not None
+        assert action.action_type == ActionType.MOVE
+        # Should move toward y=9. Exact step depends on A*, but y should increase.
+        assert action.target_y > 5
+
+    def test_leader_ignores_opened_chests(self):
+        """Leader should NOT seek already-opened chests."""
+        leader = _make_pvpve_leader("leader1", 5, 5)
+        all_units = {leader.player_id: leader}
+        chest_states = {"5,6": "opened"}
+
+        action = decide_ai_action(
+            leader, all_units, 15, 15, set(),
+            chest_states=chest_states,
+        )
+        assert action is not None
+        # No chest to seek — should patrol or wait, not LOOT
+        assert action.action_type != ActionType.LOOT
+
+    def test_leader_combat_takes_priority(self):
+        """If enemies are visible, leader should fight, not seek chests."""
+        leader = _make_pvpve_leader("leader1", 5, 5, team="b")
+        enemy = _make_human("p1", 6, 5, team="a")
+        all_units = {leader.player_id: leader, enemy.player_id: enemy}
+        chest_states = {"5,6": "unopened"}
+
+        action = decide_ai_action(
+            leader, all_units, 15, 15, set(),
+            chest_states=chest_states,
+        )
+        assert action is not None
+        # Should attack or use skill on enemy, not loot
+        assert action.action_type in (ActionType.ATTACK, ActionType.MOVE, ActionType.SKILL)
+
+    def test_leader_no_chest_seeking_for_dungeon_enemies(self):
+        """Dungeon enemies (enemy_type set) should NOT seek chests."""
+        enemy = _make_enemy("skel1", 5, 5, team="b")
+        all_units = {enemy.player_id: enemy}
+        chest_states = {"5,6": "unopened"}
+
+        action = decide_ai_action(
+            enemy, all_units, 15, 15, set(),
+            chest_states=chest_states,
+        )
+        assert action is not None
+        # Should patrol, NOT loot
+        assert action.action_type != ActionType.LOOT
+
+    def test_leader_no_crash_without_chest_states(self):
+        """Leader works fine when chest_states is None."""
+        leader = _make_pvpve_leader("leader1", 5, 5)
+        all_units = {leader.player_id: leader}
+
+        action = decide_ai_action(
+            leader, all_units, 15, 15, set(),
+        )
+        assert action is not None

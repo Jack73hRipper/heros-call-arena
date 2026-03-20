@@ -27,6 +27,7 @@ class PlayerAction(BaseModel):
     target_y: int | None = None
     target_id: str | None = None   # Entity targeting: player_id of the intended target
     skill_id: str | None = None    # Phase 6A: which skill to use (only for action_type == SKILL)
+    reason: str | None = None      # Diagnostic: why the AI chose this action (batch tools only)
 
 
 class ActionResult(BaseModel):

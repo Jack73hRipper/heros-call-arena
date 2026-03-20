@@ -51,6 +51,7 @@ from app.core.turn_resolver import resolve_turn
 from app.core.map_loader import get_obstacles_with_door_states, load_map, is_dungeon_map
 from app.core.fov import compute_fov
 from app.core.ai_behavior import run_ai_decisions, clear_ai_patrol_state
+from app.core.ai_exploration import update_room_discovery, update_room_clearance
 from app.services.scheduler import scheduler_manager
 
 
@@ -130,6 +131,12 @@ async def match_tick(match_id: str) -> None:
         "c": pre_team_c_fov,
         "d": pre_team_d_fov,
     }
+
+    # --- Step 1.5: Update room discovery & clearance (Strategic Exploration Phase A) ---
+    for team_letter, team_fov_set in ai_team_fov_map.items():
+        if team_fov_set:
+            update_room_discovery(match_id, team_letter, team_fov_set)
+            update_room_clearance(match_id, team_letter, all_units, chest_states)
 
     ai_actions = run_ai_decisions(
         ai_ids, all_units, grid_width, grid_height, obstacles,

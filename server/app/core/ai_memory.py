@@ -118,6 +118,7 @@ def _pursue_memory_target(
             action_type=ActionType.MOVE,
             target_x=next_step[0],
             target_y=next_step[1],
+            reason="memory_pursue",
         )
 
     # Can't path there — clear this memory entry
@@ -201,6 +202,7 @@ def _reinforce_ally(
             action_type=ActionType.MOVE,
             target_x=next_step[0],
             target_y=next_step[1],
+            reason="reinforce_ally",
         )
 
     return None

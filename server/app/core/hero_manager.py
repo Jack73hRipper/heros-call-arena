@@ -15,8 +15,8 @@ from app.models.match import MatchType, MatchStatus
 from app.core.map_loader import get_spawn_points, is_dungeon_map
 from app.core.combat import get_combat_config
 
-# Shared state dicts — imported from match_manager
-from app.core.match_manager import (
+# Shared state dicts — imported from match_store (single source of truth)
+from app.core.match_store import (
     _active_matches,
     _player_states,
     _hero_selections,

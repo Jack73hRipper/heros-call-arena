@@ -38,6 +38,10 @@ from app.core.ai_pathfinding import (  # noqa: F401
     get_next_step_toward,
     _build_occupied_set,
 )
+from app.core.ai_exploration import (  # noqa: F401
+    get_next_exploration_target,
+    get_current_room,
+)
 from app.core.ai_skills import (  # noqa: F401
     _CLASS_ROLE_MAP,
     _get_role_for_class,
@@ -71,6 +75,7 @@ from app.core.ai_memory import (  # noqa: F401
 from app.core.ai_patrol import (  # noqa: F401
     _patrol_targets,
     _visited_history,
+    _stale_area_counter,
     _MAX_VISIT_HISTORY,
     _patrol_action,
     _pick_patrol_waypoint,
@@ -81,6 +86,7 @@ from app.core.ai_stances import (  # noqa: F401
     _POTION_THRESHOLDS,
     _RETREAT_THRESHOLDS,
     _RETREAT_THRESHOLD_DEFAULT,
+    _CHEST_SEEK_MAX_RANGE,
     _find_owner,
     _chebyshev,
     _maybe_interact_door,
@@ -88,6 +94,8 @@ from app.core.ai_stances import (  # noqa: F401
     _should_retreat,
     _find_retreat_destination,
     _should_use_potion,
+    _find_nearest_unopened_chest,
+    _try_loot_adjacent_chest,
     _decide_stance_action,
     _decide_follow_action,
     _decide_aggressive_stance_action,
@@ -117,6 +125,43 @@ _SCAVENGE_MAX_RANGE: dict[str, int] = {
     "ranged":     3,
     "support":    3,
 }
+
+
+# ---------------------------------------------------------------------------
+# Anti-Oscillation: Per-unit recent position history
+# ---------------------------------------------------------------------------
+# Tracks the last few positions each AI unit occupied across turns.
+# Used in run_ai_decisions to detect and suppress A→B→A oscillation
+# when there is no nearby enemy forcing the movement.
+# {unit_id: [pos_turn_N-7, ..., pos_turn_N-1, pos_turn_N]}
+_position_history: dict[str, list[tuple[int, int]]] = {}
+_POSITION_HISTORY_LEN = 8
+_OSCILLATION_COMBAT_RANGE = 3  # Suppress oscillation only when no enemy within this Chebyshev dist
+
+# Extended oscillation: set of ai_ids whose explore_room should be temporarily
+# skipped because the leader has been cycling between explore_room and patrol.
+# Cleared when the unit genuinely moves to a new tile (not in recent history).
+_explore_suppressed: set[str] = set()
+
+# Turn counter for when each AI was first suppressed.  Suppression cannot be
+# lifted until at least _MIN_SUPPRESS_TURNS have elapsed, giving patrol enough
+# time to physically exit the room.
+_suppress_start_tick: dict[str, int] = {}
+_MIN_SUPPRESS_TURNS = 20
+
+# Parallel suppression for chest seeking — prevents aggro_chest_seek from
+# fighting patrol_move when the AI can't actually reach the chest.
+_chest_seek_suppressed: set[str] = set()
+
+# ---------------------------------------------------------------------------
+# Phase 29D: Post-Combat Follow Impulse — prevents hero allies from
+# freezing after combat ends.  Records the tick when each hero last saw
+# or fought enemies.  For 5 ticks after combat, hero allies trail their
+# leader instead of WAITing at step 4c.
+# ---------------------------------------------------------------------------
+_last_combat_tick: dict[str, int] = {}  # {ai_id: tick_number}
+_ai_tick_counter: int = 0
+_POST_COMBAT_FOLLOW_GRACE = 5  # ticks of trailing after last combat
 
 
 def _find_nearest_ground_loot(
@@ -277,6 +322,7 @@ def _try_teleporter_affix(
         skill_id="shadow_step",
         target_x=best[0],
         target_y=best[1],
+        reason="teleporter_affix_shadowstep",
     )
 
 
@@ -333,7 +379,7 @@ def decide_ai_action(
     # Phase 12: Stunned units cannot take any action — skip their turn entirely
     from app.core.skills import is_stunned
     if is_stunned(ai):
-        return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT, reason="stunned")
 
     # -----------------------------------------------------------------------
     # Phase 18D: Teleporter affix — auto-cast Shadow Step when target is far
@@ -374,7 +420,7 @@ def decide_ai_action(
 
     if behavior == "dummy":
         # Training dummy: stand in place, never move, never attack.
-        return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT, reason="dummy_wait")
     elif behavior == "ranged":
         return _decide_ranged_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, ground_items=ground_items)
     elif behavior == "boss":
@@ -383,7 +429,7 @@ def decide_ai_action(
         return _decide_support_behavior(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, ground_items=ground_items)
     else:
         # "aggressive" or any unknown behavior → default aggressive
-        return _decide_aggressive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, ground_items=ground_items)
+        return _decide_aggressive_action(ai, all_units, grid_width, grid_height, obstacles, team_fov, match_id, pending_moves, door_tiles, ground_items=ground_items, chest_states=chest_states)
 
 
 # ---------------------------------------------------------------------------
@@ -479,8 +525,9 @@ def _decide_support_behavior(
                         action_type=ActionType.MOVE,
                         target_x=next_step[0],
                         target_y=next_step[1],
+                        reason="support_leash_return",
                     )
-            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="support_leash_idle")
         # Try to stay near allies — use support move preference
         move_target = _support_move_preference(ai, all_units)
         if move_target:
@@ -499,6 +546,7 @@ def _decide_support_behavior(
                     action_type=ActionType.MOVE,
                     target_x=next_step[0],
                     target_y=next_step[1],
+                    reason="support_move_to_injured_ally",
                 )
 
         # Phase 28C: Opportunistic loot seeking when idle & no allies to group with — HERO PARTIES ONLY
@@ -520,9 +568,10 @@ def _decide_support_behavior(
                         action_type=ActionType.MOVE,
                         target_x=next_step[0],
                         target_y=next_step[1],
+                        reason="support_scavenge_loot",
                     )
 
-        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="support_idle")
 
     _patrol_targets.pop(ai_id, None)
 
@@ -546,8 +595,9 @@ def _decide_support_behavior(
                     action_type=ActionType.MOVE,
                     target_x=next_step[0],
                     target_y=next_step[1],
+                    reason="support_leash_exceeded",
                 )
-            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="support_leash_return_stuck")
 
     # Priority 1: Try skill usage (heal, buff, offensive spells)
     if ai.class_id:
@@ -582,6 +632,7 @@ def _decide_support_behavior(
                 action_type=ActionType.MOVE,
                 target_x=retreat_tile[0],
                 target_y=retreat_tile[1],
+                reason="support_retreat_from_enemy",
             )
 
     # Priority 3: Ranged attack if available
@@ -598,6 +649,7 @@ def _decide_support_behavior(
                 target_x=target.position.x,
                 target_y=target.position.y,
                 target_id=target.player_id,
+                reason="support_ranged_attack",
             )
 
     # Priority 4: Move toward most injured ally (stay grouped for healing)
@@ -617,6 +669,7 @@ def _decide_support_behavior(
                 action_type=ActionType.MOVE,
                 target_x=next_step[0],
                 target_y=next_step[1],
+                reason="support_group_with_ally",
             )
 
     # Fallback: melee if adjacent (last resort for support)
@@ -627,9 +680,10 @@ def _decide_support_behavior(
             target_x=target.position.x,
             target_y=target.position.y,
             target_id=target.player_id,
+            reason="support_melee_fallback",
         )
 
-    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="support_stuck")
 
 
 def _decide_aggressive_action(
@@ -643,6 +697,7 @@ def _decide_aggressive_action(
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
     door_tiles: set[tuple[int, int]] | None = None,
     ground_items: dict[str, list] | None = None,
+    chest_states: dict[str, str] | None = None,
 ) -> PlayerAction | None:
     """Aggressive AI behavior — chase → melee → ranged → patrol.
 
@@ -714,6 +769,10 @@ def _decide_aggressive_action(
     # Step 3: Update last-known enemy memory
     _update_enemy_memory(ai_id, enemies, all_units)
 
+    # Phase 29D: Record combat tick for post-combat follow impulse
+    if enemies and ai.hero_id is not None:
+        _last_combat_tick[ai_id] = _ai_tick_counter
+
     # Room leashing: only apply when idle (no visible enemies).
     # When enemies are visible, the leash is broken so the AI can chase
     # freely — prevents players from exploiting room-edge cheese.
@@ -751,8 +810,9 @@ def _decide_aggressive_action(
                         action_type=ActionType.MOVE,
                         target_x=next_step[0],
                         target_y=next_step[1],
+                        reason="aggro_leash_return",
                     )
-            return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
+            return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT, reason="aggro_leash_idle")
 
         # 4a: Check last-known enemy positions (pursue memory targets)
         memory_action = _pursue_memory_target(
@@ -768,10 +828,62 @@ def _decide_aggressive_action(
         if reinforce_action:
             return reinforce_action
 
-        # 4c: Party members (hero allies) hold position instead of patrolling.
-        # This prevents aimless wandering that hinders gameplay.
+        # 4b2: Phase 29B — Chest seeking when idle — HERO PARTIES ONLY
+        # PVPVE team leaders (hero_id=None, enemy_type=None) and hero ally
+        # followers both benefit.  Dungeon enemies (enemy_type set) skip this.
+        if getattr(ai, 'enemy_type', None) is None and chest_states:
+            loot_action = _try_loot_adjacent_chest(ai, chest_states)
+            if loot_action:
+                return loot_action
+            if ai_id not in _chest_seek_suppressed:
+                seek_range = _CHEST_SEEK_MAX_RANGE.get(ai.ai_stance or "aggressive", 6)
+                chest_target = _find_nearest_unopened_chest(ai, chest_states, seek_range)
+                if chest_target:
+                    occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
+                    next_step = get_next_step_toward(
+                        (ai.position.x, ai.position.y), chest_target,
+                        grid_width, grid_height, obstacles, occupied, door_tiles,
+                    )
+                    if next_step:
+                        door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                        if door_action:
+                            return door_action
+                        return PlayerAction(
+                            player_id=ai.player_id,
+                            action_type=ActionType.MOVE,
+                            target_x=next_step[0],
+                            target_y=next_step[1],
+                            reason="aggro_chest_seek",
+                        )
+
+        # 4c: Party members (hero allies) trail their leader instead of patrolling.
+        # Phase 29D: Hero allies always follow their owner when idle — this
+        # prevents the permanent stalling where hero allies with no visible
+        # enemies WAIT indefinitely.  Only WAIT when already adjacent (dist 1)
+        # to the owner, preserving the original anti-wander intent.
         if ai.hero_id is not None:
-            return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
+            owner = _find_owner(ai, all_units)
+            if owner:
+                owner_pos = (owner.position.x, owner.position.y)
+                ai_pos_here = (ai.position.x, ai.position.y)
+                if _chebyshev(ai_pos_here, owner_pos) > 1:
+                    occupied_here = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
+                    next_step = get_next_step_toward(
+                        ai_pos_here, owner_pos,
+                        grid_width, grid_height, obstacles, occupied_here, door_tiles,
+                    )
+                    if next_step:
+                        door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                        if door_action:
+                            return door_action
+                        return PlayerAction(
+                            player_id=ai.player_id,
+                            action_type=ActionType.MOVE,
+                            target_x=next_step[0],
+                            target_y=next_step[1],
+                            reason="aggro_trail_owner",
+                        )
+            return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT, reason="aggro_idle_near_owner")
 
         # 4d: Phase 28C — Opportunistic loot seeking when idle — HERO PARTIES ONLY
         if getattr(ai, 'enemy_type', None) is None:
@@ -792,9 +904,36 @@ def _decide_aggressive_action(
                         action_type=ActionType.MOVE,
                         target_x=next_step[0],
                         target_y=next_step[1],
+                        reason="aggro_scavenge_loot",
                     )
 
-        # 4e: Fall back to patrol (enemy AI only)
+        # 4e: Strategic exploration for team leaders; patrol fallback for enemies
+        if getattr(ai, 'is_team_leader', False) and match_id and ai_id not in _explore_suppressed:
+            target = get_next_exploration_target(match_id, ai.team, (ai.position.x, ai.position.y))
+            if target:
+                occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
+                next_step = get_next_step_toward(
+                    (ai.position.x, ai.position.y), target["entrance"],
+                    grid_width, grid_height, obstacles, occupied, door_tiles,
+                )
+                if next_step:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
+                    # Feed this move into patrol's visited history so the
+                    # stale-area detector accounts for explore_room moves.
+                    if ai_id not in _visited_history:
+                        _visited_history[ai_id] = []
+                    _visited_history[ai_id].append((ai.position.x, ai.position.y))
+                    if len(_visited_history[ai_id]) > _MAX_VISIT_HISTORY:
+                        _visited_history[ai_id] = _visited_history[ai_id][-_MAX_VISIT_HISTORY:]
+                    return PlayerAction(
+                        player_id=ai.player_id,
+                        action_type=ActionType.MOVE,
+                        target_x=next_step[0],
+                        target_y=next_step[1],
+                        reason="explore_room",
+                    )
         return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves, door_tiles, allow_team_swap=allow_swap)
 
     # Enemies found — clear patrol waypoint so AI doesn't resume old patrol
@@ -820,8 +959,9 @@ def _decide_aggressive_action(
                     action_type=ActionType.MOVE,
                     target_x=next_step[0],
                     target_y=next_step[1],
+                    reason="aggro_leash_exceeded",
                 )
-            return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
+            return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT, reason="aggro_leash_return_stuck")
 
     # Step 5: Pick best enemy using weighted scoring
     target = _pick_best_target(ai, enemies, all_units)
@@ -884,6 +1024,7 @@ def _decide_aggressive_action(
                 action_type=ActionType.MOVE,
                 target_x=retreat_tile[0],
                 target_y=retreat_tile[1],
+                reason="aggro_kite_retreat",
             )
         # Can't retreat — ranged roles fall through to ranged attack check
 
@@ -896,6 +1037,7 @@ def _decide_aggressive_action(
             target_x=target.position.x,
             target_y=target.position.y,
             target_id=target.player_id,
+            reason="aggro_melee_adjacent",
         )
 
     # Step 6: If close (within 3 tiles), rush to melee range (non-ranged roles only).
@@ -916,6 +1058,7 @@ def _decide_aggressive_action(
                 action_type=ActionType.MOVE,
                 target_x=next_step[0],
                 target_y=next_step[1],
+                reason="aggro_rush_melee",
             )
         # Can't move closer — use ranged as fallback if available
         if ranged_cd == 0 and is_in_range(ai.position, target_pos, ranged_range):
@@ -930,6 +1073,7 @@ def _decide_aggressive_action(
                     target_x=target.position.x,
                     target_y=target.position.y,
                     target_id=target.player_id,
+                    reason="aggro_rush_blocked_ranged",
                 )
 
     # Step 7: Far away (>3 tiles) — harass with ranged if available, otherwise close distance
@@ -945,6 +1089,7 @@ def _decide_aggressive_action(
                 target_x=target.position.x,
                 target_y=target.position.y,
                 target_id=target.player_id,
+                reason="aggro_ranged_harass",
             )
 
     # Step 8: Move toward target using A*
@@ -952,7 +1097,7 @@ def _decide_aggressive_action(
     # enemies are within medium range, hold position instead of advancing into
     # danger.  Prevents squishy ranged supports from creeping into melee.
     if is_ranged_role and role in ("controller", "caster_dps") and ranged_cd > 0 and dist_to_target <= 4:
-        return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai.player_id, action_type=ActionType.WAIT, reason="aggro_controller_hold")
 
     # Phase 21E revised: Bard advance — when ranged is on CD, advance toward
     # the enemy to pre-position for the next skill cast (Dirge/Cacophony) or
@@ -976,6 +1121,7 @@ def _decide_aggressive_action(
             action_type=ActionType.MOVE,
             target_x=next_step[0],
             target_y=next_step[1],
+            reason="aggro_pathfind_toward_target",
         )
 
     # Fallback: ranged if stuck and cooldown ready (last resort)
@@ -991,12 +1137,14 @@ def _decide_aggressive_action(
                 target_x=target.position.x,
                 target_y=target.position.y,
                 target_id=target.player_id,
+                reason="aggro_stuck_ranged_fallback",
             )
 
     # Truly stuck: wait
     return PlayerAction(
         player_id=ai.player_id,
         action_type=ActionType.WAIT,
+        reason="aggro_stuck",
     )
 
 
@@ -1119,11 +1267,12 @@ def _decide_ranged_action(
                         action_type=ActionType.MOVE,
                         target_x=next_step[0],
                         target_y=next_step[1],
+                        reason="ranged_leash_return",
                     )
-            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="ranged_leash_idle")
         # Party members (hero allies) hold position instead of patrolling
         if ai.hero_id is not None:
-            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="ranged_hero_hold")
 
         # Phase 28C: Opportunistic loot seeking when idle — HERO PARTIES ONLY
         if getattr(ai, 'enemy_type', None) is None:
@@ -1144,6 +1293,7 @@ def _decide_ranged_action(
                         action_type=ActionType.MOVE,
                         target_x=next_step[0],
                         target_y=next_step[1],
+                        reason="ranged_scavenge_loot",
                     )
 
         return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves, door_tiles)
@@ -1170,8 +1320,9 @@ def _decide_ranged_action(
                     action_type=ActionType.MOVE,
                     target_x=next_step[0],
                     target_y=next_step[1],
+                    reason="ranged_leash_exceeded",
                 )
-            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+            return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="ranged_leash_return_stuck")
 
     target = _pick_best_target(ai, enemies, all_units)
     target_pos = Position(x=target.position.x, y=target.position.y)
@@ -1211,6 +1362,7 @@ def _decide_ranged_action(
                 action_type=ActionType.MOVE,
                 target_x=retreat_tile[0],
                 target_y=retreat_tile[1],
+                reason="ranged_retreat_close",
             )
         # Can't retreat — melee as last resort
         if is_adjacent(ai.position, target_pos):
@@ -1220,6 +1372,7 @@ def _decide_ranged_action(
                 target_x=target.position.x,
                 target_y=target.position.y,
                 target_id=target.player_id,
+                reason="ranged_melee_fallback",
             )
 
     # In range + cooldown ready + LOS → ranged attack
@@ -1235,6 +1388,7 @@ def _decide_ranged_action(
                 target_x=target.position.x,
                 target_y=target.position.y,
                 target_id=target.player_id,
+                reason="ranged_attack",
             )
 
     # Out of range or no LOS → move closer but maintain ideal distance
@@ -1254,15 +1408,16 @@ def _decide_ranged_action(
                 action_type=ActionType.MOVE,
                 target_x=next_step[0],
                 target_y=next_step[1],
+                reason="ranged_close_distance",
             )
 
     # In range but ranged on cooldown → try to maintain ideal distance
     if IDEAL_MIN <= dist_to_target <= IDEAL_MAX:
         # Good position — wait for cooldown
-        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="ranged_hold_position")
 
     # Fallback: wait
-    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="ranged_wait_fallback")
 
 
 def _find_retreat_tile(
@@ -1415,8 +1570,9 @@ def _decide_boss_action(
                         action_type=ActionType.MOVE,
                         target_x=next_step[0],
                         target_y=next_step[1],
+                        reason="boss_return_to_center",
                     )
-        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+        return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="boss_idle")
 
     # Enemy in room — engage aggressively
     target = _pick_best_target(ai, enemies_in_room, all_units)
@@ -1438,6 +1594,7 @@ def _decide_boss_action(
             target_x=target.position.x,
             target_y=target.position.y,
             target_id=target.player_id,
+            reason="boss_melee_intruder",
         )
 
     ranged_range = getattr(ai, 'ranged_range', 1)
@@ -1456,6 +1613,7 @@ def _decide_boss_action(
                 target_x=target.position.x,
                 target_y=target.position.y,
                 target_id=target.player_id,
+                reason="boss_ranged_intruder",
             )
 
     # Chase within room using leashed obstacles
@@ -1474,10 +1632,11 @@ def _decide_boss_action(
             action_type=ActionType.MOVE,
             target_x=next_step[0],
             target_y=next_step[1],
+            reason="boss_chase_intruder",
         )
 
     # Stuck — wait
-    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT)
+    return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="boss_stuck")
 
 
 # ---------------------------------------------------------------------------
@@ -1523,6 +1682,10 @@ def run_ai_decisions(
     """
     actions: list[PlayerAction] = []
 
+    # Phase 29D: Increment global tick counter for post-combat tracking
+    global _ai_tick_counter
+    _ai_tick_counter += 1
+
     # Phase 7A-3: Track pending moves — {unit_id: (from_pos, to_pos)}
     # Each AI decision sees the pending moves of all previously-decided AI units
     # this tick, preventing sequential pathfinding from causing gridlock.
@@ -1531,10 +1694,13 @@ def run_ai_decisions(
     for ai_id in ai_ids:
         ai = all_units.get(ai_id)
         if not ai or not ai.is_alive:
-            # Clean up patrol + memory state for dead AI
+            # Clean up patrol + memory + position history state for dead AI
             _patrol_targets.pop(ai_id, None)
             _visited_history.pop(ai_id, None)
+            _stale_area_counter.pop(ai_id, None)
             _enemy_memory.pop(ai_id, None)
+            _position_history.pop(ai_id, None)
+            _last_combat_tick.pop(ai_id, None)
             continue
 
         # Phase 12C: Skip extracted AI units
@@ -1544,6 +1710,14 @@ def run_ai_decisions(
         # Skip AI units that are player-controlled and have queued actions
         if controlled_ids and ai_id in controlled_ids:
             continue
+
+        # Anti-oscillation: record current position in history
+        ai_pos = (ai.position.x, ai.position.y)
+        if ai_id not in _position_history:
+            _position_history[ai_id] = []
+        _position_history[ai_id].append(ai_pos)
+        if len(_position_history[ai_id]) > _POSITION_HISTORY_LEN:
+            _position_history[ai_id] = _position_history[ai_id][-_POSITION_HISTORY_LEN:]
 
         # Look up this AI's team FOV from the pre-computed map
         ai_team_fov = None
@@ -1561,7 +1735,120 @@ def run_ai_decisions(
             ground_items=ground_items,
             chest_states=chest_states,
         )
+
+        # Anti-oscillation: suppress MOVE if it returns to the immediately
+        # previous position (A→B→A pattern) and there is no nearby enemy
+        # that would justify the backtrack (kiting, retreating, chasing).
+        if (
+            action
+            and action.action_type == ActionType.MOVE
+            and action.target_x is not None
+        ):
+            history = _position_history.get(ai_id, [])
+            if len(history) >= 2:
+                target = (action.target_x, action.target_y)
+                prev_pos = history[-2]  # position one turn ago
+                if target == prev_pos:
+                    # Check for nearby enemies — allow oscillation in combat
+                    has_nearby_enemy = False
+                    for u in all_units.values():
+                        if (
+                            u.is_alive
+                            and u.team != ai.team
+                            and u.player_id != ai_id
+                            and not getattr(u, 'extracted', False)
+                        ):
+                            dist = max(
+                                abs(u.position.x - ai.position.x),
+                                abs(u.position.y - ai.position.y),
+                            )
+                            if dist <= _OSCILLATION_COMBAT_RANGE:
+                                has_nearby_enemy = True
+                                break
+                    if not has_nearby_enemy:
+                        # Clear patrol waypoint so patrol picks a fresh
+                        # target instead of routing back to the same tile.
+                        _patrol_targets.pop(ai_id, None)
+
+                        # Extended oscillation detection: if the last 6+
+                        # positions only contain 2 unique tiles, the unit
+                        # is stuck in a long-running A<->B cycle (typically
+                        # explore_room vs patrol fighting each other).
+                        # Suppress the explore_room path and force patrol
+                        # with a distant waypoint to physically break out.
+                        if len(history) >= 6 and len(set(history[-6:])) <= 2:
+                            _explore_suppressed.add(ai_id)
+                            _chest_seek_suppressed.add(ai_id)
+                            _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
+
+                        # Broader stall detection: if the entire recent
+                        # history fits inside a tiny bounding box (<=3
+                        # tiles wide/tall), the leader is shuffling within
+                        # one room.  Suppress explore_room and chest-seek
+                        # so patrol's stale-area detector can force a
+                        # distant waypoint.
+                        if len(history) >= 8:
+                            xs = [p[0] for p in history[-8:]]
+                            ys = [p[1] for p in history[-8:]]
+                            if max(xs) - min(xs) <= 3 and max(ys) - min(ys) <= 3:
+                                _explore_suppressed.add(ai_id)
+                                _chest_seek_suppressed.add(ai_id)
+                                _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
+
+                        action = PlayerAction(
+                            player_id=ai_id,
+                            action_type=ActionType.WAIT,
+                            reason="oscillation_suppressed",
+                        )
+
+        # Phase 30 stall breaker: if a non-leader unit has been at the same
+        # position for 3+ consecutive turns and is still trying to MOVE, it
+        # is likely deadlocked with another same-team unit over the same
+        # target tile.  Force a WAIT on alternating turns (parity based on
+        # player_id hash) so that only one of the competing units yields at
+        # a time, letting the other pass and breaking the deadlock.
+        if (
+            action
+            and action.action_type == ActionType.MOVE
+            and not getattr(ai, 'is_team_leader', False)
+        ):
+            history = _position_history.get(ai_id, [])
+            if len(history) >= 3 and len(set(history[-3:])) == 1:
+                # Deterministic parity from player_id (avoids Python hash
+                # randomisation so simulations stay reproducible across runs).
+                pid_parity = sum(ord(c) for c in ai_id) % 2
+                if _ai_tick_counter % 2 == pid_parity:
+                    action = PlayerAction(
+                        player_id=ai_id,
+                        action_type=ActionType.WAIT,
+                        reason="stall_breaker_yield",
+                    )
+
         if action:
+            # Lift explore/chest-seek suppression only when:
+            # 1. Minimum suppression duration has elapsed.
+            # 2. The target is far enough from the centroid of recent
+            #    stuck positions (Manhattan distance >= 5).
+            if (
+                action.action_type == ActionType.MOVE
+                and action.target_x is not None
+                and ai_id in _explore_suppressed
+            ):
+                suppressed_since = _suppress_start_tick.get(ai_id, 0)
+                if _ai_tick_counter - suppressed_since >= _MIN_SUPPRESS_TURNS:
+                    history = _position_history.get(ai_id, [])
+                    if history:
+                        avg_x = sum(p[0] for p in history) / len(history)
+                        avg_y = sum(p[1] for p in history) / len(history)
+                        dist_from_centroid = (
+                            abs(action.target_x - avg_x)
+                            + abs(action.target_y - avg_y)
+                        )
+                        if dist_from_centroid >= 5:
+                            _explore_suppressed.discard(ai_id)
+                            _chest_seek_suppressed.discard(ai_id)
+                            _suppress_start_tick.pop(ai_id, None)
+
             actions.append(action)
             # Phase 7A-3: Record this action if it's a MOVE so later AI
             # units know this tile is being vacated.
@@ -1575,15 +1862,27 @@ def run_ai_decisions(
 
 
 def clear_ai_patrol_state(ai_id: str | None = None) -> None:
-    """Clear patrol + memory state for a specific AI or all AI units.
+    """Clear patrol + memory + position history state for a specific AI or all AI units.
 
     Call this when a match ends to prevent stale state.
     """
     if ai_id:
         _patrol_targets.pop(ai_id, None)
         _visited_history.pop(ai_id, None)
+        _stale_area_counter.pop(ai_id, None)
         _enemy_memory.pop(ai_id, None)
+        _position_history.pop(ai_id, None)
+        _last_combat_tick.pop(ai_id, None)
+        _explore_suppressed.discard(ai_id)
+        _chest_seek_suppressed.discard(ai_id)
+        _suppress_start_tick.pop(ai_id, None)
     else:
         _patrol_targets.clear()
         _visited_history.clear()
+        _stale_area_counter.clear()
         _enemy_memory.clear()
+        _position_history.clear()
+        _last_combat_tick.clear()
+        _explore_suppressed.clear()
+        _chest_seek_suppressed.clear()
+        _suppress_start_tick.clear()
