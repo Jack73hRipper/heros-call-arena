@@ -40,6 +40,7 @@ from app.core.match_manager import (
     get_party_members,
     transfer_item_in_match,
     get_party_member_inventory,
+    dev_get_unit_inventory,
     select_all_party,
     release_all_party,
     queue_group_action,
@@ -49,6 +50,7 @@ from app.core.match_manager import (
     clear_auto_target,
     set_auto_target,
     set_dev_mode,
+    is_dev_mode,
 )
 from app.services.scheduler import scheduler_manager
 
@@ -841,6 +843,42 @@ async def handle_dev_mode(ws_manager, match_id: str, player_id: str, data: dict)
     set_dev_mode(match_id, player_id, enabled)
 
 
+async def handle_dev_get_unit_inventory(ws_manager, match_id: str, player_id: str, data: dict):
+    """Dev-only: fetch inventory/equipment for any unit in the match.
+
+    Requires the requesting player to have dev mode enabled.
+    Bypasses party-membership checks so the dev overlay can inspect
+    AI heroes, enemies, bosses, etc.
+    """
+    if not is_dev_mode(match_id, player_id):
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "error",
+            "message": "Dev mode not enabled",
+        })
+        return SKIP
+
+    unit_id = data.get("unit_id")
+    if not unit_id:
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "error",
+            "message": "Missing unit_id",
+        })
+        return SKIP
+
+    inv_data = dev_get_unit_inventory(match_id, unit_id)
+    if inv_data:
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "dev_unit_inventory",
+            **inv_data,
+        })
+    else:
+        await ws_manager.send_to_player(match_id, player_id, {
+            "type": "error",
+            "message": f"Unit not found: {unit_id}",
+        })
+        return SKIP
+
+
 # ---------------------------------------------------------------------------
 # Dispatch table
 # ---------------------------------------------------------------------------
@@ -873,6 +911,7 @@ MESSAGE_HANDLERS = {
     "set_auto_target": handle_set_auto_target,
     "clear_auto_target": handle_clear_auto_target,
     "dev_mode": handle_dev_mode,
+    "dev_get_unit_inventory": handle_dev_get_unit_inventory,
 }
 
 

@@ -190,3 +190,167 @@
   z-index: 9998;
   pointer-events: none;
 }
+
+/* ===== Equipment & Inventory Sections (Dev Inspector) ===== */
+
+.dev-equip-section,
+.dev-inv-section {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dev-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  color: #dda520;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 0;
+  user-select: none;
+}
+
+.dev-section-header:hover {
+  color: #ffa500;
+}
+
+.dev-section-toggle {
+  font-size: 9px;
+  color: #777;
+}
+
+.dev-equip-list,
+.dev-inv-list {
+  margin-top: 2px;
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 165, 0, 0.3) transparent;
+}
+
+.dev-equip-list::-webkit-scrollbar,
+.dev-inv-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dev-equip-list::-webkit-scrollbar-thumb,
+.dev-inv-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 165, 0, 0.3);
+  border-radius: 2px;
+}
+
+/* Equipment slot */
+.dev-equip-slot {
+  padding: 2px 0;
+  font-size: 9px;
+  line-height: 1.5;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dev-equip-slot.empty {
+  color: #555;
+}
+
+.dev-equip-slot-label {
+  color: #777;
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.dev-equip-name {
+  font-weight: bold;
+  margin-right: 3px;
+}
+
+.dev-equip-rarity {
+  font-size: 8px;
+  opacity: 0.8;
+  margin-right: 3px;
+}
+
+.dev-equip-category {
+  font-size: 8px;
+  color: #666;
+  font-style: italic;
+}
+
+.dev-equip-stats {
+  font-size: 8px;
+  color: #8ab4f8;
+  padding-left: 10px;
+}
+
+.dev-equip-affixes {
+  font-size: 8px;
+  color: #c084fc;
+  padding-left: 10px;
+}
+
+.dev-equip-set {
+  font-size: 8px;
+  color: #00cc66;
+  padding-left: 10px;
+}
+
+.dev-equip-empty {
+  color: #444;
+  font-style: italic;
+  font-size: 9px;
+}
+
+.dev-equip-loading {
+  color: #666;
+  font-style: italic;
+  font-size: 9px;
+  padding: 2px 0;
+}
+
+.dev-equip-set-bonuses {
+  margin-top: 2px;
+  padding: 2px 0 2px 4px;
+  border-top: 1px solid rgba(0, 204, 102, 0.15);
+  font-size: 9px;
+}
+
+.dev-set-bonus {
+  color: #00cc66;
+  font-size: 8px;
+  padding-left: 6px;
+}
+
+/* Inventory item row */
+.dev-inv-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 0;
+  font-size: 9px;
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.dev-inv-item.consumable {
+  opacity: 0.85;
+}
+
+.dev-inv-index {
+  color: #555;
+  min-width: 14px;
+  text-align: right;
+}
+
+.dev-inv-name {
+  font-weight: bold;
+}
+
+.dev-inv-rarity {
+  font-size: 8px;
+  opacity: 0.8;
+}
+
+.dev-inv-consumable {
+  font-size: 9px;
+  color: #66bb6a;
+}

@@ -60,6 +60,14 @@ _room_enemy_spawns: dict[str, dict[str, list[tuple[int, int]]]] = {}
 # {match_id: {"x,y": [room_id, ...]}}  — door → rooms it connects
 _door_rooms: dict[str, dict[str, list[str]]] = {}
 
+# {match_id: {team: {room_id: expiry_turn}}}  — temporarily skipped rooms
+# When a leader repeatedly fails to path to a room, it is marked as skipped
+# so get_next_exploration_target() picks the next-best candidate.  The skip
+# expires after _SKIP_EXPIRY_TURNS so the room can be retried later (the
+# dungeon layout may become more accessible after doors open).
+_skipped_rooms: dict[str, dict[str, dict[str, int]]] = {}
+_SKIP_EXPIRY_TURNS = 40
+
 
 # ---------------------------------------------------------------------------
 # A1: Room Adjacency Graph
@@ -328,9 +336,16 @@ def get_next_exploration_target(
         rid for rid, st in discovery.items() if st in ("discovered", "cleared")
     }
 
+    # Build set of currently-skipped rooms for this team
+    skipped = _skipped_rooms.get(match_id, {}).get(team, {})
+
     for rid, state in discovery.items():
         if state == "cleared":
             continue  # Already done
+
+        # Skip rooms that were recently marked as unreachable
+        if rid in skipped:
+            continue
 
         rinfo = info.get(rid)
         if not rinfo:
@@ -355,6 +370,11 @@ def get_next_exploration_target(
         candidates.append((priority, rid, dist))
 
     if not candidates:
+        # All rooms are either cleared or skipped — try clearing skips
+        # so the leader has something to target.
+        if skipped:
+            _skipped_rooms.get(match_id, {}).get(team, {}).clear()
+            return get_next_exploration_target(match_id, team, current_pos)
         return None
 
     # Sort by priority (ascending) then distance (ascending)
@@ -476,6 +496,37 @@ def get_room_info(match_id: str) -> dict[str, dict]:
 # Cleanup
 # ---------------------------------------------------------------------------
 
+def skip_room(
+    match_id: str,
+    team: str,
+    room_id: str,
+    current_turn: int,
+) -> None:
+    """Mark a room as temporarily unreachable for a team.
+
+    The room will be excluded from ``get_next_exploration_target()`` until
+    *current_turn + _SKIP_EXPIRY_TURNS*, at which point it becomes eligible
+    again.
+    """
+    if match_id not in _skipped_rooms:
+        _skipped_rooms[match_id] = {}
+    if team not in _skipped_rooms[match_id]:
+        _skipped_rooms[match_id][team] = {}
+    _skipped_rooms[match_id][team][room_id] = current_turn + _SKIP_EXPIRY_TURNS
+
+
+def expire_skipped_rooms(match_id: str, current_turn: int) -> None:
+    """Remove expired skip entries so rooms become targetable again."""
+    match_skips = _skipped_rooms.get(match_id)
+    if not match_skips:
+        return
+    for team in list(match_skips):
+        team_skips = match_skips[team]
+        expired = [rid for rid, exp in team_skips.items() if current_turn >= exp]
+        for rid in expired:
+            del team_skips[rid]
+
+
 def clear_exploration_state(match_id: str | None = None) -> None:
     """Clear all exploration state for a match (or all matches)."""
     if match_id:
@@ -485,6 +536,7 @@ def clear_exploration_state(match_id: str | None = None) -> None:
         _room_chests.pop(match_id, None)
         _room_enemy_spawns.pop(match_id, None)
         _door_rooms.pop(match_id, None)
+        _skipped_rooms.pop(match_id, None)
     else:
         _room_graph.clear()
         _room_discovery.clear()
@@ -492,3 +544,4 @@ def clear_exploration_state(match_id: str | None = None) -> None:
         _room_chests.clear()
         _room_enemy_spawns.clear()
         _door_rooms.clear()
+        _skipped_rooms.clear()

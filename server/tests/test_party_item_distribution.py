@@ -206,8 +206,9 @@ class TestFindBestPartyRecipient:
         """Crusader picks up caster staff → Mage gets it (higher ranged delta)."""
         crusader = _make_hero("crusader", pid="h1")
         mage = _make_hero("mage", pid="h2")
-        # A ranged weapon benefits the mage far more than the crusader
+        # A caster weapon benefits the mage far more than the crusader
         staff = _make_ranged_weapon("Arcane Staff", rdmg=15)
+        staff["weapon_category"] = "caster"  # Mage can equip caster weapons
         result = find_best_party_recipient(staff, [crusader, mage])
         assert result is not None
         assert result.player_id == "h2"  # Mage

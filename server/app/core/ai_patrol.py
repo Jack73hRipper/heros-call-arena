@@ -56,6 +56,7 @@ def _patrol_action(
     pending_moves: dict[str, tuple[tuple[int, int], tuple[int, int]]] | None = None,
     door_tiles: set[tuple[int, int]] | None = None,
     allow_team_swap: str | None = None,
+    exploration_hint: tuple[int, int] | None = None,
 ) -> PlayerAction:
     """Generate a scouting/patrol movement for an idle AI.
 
@@ -130,8 +131,8 @@ def _patrol_action(
             _patrol_targets[ai_id] = new_target
             current_target = new_target
         else:
-            # No valid waypoint found — fallback to random adjacent move
-            return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied)
+            # No valid waypoint found — fallback to directed/random adjacent move
+            return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied, exploration_hint)
 
     # Move toward the waypoint using A*
     next_step = get_next_step_toward(
@@ -156,11 +157,11 @@ def _patrol_action(
                 grid_width, grid_height,
                 obstacles, occupied, door_tiles,
             )
-            # If the new waypoint ALSO back-steps, fall back to random move
+            # If the new waypoint ALSO back-steps, fall back to directed/random move
             if next_step and len(history) >= 2 and next_step == history[-2]:
-                return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied)
+                return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied, exploration_hint)
         else:
-            return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied)
+            return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied, exploration_hint)
     # ---------------------------------------------------
 
     if next_step:
@@ -176,9 +177,9 @@ def _patrol_action(
             reason="patrol_move",
         )
 
-    # A* couldn't find a path — pick a new target next tick, random move now
+    # A* couldn't find a path — pick a new target next tick, directed/random move now
     _patrol_targets.pop(ai_id, None)
-    return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied)
+    return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied, exploration_hint)
 
 
 def _pick_patrol_waypoint(
@@ -232,6 +233,10 @@ def _pick_patrol_waypoint(
         return None
 
     # Score candidates: prefer center-biased + far from self + unvisited
+    # If ALL candidates have been visited, the penalty serves no purpose
+    # and would block all movement.  Disable it in that case.
+    all_visited = all(tile in visited_set for tile in candidates)
+
     def score(tile: tuple[int, int]) -> float:
         # Distance from AI — want to move away from current spot
         dist_from_self = abs(tile[0] - ai_pos[0]) + abs(tile[1] - ai_pos[1])
@@ -239,7 +244,8 @@ def _pick_patrol_waypoint(
         dist_to_center = abs(tile[0] - center_x) + abs(tile[1] - center_y)
         center_bonus = max(0, (grid_width - dist_to_center))  # Higher when closer to center
         # Visited penalty — strong enough to overcome center-bonus (Bug 2 fix)
-        visited_penalty = -15.0 if tile in visited_set else 0.0
+        # Disabled when every candidate is visited (prevents total patrol lockout).
+        visited_penalty = -15.0 if (tile in visited_set and not all_visited) else 0.0
         return dist_from_self + center_bonus * 0.5 + visited_penalty
 
     # Sort by score descending, then pick from the top candidates with some
@@ -255,26 +261,46 @@ def _random_adjacent_move(
     grid_height: int,
     obstacles: set[tuple[int, int]],
     occupied: set[tuple[int, int]],
+    exploration_hint: tuple[int, int] | None = None,
 ) -> PlayerAction:
-    """Fallback: pick a random walkable adjacent tile."""
-    directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-    random.shuffle(directions)
+    """Fallback: pick a walkable adjacent tile.
 
+    If *exploration_hint* is provided (e.g. an unexplored room entrance),
+    prefer the adjacent tile that minimises Manhattan distance to that target
+    instead of choosing randomly.  Falls back to random order when no hint
+    is given or when the hint doesn't help.
+    """
+    directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+
+    # Collect all valid adjacent tiles
+    valid: list[tuple[int, int]] = []
     for dx, dy in directions:
         nx, ny = ai.position.x + dx, ai.position.y + dy
         if 0 <= nx < grid_width and 0 <= ny < grid_height:
             if (nx, ny) not in obstacles and (nx, ny) not in occupied:
-                return PlayerAction(
-                    player_id=ai.player_id,
-                    action_type=ActionType.MOVE,
-                    target_x=nx,
-                    target_y=ny,
-                    reason="random_adjacent_move",
-                )
+                valid.append((nx, ny))
 
-    # Completely surrounded — wait
+    if not valid:
+        return PlayerAction(
+            player_id=ai.player_id,
+            action_type=ActionType.WAIT,
+            reason="patrol_surrounded",
+        )
+
+    if exploration_hint:
+        # Sort by Manhattan distance to the exploration target (closest first)
+        valid.sort(key=lambda t: abs(t[0] - exploration_hint[0]) + abs(t[1] - exploration_hint[1]))
+        chosen = valid[0]
+        reason = "directed_adjacent_move"
+    else:
+        random.shuffle(valid)
+        chosen = valid[0]
+        reason = "random_adjacent_move"
+
     return PlayerAction(
         player_id=ai.player_id,
-        action_type=ActionType.WAIT,
-        reason="patrol_surrounded",
+        action_type=ActionType.MOVE,
+        target_x=chosen[0],
+        target_y=chosen[1],
+        reason=reason,
     )

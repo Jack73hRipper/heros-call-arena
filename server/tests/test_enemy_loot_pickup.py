@@ -116,13 +116,13 @@ class TestScavengeConstants:
     """Verify per-behavior scavenge range values."""
 
     def test_aggressive_range(self):
-        assert _SCAVENGE_MAX_RANGE["aggressive"] == 5
+        assert _SCAVENGE_MAX_RANGE["aggressive"] == 3
 
     def test_ranged_range(self):
-        assert _SCAVENGE_MAX_RANGE["ranged"] == 3
+        assert _SCAVENGE_MAX_RANGE["ranged"] == 4
 
     def test_support_range(self):
-        assert _SCAVENGE_MAX_RANGE["support"] == 3
+        assert _SCAVENGE_MAX_RANGE["support"] == 5
 
     def test_boss_not_in_scavenge_map(self):
         """Bosses should not have scavenge range (they never scavenge)."""

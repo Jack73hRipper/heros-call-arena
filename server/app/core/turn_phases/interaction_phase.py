@@ -338,3 +338,96 @@ def _resolve_loot(
                                     success=True,
                                     message=f"{recipient.username} equipped {item_name}",
                                 ))
+
+                    # Phase 28I: Redistribute displaced equipment across team
+                    # After auto-equip, old items land in inventory. Re-scan ALL
+                    # team members' inventories and transfer items that would be
+                    # an upgrade for a teammate, then auto-equip + repeat until
+                    # no more transfers happen (max 3 passes to avoid loops).
+                    all_team = [
+                        p for p in players.values()
+                        if p.team == player.team and p.is_alive
+                        and getattr(p, 'enemy_type', None) is None
+                    ]
+                    for _redist_pass in range(3):
+                        transfers_this_pass = 0
+                        for member in list(all_team):
+                            if not member.is_alive:
+                                continue
+                            # Scan inventory for equippable non-consumable items
+                            for idx in range(len(member.inventory) - 1, -1, -1):
+                                if idx >= len(member.inventory):
+                                    continue
+                                item = member.inventory[idx]
+                                if not isinstance(item, dict):
+                                    continue
+                                if item.get("item_type") == "consumable":
+                                    continue
+                                slot = item.get("equip_slot")
+                                if not slot:
+                                    continue
+                                # Find the best recipient across the whole team
+                                best = find_best_party_recipient(item, all_team)
+                                if best and best.player_id != member.player_id:
+                                    if len(best.inventory) >= INVENTORY_MAX_CAPACITY:
+                                        continue
+                                    member.inventory.pop(idx)
+                                    best.inventory.append(item)
+                                    transfers_this_pass += 1
+                                    results.append(ActionResult(
+                                        player_id=best.player_id,
+                                        username=best.username,
+                                        action_type=ActionType.LOOT,
+                                        success=True,
+                                        message=f"{best.username} received {item.get('name', 'item')} from {member.username}",
+                                    ))
+                        # Auto-equip everyone who might have received items
+                        if transfers_this_pass > 0:
+                            for member in all_team:
+                                if member.is_alive:
+                                    eq_res = try_auto_equip(member, match_id)
+                                    for er in eq_res:
+                                        equipped_item = er.get("equipped", {})
+                                        item_name = equipped_item.get("name", "item") if isinstance(equipped_item, dict) else "item"
+                                        results.append(ActionResult(
+                                            player_id=member.player_id,
+                                            username=member.username,
+                                            action_type=ActionType.LOOT,
+                                            success=True,
+                                            message=f"{member.username} equipped {item_name}",
+                                        ))
+                        else:
+                            break  # No transfers needed — done
+
+                    # Phase 28G: Purge items no team member wants — free inventory space
+                    from app.core.equipment_manager import purge_unwanted_items
+                    all_team = [
+                        p for p in players.values()
+                        if p.team == player.team and p.is_alive
+                        and getattr(p, 'enemy_type', None) is None
+                    ]
+                    purge_ids = {m.player_id for m in all_team}
+                    for pid in purge_ids:
+                        purge_unit = players.get(pid)
+                        if purge_unit and purge_unit.is_alive:
+                            destroyed = purge_unwanted_items(purge_unit, all_team)
+                            for d in destroyed:
+                                results.append(ActionResult(
+                                    player_id=purge_unit.player_id,
+                                    username=purge_unit.username,
+                                    action_type=ActionType.LOOT,
+                                    success=True,
+                                    message=f"{purge_unit.username} destroyed {d['item_name']} (no upgrade)",
+                                ))
+
+                    # Phase 28H: Balance potions across team members
+                    from app.core.equipment_manager import balance_team_potions
+                    potion_transfers = balance_team_potions(all_team)
+                    for pt in potion_transfers:
+                        results.append(ActionResult(
+                            player_id=pt["to_id"],
+                            username=pt["to_name"],
+                            action_type=ActionType.LOOT,
+                            success=True,
+                            message=f"{pt['to_name']} received {pt['item_name']} from {pt['from_name']}",
+                        ))

@@ -41,6 +41,8 @@ from app.core.ai_pathfinding import (  # noqa: F401
 from app.core.ai_exploration import (  # noqa: F401
     get_next_exploration_target,
     get_current_room,
+    skip_room,
+    expire_skipped_rooms,
 )
 from app.core.ai_skills import (  # noqa: F401
     _CLASS_ROLE_MAP,
@@ -90,6 +92,7 @@ from app.core.ai_stances import (  # noqa: F401
     _find_owner,
     _chebyshev,
     _maybe_interact_door,
+    _find_adjacent_door_toward_target,
     _has_heal_potions,
     _should_retreat,
     _find_retreat_destination,
@@ -121,9 +124,9 @@ _ENEMY_POTION_THRESHOLDS: dict[str, float] = {
 # when idle (no visible enemies). Bosses never scavenge.
 # ---------------------------------------------------------------------------
 _SCAVENGE_MAX_RANGE: dict[str, int] = {
-    "aggressive": 5,
-    "ranged":     3,
-    "support":    3,
+    "aggressive": 3,
+    "ranged":     4,
+    "support":    5,
 }
 
 
@@ -133,9 +136,9 @@ _SCAVENGE_MAX_RANGE: dict[str, int] = {
 # Tracks the last few positions each AI unit occupied across turns.
 # Used in run_ai_decisions to detect and suppress A→B→A oscillation
 # when there is no nearby enemy forcing the movement.
-# {unit_id: [pos_turn_N-7, ..., pos_turn_N-1, pos_turn_N]}
+# {unit_id: [pos_turn_N-11, ..., pos_turn_N-1, pos_turn_N]}
 _position_history: dict[str, list[tuple[int, int]]] = {}
-_POSITION_HISTORY_LEN = 8
+_POSITION_HISTORY_LEN = 12
 _OSCILLATION_COMBAT_RANGE = 3  # Suppress oscillation only when no enemy within this Chebyshev dist
 
 # Extended oscillation: set of ai_ids whose explore_room should be temporarily
@@ -147,11 +150,28 @@ _explore_suppressed: set[str] = set()
 # lifted until at least _MIN_SUPPRESS_TURNS have elapsed, giving patrol enough
 # time to physically exit the room.
 _suppress_start_tick: dict[str, int] = {}
-_MIN_SUPPRESS_TURNS = 20
+_MIN_SUPPRESS_TURNS = 10
+_MAX_SUPPRESS_TURNS = 30  # Hard cap: lift suppression unconditionally after this many ticks
 
 # Parallel suppression for chest seeking — prevents aggro_chest_seek from
 # fighting patrol_move when the AI can't actually reach the chest.
 _chest_seek_suppressed: set[str] = set()
+
+# Root Cause #1 fix: Per-leader consecutive pathfinding failures for explore
+# targets.  After _EXPLORE_FAIL_THRESHOLD consecutive failures (A* returns
+# None or backtrack detected) the target room is marked as temporarily
+# unreachable via skip_room() and the leader moves on to the next candidate.
+# {ai_id: {room_id: consecutive_fail_count}}
+_explore_fail_count: dict[str, dict[str, int]] = {}
+_EXPLORE_FAIL_THRESHOLD = 3
+
+# RC#1 tuning: stagnation guard.  Even when A* succeeds each turn, a leader
+# can "treadmill" — moving but never actually reaching the target room due to
+# congestion, combat detours, or backtracking.  If a leader targets the same
+# room for _EXPLORE_STAGNATION_THRESHOLD consecutive *explore_room* decisions
+# it is skipped.  {ai_id: (room_id, consecutive_turn_count)}
+_explore_target_turns: dict[str, tuple[str, int]] = {}
+_EXPLORE_STAGNATION_THRESHOLD = 25
 
 # ---------------------------------------------------------------------------
 # Phase 29D: Post-Combat Follow Impulse — prevents hero allies from
@@ -911,30 +931,102 @@ def _decide_aggressive_action(
         if getattr(ai, 'is_team_leader', False) and match_id and ai_id not in _explore_suppressed:
             target = get_next_exploration_target(match_id, ai.team, (ai.position.x, ai.position.y))
             if target:
-                occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
-                next_step = get_next_step_toward(
-                    (ai.position.x, ai.position.y), target["entrance"],
-                    grid_width, grid_height, obstacles, occupied, door_tiles,
-                )
-                if next_step:
-                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
-                    if door_action:
-                        return door_action
-                    # Feed this move into patrol's visited history so the
-                    # stale-area detector accounts for explore_room moves.
-                    if ai_id not in _visited_history:
-                        _visited_history[ai_id] = []
-                    _visited_history[ai_id].append((ai.position.x, ai.position.y))
-                    if len(_visited_history[ai_id]) > _MAX_VISIT_HISTORY:
-                        _visited_history[ai_id] = _visited_history[ai_id][-_MAX_VISIT_HISTORY:]
-                    return PlayerAction(
-                        player_id=ai.player_id,
-                        action_type=ActionType.MOVE,
-                        target_x=next_step[0],
-                        target_y=next_step[1],
-                        reason="explore_room",
+                _target_rid = target["room_id"]
+
+                # --- RC#1 stagnation guard: skip room if targeted too long ---
+                _prev = _explore_target_turns.get(ai_id)
+                if _prev and _prev[0] == _target_rid:
+                    _stag_count = _prev[1] + 1
+                else:
+                    _stag_count = 1
+                _explore_target_turns[ai_id] = (_target_rid, _stag_count)
+
+                if _stag_count >= _EXPLORE_STAGNATION_THRESHOLD:
+                    skip_room(match_id, ai.team, _target_rid, _ai_tick_counter)
+                    _explore_target_turns.pop(ai_id, None)
+                    _explore_fail_count.get(ai_id, {}).pop(_target_rid, None)
+                    # Fall through to patrol this tick; next tick picks new target
+                else:
+                    occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
+                    next_step = get_next_step_toward(
+                        (ai.position.x, ai.position.y), target["entrance"],
+                        grid_width, grid_height, obstacles, occupied, door_tiles,
                     )
-        return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves, door_tiles, allow_team_swap=allow_swap)
+
+                    # --- Root Cause #1 fix: track pathfinding failures ---
+                    _explore_failed = False
+
+                    if not next_step:
+                        # A* found no path to target entrance
+                        _explore_failed = True
+                    else:
+                        # Anti-backtrack: reject explore_room move that returns
+                        # the leader to its previous tile (A→B→A).  Fall through
+                        # to patrol, which has its own anti-backtrack guard.
+                        _leader_hist = _position_history.get(ai_id, [])
+                        _is_backtrack = len(_leader_hist) >= 2 and next_step == _leader_hist[-2]
+                        if _is_backtrack:
+                            _explore_failed = True
+                        else:
+                            door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                            if not door_action:
+                                # Root Cause #2 fix: A* may route around a closed
+                                # door (3x cost) even though the door is adjacent
+                                # and leads toward the target.  Force INTERACT.
+                                forced_door = _find_adjacent_door_toward_target(
+                                    (ai.position.x, ai.position.y),
+                                    target["entrance"],
+                                    door_tiles,
+                                )
+                                if forced_door:
+                                    door_action = PlayerAction(
+                                        player_id=ai.player_id,
+                                        action_type=ActionType.INTERACT,
+                                        target_x=forced_door[0],
+                                        target_y=forced_door[1],
+                                        reason="open_door",
+                                    )
+                            if door_action:
+                                # Success — clear failure counter
+                                if ai_id in _explore_fail_count:
+                                    _explore_fail_count[ai_id].pop(_target_rid, None)
+                                return door_action
+                            # Feed this move into patrol's visited history so the
+                            # stale-area detector accounts for explore_room moves.
+                            if ai_id not in _visited_history:
+                                _visited_history[ai_id] = []
+                            _visited_history[ai_id].append((ai.position.x, ai.position.y))
+                            if len(_visited_history[ai_id]) > _MAX_VISIT_HISTORY:
+                                _visited_history[ai_id] = _visited_history[ai_id][-_MAX_VISIT_HISTORY:]
+                            # Success — clear failure counter
+                            if ai_id in _explore_fail_count:
+                                _explore_fail_count[ai_id].pop(_target_rid, None)
+                            return PlayerAction(
+                                player_id=ai.player_id,
+                                action_type=ActionType.MOVE,
+                                target_x=next_step[0],
+                                target_y=next_step[1],
+                                reason="explore_room",
+                            )
+
+                    # Handle explore failure: increment counter, skip room if threshold hit
+                    if _explore_failed:
+                        if ai_id not in _explore_fail_count:
+                            _explore_fail_count[ai_id] = {}
+                        _explore_fail_count[ai_id][_target_rid] = \
+                            _explore_fail_count[ai_id].get(_target_rid, 0) + 1
+                        if _explore_fail_count[ai_id][_target_rid] >= _EXPLORE_FAIL_THRESHOLD:
+                            skip_room(match_id, ai.team, _target_rid, _ai_tick_counter)
+                            _explore_fail_count[ai_id].pop(_target_rid, None)
+                            _explore_target_turns.pop(ai_id, None)
+        # Build exploration hint for patrol fallback — gives directional
+        # preference toward unexplored rooms when patrol has no waypoint.
+        _explore_hint: tuple[int, int] | None = None
+        if getattr(ai, 'is_team_leader', False) and match_id:
+            _hint_target = get_next_exploration_target(match_id, ai.team, (ai.position.x, ai.position.y))
+            if _hint_target:
+                _explore_hint = _hint_target["entrance"]
+        return _patrol_action(ai, grid_width, grid_height, obstacles, all_units, pending_moves, door_tiles, allow_team_swap=allow_swap, exploration_hint=_explore_hint)
 
     # Enemies found — clear patrol waypoint so AI doesn't resume old patrol
     _patrol_targets.pop(ai_id, None)
@@ -1686,6 +1778,10 @@ def run_ai_decisions(
     global _ai_tick_counter
     _ai_tick_counter += 1
 
+    # Root Cause #1 fix: expire stale room skips each tick
+    if match_id:
+        expire_skipped_rooms(match_id, _ai_tick_counter)
+
     # Phase 7A-3: Track pending moves — {unit_id: (from_pos, to_pos)}
     # Each AI decision sees the pending moves of all previously-decided AI units
     # this tick, preventing sequential pathfinding from causing gridlock.
@@ -1770,36 +1866,48 @@ def run_ai_decisions(
                         # target instead of routing back to the same tile.
                         _patrol_targets.pop(ai_id, None)
 
-                        # Extended oscillation detection: if the last 6+
+                        # Track whether an extended oscillation pattern is
+                        # confirmed.  A single A->B->A reversal is common
+                        # during early movement (spawn contention, leader
+                        # overlap) and should NOT force a WAIT by itself.
+                        confirmed_oscillation = False
+
+                        # Extended oscillation detection: if the last 8+
                         # positions only contain 2 unique tiles, the unit
                         # is stuck in a long-running A<->B cycle (typically
                         # explore_room vs patrol fighting each other).
+                        # For non-leader followers, use a shorter window (4)
+                        # since they oscillate faster in corridors.
                         # Suppress the explore_room path and force patrol
                         # with a distant waypoint to physically break out.
-                        if len(history) >= 6 and len(set(history[-6:])) <= 2:
+                        _osc_window = 4 if not getattr(ai, 'is_team_leader', False) else 8
+                        if len(history) >= _osc_window and len(set(history[-_osc_window:])) <= 2:
                             _explore_suppressed.add(ai_id)
                             _chest_seek_suppressed.add(ai_id)
                             _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
+                            confirmed_oscillation = True
 
                         # Broader stall detection: if the entire recent
-                        # history fits inside a tiny bounding box (<=3
+                        # history fits inside a tiny bounding box (<=2
                         # tiles wide/tall), the leader is shuffling within
                         # one room.  Suppress explore_room and chest-seek
                         # so patrol's stale-area detector can force a
                         # distant waypoint.
-                        if len(history) >= 8:
-                            xs = [p[0] for p in history[-8:]]
-                            ys = [p[1] for p in history[-8:]]
-                            if max(xs) - min(xs) <= 3 and max(ys) - min(ys) <= 3:
+                        if len(history) >= 12:
+                            xs = [p[0] for p in history[-12:]]
+                            ys = [p[1] for p in history[-12:]]
+                            if max(xs) - min(xs) <= 2 and max(ys) - min(ys) <= 2:
                                 _explore_suppressed.add(ai_id)
                                 _chest_seek_suppressed.add(ai_id)
                                 _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
+                                confirmed_oscillation = True
 
-                        action = PlayerAction(
-                            player_id=ai_id,
-                            action_type=ActionType.WAIT,
-                            reason="oscillation_suppressed",
-                        )
+                        if confirmed_oscillation:
+                            action = PlayerAction(
+                                player_id=ai_id,
+                                action_type=ActionType.WAIT,
+                                reason="oscillation_suppressed",
+                            )
 
         # Phase 30 stall breaker: if a non-leader unit has been at the same
         # position for 3+ consecutive turns and is still trying to MOVE, it
@@ -1825,17 +1933,30 @@ def run_ai_decisions(
                     )
 
         if action:
-            # Lift explore/chest-seek suppression only when:
-            # 1. Minimum suppression duration has elapsed.
-            # 2. The target is far enough from the centroid of recent
-            #    stuck positions (Manhattan distance >= 5).
-            if (
-                action.action_type == ActionType.MOVE
-                and action.target_x is not None
-                and ai_id in _explore_suppressed
-            ):
+            # Lift explore/chest-seek suppression.
+            # Two paths:
+            #   A) MOVE that's far enough from the stuck centroid (normal lift)
+            #   B) Hard timeout — unconditionally lift after _MAX_SUPPRESS_TURNS
+            #      to prevent the deadlock where suppression forces WAIT,
+            #      but the lift condition requires MOVE.
+            if ai_id in _explore_suppressed:
                 suppressed_since = _suppress_start_tick.get(ai_id, 0)
-                if _ai_tick_counter - suppressed_since >= _MIN_SUPPRESS_TURNS:
+                elapsed = _ai_tick_counter - suppressed_since
+
+                # Path B: Hard timeout — break the deadlock unconditionally
+                if elapsed >= _MAX_SUPPRESS_TURNS:
+                    _explore_suppressed.discard(ai_id)
+                    _chest_seek_suppressed.discard(ai_id)
+                    _suppress_start_tick.pop(ai_id, None)
+                    # Also clear visited history so patrol gets fresh candidates
+                    _visited_history.pop(ai_id, None)
+                    _stale_area_counter.pop(ai_id, 0)
+                # Path A: Normal lift — MOVE far enough from stuck centroid
+                elif (
+                    action.action_type == ActionType.MOVE
+                    and action.target_x is not None
+                    and elapsed >= _MIN_SUPPRESS_TURNS
+                ):
                     history = _position_history.get(ai_id, [])
                     if history:
                         avg_x = sum(p[0] for p in history) / len(history)
@@ -1844,7 +1965,7 @@ def run_ai_decisions(
                             abs(action.target_x - avg_x)
                             + abs(action.target_y - avg_y)
                         )
-                        if dist_from_centroid >= 5:
+                        if dist_from_centroid >= 3:
                             _explore_suppressed.discard(ai_id)
                             _chest_seek_suppressed.discard(ai_id)
                             _suppress_start_tick.pop(ai_id, None)
@@ -1876,6 +1997,8 @@ def clear_ai_patrol_state(ai_id: str | None = None) -> None:
         _explore_suppressed.discard(ai_id)
         _chest_seek_suppressed.discard(ai_id)
         _suppress_start_tick.pop(ai_id, None)
+        _explore_fail_count.pop(ai_id, None)
+        _explore_target_turns.pop(ai_id, None)
     else:
         _patrol_targets.clear()
         _visited_history.clear()
@@ -1886,3 +2009,5 @@ def clear_ai_patrol_state(ai_id: str | None = None) -> None:
         _explore_suppressed.clear()
         _chest_seek_suppressed.clear()
         _suppress_start_tick.clear()
+        _explore_fail_count.clear()
+        _explore_target_turns.clear()

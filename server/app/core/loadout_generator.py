@@ -208,8 +208,6 @@ def generate_hero_loadout(
     equipment: dict = {}
     inventory: list = []
 
-    tier_bonus = _MATCH_TIER_BONUS.get(match_tier, 1)
-
     # --- Weapon ---
     weapon_cats = getattr(class_def, 'allowed_weapon_categories', None) or []
     if weapon_cats:
@@ -223,13 +221,9 @@ def generate_hero_loadout(
                 weapon_candidates.append(item_id)
         if weapon_candidates:
             base_type_id = rng.choice(weapon_candidates)
-            rolled_rarity = roll_rarity(floor_number=floor_number, enemy_tier="mid", rng=rng)
-            rarity_idx = _RARITY_TIERS.index(rolled_rarity) if rolled_rarity in _RARITY_TIERS else 0
-            final_idx = max(0, min(len(_RARITY_TIERS) - 1, rarity_idx + tier_bonus))
-            final_rarity = _RARITY_TIERS[final_idx]
             item = generate_item(
                 base_type_id=base_type_id,
-                rarity=final_rarity,
+                rarity="common",
                 item_level=max(1, floor_number),
                 seed=rng.randint(0, 2**31),
             )
@@ -249,18 +243,33 @@ def generate_hero_loadout(
             armor_candidates.append(item_id)
     if armor_candidates:
         base_type_id = rng.choice(armor_candidates)
-        rolled_rarity = roll_rarity(floor_number=floor_number, enemy_tier="mid", rng=rng)
-        rarity_idx = _RARITY_TIERS.index(rolled_rarity) if rolled_rarity in _RARITY_TIERS else 0
-        final_idx = max(0, min(len(_RARITY_TIERS) - 1, rarity_idx + tier_bonus))
-        final_rarity = _RARITY_TIERS[final_idx]
         item = generate_item(
             base_type_id=base_type_id,
-            rarity=final_rarity,
+            rarity="common",
             item_level=max(1, floor_number),
             seed=rng.randint(0, 2**31),
         )
         if item:
             equipment["armor"] = item.model_dump()
+
+    # --- Accessory ---
+    accessory_candidates = []
+    for item_id, item_data in items_config.items():
+        if item_data.get("equip_slot") != "accessory":
+            continue
+        if item_data.get("item_type") == "consumable":
+            continue
+        accessory_candidates.append(item_id)
+    if accessory_candidates:
+        base_type_id = rng.choice(accessory_candidates)
+        item = generate_item(
+            base_type_id=base_type_id,
+            rarity="common",
+            item_level=max(1, floor_number),
+            seed=rng.randint(0, 2**31),
+        )
+        if item:
+            equipment["accessory"] = item.model_dump()
 
     # --- Potions (2-3 health potions) ---
     potion_count = rng.randint(2, 3)

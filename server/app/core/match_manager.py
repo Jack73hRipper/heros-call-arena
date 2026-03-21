@@ -818,6 +818,7 @@ from app.core.equipment_manager import (  # noqa: E402, F401
     _remove_equipment_stats,
     transfer_item_in_match,
     get_party_member_inventory,
+    dev_get_unit_inventory,
 )
 
 

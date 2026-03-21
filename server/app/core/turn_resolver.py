@@ -233,12 +233,17 @@ def resolve_turn(
     )
 
     # Phase 4: Victory Check
-    # In dungeon mode, suppress normal team victory (killing all enemies).
-    # Dungeon matches end via:
-    #   - "all_extracted": all team_a heroes are extracted or dead (at least one extracted)
-    #   - "party_wipe": all team_a heroes dead (none extracted)
+    # Determine match_type for victory logic branching.
+    _match_type = None
+    if match_state and hasattr(match_state, 'config'):
+        _match_type = getattr(match_state.config, 'match_type', None)
+
     winner = None
-    if is_dungeon:
+    if is_dungeon and _match_type != "pvpve":
+        # Pure dungeon mode — suppress normal team victory (killing all enemies).
+        # Dungeon matches end via:
+        #   - "dungeon_extract": all team_a heroes are extracted or dead (at least one extracted)
+        #   - "party_wipe": all team_a heroes dead (none extracted)
         team_a_ids = set(team_a or [])
         team_a_alive = [p for p in players.values() if p.player_id in team_a_ids and p.is_alive and not p.extracted]
         team_a_extracted = [p for p in players.values() if p.player_id in team_a_ids and p.extracted]
@@ -251,10 +256,8 @@ def resolve_turn(
             else:
                 winner = "party_wipe"
     else:
-        # Phase 27D: derive match_type from match_state for PVPVE exclusion
-        _match_type = None
-        if match_state and hasattr(match_state, 'config'):
-            _match_type = getattr(match_state.config, 'match_type', None)
+        # PVP, PVPVE, and other team-based modes — use team victory check.
+        # Phase 27D: exclude PVE team from survivor count in PVPVE matches.
         winner = _resolve_victory(
             players, team_a, team_b, team_c, team_d,
             match_type=_match_type,

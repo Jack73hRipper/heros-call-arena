@@ -31,6 +31,7 @@ export default function useDevOverlay({
   const [showSpawns, setShowSpawns] = useState(false);
   const [inspectMode, setInspectMode] = useState(false);
   const [inspectedUnit, setInspectedUnit] = useState(null);
+  const [inspectedInventory, setInspectedInventory] = useState(null);
 
   // Track current viewport for free cam initialization
   const viewportRef = useRef(viewport);
@@ -131,6 +132,7 @@ export default function useDevOverlay({
       setShowSpawns(false);
       setInspectMode(false);
       setInspectedUnit(null);
+      setInspectedInventory(null);
     }
   }, [matchStatus]);
 
@@ -159,6 +161,49 @@ export default function useDevOverlay({
     }
   }, [players]);
 
+  // Listen for dev_unit_inventory responses from server
+  useEffect(() => {
+    function handleDevInventory(e) {
+      const data = e.detail;
+      if (data && inspectedRef.current && data.unit_id === inspectedRef.current.id) {
+        setInspectedInventory({
+          unit_id: data.unit_id,
+          inventory: data.inventory || [],
+          equipment: data.equipment || {},
+        });
+      }
+    }
+    window.addEventListener('dev_unit_inventory', handleDevInventory);
+    return () => window.removeEventListener('dev_unit_inventory', handleDevInventory);
+  }, []);
+
+  // Auto-request inventory when inspecting a unit in dev mode
+  const lastRequestedRef = useRef(null);
+  useEffect(() => {
+    if (!sendAction || !devMode || matchStatus !== 'in_progress') return;
+    if (inspectedUnit && inspectedUnit.id) {
+      // Request inventory from server (dev endpoint, no party check)
+      if (lastRequestedRef.current !== inspectedUnit.id) {
+        lastRequestedRef.current = inspectedUnit.id;
+        sendAction({ type: 'dev_get_unit_inventory', unit_id: inspectedUnit.id });
+      }
+    } else {
+      lastRequestedRef.current = null;
+      setInspectedInventory(null);
+    }
+  }, [inspectedUnit, devMode, sendAction, matchStatus]);
+
+  // Refresh inventory data periodically while inspecting (every 3 seconds)
+  useEffect(() => {
+    if (!sendAction || !devMode || !inspectedUnit || matchStatus !== 'in_progress') return;
+    const interval = setInterval(() => {
+      if (inspectedUnit.id) {
+        sendAction({ type: 'dev_get_unit_inventory', unit_id: inspectedUnit.id });
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [inspectedUnit, devMode, sendAction, matchStatus]);
+
   return {
     devMode,
     fogDisabled: devMode && fogDisabled,
@@ -170,6 +215,7 @@ export default function useDevOverlay({
     showSpawns: devMode && showSpawns,
     inspectMode: devMode && inspectMode,
     inspectedUnit,
+    inspectedInventory,
     effectiveViewport,
     // Toggle actions
     toggleDev: useCallback(() => setDevMode(prev => !prev), []),
@@ -183,8 +229,11 @@ export default function useDevOverlay({
     inspectUnit: useCallback((unitId) => {
       if (unitId && players[unitId]) {
         setInspectedUnit({ id: unitId, ...players[unitId] });
+        setInspectedInventory(null);  // Clear stale data; auto-fetch will fire
+        lastRequestedRef.current = null;
       } else {
         setInspectedUnit(null);
+        setInspectedInventory(null);
       }
     }, [players]),
     resetCamera: useCallback(() => {

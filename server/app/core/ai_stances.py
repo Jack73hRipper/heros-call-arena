@@ -367,6 +367,41 @@ def _maybe_interact_door(
     return None
 
 
+def _find_adjacent_door_toward_target(
+    ai_pos: tuple[int, int],
+    target: tuple[int, int],
+    door_tiles: set[tuple[int, int]] | None,
+) -> tuple[int, int] | None:
+    """Return an adjacent closed-door tile that is closer to *target* than *ai_pos*.
+
+    When A* routes around a door (3x cost penalty), the leader may stand
+    adjacent to a closed door but never open it because ``next_step`` is
+    not the door tile.  This helper detects that case so the caller can
+    force an INTERACT action.
+
+    Returns the adjacent door tile closest to *target*, or ``None``.
+    """
+    if not door_tiles:
+        return None
+
+    ai_dist = abs(ai_pos[0] - target[0]) + abs(ai_pos[1] - target[1])
+    best_door: tuple[int, int] | None = None
+    best_dist = ai_dist  # must be strictly closer
+
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            if dx == 0 and dy == 0:
+                continue
+            neighbor = (ai_pos[0] + dx, ai_pos[1] + dy)
+            if neighbor in door_tiles:
+                door_dist = abs(neighbor[0] - target[0]) + abs(neighbor[1] - target[1])
+                if door_dist < best_dist:
+                    best_dist = door_dist
+                    best_door = neighbor
+
+    return best_door
+
+
 # ---------------------------------------------------------------------------
 # Phase 8K: AI Retreat Helpers
 # ---------------------------------------------------------------------------
@@ -908,6 +943,18 @@ def _decide_follow_action(
         if next_step:
             # Phase 7D-1: If next step is a closed door, INTERACT instead of MOVE
             door_action = _maybe_interact_door(ai, next_step, door_tiles)
+            if not door_action:
+                # Same forced-door fix: follower may be adjacent to a door
+                # that leads toward the owner, but A* routed around it.
+                forced_door = _find_adjacent_door_toward_target(
+                    ai_pos, owner_pos, door_tiles,
+                )
+                if forced_door:
+                    door_action = PlayerAction(
+                        player_id=ai_id, action_type=ActionType.INTERACT,
+                        target_x=forced_door[0], target_y=forced_door[1],
+                        reason="open_door",
+                    )
             if door_action:
                 return door_action
             return PlayerAction(
@@ -1086,6 +1133,15 @@ def _decide_follow_action(
                     ai_pos, next_step, move_target, match_state, ai.team,
                     ai.hp / ai.max_hp, grid_width, grid_height, obstacles, occupied,
                 )
+            # Anti-backtrack: reject move if it returns to position from
+            # last turn — prevents corridor oscillation during combat.
+            from app.core.ai_behavior import _position_history as _bh_pos
+            _fh_combat = _bh_pos.get(ai_id, [])
+            if len(_fh_combat) >= 2 and next_step == _fh_combat[-2]:
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.WAIT,
+                    reason="follow_combat_wait",
+                )
             door_action = _maybe_interact_door(ai, next_step, door_tiles)
             if door_action:
                 return door_action
@@ -1105,6 +1161,16 @@ def _decide_follow_action(
             ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
         )
         if next_step:
+            # Anti-backtrack: reject if move returns to the position the
+            # follower occupied last turn.  Prevents corridor oscillation
+            # when sequential pathfinding alternates tiles each tick.
+            from app.core.ai_behavior import _position_history
+            _fh = _position_history.get(ai_id, [])
+            if len(_fh) >= 2 and next_step == _fh[-2]:
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.WAIT,
+                    reason="follow_trail_wait",
+                )
             door_action = _maybe_interact_door(ai, next_step, door_tiles)
             if door_action:
                 return door_action
@@ -1127,14 +1193,30 @@ def _decide_follow_action(
                 ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
             )
             if next_step and next_step != ai_pos:
-                door_action = _maybe_interact_door(ai, next_step, door_tiles)
-                if door_action:
-                    return door_action
-                return PlayerAction(
-                    player_id=ai_id, action_type=ActionType.MOVE,
-                    target_x=next_step[0], target_y=next_step[1],
-                    reason="follow_trail_moving",
-                )
+                # Anti-oscillation: reject the step if it returns to the
+                # position the follower occupied last turn (A→B→A).  When
+                # multiple followers crowd the leader in a corridor, the
+                # occupied set shifts each tick causing A* to alternate
+                # between two tiles.  Skipping the backtrack lets the
+                # follower idle for one tick, breaking the cycle.
+                follower_history = _position_history.get(ai_id, [])
+                if len(follower_history) >= 2 and next_step == follower_history[-2]:
+                    # Backtrack detected — WAIT explicitly instead of
+                    # falling through to chest-seek/wander which can
+                    # cause secondary oscillation in corridors.
+                    return PlayerAction(
+                        player_id=ai_id, action_type=ActionType.WAIT,
+                        reason="follow_trail_wait",
+                    )
+                else:
+                    door_action = _maybe_interact_door(ai, next_step, door_tiles)
+                    if door_action:
+                        return door_action
+                    return PlayerAction(
+                        player_id=ai_id, action_type=ActionType.MOVE,
+                        target_x=next_step[0], target_y=next_step[1],
+                        reason="follow_trail_moving",
+                    )
 
     # Close enough, no enemies — Phase 29A: seek nearby unopened chests
     if chest_states:
@@ -1158,6 +1240,26 @@ def _decide_follow_action(
                     target_x=next_step[0], target_y=next_step[1],
                     reason="follow_chest_seek",
                 )
+
+    # Phase 31: Autonomous follower exploration — when the leader has been
+    # stationary for 5+ ticks, followers act independently instead of
+    # WAITing forever.  Make a random adjacent move to spread out and
+    # cover more of the dungeon.
+    from app.core.ai_behavior import _position_history as _bhv_pos_history
+    owner_hist = _bhv_pos_history.get(owner.player_id, [])
+    leader_idle_ticks = 0
+    if len(owner_hist) >= 2:
+        for i in range(len(owner_hist) - 1, 0, -1):
+            if owner_hist[i] == owner_hist[i - 1]:
+                leader_idle_ticks += 1
+            else:
+                break
+    if leader_idle_ticks >= 5:
+        from app.core.ai_patrol import _random_adjacent_move
+        rand_move = _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied)
+        if rand_move and rand_move.action_type == ActionType.MOVE:
+            rand_move.reason = "follow_autonomous_wander"
+            return rand_move
 
     return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="follow_idle")
 

@@ -571,16 +571,191 @@ def find_best_party_recipient(
     for member in party_members:
         if not getattr(member, 'is_alive', False):
             continue
+
+        # Phase 28-QoL-4: Inventory capacity check — skip members at max inventory
+        from app.models.items import INVENTORY_MAX_CAPACITY
+        if len(getattr(member, 'inventory', [])) >= INVENTORY_MAX_CAPACITY:
+            continue
+
+        # Phase 28-QoL-2: Weapon class-lock — skip members who cannot equip this weapon category
+        if slot == "weapon":
+            weapon_cat = item_data.get("weapon_category")
+            if weapon_cat:
+                from app.models.player import get_class_definition
+                member_class_def = get_class_definition(getattr(member, 'class_id', ''))
+                allowed_cats = getattr(member_class_def, 'allowed_weapon_categories', []) if member_class_def else []
+                if weapon_cat not in allowed_cats:
+                    continue
+
         role = _get_role_for_unit(member)
         new_score = score_item_for_role(item_data, role)
         current_equipped = getattr(member, 'equipment', {}).get(slot)
         current_score = score_item_for_role(current_equipped, role) if current_equipped else 0.0
         delta = new_score - current_score
+
+        # Phase 28-QoL-5: Armor affinity awareness — boost/penalize based on preferred armor match
+        if slot == "armor":
+            armor_cat = item_data.get("armor_category", "")
+            if armor_cat:
+                from app.models.player import get_class_definition
+                member_class_def = get_class_definition(getattr(member, 'class_id', ''))
+                if member_class_def:
+                    preferred = getattr(member_class_def, 'preferred_armor', '')
+                    affinity_bonus = getattr(member_class_def, 'armor_affinity_bonus', 0.0)
+                    if preferred and armor_cat == preferred:
+                        delta *= (1.0 + affinity_bonus)
+                    elif preferred and armor_cat != preferred:
+                        delta *= 0.7
+
         if delta > best_delta:
             best_delta = delta
             best_member = member
 
     return best_member
+
+
+def purge_unwanted_items(unit: PlayerState, team_members: list) -> list[dict]:
+    """Remove non-upgrade equippable items from an AI hero's inventory.
+
+    After auto-equip and party distribution, any equippable item still in
+    inventory that is not an upgrade for *any* living team member is junk.
+    Consumables (potions) are always kept.
+
+    Args:
+        unit: The AI hero whose inventory to clean.
+        team_members: All living members of the same team (including unit).
+
+    Returns:
+        List of dicts describing each destroyed item (for combat log).
+    """
+    destroyed: list[dict] = []
+    # Iterate in reverse to safely pop during traversal
+    for idx in range(len(unit.inventory) - 1, -1, -1):
+        if idx >= len(unit.inventory):
+            continue
+        item = unit.inventory[idx]
+        if not isinstance(item, dict):
+            continue
+        # Always keep consumables (potions, scrolls, etc.)
+        if item.get("item_type") == "consumable":
+            continue
+        slot = item.get("equip_slot")
+        if not slot:
+            continue
+
+        # Check if ANY living team member would benefit from this item
+        # Mirrors find_best_party_recipient() checks: class-lock + armor affinity
+        dominated = True
+        for member in team_members:
+            if not getattr(member, 'is_alive', False):
+                continue
+
+            # Weapon class-lock: skip members who cannot equip this weapon category
+            if slot == "weapon":
+                weapon_cat = item.get("weapon_category")
+                if weapon_cat:
+                    from app.models.player import get_class_definition
+                    member_class_def = get_class_definition(getattr(member, 'class_id', ''))
+                    allowed_cats = getattr(member_class_def, 'allowed_weapon_categories', []) if member_class_def else []
+                    if weapon_cat not in allowed_cats:
+                        continue
+
+            role = _get_role_for_unit(member)
+            new_score = score_item_for_role(item, role)
+            current_equipped = getattr(member, 'equipment', {}).get(slot)
+            current_score = score_item_for_role(current_equipped, role) if current_equipped else 0.0
+            delta = new_score - current_score
+
+            # Armor affinity: boost/penalize based on preferred armor match
+            if slot == "armor" and delta > 0:
+                armor_cat = item.get("armor_category", "")
+                if armor_cat:
+                    from app.models.player import get_class_definition
+                    member_class_def = get_class_definition(getattr(member, 'class_id', ''))
+                    if member_class_def:
+                        preferred = getattr(member_class_def, 'preferred_armor', '')
+                        affinity_bonus = getattr(member_class_def, 'armor_affinity_bonus', 0.0)
+                        if preferred and armor_cat == preferred:
+                            delta *= (1.0 + affinity_bonus)
+                        elif preferred and armor_cat != preferred:
+                            delta *= 0.7
+
+            if delta > 0:
+                dominated = False
+                break
+
+        if dominated:
+            removed = unit.inventory.pop(idx)
+            destroyed.append({
+                "player_id": unit.player_id,
+                "item_name": removed.get("name", "item"),
+                "item_id": removed.get("instance_id") or removed.get("item_id", ""),
+            })
+
+    return destroyed
+
+
+def balance_team_potions(team_members: list) -> list[dict]:
+    """Balance consumable potions across AI hero team members.
+
+    Phase 28-QoL-3: Transfers potions from members with the most to members
+    with the fewest until all members are within ±1 of the average.
+
+    Args:
+        team_members: All living members of the same AI hero team.
+
+    Returns:
+        List of transfer event dicts for combat log.
+    """
+    if len(team_members) < 2:
+        return []
+
+    def _potion_count(member) -> int:
+        return sum(
+            1 for item in getattr(member, 'inventory', [])
+            if isinstance(item, dict) and item.get("item_type") == "consumable"
+        )
+
+    def _get_potions(member) -> list[dict]:
+        return [
+            item for item in getattr(member, 'inventory', [])
+            if isinstance(item, dict) and item.get("item_type") == "consumable"
+        ]
+
+    transfers: list[dict] = []
+    max_passes = 20  # Safety limit to prevent infinite loops
+
+    for _ in range(max_passes):
+        counts = [(m, _potion_count(m)) for m in team_members if getattr(m, 'is_alive', False)]
+        if len(counts) < 2:
+            break
+
+        counts.sort(key=lambda x: x[1])
+        lowest_member, lowest_count = counts[0]
+        highest_member, highest_count = counts[-1]
+
+        # Stop when balanced (within ±1)
+        if highest_count - lowest_count <= 1:
+            break
+
+        # Transfer one potion from highest to lowest
+        potions = _get_potions(highest_member)
+        if not potions:
+            break
+
+        potion = potions[0]
+        highest_member.inventory.remove(potion)
+        lowest_member.inventory.append(potion)
+
+        transfers.append({
+            "from_id": highest_member.player_id,
+            "from_name": getattr(highest_member, 'username', ''),
+            "to_id": lowest_member.player_id,
+            "to_name": getattr(lowest_member, 'username', ''),
+            "item_name": potion.get("name", "potion"),
+        })
+
+    return transfers
 
 
 def transfer_item_in_match(
@@ -670,6 +845,24 @@ def destroy_item(match_id: str, player_id: str, item_id: str) -> dict | None:
         "item_id": item_id,
         "item_name": removed.get("name", item_id),
         "inventory": list(player.inventory),
+    }
+
+
+def dev_get_unit_inventory(match_id: str, unit_id: str) -> dict | None:
+    """Get inventory and equipment for ANY unit — dev mode only.
+
+    Bypasses party-membership checks so dev overlay can inspect
+    AI heroes, enemies, and any unit in the match.
+    """
+    players = _player_states.get(match_id, {})
+    unit = players.get(unit_id)
+    if not unit:
+        return None
+
+    return {
+        "unit_id": unit_id,
+        "inventory": list(unit.inventory),
+        "equipment": dict(unit.equipment),
     }
 
 

@@ -5,6 +5,103 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.10] - 2026-03-21 — Smarter Heroes, Better Loot
+
+### Fixed
+- **Leader explore_room ↔ patrol_move oscillation reduced** — Explore path now checks leader's `_position_history` before returning a MOVE; if the proposed step is a backtrack to last turn's tile, it falls through to patrol. Oscillation pairs dropped 41%, overall oscillation rate down 2.8pp. (`ai_behavior.py` — `_decide_aggressive_action()`, block 4e)
+- **Follower trail-moving oscillation eliminated** — `follow_trail_moving` now rejects backtrack steps via position history check. Follower self-oscillations dropped 97%; `stall_breaker_yield` WAITs down 35%; `oscillation_suppressed` WAITs down 70%. (`ai_stances.py` — `_decide_follow_action()`)
+- **Explore suppression thresholds tuned** — A↔B cycle detection raised from 6→8 positions, broad stall bounding box from 8→12 positions with ≤2 tile box, suppression cooldown 20→10 turns, lift distance 5→3 Manhattan. `explore_room` decisions up 3.75x; `random_adjacent_move` eliminated. (`ai_behavior.py`)
+- **Patrol fallback now directed** — `_random_adjacent_move()` accepts `exploration_hint`; leaders step toward nearest unexplored room entrance (Manhattan distance) instead of random tile. All 10 random fallbacks replaced by 27 directed moves. (`ai_patrol.py`, `ai_behavior.py`)
+- **purge_unwanted_items() respects class-lock and armor affinity** — Now mirrors `find_best_party_recipient()` equip gates so melee weapons can't appear as "upgrades" for casters. (`equipment_manager.py`)
+- **Leader promotion works for all AI team prefixes** — `deaths_phase.py` now accepts both `"pvpve-ai-"` and `"ai-"` prefixed units. Eliminated 232 wasted `follow_no_owner` WAITs per 10-match sample.
+- **Oscillation suppression no longer fires on simple reversals** — Single A→B→A reversal now only clears stale waypoint; WAIT requires extended criteria (6+ positions ≤2 unique tiles or 8+ in ≤3-tile box). Hero `oscillation_suppressed` WAITs down 54%. (`ai_behavior.py`)
+- **Displaced equipment redistribution pass** — Phase 28I scans all team inventories after auto-equip, finds best recipient, transfers, and triggers equip. Runs up to 3 cascade passes. Stranded upgrades dropped from 22→0 per match; items traded 5→31; equipment health score 75→95. (`interaction_phase.py`)
+
+### Added
+- **Oscillation suppression deadlock broken** — Hard timeout (`_MAX_SUPPRESS_TURNS = 30`) unconditionally lifts suppression after 30 ticks, clears `_visited` history. Leader decisions increased 6.6x; items picked up +37%; items traded +51%. (`ai_behavior.py`)
+- **Patrol waypoint all-visited fallback** — `_pick_patrol_waypoint()` detects when all candidates are visited and disables the −15.0 visited penalty for that selection. (`ai_patrol.py`)
+- **Follower autonomous wander** — When leader is stationary 5+ ticks, followers make a random adjacent move (`follow_autonomous_wander`) instead of WAITing. (`ai_stances.py`)
+- **Dev Overlay: Equipment & Inventory Inspector** — Backtick → Inspect ON → click any unit to see equipment (weapon/armor/accessory with rarity colors, stats, affixes, set info) and scrollable inventory (X/10 capacity, consumable icons). Works on ALL units including AI heroes and enemies via `dev_get_unit_inventory` endpoint. Auto-refreshes every 3s. (7 files: `equipment_manager.py`, `match_manager.py`, `message_handlers.py`, `App.jsx`, `useDevOverlay.js`, `DevOverlayPanel.jsx`, `Arena.jsx`, `_dev-overlay.css`)
+- **PVPVE Batch Tool: Equipment Management Report** — `--equipment-report` flag for `batch_pvpve.py` with spawn gear, equipment events, per-team breakdown, final gear, potion economy, diagnostics, health score (0-100), inventory contents, stranded upgrades detection, and batch summary.
+
+### Files Changed
+- `server/app/core/ai_behavior.py`
+- `server/app/core/ai_stances.py`
+- `server/app/core/ai_patrol.py`
+- `server/app/core/equipment_manager.py`
+- `server/app/core/turn_phases/deaths_phase.py`
+- `server/app/core/turn_phases/interaction_phase.py`
+- `server/app/core/match_manager.py`
+- `server/app/services/message_handlers.py`
+- `server/batch_pvpve.py`
+- `client/src/App.jsx`
+- `client/src/hooks/useDevOverlay.js`
+- `client/src/components/DevOverlay/DevOverlayPanel.jsx`
+- `client/src/components/Arena/Arena.jsx`
+- `client/src/styles/components/_dev-overlay.css`
+
+---
+
+## [v0.1.9b] - 2026-03-20 - Leader Explore/Patrol Oscillation Fix
+
+### Fixed
+- **Leader explore_room ↔ patrol_move oscillation reduced** — Team leaders alternated between exploring toward an unexplored room entrance and patrol waypoint scouting on consecutive turns. When explore_room proposed a step back toward the leader's immediately previous tile, the two subsystems fought over direction, creating A→B→A bouncing. The explore_room code path now checks the leader's position history: if the proposed step is a backtrack to last turn's position, it falls through to patrol (which has its own anti-backtrack guard), preventing the two systems from pulling the leader in opposite directions.
+
+### Simulation Results (PvPvE, 150 turns, seed 100)
+
+| Metric | Before (RC1 only) | After (RC1+RC2) | Change |
+|--------|-------------------|-----------------|--------|
+| `explore_room` ↔ `patrol_move` pairs | 22 | 13 | **-41%** |
+| Overall oscillation rate | 12.0% | 9.2% | **-2.8pp** |
+| `explore_room` actions | 33 | 131 | **+297%** |
+| `patrol_move` actions | 51 | 135 | **+165%** |
+| Total hero MOVE actions | 1121 | 1776 | **+58%** |
+
+### Cross-Validation (seed 42, 100 turns)
+
+| Metric | Before | After | Change |
+|--------|--------|-------|--------|
+| Total oscillation events | 112 | 70 | **-37%** |
+| Oscillation rate | 9.1% | 7.0% | **-2.1pp** |
+
+### Files Changed
+- `server/app/core/ai_behavior.py` — `_decide_aggressive_action()`: Added position history backtrack rejection in the strategic exploration block (4e)
+
+### Test Results
+- 4040 tests passing (0 regressions)
+
+---
+
+## [v0.1.9a] - 2026-03-20 - Follower Trail-Moving Oscillation Fix
+
+### Fixed
+- **AI followers no longer oscillate between tiles when trailing a moving leader** — When a team leader moved through corridors or doorway chokepoints, followers within distance 1 would trigger the `follow_trail_moving` tether and compete for the same 2-3 adjacent tiles. The movement batch resolver picks winners each tick, shifting the occupied set and causing A* to send losers right back to their previous position on the next turn. This created sustained A→B→A tile-swapping visible as followers rapidly bouncing between two tiles, especially near doors where geometry forces tight formations.
+
+### Root Cause
+The `follow_trail_moving` code path in `_decide_follow_action()` had no anti-oscillation guard. It would always return the A* result regardless of whether that step was a backtrack to the follower's immediately previous position. The main oscillation suppressor in `run_ai_decisions()` only catches this when no enemies are nearby (Chebyshev ≤ 3), so the follower bouncing persisted near combat zones.
+
+### Fix
+Before the `follow_trail_moving` path returns a MOVE, it now checks the follower's `_position_history` from `ai_behavior.py`. If the proposed next step matches the position the follower occupied last turn (A→B→A), the move is skipped and the follower falls through to idle/chest-seek behavior. This one-tick pause breaks the oscillation cycle without affecting normal trailing when the leader is making forward progress.
+
+### Simulation Results (PvPvE, 150 turns, seed 100)
+
+| Metric | Before Fix | After Fix | Change |
+|--------|-----------|-----------|--------|
+| `follow_trail_moving` ↔ self oscillations | 61 | 2 | **-97%** |
+| `stall_breaker_yield` WAITs | 222 | 144 | **-35%** |
+| `oscillation_suppressed` WAITs | 96 | 29 | **-70%** |
+| Total A→B→A oscillation events | 252 | 134 | **-47%** |
+| Oscillation rate (% of MOVE actions) | 13.8% | 12.0% | **-1.8pp** |
+| `follow_trail_moving` actions | 341 | 87 | **-74%** |
+
+### Files Changed
+- `server/app/core/ai_stances.py` — `_decide_follow_action()`: Added position history check in the leader-is-moving tether block to reject backtrack steps
+
+### Test Results
+- 4040 tests passing (0 regressions)
+
+---
+
 ## [v0.1.9] - 2026-03-20 - Match Manager Modularization
 
 **Architecture refactoring** - broke down the monolithic `match_manager.py` (3,220 lines, 55+ functions) into 9 focused sub-modules. Zero gameplay changes; purely internal code quality improvement enabling faster future development.

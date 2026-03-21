@@ -359,15 +359,15 @@ def _resolve_deaths(
             continue
         if not getattr(dead_unit, 'is_team_leader', False):
             continue
-        if not dead_unit.player_id.startswith("pvpve-ai-"):
+        if not (dead_unit.player_id.startswith("pvpve-ai-") or dead_unit.player_id.startswith("ai-")):
             continue
-        # Find next alive PVPVE AI teammate on the same team
+        # Find next alive AI teammate on the same team
         for uid, unit in players.items():
             if (
                 uid != death_pid
                 and unit.is_alive
                 and unit.team == dead_unit.team
-                and uid.startswith("pvpve-ai-")
+                and (uid.startswith("pvpve-ai-") or uid.startswith("ai-"))
             ):
                 unit.is_team_leader = True
                 # Clear hero_id so the new leader falls through to aggressive AI

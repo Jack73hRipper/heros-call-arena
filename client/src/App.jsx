@@ -196,6 +196,10 @@ function AppInner() {
       case 'player_stats_updated':
         dispatch({ type: 'PLAYER_STATS_UPDATED', payload: data });
         break;
+      // Dev overlay: unit inventory inspection response
+      case 'dev_unit_inventory':
+        window.dispatchEvent(new CustomEvent('dev_unit_inventory', { detail: data }));
+        break;
       // Phase 7B-3: Group batch actions response — update queues for all units in the batch
       case 'group_batch_queued':
         dispatch({ type: 'GROUP_BATCH_QUEUED', payload: data });

@@ -779,6 +779,7 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
         inspectMode={devOverlay.inspectMode}
         toggleInspectMode={devOverlay.toggleInspectMode}
         inspectedUnit={devOverlay.inspectedUnit}
+        inspectedInventory={devOverlay.inspectedInventory}
         inspectUnit={devOverlay.inspectUnit}
         freeCamOffset={devOverlay.freeCamOffset}
         hoveredTile={hoveredTile}
