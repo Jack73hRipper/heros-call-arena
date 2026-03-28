@@ -249,6 +249,136 @@ def _tile_inside_totem_radius(
 
 
 # ---------------------------------------------------------------------------
+# Phase 32G: Greedy Combat Approach Step
+# ---------------------------------------------------------------------------
+# When a follower can SEE enemies but A* pathing fails or gets rejected by
+# anti-backtrack, try a simple greedy step toward the fight instead of
+# WAITing.  Scans adjacent tiles, skips the backtrack tile, and picks the
+# one that closes the most distance to the target.
+
+def _greedy_combat_step(
+    ai_pos: tuple[int, int],
+    target_pos: tuple[int, int],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+    backtrack_pos: tuple[int, int] | None = None,
+) -> tuple[int, int] | None:
+    """Find an adjacent tile that moves closer to *target_pos*.
+
+    Skips *backtrack_pos* (the tile the unit occupied 2 ticks ago) to avoid
+    oscillation.  Returns None if no improving tile exists.
+    """
+    best: tuple[int, int] | None = None
+    current_dist = _chebyshev(ai_pos, target_pos)
+    best_dist = current_dist  # must improve on current distance
+
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            if dx == 0 and dy == 0:
+                continue
+            nx, ny = ai_pos[0] + dx, ai_pos[1] + dy
+            if not (0 <= nx < grid_width and 0 <= ny < grid_height):
+                continue
+            tile = (nx, ny)
+            if tile in obstacles or tile in occupied:
+                continue
+            if tile == backtrack_pos:
+                continue  # avoid oscillation
+            d = _chebyshev(tile, target_pos)
+            if d < best_dist:
+                best_dist = d
+                best = tile
+
+    return best
+
+
+# ---------------------------------------------------------------------------
+# Phase 32C: Corridor Detection Helper
+# ---------------------------------------------------------------------------
+
+def _is_in_corridor(
+    pos: tuple[int, int],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+) -> bool:
+    """Return True if *pos* is in a narrow corridor (≤3 walkable neighbors).
+
+    In corridors, anti-backtrack rejection is too aggressive — the only
+    valid path forward may require briefly revisiting a previous tile.
+    Allowing backtracks in corridors keeps followers moving instead of
+    WAITing behind corners.
+    """
+    walkable = 0
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            if dx == 0 and dy == 0:
+                continue
+            nx, ny = pos[0] + dx, pos[1] + dy
+            if not (0 <= nx < grid_width and 0 <= ny < grid_height):
+                continue
+            if (nx, ny) not in obstacles and (nx, ny) not in occupied:
+                walkable += 1
+    return walkable <= 3
+
+
+# ---------------------------------------------------------------------------
+# Phase 32B: Leader Breadcrumb Trail
+# ---------------------------------------------------------------------------
+# Instead of all followers pathfinding to the leader's current position
+# (causing congestion at one tile), each follower targets a staggered
+# position along the leader's recent movement history.  This naturally
+# forms a column through corridors and around corners.
+#
+# Follower index is deterministic: sorted by player_id among same-team
+# alive non-leader units.  Index 0 targets the leader's current pos,
+# index 1 targets 2 ticks back, index 2 targets 4 ticks back, etc.
+# ---------------------------------------------------------------------------
+_BREADCRUMB_SPACING = 2  # ticks between each follower's target in the trail
+
+
+def _get_breadcrumb_target(
+    ai: PlayerState,
+    owner: PlayerState,
+    all_units: dict[str, PlayerState],
+) -> tuple[int, int]:
+    """Return a staggered follow target along the leader's breadcrumb trail.
+
+    Each follower gets a unique position in the leader's history so the
+    party forms a column instead of clustering on one tile.  Falls back
+    to the owner's current position if history is too short.
+    """
+    from app.core.ai_behavior import _position_history
+
+    owner_pos = (owner.position.x, owner.position.y)
+    owner_trail = _position_history.get(owner.player_id, [])
+    if len(owner_trail) < 2:
+        return owner_pos
+
+    # Build sorted list of same-team followers to assign deterministic indices
+    followers = sorted(
+        (u.player_id for u in all_units.values()
+         if u.is_alive
+         and u.team == ai.team
+         and u.player_id != owner.player_id
+         and not getattr(u, 'is_team_leader', False)
+         and not getattr(u, 'extracted', False)),
+    )
+    try:
+        my_index = followers.index(ai.player_id)
+    except ValueError:
+        return owner_pos
+
+    # How far back in the trail to look: index 0 → current, 1 → 2 back, etc.
+    offset = my_index * _BREADCRUMB_SPACING
+    trail_idx = max(0, len(owner_trail) - 1 - offset)
+    return owner_trail[trail_idx]
+
+
+# ---------------------------------------------------------------------------
 # Phase 26D: Totem-Biased Movement Helper
 # ---------------------------------------------------------------------------
 # Threshold: AI will prefer totem proximity when hurt below this % HP.
@@ -386,7 +516,7 @@ def _find_adjacent_door_toward_target(
 
     ai_dist = abs(ai_pos[0] - target[0]) + abs(ai_pos[1] - target[1])
     best_door: tuple[int, int] | None = None
-    best_dist = ai_dist  # must be strictly closer
+    best_dist = ai_dist + 2  # allow doors at same or slightly farther distance
 
     for dx in (-1, 0, 1):
         for dy in (-1, 0, 1):
@@ -937,8 +1067,11 @@ def _decide_follow_action(
     follow_leash = 6 if role in ("sustain_dps", "retaliation_tank") else 4
     if dist_to_owner > follow_leash:
         _patrol_targets.pop(ai_id, None)
+        # Phase 32B: Use breadcrumb trail so followers spread along the
+        # leader's path instead of all targeting the same tile.
+        regroup_target = _get_breadcrumb_target(ai, owner, all_units)
         next_step = get_next_step_toward(
-            ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
+            ai_pos, regroup_target, grid_width, grid_height, obstacles, occupied, door_tiles,
         )
         if next_step:
             # Phase 7D-1: If next step is a closed door, INTERACT instead of MOVE
@@ -1135,9 +1268,28 @@ def _decide_follow_action(
                 )
             # Anti-backtrack: reject move if it returns to position from
             # last turn — prevents corridor oscillation during combat.
+            # Phase 32C: Skip rejection in corridors (≤3 walkable neighbors)
+            # where the backtrack may be the only viable path around a corner.
             from app.core.ai_behavior import _position_history as _bh_pos
             _fh_combat = _bh_pos.get(ai_id, [])
-            if len(_fh_combat) >= 2 and next_step == _fh_combat[-2]:
+            if (
+                len(_fh_combat) >= 2
+                and next_step == _fh_combat[-2]
+                and not _is_in_corridor(ai_pos, grid_width, grid_height, obstacles, occupied)
+            ):
+                # Phase 32G: Instead of WAITing, try a greedy step toward
+                # the fight — any adjacent tile that closes distance.
+                backtrack_tile = _fh_combat[-2] if len(_fh_combat) >= 2 else None
+                greedy = _greedy_combat_step(
+                    ai_pos, move_target, grid_width, grid_height,
+                    obstacles, occupied, backtrack_pos=backtrack_tile,
+                )
+                if greedy:
+                    return PlayerAction(
+                        player_id=ai_id, action_type=ActionType.MOVE,
+                        target_x=greedy[0], target_y=greedy[1],
+                        reason="follow_combat_approach",
+                    )
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.WAIT,
                     reason="follow_combat_wait",
@@ -1151,22 +1303,50 @@ def _decide_follow_action(
                 reason="follow_move_to_target",
             )
 
+        # Phase 32G: A* found no path but we can see enemies — try greedy
+        # approach toward the fight instead of standing still.
+        _fh_fail = []
+        try:
+            from app.core.ai_behavior import _position_history as _bh_pos2
+            _fh_fail = _bh_pos2.get(ai_id, [])
+        except Exception:
+            pass
+        backtrack_tile = _fh_fail[-2] if len(_fh_fail) >= 2 else None
+        greedy = _greedy_combat_step(
+            ai_pos, move_target, grid_width, grid_height,
+            obstacles, occupied, backtrack_pos=backtrack_tile,
+        )
+        if greedy:
+            return PlayerAction(
+                player_id=ai_id, action_type=ActionType.MOVE,
+                target_x=greedy[0], target_y=greedy[1],
+                reason="follow_combat_approach",
+            )
         return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="follow_path_failed")
 
     # Priority 3: No enemies — if too far from owner (>1), path toward them
     # Phase 29D fix: Reduced from >2 to >1 to prevent spawn congestion
     # (followers idled in a 2-tile radius instead of trailing the leader).
+    # Phase 32B: Use breadcrumb trail — each follower targets a staggered
+    # position in the leader's movement history, forming a column.
     if dist_to_owner > 1:
+        trail_target = _get_breadcrumb_target(ai, owner, all_units)
         next_step = get_next_step_toward(
-            ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
+            ai_pos, trail_target, grid_width, grid_height, obstacles, occupied, door_tiles,
         )
         if next_step:
             # Anti-backtrack: reject if move returns to the position the
             # follower occupied last turn.  Prevents corridor oscillation
             # when sequential pathfinding alternates tiles each tick.
+            # Phase 32C: Skip rejection in corridors where backtrack may be
+            # the only viable path around a corner toward the leader.
             from app.core.ai_behavior import _position_history
             _fh = _position_history.get(ai_id, [])
-            if len(_fh) >= 2 and next_step == _fh[-2]:
+            if (
+                len(_fh) >= 2
+                and next_step == _fh[-2]
+                and not _is_in_corridor(ai_pos, grid_width, grid_height, obstacles, occupied)
+            ):
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.WAIT,
                     reason="follow_trail_wait",
@@ -1189,8 +1369,10 @@ def _decide_follow_action(
         owner_history = _position_history.get(owner.player_id, [])
         if len(owner_history) >= 2 and owner_history[-1] != owner_history[-2]:
             # Owner moved last tick — trail them to keep formation loose
+            # Phase 32B: Use breadcrumb trail for staggered follow.
+            tether_target = _get_breadcrumb_target(ai, owner, all_units)
             next_step = get_next_step_toward(
-                ai_pos, owner_pos, grid_width, grid_height, obstacles, occupied, door_tiles,
+                ai_pos, tether_target, grid_width, grid_height, obstacles, occupied, door_tiles,
             )
             if next_step and next_step != ai_pos:
                 # Anti-oscillation: reject the step if it returns to the
@@ -1199,11 +1381,17 @@ def _decide_follow_action(
                 # occupied set shifts each tick causing A* to alternate
                 # between two tiles.  Skipping the backtrack lets the
                 # follower idle for one tick, breaking the cycle.
+                # Phase 32C: Allow backtrack in corridors — it may be the
+                # only path forward around a corner.
                 follower_history = _position_history.get(ai_id, [])
-                if len(follower_history) >= 2 and next_step == follower_history[-2]:
-                    # Backtrack detected — WAIT explicitly instead of
-                    # falling through to chest-seek/wander which can
-                    # cause secondary oscillation in corridors.
+                if (
+                    len(follower_history) >= 2
+                    and next_step == follower_history[-2]
+                    and not _is_in_corridor(ai_pos, grid_width, grid_height, obstacles, occupied)
+                ):
+                    # Backtrack detected in open area — WAIT explicitly
+                    # instead of falling through to chest-seek/wander
+                    # which can cause secondary oscillation.
                     return PlayerAction(
                         player_id=ai_id, action_type=ActionType.WAIT,
                         reason="follow_trail_wait",
@@ -1260,6 +1448,41 @@ def _decide_follow_action(
         if rand_move and rand_move.action_type == ActionType.MOVE:
             rand_move.reason = "follow_autonomous_wander"
             return rand_move
+
+    # Phase 32D: Corridor push-through — if this follower is sitting in a
+    # corridor (narrow tile) and a same-team ally is directly behind it
+    # (farther from the leader), advance forward along the leader's trail
+    # instead of idling.  This prevents the classic single-file bottleneck
+    # where follower #1 parks in a 1-tile hallway and blocks everyone else.
+    if _is_in_corridor(ai_pos, grid_width, grid_height, obstacles, occupied):
+        has_ally_behind = False
+        for u in all_units.values():
+            if (
+                u.is_alive
+                and u.team == ai.team
+                and u.player_id != ai_id
+                and u.player_id != owner.player_id
+                and not getattr(u, 'extracted', False)
+            ):
+                u_pos = (u.position.x, u.position.y)
+                u_dist = _chebyshev(u_pos, owner_pos)
+                if u_dist >= dist_to_owner and _chebyshev(u_pos, ai_pos) <= 2:
+                    has_ally_behind = True
+                    break
+        if has_ally_behind:
+            push_target = _get_breadcrumb_target(ai, owner, all_units)
+            push_step = get_next_step_toward(
+                ai_pos, push_target, grid_width, grid_height, obstacles, occupied, door_tiles,
+            )
+            if push_step and push_step != ai_pos:
+                door_action = _maybe_interact_door(ai, push_step, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=push_step[0], target_y=push_step[1],
+                    reason="follow_corridor_push",
+                )
 
     return PlayerAction(player_id=ai_id, action_type=ActionType.WAIT, reason="follow_idle")
 

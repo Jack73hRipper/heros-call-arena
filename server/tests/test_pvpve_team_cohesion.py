@@ -321,8 +321,9 @@ class TestLeaderPromotionOnDeath:
         new_leaders = [u for u in players.values() if u.is_team_leader and u.is_alive]
         assert len(new_leaders) == 1
         assert new_leaders[0].player_id in [follower1.player_id, follower2.player_id]
-        # The new leader should have hero_id cleared (aggressive AI)
+        # The new leader should have hero_id and ai_stance cleared (aggressive AI)
         assert new_leaders[0].hero_id is None
+        assert new_leaders[0].ai_stance is None
 
     def test_leader_death_no_promotion_if_no_alive_teammates(self):
         """If all teammates are dead, no promotion occurs."""

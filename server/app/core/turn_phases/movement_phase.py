@@ -5,6 +5,8 @@ Handles stunned/slowed/channeling/rooted checks, then delegates to resolve_movem
 Phase 2 (Friendly Swap): AI anti-oscillation cooldown prevents AI heroes from
 swapping back-and-forth on alternating ticks.
 Phase 26C: Root CC — rooted units cannot move but can still attack/use skills.
+Phase 32E: Directional swap cooldown — only blocks a swap if the same A↔B pair
+would reverse their previous swap (true oscillation detection).
 """
 
 from __future__ import annotations
@@ -16,18 +18,18 @@ from app.core.skills import is_stunned, is_slowed, is_rooted
 from app.core.turn_phases.portal_phase import _is_channeling
 
 # ---------------------------------------------------------------------------
-# Phase 2E: AI Anti-Oscillation Swap Cooldown
+# Phase 32E: Directional Swap Cooldown (replaces Phase 2E blanket cooldown)
 # ---------------------------------------------------------------------------
-# Tracks {unit_id: last_turn_swapped} — AI-initiated swaps only.
-# Prevents two AI heroes in a narrow hallway from swapping back and forth
-# every tick without making progress.  Player-initiated swaps are exempt.
-_last_swap_tick: dict[str, int] = {}
-_SWAP_COOLDOWN = 2  # Cannot be swap-target again for 2 turns after being swapped
+# Tracks {frozenset(pid_a, pid_b): last_turn_swapped} — records the specific
+# *pair* that swapped.  A different follower swapping through the same ally
+# on the next turn is allowed — only the exact same pair reversing is blocked.
+_last_swap_pair: dict[frozenset, int] = {}
+_SWAP_COOLDOWN = 2  # Same pair cannot swap again for 2 turns
 
 
 def reset_swap_cooldowns() -> None:
     """Reset swap cooldown tracking (for test isolation)."""
-    _last_swap_tick.clear()
+    _last_swap_pair.clear()
 
 
 def _resolve_movement(
@@ -157,12 +159,16 @@ def _resolve_movement(
             # to fail silently.
             if interacting_pids and p.player_id in interacting_pids:
                 break
-            # Phase 2E: AI anti-oscillation cooldown — only for AI movers.
-            # Player-initiated swaps are always allowed.
+            # Phase 32E: Directional swap cooldown — only for AI movers.
+            # Player-initiated swaps are always allowed.  Only blocks
+            # the exact same A↔B pair from swapping again within the
+            # cooldown window (prevents true oscillation while allowing
+            # sequential filing through corridors).
             if mover.unit_type != 'human' and current_turn > 0:
-                last_tick = _last_swap_tick.get(p.player_id, -_SWAP_COOLDOWN - 1)
+                pair_key = frozenset((mover.player_id, p.player_id))
+                last_tick = _last_swap_pair.get(pair_key, -_SWAP_COOLDOWN - 1)
                 if current_turn - last_tick < _SWAP_COOLDOWN:
-                    break  # Ally swapped too recently — skip
+                    break  # Same pair swapped too recently — skip
             # Inject reciprocal move: ally → mover's current position
             mover_pos = (mover.position.x, mover.position.y)
             swap_intents.append({
@@ -199,9 +205,7 @@ def _resolve_movement(
             # Detect swap: if this was an injected ally, find who triggered it
             message = f"{player.username} moved to ({new_pos[0]}, {new_pos[1]})"
             if br["player_id"] in swap_injected_pids:
-                # Phase 2E: Record swap cooldown for both participants
-                if current_turn > 0:
-                    _last_swap_tick[br["player_id"]] = current_turn
+                # Phase 32E: Record swap cooldown for the specific pair
                 # Find the mover who triggered this swap
                 for other_pid, other_br in successful_moves.items():
                     if other_pid == br["player_id"]:
@@ -210,9 +214,10 @@ def _resolve_movement(
                         other_player = players.get(other_pid)
                         if other_player:
                             message = f"{player.username} swapped places with {other_player.username}"
-                            # Record cooldown for the mover too
+                            # Record cooldown for this specific pair
                             if current_turn > 0:
-                                _last_swap_tick[other_pid] = current_turn
+                                pair_key = frozenset((br["player_id"], other_pid))
+                                _last_swap_pair[pair_key] = current_turn
                         break
             results.append(ActionResult(
                 player_id=player.player_id,

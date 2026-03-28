@@ -34,9 +34,10 @@ export { themeEngine, ThemeEngine };
 // --- Local imports for renderFrame orchestrator ---
 import { TILE_SIZE, ENEMY_NAMES } from './renderConstants.js';
 import { drawDungeonTiles, drawFog, drawPortal, drawChanneling } from './dungeonRenderer.js';
-import { drawAmbientDarknessPass } from './PropLighting.js';
+import { drawAmbientDarknessPass, getUnitLightBoost } from './PropLighting.js';
 import { getUnitColor, drawPlayer, drawBuffIcons, drawCrowdControlIndicators, drawStanceIndicators, drawUnderfootGlow, drawNameplateGlow, drawSelectedTargetIndicator, drawTargetReticle, _findSkillDef, drawUnitShadow } from './unitRenderer.js';
 import { drawHighlights, drawSkillHighlights, drawQueuePreview, drawHoverPathPreviews, drawGroundItems, drawLootHighlight, drawDamageFloaters, drawGroundItemLabels, drawTotems, drawGroundZones, drawRootEffects, drawSoulAnchorEffects } from './overlayRenderer.js';
+import { drawWaterAnimation } from './WaterAnimation.js';
 
 // Kick off sprite/tile sheet loading immediately on module import
 loadSpriteSheet().catch(() => {
@@ -231,6 +232,11 @@ export function renderFrame(ctx, {
   if (isDungeon && tiles && tileLegend) {
     // Dungeon rendering path: tile-aware
     drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates, ox, oy, dungeonRooms);
+
+    // Water shimmer overlay — animated caustics on flooded/shallow_water tiles
+    if (themeEngine.isReady()) {
+      drawWaterAnimation(ctx, tiles, tileLegend, themeEngine.theme, ox, oy);
+    }
   } else {
     // Arena rendering path: grid + obstacle blocks
     drawGrid(ctx, gridWidth, gridHeight, ox, oy);
@@ -407,6 +413,14 @@ export function renderFrame(ctx, {
     }
 
     // --- Layer 2: Unit sprite + combined Diablo-style nameplate ---
+    // Unit light interaction: compute light boost from nearby props
+    let lightBoost = null;
+    if (isDungeon && dungeonRooms.length > 0 && themeEngine.isReady()) {
+      lightBoost = getUnitLightBoost(
+        Math.round(drawX), Math.round(drawY),
+        dungeonRooms, themeEngine.theme
+      );
+    }
     drawPlayer(
       ctx,
       drawX - ox,
@@ -425,6 +439,7 @@ export function renderFrame(ctx, {
       p.monster_rarity || null,
       p.champion_type || null,
       nameplateMode,
+      lightBoost,
     );
 
     // Draw buff/debuff icons centered above the nameplate
@@ -515,6 +530,48 @@ export function renderFrame(ctx, {
     drawDamageFloaters(ctx, damageFloaters, ox, oy);
   }
 
+  // Vignette: cinematic edge darkening using theme-defined strength and color
+  if (isDungeon && themeEngine.isReady()) {
+    _drawVignette(ctx, themeEngine.theme);
+  }
+
   // Minimap is now rendered on its own dedicated canvas in MinimapPanel component.
   // See client/src/components/MinimapPanel/MinimapPanel.jsx
+}
+
+// ═══════════════════════════════════════════════════════════
+//  VIGNETTE — Cinematic edge darkening
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Draw a radial vignette overlay — darker edges, clear center.
+ * Uses the theme's ambient.vignetteStrength and ambient.vignetteColor.
+ */
+function _drawVignette(ctx, theme) {
+  const strength = theme?.ambient?.vignetteStrength;
+  if (!strength || strength < 0.01) return;
+
+  const w = ctx.canvas.width;
+  const h = ctx.canvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const maxR = Math.sqrt(cx * cx + cy * cy);
+
+  // Parse vignette color or default to black
+  const vc = theme.ambient.vignetteColor || 'rgba(0, 0, 0, 1)';
+  // Extract RGB from the rgba string
+  const match = vc.match(/rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/);
+  const vr = match ? parseInt(match[1]) : 0;
+  const vg = match ? parseInt(match[2]) : 0;
+  const vb = match ? parseInt(match[3]) : 0;
+
+  const grad = ctx.createRadialGradient(cx, cy, maxR * 0.35, cx, cy, maxR);
+  grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  grad.addColorStop(0.5, `rgba(${vr}, ${vg}, ${vb}, ${(strength * 0.3).toFixed(3)})`);
+  grad.addColorStop(1, `rgba(${vr}, ${vg}, ${vb}, ${(strength * 1.2).toFixed(3)})`);
+
+  ctx.save();
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+  ctx.restore();
 }

@@ -198,8 +198,9 @@ def a_star(
                 continue
 
             # Phase 7D-1: Elevated cost for stepping through a closed door.
-            # Normal step = 1. Door step = 3 (makes A* prefer open routes).
-            step_cost = 3 if (door_tiles and nb in door_tiles) else 1
+            # Normal step = 1. Door step = 2 (makes A* prefer open routes
+            # but still willing to go through doors without long detours).
+            step_cost = 2 if (door_tiles and nb in door_tiles) else 1
             tentative_g = g_score[current] + step_cost
             if tentative_g < g_score.get(nb, float("inf")):
                 came_from[nb] = current

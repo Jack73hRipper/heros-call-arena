@@ -5,6 +5,160 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.13] - 2026-03-27 — Dungeon Atmosphere Enhancements
+
+### Added
+- **Water Animation** — Flooded floors (Drowned Sanctum) and shallow_water corridors now display animated caustic light patterns and expanding ripple rings. Uses a dedicated offscreen canvas with additive blending, throttled to ~15fps. (`WaterAnimation.js`)
+- **Ambient Particles** — Each dungeon theme now spawns characteristic floating atmospheric particles:
+  - Bleeding Catacombs: rising ember sparks (warm red-orange glow)
+  - Ashen Undercroft: drifting ash/dust motes (gray-white)
+  - Drowned Sanctum: rising bubbles (blue-white glow)
+  - Frozen Crypt: falling snowflakes/frost sparkles (white-blue)
+  - Fungal Grotto: floating spores (green glow, brownian drift)
+  - Other themes: subtle dust motes
+  - Particles respect FOV (only visible on seen tiles), fade in/out over lifetime, and use additive blending for glow types. Pool of 18–35 particles per theme. (`AmbientParticles.js`)
+- **Unit Light Interaction** — Units near light-emitting props (torches, braziers, candelabras, ritual circles) now receive a subtle warm glow overlay that matches the color and intensity of nearby light sources. Uses the existing cached ambient light map from PropLighting for O(1) per-unit lookup — zero extra computation. Appears as a soft radial gradient with additive blending, capped at 35% brightness for subtlety. (`PropLighting.js`, `unitRenderer.js`)
+- **Vignette Edge Darkening** — A cinematic radial vignette overlay now darkens the screen edges in dungeon mode. Uses each theme's existing `vignetteStrength` (0.06–0.16) and `vignetteColor` config values, which were previously defined but never rendered. Drawn as the final post-process step after fog and damage floaters. (`ArenaRenderer.js`)
+
+### Changed
+- `drawPlayer()` in `unitRenderer.js` accepts a new optional `lightBoost` parameter for prop-light interaction rendering.
+- `ArenaRenderer.renderFrame()` now imports and orchestrates four new visual passes in the render pipeline:
+  1. Water animation (after tiles, before highlights)
+  2. Unit light boost lookup (per unit, before sprite draw)
+  3. Ambient particles (after darkness pass, before fog)
+  4. Vignette (after damage floaters, final draw call)
+
+### New Files
+- `client/src/canvas/WaterAnimation.js` — Animated water shimmer overlay system
+- `client/src/canvas/AmbientParticles.js` — Theme-specific ambient particle system
+
+---
+
+## [v0.1.12] - 2026-03-27 — Party Following Improvements (Phase 32)
+
+### Fixed
+- **Phase 32A: Follow moves exempt from anti-oscillation** — `follow_regroup`, `follow_trail`, `follow_rush_melee`, and `follow_move_to_target` MOVE actions are no longer suppressed by the global anti-oscillation detector in `run_ai_decisions()`. These are intentional movements toward the party leader that were being incorrectly flagged as A→B→A oscillation, causing followers to freeze behind corners and walls. (`ai_behavior.py`)
+- **Phase 32C: Corridor-aware anti-backtrack** — All three anti-backtrack checks in `_decide_follow_action()` now detect narrow corridors (≤3 walkable neighbors) and allow backtracks in those locations. In tight corridors and around corners, the only viable path forward often requires briefly revisiting a previous tile — the old logic forced WAITs instead, leaving followers stuck behind walls while the leader moved ahead. (`ai_stances.py`)
+
+### Added
+- **Phase 32B: Leader breadcrumb trail** — Instead of all followers pathfinding to the leader's current position (causing tile congestion), each follower now targets a staggered position along the leader's recent movement history. Follower 0 targets the leader's current position, follower 1 targets 2 ticks back, follower 2 targets 4 ticks back, etc. This naturally forms a trailing column through corridors and around corners. Applied to regroup (Priority 1), trail owner (Priority 3), and leader-tether follow paths. (`ai_stances.py`)
+- `_is_in_corridor()` helper — detects narrow passages by counting walkable neighbor tiles. (`ai_stances.py`)
+- `_get_breadcrumb_target()` helper — assigns staggered follow targets from the leader's position history, with configurable `_BREADCRUMB_SPACING`. (`ai_stances.py`)
+
+### Simulation Results (5 × 150 turns, grid-size 6)
+
+| Stall Reason | Before (v0.1.11) | After Fixes A+C | After Fixes A+C+B | Trend |
+|---|---|---|---|---|
+| `oscillation_suppressed` | ~high | 65 | 56 | ↓ suppressed correctly |
+| `follow_trail_wait` | ~high | 297 | 163 | ↓ fewer false waits |
+| `follow_combat_wait` | ~high | 159 | 209 | → stable (combat-appropriate) |
+| `follow_trail_owner` | ~low | 1,231 | 1,957 | ↑ +59% more active following |
+| `follow_regroup` | ~low | 453 | 1,692 | ↑ +273% more regroup moves |
+
+> Party cohesion dramatically improved. Followers now form a moving column behind the leader instead of clustering at one tile and stalling. 4040 tests passing.
+
+---
+
+## [v0.1.11] - 2026-03-27 — Exploration Stalling Fixes (Rounds 1–3)
+
+### Fixed (Round 3 — Leader Succession, Door Pathfinding)
+- **Leader succession: `ai_stance` cleared on promoted follower** — When a team leader dies, `deaths_phase.py` (Phase 27) already promotes a surviving follower to `is_team_leader=True`. However, the promoted unit kept `ai_stance="follow"`, causing `_decide_stance_action()` to route it through follower code paths instead of the leader exploration tree. Now clears `unit.ai_stance = None` on promotion so the new leader actually explores. (`deaths_phase.py`)
+- **RC#4 door-path rescue: Manhattan → Chebyshev adjacency** — The door-path rescue fallback used Manhattan distance (`abs(dx)+abs(dy) <= 1`) to check if the leader was adjacent to a door, missing diagonal neighbors (Manhattan distance 2). Fixed to Chebyshev (`max(abs(dx), abs(dy)) <= 1`), matching the rest of the door interaction system. (`ai_behavior.py`)
+- **Smart pathfind failure counting (structural reachability)** — When A\* failed to reach a room, it always incremented the fail counter. After 3 failures, the room was skipped for 60+ turns — even if the only reason A\* failed was that enemies temporarily blocked a corridor. Now re-runs A\* with an empty occupied set on failure. If a path exists without units blocking, the room is structurally reachable and the fail counter is NOT incremented. Only rooms truly walled off get skip penalties. (`ai_behavior.py`)
+- **Batch tracker: leader succession detection** — `ExplorationTracker` now detects when an original team leader dies and a new leader is promoted mid-match, updating its internal `team_leaders` dict so all subsequent diagnostics (stall analysis, decision breakdowns, oscillation splits) attribute correctly to the new leader. (`batch_pvpve.py`)
+
+### Simulation Results (Round 3, seed 42, 3 × 300 turns, grid-size 6)
+
+| Metric | v0.1.10 Baseline | Round 2 | Round 3 |
+|--------|-----------------|---------|---------|
+| Avg exploration health | 14.7/100 | 24.7/100 | 18.7/100 |
+| Avg tile coverage | ~6% | ~7% | ~7.7% |
+| Room discovery (best team) | 38% | 64% | 46% |
+| Doors opened (total) | 7–8 | 9–13 | 7–10 |
+| Avg turns to completion | ~300 | ~300 | 253.7 |
+
+> Note: Score variance is expected across runs. The structural fixes (Chebyshev adjacency, smart fail counting, leader succession) are correctness improvements that prevent edge-case stalls — their impact is more pronounced in longer matches and maps with more door chains.
+
+### Remaining Known Issues (updated)
+- ~~No leader succession~~ ✅ Fixed — succession existed, ai_stance bug resolved
+- **Follower oscillation dominates** — 40-50% of turns spent in len-2 position cycles (see analysis below)
+- **Combat exemption bypasses oscillation suppressor** — PVE enemies within Chebyshev 3 trigger the combat exemption, allowing oscillation through the final safety net
+- **Multiple follower MOVE paths lack anti-backtrack** — `follow_kite`, `follow_rush_melee`, `follow_chest_seek` produce MOVEs without checking position history
+
+### Fixed
+- **A\* door traversal cost reduced (3 → 2)** — Closed-door step cost was so high that A\* would route leaders on long detours around doors instead of through them. Lowered to 2 so A\* still prefers open routes but won't avoid nearby doors. (`ai_pathfinding.py`)
+- **Direct door interaction when leader is adjacent to target entrance** — When explorer A\* returns no path because the leader is already adjacent to a closed-door entrance, the leader now issues an INTERACT immediately instead of falling through to patrol. Fixes the common case where leaders stood next to doors for 25+ turns without opening them. (`ai_behavior.py`)
+- **Relaxed `_find_adjacent_door_toward_target` distance check** — Door force-open helper now accepts doors at the same or slightly farther Manhattan distance from target (tolerance +2), not just strictly closer. Leaders now open doors even when not perfectly aligned with the target room. (`ai_stances.py`)
+- **Escalating skip durations for unreachable rooms** — `skip_room()` now tracks how many times each room has been skipped per team. Durations escalate: 60 → 120 → 240 → permanent. Prevents the infinite stagnation cycle where a room is skipped for 40 turns, re-targeted, fails again, skipped again, forever. (`ai_exploration.py`)
+- **Bounding-box suppression no longer applies to team leaders** — The broad stall detection (12-position history in ≤2×2 tile bounding box) was triggering on leaders from follower congestion near doorways. Now only applies to non-leader followers. (`ai_behavior.py`)
+- **Suppression hard timeout reduced (30 → 20 ticks)** — `_MAX_SUPPRESS_TURNS` lowered so suppressed leaders recover faster. (`ai_behavior.py`)
+
+### Fixed (Round 2)
+- **Total-turn stagnation guard (RC#3)** — Added `_explore_total_turns` tracker that increments EVERY tick in `run_ai_decisions()`, not just on ticks where the `explore_room` code path runs. Threshold: 50 total turns targeting the same room triggers `skip_room()`. Previously, leaders could target the same unreachable room for 100–247 real turns because the per-decision counter `_explore_target_turns` only incremented on the ~20% of turns that actually reached the explore code path. (`ai_behavior.py`)
+- **Door rescue on pathfind failure (RC#3)** — When explore A\* fails, the leader now checks `_find_adjacent_door_toward_target()` for any adjacent closed door before counting the attempt as a pathfind failure. Fixes the case where the entrance is beyond the door (room center) so the direct door-check doesn't fire. (`ai_behavior.py`)
+- **Door-path rescue (RC#4)** — When explore A\* can't reach the entrance at all, a new fallback queries `get_doors_for_room()` to find the nearest closed door connecting to the target room and routes to that door instead. If adjacent, interacts immediately; otherwise walks toward it. This rescues leaders whose target entrance is the room center (unreachable through walls) but whose connecting door IS reachable. (`ai_behavior.py`, `ai_exploration.py`)
+- **Skip count preservation across full-clear resets** — `get_next_exploration_target()` no longer resets `_skip_count` when clearing active skips. Previously, when all rooms were skipped, counts reset to 0 every cycle, causing rooms to get permanent 60-turn skips forever instead of escalating. Escalation (60 → 120 → 240 → permanent) now works properly. (`ai_exploration.py`)
+- **Entrance door fallback for unknown rooms** — When no known-room door connection exists for a target room, `get_next_exploration_target()` now falls back to the nearest door tile that connects to the target room instead of the room center (which is often behind walls and unreachable). (`ai_exploration.py`)
+
+### Added
+- `get_doors_for_room()` helper in `ai_exploration.py` — returns all door positions connecting to a given room.
+- **Enhanced batch diagnostics** (`batch_pvpve.py`):
+  - Per-room skip log with room names, skip counts, and failure reasons
+  - Door-blocked room analysis — cross-references undiscovered rooms with door connections
+  - Last-forward-progress timestamp with stall duration warning
+  - No-exploration-target turn counter (all rooms cleared or skipped)
+  - Room discovery progression timeline (T1 → T25 → T50 ... → T300)
+
+### Changed
+- `_SKIP_EXPIRY_TURNS`: 40 → 60 (base duration before escalation)
+- `_MAX_SUPPRESS_TURNS`: 30 → 20
+- A\* door step cost: 3 → 2
+- `_find_adjacent_door_toward_target` distance threshold: `ai_dist` → `ai_dist + 2`
+- `_EXPLORE_TOTAL_STAGNATION_THRESHOLD`: 50 total ticks (new)
+
+### Simulation Results (PvPvE batch, seed 42, 3 × 300 turns, grid-size 6)
+
+| Metric | v0.1.10 Baseline | Round 1 Fixes | Round 2 Fixes |
+|--------|-----------------|---------------|---------------|
+| Avg exploration health | 14.7/100 | 25.7/100 | 24.7/100 |
+| Max consecutive same room | 82–247 turns | 37–50 turns | 31–50 turns |
+| Best room discovery (any team) | 38% | 70% | 64% |
+| Doors opened (total across teams) | 7–8 | 8–13 | 9–13 |
+
+**600-turn validation (1 match, seed 42):**
+
+| Team | Rooms Found | Tile Coverage | Doors Opened | Leader Status |
+|------|------------|---------------|--------------|---------------|
+| A | 25/29 (86%) | 23.0% | 3 | Survived |
+| B | 15/29 (52%) | 10.3% | 6 | Died T326 |
+| C | 4/29 (14%) | 3.1% | 0 | Survived but in perpetual combat |
+| D | 9/29 (31%) | 10.1% | 2 | Died T229 |
+
+### Root Cause Analysis — Why Teams Stop Exploring
+
+Investigation of 600-turn matches identified **three distinct failure modes**:
+
+1. **Leader death (Teams B, D)** — When the team leader dies in PvP or PvE combat, no other unit on the team has `is_team_leader=True`, so nobody calls `get_next_exploration_target()`. The surviving followers just trail their (dead) owner or idle. This is the #1 cause of teams "hanging out in one room." Fix requires leader succession (promoting a surviving follower).
+
+2. **Perpetual combat (Team C)** — The leader survives but is permanently engaged with enemies. Exploration only runs in the "no visible enemies" branch (step 4e of `decide_ai_action`). If enemies are always visible (e.g. leader spawned near enemy-dense area, or PvP teams clash), the leader spends 100% of turns in combat and zero in exploration. Team C's leader made 370 `skill_searing_totem` and 187 `aggro_pathfind_toward_target` decisions out of 600 — zero `explore_room`.
+
+3. **Pathfinding stall on door-blocked rooms** — Even with the door rescues, some rooms remain behind doors the leader can't reach due to congestion (other units blocking the corridor to the door). The skip escalation eventually makes these rooms permanently skipped, and when ALL remaining rooms are permanently skipped the leader falls through to patrol indefinitely.
+
+### Remaining Known Issues
+- **No leader succession** — When leader dies, team exploration stops permanently
+- **Exploration blocked by combat** — Leaders in perpetual combat never reach the explore code path
+- **Follower oscillation** — Followers bounce between 2 tiles (87–98% follower turns) wasting action economy
+- **Door approach failures** — Leaders sometimes route away from adjacent doors (A\* finds cheaper path around)
+
+### Files Changed
+- `server/app/core/ai_pathfinding.py`
+- `server/app/core/ai_behavior.py`
+- `server/app/core/ai_exploration.py`
+- `server/app/core/ai_stances.py`
+- `server/batch_pvpve.py`
+
+---
+
 ## [v0.1.10] - 2026-03-21 — Smarter Heroes, Better Loot
 
 ### Fixed

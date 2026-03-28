@@ -370,8 +370,9 @@ def _resolve_deaths(
                 and (uid.startswith("pvpve-ai-") or uid.startswith("ai-"))
             ):
                 unit.is_team_leader = True
-                # Clear hero_id so the new leader falls through to aggressive AI
+                # Clear hero_id + stance so the new leader falls through to aggressive AI
                 unit.hero_id = None
+                unit.ai_stance = None
                 break
 
     return hero_deaths

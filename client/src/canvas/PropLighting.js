@@ -505,3 +505,49 @@ export function getFogLightMap(dungeonRooms, theme) {
   _fogLightCacheKey = key;
   return _fogLightMap;
 }
+
+// ═══════════════════════════════════════════════════════════
+//  UNIT LIGHT INTERACTION
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Get the light boost value for a unit at a given tile position.
+ * Returns an object with brightness (0.0–0.35) and color {r,g,b}
+ * from the nearest/strongest light source, or null if not lit.
+ *
+ * Uses the already-cached ambient light map — O(1) lookup per unit.
+ *
+ * @param {number} tileX - Unit tile X coordinate
+ * @param {number} tileY - Unit tile Y coordinate
+ * @param {Array} dungeonRooms - Room data from server
+ * @param {Object} theme - Current ThemeEngine theme object
+ * @returns {{ brightness: number, color: { r: number, g: number, b: number } } | null}
+ */
+export function getUnitLightBoost(tileX, tileY, dungeonRooms, theme) {
+  if (!dungeonRooms || !theme) return null;
+  const lightMap = _getAmbientLightMap(dungeonRooms, theme);
+  const key = `${tileX},${tileY}`;
+  const intensity = lightMap.get(key);
+  if (!intensity || intensity < 0.05) return null;
+
+  // Find the dominant light source color for this tile
+  const sources = _getLightSources(dungeonRooms, theme);
+  let bestColor = { r: 255, g: 180, b: 100 }; // warm default
+  let bestWeight = 0;
+  for (const src of sources) {
+    const dx = tileX - src.x;
+    const dy = tileY - src.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > src.radius * 1.3) continue;
+    const falloff = 1 - (dist / (src.radius * 1.3));
+    const weight = falloff * falloff * src.intensity;
+    if (weight > bestWeight) {
+      bestWeight = weight;
+      bestColor = src.color;
+    }
+  }
+
+  // Cap brightness at 0.35 for subtlety
+  const brightness = Math.min(0.35, intensity * 0.35);
+  return { brightness, color: bestColor };
+}

@@ -757,6 +757,39 @@ def record_turn_events(match_id: str, turn_number: int, turn_result, all_units: 
             "killer": ek.get("killer_id"),
         })
 
+    # Item pickup events
+    for ip in turn_result.items_picked_up:
+        pid = ip.get("player_id", "")
+        items = ip.get("items", [])
+        events.append({
+            "type": "item_pickup",
+            "unit": pid,
+            "count": len(items),
+            "items": [
+                {"name": it.get("name", "?"), "rarity": it.get("rarity", "common"), "slot": it.get("equip_slot", "")}
+                for it in items if isinstance(it, dict)
+            ],
+        })
+
+    # Equip events — detect from action results with "equipped" in message
+    for act in turn_result.actions:
+        msg = getattr(act, "message", "") or ""
+        if "equipped" in msg and act.success:
+            events.append({
+                "type": "equip",
+                "unit": act.player_id,
+                "item": msg.split("equipped ", 1)[-1] if "equipped " in msg else "",
+            })
+
+    # Item use events (potions, scrolls)
+    for iu in turn_result.items_used:
+        events.append({
+            "type": "item_use",
+            "unit": iu.get("player_id", ""),
+            "item": iu.get("item_name", iu.get("item_id", "?")),
+            "effect": iu.get("effect", ""),
+        })
+
     _match_timeline[match_id].append({
         "turn": turn_number,
         "events": events,
@@ -790,6 +823,16 @@ def save_match_report(match_id: str, winner: str, turn_number: int) -> str | Non
     }
     for pid, player in players.items():
         team_key = team_map.get(player.team, "team_b")
+        # Build equipment snapshot (weapon/armor/accessory)
+        equip = getattr(player, 'equipment', {}) or {}
+        def _item_snap(item_data):
+            if not item_data or not isinstance(item_data, dict):
+                return None
+            return {
+                "name": item_data.get("name", "?"),
+                "rarity": item_data.get("rarity", "common"),
+                "equip_slot": item_data.get("equip_slot", ""),
+            }
         teams[team_key].append({
             "unit_id": pid,
             "username": player.username,
@@ -799,6 +842,18 @@ def save_match_report(match_id: str, winner: str, turn_number: int) -> str | Non
             "base_hp": player.max_hp,
             "base_melee_damage": getattr(player, 'melee_damage', 0),
             "base_armor": getattr(player, 'armor', 0),
+            "hp": player.hp,
+            "max_hp": player.max_hp,
+            "attack": getattr(player, 'attack_damage', 0),
+            "defense": getattr(player, 'armor', 0),
+            "weapon": _item_snap(equip.get('weapon')),
+            "armor": _item_snap(equip.get('armor')),
+            "accessory": _item_snap(equip.get('accessory')),
+            "equipment": {
+                "weapon": _item_snap(equip.get('weapon')),
+                "armor": _item_snap(equip.get('armor')),
+                "accessory": _item_snap(equip.get('accessory')),
+            },
         })
 
     # Remove empty teams

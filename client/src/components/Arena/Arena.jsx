@@ -439,7 +439,8 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
 
       const needsRedraw = renderDirtyRef.current || positionInterpolator.isAnimating()
         || (renderParamsRef.current?.groundZones?.length > 0)
-        || (renderParamsRef.current?.totems?.length > 0);
+        || (renderParamsRef.current?.totems?.length > 0)
+        || (renderParamsRef.current?.isDungeon); // Continuous redraw for ambient particles, water animation, prop flicker
 
       if (needsRedraw && ctxRef.current) {
         renderDirtyRef.current = false;

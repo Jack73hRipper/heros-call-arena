@@ -989,13 +989,13 @@ class TestFriendlySwapAI:
         Even if the ally was recently swapped by AI, a human player
         can still swap with them.
         """
-        from app.core.turn_phases.movement_phase import _resolve_movement, reset_swap_cooldowns, _last_swap_tick
+        from app.core.turn_phases.movement_phase import _resolve_movement, reset_swap_cooldowns, _last_swap_pair
         from app.models.actions import ActionResult
 
         reset_swap_cooldowns()
 
-        # Simulate: h2 was swapped by AI on turn 1
-        _last_swap_tick["h2"] = 1
+        # Simulate: h2 was swapped by AI (h1↔h2) on turn 1
+        _last_swap_pair[frozenset(("h1", "h2"))] = 1
 
         # Turn 2: Human player swaps with h2 — should succeed despite cooldown
         players = {

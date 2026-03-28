@@ -66,7 +66,12 @@ _door_rooms: dict[str, dict[str, list[str]]] = {}
 # expires after _SKIP_EXPIRY_TURNS so the room can be retried later (the
 # dungeon layout may become more accessible after doors open).
 _skipped_rooms: dict[str, dict[str, dict[str, int]]] = {}
-_SKIP_EXPIRY_TURNS = 40
+_SKIP_EXPIRY_TURNS = 60
+
+# Escalating skip: track how many times a room has been skipped for a team.
+# Each subsequent skip doubles the duration to prevent infinite re-targeting.
+# {match_id: {team: {room_id: skip_count}}}
+_skip_count: dict[str, dict[str, dict[str, int]]] = {}
 
 
 # ---------------------------------------------------------------------------
@@ -370,8 +375,10 @@ def get_next_exploration_target(
         candidates.append((priority, rid, dist))
 
     if not candidates:
-        # All rooms are either cleared or skipped — try clearing skips
-        # so the leader has something to target.
+        # All rooms are either cleared or skipped — clear the active skip
+        # timers so the leader has something to target again.  KEEP the
+        # skip counts so escalation continues (60→120→240→permanent).
+        # Previously, clearing counts caused infinite 60-turn cycles.
         if skipped:
             _skipped_rooms.get(match_id, {}).get(team, {}).clear()
             return get_next_exploration_target(match_id, team, current_pos)
@@ -386,6 +393,22 @@ def get_next_exploration_target(
     # Find entrance: prefer the door position that connects from a
     # discovered/cleared room to this target room
     entrance = _find_room_entrance(match_id, best_rid, discovered_or_cleared)
+
+    # Fallback: if no known-room door connection, use the nearest door that
+    # connects to this room (even if the other side is undiscovered).  This
+    # gives the AI a reachable waypoint instead of the room center which may
+    # be behind walls.
+    if not entrance:
+        door_room_map = _door_rooms.get(match_id, {})
+        _best_door_dist = float("inf")
+        for door_key, rooms_touching in door_room_map.items():
+            if best_rid in rooms_touching:
+                parts = door_key.split(",")
+                dx, dy = int(parts[0]), int(parts[1])
+                ddist = abs(current_pos[0] - dx) + abs(current_pos[1] - dy)
+                if ddist < _best_door_dist:
+                    _best_door_dist = ddist
+                    entrance = (dx, dy)
 
     return {
         "room_id": best_rid,
@@ -415,6 +438,20 @@ def _find_room_entrance(
                     return (int(parts[0]), int(parts[1]))
 
     return None
+
+
+def get_doors_for_room(
+    match_id: str,
+    room_id: str,
+) -> list[tuple[int, int]]:
+    """Return all door positions that connect to the given room."""
+    door_room_map = _door_rooms.get(match_id, {})
+    doors: list[tuple[int, int]] = []
+    for door_key, rooms_touching in door_room_map.items():
+        if room_id in rooms_touching:
+            parts = door_key.split(",")
+            doors.append((int(parts[0]), int(parts[1])))
+    return doors
 
 
 # ---------------------------------------------------------------------------
@@ -504,15 +541,31 @@ def skip_room(
 ) -> None:
     """Mark a room as temporarily unreachable for a team.
 
-    The room will be excluded from ``get_next_exploration_target()`` until
-    *current_turn + _SKIP_EXPIRY_TURNS*, at which point it becomes eligible
-    again.
+    Uses escalating skip durations: each subsequent skip of the same room
+    doubles the cooldown (60 → 120 → 240 → permanent) to prevent infinite
+    stagnation on truly unreachable rooms.
     """
     if match_id not in _skipped_rooms:
         _skipped_rooms[match_id] = {}
     if team not in _skipped_rooms[match_id]:
         _skipped_rooms[match_id][team] = {}
-    _skipped_rooms[match_id][team][room_id] = current_turn + _SKIP_EXPIRY_TURNS
+
+    # Track skip count for escalation
+    if match_id not in _skip_count:
+        _skip_count[match_id] = {}
+    if team not in _skip_count[match_id]:
+        _skip_count[match_id][team] = {}
+
+    count = _skip_count[match_id][team].get(room_id, 0) + 1
+    _skip_count[match_id][team][room_id] = count
+
+    # Escalating duration: 60, 120, 240, then effectively permanent
+    if count >= 4:
+        duration = 999999
+    else:
+        duration = _SKIP_EXPIRY_TURNS * (2 ** (count - 1))
+
+    _skipped_rooms[match_id][team][room_id] = current_turn + duration
 
 
 def expire_skipped_rooms(match_id: str, current_turn: int) -> None:
@@ -537,6 +590,7 @@ def clear_exploration_state(match_id: str | None = None) -> None:
         _room_enemy_spawns.pop(match_id, None)
         _door_rooms.pop(match_id, None)
         _skipped_rooms.pop(match_id, None)
+        _skip_count.pop(match_id, None)
     else:
         _room_graph.clear()
         _room_discovery.clear()
@@ -545,3 +599,4 @@ def clear_exploration_state(match_id: str | None = None) -> None:
         _room_enemy_spawns.clear()
         _door_rooms.clear()
         _skipped_rooms.clear()
+        _skip_count.clear()

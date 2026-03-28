@@ -270,7 +270,7 @@ export function getUnitColor(unitId, unitData, myPlayerId, myTeam, index) {
   return TEAM_COLORS.enemy;
 }
 
-export function drawPlayer(ctx, x, y, color = '#4af', label = '', hp = 100, maxHp = 100, isAlive = true, unitType = 'human', classId = null, enemyType = null, isBoss = false, spriteVariant = 1, unitId = null, monsterRarity = null, championType = null, nameplateMode = 'full') {
+export function drawPlayer(ctx, x, y, color = '#4af', label = '', hp = 100, maxHp = 100, isAlive = true, unitType = 'human', classId = null, enemyType = null, isBoss = false, spriteVariant = 1, unitId = null, monsterRarity = null, championType = null, nameplateMode = 'full', lightBoost = null) {
   const cx = x * TILE_SIZE + TILE_SIZE / 2;
   const cy = y * TILE_SIZE + TILE_SIZE / 2;
   // Elevated center — sprite/shape draws lifted upward for depth illusion
@@ -559,6 +559,23 @@ export function drawPlayer(ctx, x, y, color = '#4af', label = '', hp = 100, maxH
       ctx.stroke();
       ctx.restore();
     }
+  }
+
+  // --- Unit Light Interaction: Warm glow overlay from nearby light sources ---
+  if (lightBoost && lightBoost.brightness > 0.02) {
+    const { brightness, color: lc } = lightBoost;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const glowRadius = radius * 1.3;
+    const grad = ctx.createRadialGradient(cx, ey, 0, cx, ey, glowRadius);
+    grad.addColorStop(0, `rgba(${lc.r}, ${lc.g}, ${lc.b}, ${(brightness * 0.8).toFixed(3)})`);
+    grad.addColorStop(0.5, `rgba(${lc.r}, ${lc.g}, ${lc.b}, ${(brightness * 0.3).toFixed(3)})`);
+    grad.addColorStop(1, `rgba(${lc.r}, ${lc.g}, ${lc.b}, 0)`);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, ey, glowRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
   // --- Diablo-style Combined Nameplate + HP Bar ---

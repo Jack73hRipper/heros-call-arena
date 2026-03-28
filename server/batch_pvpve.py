@@ -94,10 +94,10 @@ from app.core.match_manager import (
 from app.core.turn_resolver import resolve_turn
 from app.core.map_loader import load_map, get_obstacles_with_door_states, is_dungeon_map
 from app.core.fov import compute_fov
-from app.core.ai_behavior import run_ai_decisions, clear_ai_patrol_state, _explore_suppressed, _position_history
+from app.core.ai_behavior import run_ai_decisions, clear_ai_patrol_state, _explore_suppressed, _position_history, _explore_total_turns
 from app.models.player import get_all_classes, get_class_definition
 from app.core.equipment_manager import score_item_for_role, _CLASS_ROLE_MAP
-from app.core.ai_exploration import get_exploration_progress, get_room_discovery, update_room_discovery, update_room_clearance, get_next_exploration_target, _skipped_rooms
+from app.core.ai_exploration import get_exploration_progress, get_room_discovery, update_room_discovery, update_room_clearance, get_next_exploration_target, _skipped_rooms, _skip_count, _door_rooms, get_room_info
 
 
 # ─── Exploration Report Tracker ──────────────────────────────────────────────
@@ -137,6 +137,10 @@ class ExplorationTracker:
         self.leader_reasons: dict[str, dict[str, int]] = {}
         # Leader IDs per team
         self.team_leaders: dict[str, str] = {}
+
+        # Phase 32D/E: Global reason counters — ALL hero actions, not just leaders.
+        # {reason_string: total_count} aggregated across all hero units.
+        self.all_reason_counts: dict[str, int] = {}
 
         # Exploration progress snapshots per team {team: [{turn, discovered, cleared, pct}]}
         self.progress_snapshots: dict[str, list[dict]] = {
@@ -181,6 +185,19 @@ class ExplorationTracker:
 
         # --- Root Cause #1 fix tracking: rooms skipped ---
         self.rooms_skipped: dict[str, int] = {"a": 0, "b": 0, "c": 0, "d": 0}
+
+        # --- RC#3 diagnostics: enhanced stall tracking ---
+        # Per-team: last turn a leader made forward exploration progress
+        # (distance-to-target decreased compared to previous turn)
+        self.last_progress_turn: dict[str, int] = {"a": 0, "b": 0, "c": 0, "d": 0}
+        # Per-team: turns where get_next_exploration_target returned None
+        self.no_target_turns: dict[str, int] = {"a": 0, "b": 0, "c": 0, "d": 0}
+        # Per-team: per-room skip details {team: [(turn, room_id, reason, skip_count)]}
+        self.room_skip_log: dict[str, list[tuple]] = {"a": [], "b": [], "c": [], "d": []}
+        # Per-team: rooms that hit permanent skip (count >= 4)
+        self.permanently_skipped: dict[str, set[str]] = {"a": set(), "b": set(), "c": set(), "d": set()}
+        # Snapshot of _skip_count per turn for detecting permanent skips
+        self._prev_skip_counts: dict[str, dict[str, int]] = {"a": {}, "b": {}, "c": {}, "d": {}}
 
     def set_walkable_count(self, obstacles: set[tuple[int, int]]):
         """Compute total walkable tiles for coverage percentage."""
@@ -234,6 +251,10 @@ class ExplorationTracker:
                 if pid not in self.leader_reasons:
                     self.leader_reasons[pid] = {}
                 self.leader_reasons[pid][reason] = self.leader_reasons[pid].get(reason, 0) + 1
+
+            # Track ALL hero reasons (global aggregate)
+            if reason:
+                self.all_reason_counts[reason] = self.all_reason_counts.get(reason, 0) + 1
 
             # Door interaction tracking
             if reason == "open_door":
@@ -289,8 +310,24 @@ class ExplorationTracker:
                 continue
             leader_unit = all_units.get(leader_id)
             if not leader_unit or not leader_unit.is_alive:
-                self._leader_target_history[team_key].append(None)
-                continue
+                # Check if a new leader was promoted (succession)
+                new_leader_id = None
+                for uid, unit in all_units.items():
+                    if (
+                        getattr(unit, 'is_team_leader', False)
+                        and getattr(unit, 'team', '') == team_key
+                        and unit.is_alive
+                        and uid != leader_id
+                    ):
+                        new_leader_id = uid
+                        break
+                if new_leader_id:
+                    self.team_leaders[team_key] = new_leader_id
+                    leader_id = new_leader_id
+                    leader_unit = all_units[new_leader_id]
+                else:
+                    self._leader_target_history[team_key].append(None)
+                    continue
 
             # Track suppression state
             if leader_id in _explore_suppressed:
@@ -309,14 +346,34 @@ class ExplorationTracker:
                 ent = target["entrance"]
                 dist = abs(leader_pos[0] - ent[0]) + abs(leader_pos[1] - ent[1])
                 self.leader_distance_to_target[team_key].append(dist)
+
+                # RC#3: Track forward progress (distance decreasing)
+                prev_dists = self.leader_distance_to_target[team_key]
+                if len(prev_dists) >= 2 and prev_dists[-2] is not None:
+                    if dist < prev_dists[-2]:
+                        self.last_progress_turn[team_key] = turn_number
             else:
                 self.leader_distance_to_target[team_key].append(None)
+                # RC#3: No exploration target available
+                self.no_target_turns[team_key] += 1
 
             # Track rooms currently skipped
             team_skips = _skipped_rooms.get(match_id, {}).get(team_key, {})
             self.rooms_skipped[team_key] = max(
                 self.rooms_skipped[team_key], len(team_skips),
             )
+
+            # RC#3: Detect new room skips by comparing skip counts
+            cur_skip_counts = dict(_skip_count.get(match_id, {}).get(team_key, {}))
+            prev_counts = self._prev_skip_counts[team_key]
+            for rid, cnt in cur_skip_counts.items():
+                prev_cnt = prev_counts.get(rid, 0)
+                if cnt > prev_cnt:
+                    reason = "stagnation" if cnt == 1 and not team_skips.get(rid) else "pathfind_fail"
+                    self.room_skip_log[team_key].append((turn_number, rid, reason, cnt))
+                    if cnt >= 4:
+                        self.permanently_skipped[team_key].add(rid)
+            self._prev_skip_counts[team_key] = cur_skip_counts
 
             # Detect target switches
             hist = self._leader_target_history[team_key]
@@ -493,6 +550,44 @@ def render_exploration_report(tracker: ExplorationTracker, all_units: dict, max_
             lines.append(f"  |     \033[31m⚠ {wander_pct:.0f}% of decisions are explore/patrol shuffling — likely stuck\033[0m")
     lines.append(f"  +--------------------------------------------------------------+")
 
+    # --- All-Hero Reason Summary (Phase 32D/E) ---
+    if tracker.all_reason_counts:
+        total_all = sum(tracker.all_reason_counts.values())
+        lines.append(f"\n  +- AI BEHAVIOR REASON SUMMARY (all heroes, {total_all} total) --------+")
+        sorted_all = sorted(tracker.all_reason_counts.items(), key=lambda kv: kv[1], reverse=True)
+        for reason, count in sorted_all[:20]:
+            pct = count / total_all * 100 if total_all else 0
+            bar_len = int(pct / 2)
+            bar = "█" * bar_len
+            lines.append(f"  |  {reason:35s} {count:>5} ({pct:>5.1f}%)  {bar}")
+        if len(sorted_all) > 20:
+            remaining = sum(c for _, c in sorted_all[20:])
+            lines.append(f"  |  {'... +' + str(len(sorted_all) - 20) + ' more reasons':35s} {remaining:>5}")
+        # Dynamic stance breakdowns — auto-discovers all reasons by prefix
+        _stance_sections = [
+            ("FOLLOW STANCE", "follow_"),
+            ("AGGRESSIVE STANCE", "agg_"),
+            ("DEFENSIVE STANCE", "def_"),
+            ("HOLD STANCE", "hold_"),
+        ]
+        # Extra diagnostic reasons appended to the follow section
+        _follow_extras = ("oscillation_suppressed", "stall_breaker_yield")
+        for section_label, prefix in _stance_sections:
+            hits = {k: v for k, v in tracker.all_reason_counts.items()
+                    if k.startswith(prefix) and v > 0}
+            if prefix == "follow_":
+                for extra in _follow_extras:
+                    val = tracker.all_reason_counts.get(extra, 0)
+                    if val > 0:
+                        hits[extra] = val
+            if hits:
+                lines.append(f"  |  {'─' * 55}")
+                lines.append(f"  |  {section_label} METRICS:")
+                for k, v in sorted(hits.items(), key=lambda kv: kv[1], reverse=True):
+                    pct = v / total_all * 100 if total_all else 0
+                    lines.append(f"  |    {k:33s} {v:>5} ({pct:>5.1f}%)")
+        lines.append(f"  +--------------------------------------------------------------+")
+
     # --- Oscillation / Cycle Detection ---
     lines.append(f"\n  +- OSCILLATION & CYCLE DETECTION -----------------------------+")
     any_cycles = False
@@ -566,6 +661,15 @@ def render_exploration_report(tracker: ExplorationTracker, all_units: dict, max_
         n_skips = tracker.rooms_skipped.get(team_key, 0)
         if n_skips:
             lines.append(f"  |     Rooms skipped (unreachable): {n_skips}")
+        # RC#3: No-target turns & last progress turn
+        no_tgt = tracker.no_target_turns.get(team_key, 0)
+        if no_tgt:
+            lines.append(f"  |     No exploration target:  {no_tgt} turns (all rooms cleared or skipped)")
+        last_prog = tracker.last_progress_turn.get(team_key, 0)
+        if last_prog > 0 and last_prog < max_turns - 20:
+            lines.append(f"  |     \033[33m⚠ Last forward progress at T{last_prog} — exploration stalled for {max_turns - last_prog} turns\033[0m")
+        elif last_prog == 0:
+            lines.append(f"  |     \033[31m⚠ Leader never made forward progress toward any target\033[0m")
         # Flag issues
         if supp_pct > 20:
             lines.append(f"  |     \033[31m⚠ Suppressed {supp_pct:.0f}% of match — explore blocked too often\033[0m")
@@ -574,6 +678,54 @@ def render_exploration_report(tracker: ExplorationTracker, all_units: dict, max_
         if n_switches == 0 and n_unique <= 1:
             lines.append(f"  |     \033[33m⚠ Never switched targets — only ever had 1 exploration target\033[0m")
     lines.append(f"  +--------------------------------------------------------------+")
+
+    # --- RC#3: Per-Room Skip Log ---
+    any_skips = any(tracker.room_skip_log[t] for t in ("a", "b", "c", "d"))
+    if any_skips:
+        lines.append(f"\n  +- ROOM SKIP LOG (rooms marked unreachable) ------------------+")
+        room_info = get_room_info(tracker.match_id)
+        for team_key in ("a", "b", "c", "d"):
+            skips = tracker.room_skip_log[team_key]
+            if not skips:
+                continue
+            lines.append(f"  | {_team_label(team_key)}:")
+            for turn, rid, reason, count in skips[-10:]:
+                rname = room_info.get(rid, {}).get("name", rid) if room_info else rid
+                perm_tag = " \033[31m[PERMANENT]\033[0m" if count >= 4 else ""
+                lines.append(f"  |   T{turn:>3}  {rname:20s}  skip #{count}  ({reason}){perm_tag}")
+            if len(skips) > 10:
+                lines.append(f"  |   ... {len(skips) - 10} more skips omitted")
+        lines.append(f"  +--------------------------------------------------------------+")
+
+    # --- RC#3: Door-Blocked Room Analysis ---
+    door_room_map = _door_rooms.get(tracker.match_id, {})
+    room_info = get_room_info(tracker.match_id)
+    if door_room_map and room_info:
+        lines.append(f"\n  +- DOOR-BLOCKED ROOM ANALYSIS --------------------------------+")
+        final_progress = tracker.get_final_progress()
+        for team_key in ("a", "b", "c", "d"):
+            discovery = get_room_discovery(tracker.match_id, team_key)
+            undiscovered = [rid for rid, st in discovery.items() if st == "undiscovered"]
+            if not undiscovered:
+                continue
+            blocked = []
+            for rid in undiscovered:
+                # Find doors connecting to this room
+                connecting_doors = []
+                for dkey, rooms_touching in door_room_map.items():
+                    if rid in rooms_touching:
+                        connecting_doors.append(dkey)
+                if connecting_doors:
+                    rname = room_info.get(rid, {}).get("name", rid)
+                    door_strs = [f"({d})" for d in connecting_doors[:3]]
+                    blocked.append(f"{rname} via door{'s' if len(connecting_doors) > 1 else ''} {', '.join(door_strs)}")
+            if blocked:
+                lines.append(f"  | {_team_label(team_key)}: {len(undiscovered)} undiscovered rooms")
+                for b in blocked[:5]:
+                    lines.append(f"  |   → {b}")
+                if len(blocked) > 5:
+                    lines.append(f"  |   ... {len(blocked) - 5} more")
+        lines.append(f"  +--------------------------------------------------------------+")
 
     # --- Door Approach Detail Log ---
     if tracker.door_approach_details:
@@ -1993,6 +2145,8 @@ def run_headless_pvpve(
         # Per-class oscillation data for batch aggregation
         result["class_oscillation"] = dict(exp_tracker.class_oscillation_turns)
         result["class_unit_count"] = dict(exp_tracker.class_unit_count)
+        # Phase 32D/E: All-hero reason counts for batch aggregation
+        result["reason_counts"] = dict(exp_tracker.all_reason_counts)
     if eq_tracker:
         result["equipment_health_score"] = _calc_health_score(eq_tracker)
         result["weapon_violations"] = len(eq_tracker.weapon_class_violations)
@@ -2171,6 +2325,48 @@ def print_batch_results(results: list[dict]) -> None:
                 n = agg_class_count.get(cls, 1)
                 avg = total_osc / n
                 print(f"  |  {cls:20s}  total:{total_osc:>5}  units:{n:>3}  avg:{avg:>6.1f}/unit")
+            print(f"  +------------------------------------------------------------+")
+
+        # Phase 32D/E: Aggregate reason counts across all matches
+        agg_reasons: dict[str, int] = {}
+        for r in exp_results:
+            for reason, count in r.get("reason_counts", {}).items():
+                agg_reasons[reason] = agg_reasons.get(reason, 0) + count
+        if agg_reasons:
+            total_reasons = sum(agg_reasons.values())
+            print(f"\n  +- AI REASON SUMMARY (aggregate across {len(exp_results)} matches, {total_reasons} total) -+")
+            sorted_reasons = sorted(agg_reasons.items(), key=lambda kv: kv[1], reverse=True)
+            for reason, count in sorted_reasons[:25]:
+                pct = count / total_reasons * 100 if total_reasons else 0
+                bar_len = int(pct / 2)
+                bar = "█" * bar_len
+                print(f"  |  {reason:35s} {count:>6} ({pct:>5.1f}%)  {bar}")
+            if len(sorted_reasons) > 25:
+                remaining = sum(c for _, c in sorted_reasons[25:])
+                print(f"  |  {'... +' + str(len(sorted_reasons) - 25) + ' more reasons':35s} {remaining:>6}")
+            # Dynamic stance breakdowns — auto-discovers all reasons by prefix
+            _stance_sections = [
+                ("FOLLOW STANCE", "follow_"),
+                ("AGGRESSIVE STANCE", "agg_"),
+                ("DEFENSIVE STANCE", "def_"),
+                ("HOLD STANCE", "hold_"),
+            ]
+            _follow_extras = ("oscillation_suppressed", "stall_breaker_yield")
+            n_matches = len(exp_results)
+            for section_label, prefix in _stance_sections:
+                hits = {k: v for k, v in agg_reasons.items()
+                        if k.startswith(prefix) and v > 0}
+                if prefix == "follow_":
+                    for extra in _follow_extras:
+                        val = agg_reasons.get(extra, 0)
+                        if val > 0:
+                            hits[extra] = val
+                if hits:
+                    print(f"  |  {'─' * 55}")
+                    print(f"  |  {section_label} METRICS (avg per match):")
+                    for k, v in sorted(hits.items(), key=lambda kv: kv[1], reverse=True):
+                        avg = v / n_matches
+                        print(f"  |    {k:33s} {v:>6} total  ({avg:>6.1f}/match)")
             print(f"  +------------------------------------------------------------+")
 
     print(f"{'=' * 70}")

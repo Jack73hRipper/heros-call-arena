@@ -61,10 +61,16 @@ if errorlevel 1 (
 )
 cd ..
 
-REM Move PyInstaller output to build directory
+REM Copy PyInstaller output to build directory (robocopy tolerates OneDrive sync locks)
 if not exist "build\pyinstaller" mkdir "build\pyinstaller"
 if exist "build\pyinstaller\arena-server" rmdir /s /q "build\pyinstaller\arena-server"
-move "server\dist\arena-server" "build\pyinstaller\arena-server"
+robocopy "server\dist\arena-server" "build\pyinstaller\arena-server" /E /R:3 /W:2 /NFL /NDL /NJH /NJS /NP >nul
+if not exist "build\pyinstaller\arena-server\arena-server.exe" (
+    echo [ERROR] Failed to copy PyInstaller output to build\pyinstaller\arena-server
+    echo         This is usually caused by OneDrive file sync locking handles.
+    echo         Try closing OneDrive or moving the project outside OneDrive.
+    exit /b 1
+)
 
 REM Clean up PyInstaller temp files
 if exist "server\dist" rmdir /s /q "server\dist"

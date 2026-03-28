@@ -41,6 +41,7 @@ from app.core.ai_pathfinding import (  # noqa: F401
 from app.core.ai_exploration import (  # noqa: F401
     get_next_exploration_target,
     get_current_room,
+    get_doors_for_room,
     skip_room,
     expire_skipped_rooms,
 )
@@ -151,7 +152,7 @@ _explore_suppressed: set[str] = set()
 # time to physically exit the room.
 _suppress_start_tick: dict[str, int] = {}
 _MIN_SUPPRESS_TURNS = 10
-_MAX_SUPPRESS_TURNS = 30  # Hard cap: lift suppression unconditionally after this many ticks
+_MAX_SUPPRESS_TURNS = 20  # Hard cap: lift suppression unconditionally after this many ticks
 
 # Parallel suppression for chest seeking — prevents aggro_chest_seek from
 # fighting patrol_move when the AI can't actually reach the chest.
@@ -172,6 +173,16 @@ _EXPLORE_FAIL_THRESHOLD = 3
 # it is skipped.  {ai_id: (room_id, consecutive_turn_count)}
 _explore_target_turns: dict[str, tuple[str, int]] = {}
 _EXPLORE_STAGNATION_THRESHOLD = 25
+
+# RC#3 fix: Total-turn stagnation tracker.  _explore_target_turns only
+# increments on turns where the explore_room code path runs, which means a
+# leader can target the same unreachable room for 100+ REAL turns while the
+# counter barely reaches 10 (due to combat, patrol fallback, scavenging,
+# etc. consuming most turns).  This tracker increments EVERY tick for leaders
+# and triggers a skip once the total wall-clock turns exceed the threshold.
+# {ai_id: (room_id, total_turn_count)}
+_explore_total_turns: dict[str, tuple[str, int]] = {}
+_EXPLORE_TOTAL_STAGNATION_THRESHOLD = 50
 
 # ---------------------------------------------------------------------------
 # Phase 29D: Post-Combat Follow Impulse — prevents hero allies from
@@ -948,8 +959,32 @@ def _decide_aggressive_action(
                     # Fall through to patrol this tick; next tick picks new target
                 else:
                     occupied = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
+                    _leader_pos = (ai.position.x, ai.position.y)
+                    _entrance = target["entrance"]
+
+                    # Direct door check: if the entrance is a door tile and
+                    # the leader is adjacent, interact immediately.  This
+                    # handles the case where A* returns an empty path because
+                    # the leader is already "at" the goal (Chebyshev ≤ 1).
+                    if (
+                        door_tiles
+                        and _entrance in door_tiles
+                        and max(abs(_leader_pos[0] - _entrance[0]),
+                                abs(_leader_pos[1] - _entrance[1])) <= 1
+                        and _leader_pos != _entrance
+                    ):
+                        if ai_id in _explore_fail_count:
+                            _explore_fail_count[ai_id].pop(_target_rid, None)
+                        return PlayerAction(
+                            player_id=ai.player_id,
+                            action_type=ActionType.INTERACT,
+                            target_x=_entrance[0],
+                            target_y=_entrance[1],
+                            reason="open_door",
+                        )
+
                     next_step = get_next_step_toward(
-                        (ai.position.x, ai.position.y), target["entrance"],
+                        _leader_pos, _entrance,
                         grid_width, grid_height, obstacles, occupied, door_tiles,
                     )
 
@@ -1011,14 +1046,104 @@ def _decide_aggressive_action(
 
                     # Handle explore failure: increment counter, skip room if threshold hit
                     if _explore_failed:
+                        # RC#3: Door rescue — when pathfinding fails, check if
+                        # there's an adjacent closed door the leader should open.
+                        # The entrance may be BEYOND the door (room center), so
+                        # the direct door check above won't fire.  Any adjacent
+                        # closed door is likely the blocker.
+                        if door_tiles:
+                            _rescue_door = _find_adjacent_door_toward_target(
+                                (ai.position.x, ai.position.y),
+                                _entrance,
+                                door_tiles,
+                            )
+                            if _rescue_door:
+                                # Clear failure counter — door was the problem
+                                if ai_id in _explore_fail_count:
+                                    _explore_fail_count[ai_id].pop(_target_rid, None)
+                                return PlayerAction(
+                                    player_id=ai.player_id,
+                                    action_type=ActionType.INTERACT,
+                                    target_x=_rescue_door[0],
+                                    target_y=_rescue_door[1],
+                                    reason="open_door",
+                                )
+
+                        # RC#4: Door-path rescue — if we can't reach the
+                        # entrance, try pathing to the nearest DOOR that
+                        # connects to the target room.  The entrance may be
+                        # the room center (unreachable), but the corridor
+                        # door in front of the room IS reachable.
+                        if match_id and door_tiles:
+                            _room_doors = get_doors_for_room(match_id, _target_rid)
+                            _leader_pos2 = (ai.position.x, ai.position.y)
+                            _occ2 = _build_occupied_set(all_units, ai.player_id, pending_moves, ghostly=is_ghostly, allow_team_swap=allow_swap)
+                            _best_door_step = None
+                            _best_door_dist = float("inf")
+                            _best_door_pos = None
+                            for _dp in _room_doors:
+                                if _dp not in door_tiles:
+                                    continue  # door already open
+                                _dp_dist = max(abs(_leader_pos2[0] - _dp[0]), abs(_leader_pos2[1] - _dp[1]))
+                                if _dp_dist <= 1:
+                                    # Adjacent to this door — interact directly
+                                    if ai_id in _explore_fail_count:
+                                        _explore_fail_count[ai_id].pop(_target_rid, None)
+                                    return PlayerAction(
+                                        player_id=ai.player_id,
+                                        action_type=ActionType.INTERACT,
+                                        target_x=_dp[0],
+                                        target_y=_dp[1],
+                                        reason="open_door",
+                                    )
+                                if _dp_dist < _best_door_dist:
+                                    _step = get_next_step_toward(
+                                        _leader_pos2, _dp,
+                                        grid_width, grid_height,
+                                        obstacles, _occ2, door_tiles,
+                                    )
+                                    if _step:
+                                        _best_door_step = _step
+                                        _best_door_dist = _dp_dist
+                                        _best_door_pos = _dp
+                            if _best_door_step:
+                                if ai_id in _explore_fail_count:
+                                    _explore_fail_count[ai_id].pop(_target_rid, None)
+                                # Check if stepping onto a door
+                                _door_act2 = _maybe_interact_door(ai, _best_door_step, door_tiles)
+                                if _door_act2:
+                                    return _door_act2
+                                return PlayerAction(
+                                    player_id=ai.player_id,
+                                    action_type=ActionType.MOVE,
+                                    target_x=_best_door_step[0],
+                                    target_y=_best_door_step[1],
+                                    reason="explore_room",
+                                )
+
                         if ai_id not in _explore_fail_count:
                             _explore_fail_count[ai_id] = {}
-                        _explore_fail_count[ai_id][_target_rid] = \
-                            _explore_fail_count[ai_id].get(_target_rid, 0) + 1
-                        if _explore_fail_count[ai_id][_target_rid] >= _EXPLORE_FAIL_THRESHOLD:
-                            skip_room(match_id, ai.team, _target_rid, _ai_tick_counter)
-                            _explore_fail_count[ai_id].pop(_target_rid, None)
-                            _explore_target_turns.pop(ai_id, None)
+
+                        # Only count as a genuine pathfind failure if the room
+                        # is structurally unreachable (ignoring other units).
+                        # If the path is just blocked by enemies/other teams in
+                        # the corridor, don't penalize — wait for them to move.
+                        _structural_fail = True
+                        _empty_occ: set[tuple[int, int]] = set()
+                        _recheck = get_next_step_toward(
+                            (ai.position.x, ai.position.y), _entrance,
+                            grid_width, grid_height, obstacles, _empty_occ, door_tiles,
+                        )
+                        if _recheck:
+                            _structural_fail = False  # Path exists, just blocked by units
+
+                        if _structural_fail:
+                            _explore_fail_count[ai_id][_target_rid] = \
+                                _explore_fail_count[ai_id].get(_target_rid, 0) + 1
+                            if _explore_fail_count[ai_id][_target_rid] >= _EXPLORE_FAIL_THRESHOLD:
+                                skip_room(match_id, ai.team, _target_rid, _ai_tick_counter)
+                                _explore_fail_count[ai_id].pop(_target_rid, None)
+                                _explore_target_turns.pop(ai_id, None)
         # Build exploration hint for patrol fallback — gives directional
         # preference toward unexplored rooms when patrol has no waypoint.
         _explore_hint: tuple[int, int] | None = None
@@ -1797,6 +1922,7 @@ def run_ai_decisions(
             _enemy_memory.pop(ai_id, None)
             _position_history.pop(ai_id, None)
             _last_combat_tick.pop(ai_id, None)
+            _explore_total_turns.pop(ai_id, None)
             continue
 
         # Phase 12C: Skip extracted AI units
@@ -1814,6 +1940,28 @@ def run_ai_decisions(
         _position_history[ai_id].append(ai_pos)
         if len(_position_history[ai_id]) > _POSITION_HISTORY_LEN:
             _position_history[ai_id] = _position_history[ai_id][-_POSITION_HISTORY_LEN:]
+
+        # RC#3: Total-turn stagnation guard for team leaders.
+        # Increments every tick regardless of what action the leader takes.
+        # If a leader's best exploration target stays the same room for
+        # _EXPLORE_TOTAL_STAGNATION_THRESHOLD ticks it gets skipped.
+        if getattr(ai, 'is_team_leader', False) and match_id:
+            _tt_target = get_next_exploration_target(match_id, ai.team, ai_pos)
+            if _tt_target:
+                _tt_rid = _tt_target["room_id"]
+                _tt_prev = _explore_total_turns.get(ai_id)
+                if _tt_prev and _tt_prev[0] == _tt_rid:
+                    _tt_count = _tt_prev[1] + 1
+                else:
+                    _tt_count = 1
+                _explore_total_turns[ai_id] = (_tt_rid, _tt_count)
+                if _tt_count >= _EXPLORE_TOTAL_STAGNATION_THRESHOLD:
+                    skip_room(match_id, ai.team, _tt_rid, _ai_tick_counter)
+                    _explore_total_turns.pop(ai_id, None)
+                    _explore_target_turns.pop(ai_id, None)
+                    _explore_fail_count.pop(ai_id, None)
+            else:
+                _explore_total_turns.pop(ai_id, None)
 
         # Look up this AI's team FOV from the pre-computed map
         ai_team_fov = None
@@ -1835,10 +1983,25 @@ def run_ai_decisions(
         # Anti-oscillation: suppress MOVE if it returns to the immediately
         # previous position (A→B→A pattern) and there is no nearby enemy
         # that would justify the backtrack (kiting, retreating, chasing).
+        # Phase 32A: Exempt follow-regroup and follow-trail moves — these are
+        # intentional movements toward the party leader that should never be
+        # suppressed.  Followers hanging back behind corners is worse than a
+        # brief oscillation while navigating a tight corridor.
+        _follow_exempt_reasons = (
+            "follow_regroup", "follow_trail", "follow_rush_melee",
+            "follow_move_to_target", "follow_corridor_push",
+            "follow_combat_approach",
+        )
+        _is_follow_exempt = (
+            action
+            and action.reason
+            and action.reason.startswith(_follow_exempt_reasons)
+        )
         if (
             action
             and action.action_type == ActionType.MOVE
             and action.target_x is not None
+            and not _is_follow_exempt
         ):
             history = _position_history.get(ai_id, [])
             if len(history) >= 2:
@@ -1866,48 +2029,48 @@ def run_ai_decisions(
                         # target instead of routing back to the same tile.
                         _patrol_targets.pop(ai_id, None)
 
-                        # Track whether an extended oscillation pattern is
-                        # confirmed.  A single A->B->A reversal is common
-                        # during early movement (spawn contention, leader
-                        # overlap) and should NOT force a WAIT by itself.
-                        confirmed_oscillation = False
+                    # Extended oscillation detection fires REGARDLESS of
+                    # nearby enemies.  A single A→B→A reversal is allowed
+                    # in combat (kiting, repositioning), but if the unit
+                    # has been stuck on ≤2 unique tiles for several turns
+                    # it's not making meaningful progress and should yield.
+                    # Combat context uses a longer window to tolerate brief
+                    # repositioning; out-of-combat is stricter.
+                    confirmed_oscillation = False
+                    _is_leader = getattr(ai, 'is_team_leader', False)
 
-                        # Extended oscillation detection: if the last 8+
-                        # positions only contain 2 unique tiles, the unit
-                        # is stuck in a long-running A<->B cycle (typically
-                        # explore_room vs patrol fighting each other).
-                        # For non-leader followers, use a shorter window (4)
-                        # since they oscillate faster in corridors.
-                        # Suppress the explore_room path and force patrol
-                        # with a distant waypoint to physically break out.
-                        _osc_window = 4 if not getattr(ai, 'is_team_leader', False) else 8
-                        if len(history) >= _osc_window and len(set(history[-_osc_window:])) <= 2:
+                    if has_nearby_enemy:
+                        _osc_window = 6 if not _is_leader else 12
+                    else:
+                        _osc_window = 4 if not _is_leader else 8
+
+                    if len(history) >= _osc_window and len(set(history[-_osc_window:])) <= 2:
+                        _explore_suppressed.add(ai_id)
+                        _chest_seek_suppressed.add(ai_id)
+                        _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
+                        confirmed_oscillation = True
+
+                    # Broader stall detection: if the entire recent
+                    # history fits inside a tiny bounding box (<=2
+                    # tiles wide/tall), the unit is shuffling within
+                    # one room.  Only suppress non-leaders outside of
+                    # combat — combat units naturally stay in small areas,
+                    # and leaders need freedom to explore.
+                    if not has_nearby_enemy and not _is_leader and len(history) >= 12:
+                        xs = [p[0] for p in history[-12:]]
+                        ys = [p[1] for p in history[-12:]]
+                        if max(xs) - min(xs) <= 2 and max(ys) - min(ys) <= 2:
                             _explore_suppressed.add(ai_id)
                             _chest_seek_suppressed.add(ai_id)
                             _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
                             confirmed_oscillation = True
 
-                        # Broader stall detection: if the entire recent
-                        # history fits inside a tiny bounding box (<=2
-                        # tiles wide/tall), the leader is shuffling within
-                        # one room.  Suppress explore_room and chest-seek
-                        # so patrol's stale-area detector can force a
-                        # distant waypoint.
-                        if len(history) >= 12:
-                            xs = [p[0] for p in history[-12:]]
-                            ys = [p[1] for p in history[-12:]]
-                            if max(xs) - min(xs) <= 2 and max(ys) - min(ys) <= 2:
-                                _explore_suppressed.add(ai_id)
-                                _chest_seek_suppressed.add(ai_id)
-                                _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
-                                confirmed_oscillation = True
-
-                        if confirmed_oscillation:
-                            action = PlayerAction(
-                                player_id=ai_id,
-                                action_type=ActionType.WAIT,
-                                reason="oscillation_suppressed",
-                            )
+                    if confirmed_oscillation:
+                        action = PlayerAction(
+                            player_id=ai_id,
+                            action_type=ActionType.WAIT,
+                            reason="oscillation_suppressed",
+                        )
 
         # Phase 30 stall breaker: if a non-leader unit has been at the same
         # position for 3+ consecutive turns and is still trying to MOVE, it
@@ -1999,6 +2162,7 @@ def clear_ai_patrol_state(ai_id: str | None = None) -> None:
         _suppress_start_tick.pop(ai_id, None)
         _explore_fail_count.pop(ai_id, None)
         _explore_target_turns.pop(ai_id, None)
+        _explore_total_turns.pop(ai_id, None)
     else:
         _patrol_targets.clear()
         _visited_history.clear()
@@ -2011,3 +2175,4 @@ def clear_ai_patrol_state(ai_id: str | None = None) -> None:
         _suppress_start_tick.clear()
         _explore_fail_count.clear()
         _explore_target_turns.clear()
+        _explore_total_turns.clear()
