@@ -83,7 +83,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(30, 10, 15, 0.6)', unexploredColor: '#0a0508' },
     ambient: { vignetteStrength: 0.15, vignetteColor: 'rgba(80, 10, 20, 0.10)', ambientDarkness: 0.40 },
     edge: { style: 'crumble', intensity: 0.6, width: 4 },
-    propAffinities: { pillar: 0.6, rubble: 0.4, brazier: 0.8, coffin: 1.0, bookshelf: 0.0, altar: 0.7, puddle: 0.0, barrel: 0.2, chains: 0.8, banner: 0.3, statue: 0.4, throne: 0.3, cage: 0.6, weapon_rack: 0.3, torch_sconce: 0.7, skull_pile: 0.8, mushroom_cluster: 0.1, web: 0.4, fountain: 0.1, candelabra: 0.5, ritual_circle: 0.6, iron_maiden: 0.7, tombstone: 0.5 },
+    propAffinities: { pillar: 0.6, rubble: 0.4, brazier: 0.8, coffin: 1.0, bookshelf: 0.3, altar: 0.7, puddle: 0.0, barrel: 0.2, chains: 0.8, banner: 0.3, statue: 0.4, throne: 0.3, cage: 0.6, weapon_rack: 0.3, torch_sconce: 0.7, skull_pile: 0.8, mushroom_cluster: 0.1, web: 0.4, fountain: 0.1, candelabra: 0.5, ritual_circle: 0.6, iron_maiden: 0.7, tombstone: 0.5, lectern: 0.3, desk: 0.2, crate: 0.4, bone_pile: 0.8, hanging_lantern: 0.4 },
   },
   ashen_undercroft: {
     id: 'ashen_undercroft', name: 'Ashen Undercroft',
@@ -94,7 +94,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(25, 18, 10, 0.6)', unexploredColor: '#0a0805' },
     ambient: { vignetteStrength: 0.14, vignetteColor: 'rgba(80, 50, 10, 0.08)', ambientDarkness: 0.35 },
     edge: { style: 'scorch', intensity: 0.7, width: 4 },
-    propAffinities: { pillar: 0.3, rubble: 0.6, brazier: 0.8, coffin: 0.0, bookshelf: 0.0, altar: 0.4, puddle: 0.0, barrel: 0.6, chains: 0.2, banner: 0.2, statue: 0.2, throne: 0.1, cage: 0.3, weapon_rack: 0.5, torch_sconce: 0.8, skull_pile: 0.3, mushroom_cluster: 0.0, web: 0.1, fountain: 0.0, candelabra: 0.4, ritual_circle: 0.2, iron_maiden: 0.3, tombstone: 0.1 },
+    propAffinities: { pillar: 0.3, rubble: 0.6, brazier: 0.8, coffin: 0.0, bookshelf: 0.2, altar: 0.4, puddle: 0.0, barrel: 0.6, chains: 0.2, banner: 0.2, statue: 0.2, throne: 0.1, cage: 0.3, weapon_rack: 0.5, torch_sconce: 0.8, skull_pile: 0.3, mushroom_cluster: 0.0, web: 0.1, fountain: 0.0, candelabra: 0.4, ritual_circle: 0.2, iron_maiden: 0.3, tombstone: 0.1, lectern: 0.2, desk: 0.2, crate: 0.6, bone_pile: 0.5, hanging_lantern: 0.3 },
   },
   drowned_sanctum: {
     id: 'drowned_sanctum', name: 'Drowned Sanctum',
@@ -105,7 +105,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(8, 20, 30, 0.6)', unexploredColor: '#040a10' },
     ambient: { vignetteStrength: 0.12, vignetteColor: 'rgba(10, 60, 60, 0.07)', ambientDarkness: 0.38 },
     edge: { style: 'moss_creep', intensity: 0.5, width: 3 },
-    propAffinities: { pillar: 0.7, rubble: 0.3, brazier: 0.4, coffin: 0.0, bookshelf: 0.0, altar: 0.5, puddle: 1.0, barrel: 0.1, chains: 0.6, banner: 0.1, statue: 0.5, throne: 0.2, cage: 0.3, weapon_rack: 0.1, torch_sconce: 0.3, skull_pile: 0.2, mushroom_cluster: 0.7, web: 0.3, fountain: 0.8, candelabra: 0.2, ritual_circle: 0.3, iron_maiden: 0.1, tombstone: 0.4 },
+    propAffinities: { pillar: 0.7, rubble: 0.3, brazier: 0.4, coffin: 0.0, bookshelf: 0.1, altar: 0.5, puddle: 1.0, barrel: 0.1, chains: 0.6, banner: 0.1, statue: 0.5, throne: 0.2, cage: 0.3, weapon_rack: 0.1, torch_sconce: 0.3, skull_pile: 0.2, mushroom_cluster: 0.7, web: 0.3, fountain: 0.8, candelabra: 0.2, ritual_circle: 0.3, iron_maiden: 0.1, tombstone: 0.4, lectern: 0.1, desk: 0.1, crate: 0.2, bone_pile: 0.2, hanging_lantern: 0.3 },
   },
   hollowed_cathedral: {
     id: 'hollowed_cathedral', name: 'Hollowed Cathedral',
@@ -116,7 +116,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(20, 15, 30, 0.6)', unexploredColor: '#08050e' },
     ambient: { vignetteStrength: 0.15, vignetteColor: 'rgba(50, 30, 60, 0.08)', ambientDarkness: 0.32 },
     edge: { style: 'rubble_strip', intensity: 0.5, width: 4 },
-    propAffinities: { pillar: 0.5, rubble: 0.3, brazier: 0.5, coffin: 0.2, bookshelf: 0.8, altar: 0.8, puddle: 0.1, barrel: 0.1, chains: 0.2, banner: 1.0, statue: 0.8, throne: 0.7, cage: 0.1, weapon_rack: 0.2, torch_sconce: 0.6, skull_pile: 0.1, mushroom_cluster: 0.0, web: 0.2, fountain: 0.6, candelabra: 0.9, ritual_circle: 0.4, iron_maiden: 0.1, tombstone: 0.3 },
+    propAffinities: { pillar: 0.5, rubble: 0.3, brazier: 0.5, coffin: 0.2, bookshelf: 0.8, altar: 0.8, puddle: 0.1, barrel: 0.1, chains: 0.2, banner: 1.0, statue: 0.8, throne: 0.7, cage: 0.1, weapon_rack: 0.2, torch_sconce: 0.6, skull_pile: 0.1, mushroom_cluster: 0.0, web: 0.2, fountain: 0.6, candelabra: 0.9, ritual_circle: 0.4, iron_maiden: 0.1, tombstone: 0.3, lectern: 0.8, desk: 0.6, crate: 0.2, bone_pile: 0.4, hanging_lantern: 0.7 },
   },
   iron_depths: {
     id: 'iron_depths', name: 'Iron Depths',
@@ -127,7 +127,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(15, 15, 20, 0.6)', unexploredColor: '#050508' },
     ambient: { vignetteStrength: 0.14, vignetteColor: 'rgba(40, 40, 50, 0.08)', ambientDarkness: 0.38 },
     edge: { style: 'rust_drip', intensity: 0.6, width: 3 },
-    propAffinities: { pillar: 0.7, rubble: 0.3, brazier: 0.5, coffin: 0.1, bookshelf: 0.1, altar: 0.3, puddle: 0.2, barrel: 0.7, chains: 0.9, banner: 0.2, statue: 0.2, throne: 0.1, cage: 0.8, weapon_rack: 0.7, torch_sconce: 0.6, skull_pile: 0.2, mushroom_cluster: 0.0, web: 0.2, fountain: 0.1, candelabra: 0.3, ritual_circle: 0.1, iron_maiden: 0.8, tombstone: 0.1 },
+    propAffinities: { pillar: 0.7, rubble: 0.3, brazier: 0.5, coffin: 0.1, bookshelf: 0.1, altar: 0.3, puddle: 0.2, barrel: 0.7, chains: 0.9, banner: 0.2, statue: 0.2, throne: 0.1, cage: 0.8, weapon_rack: 0.7, torch_sconce: 0.6, skull_pile: 0.2, mushroom_cluster: 0.0, web: 0.2, fountain: 0.1, candelabra: 0.3, ritual_circle: 0.1, iron_maiden: 0.8, tombstone: 0.1, lectern: 0.1, desk: 0.2, crate: 0.8, bone_pile: 0.3, hanging_lantern: 0.5 },
   },
   forgotten_cellar: {
     id: 'forgotten_cellar', name: 'Forgotten Cellar',
@@ -138,7 +138,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(20, 18, 12, 0.55)', unexploredColor: '#0a0908' },
     ambient: { vignetteStrength: 0.08, vignetteColor: 'rgba(30, 25, 15, 0.05)', ambientDarkness: 0.30 },
     edge: { style: 'dust_drift', intensity: 0.4, width: 2 },
-    propAffinities: { pillar: 0.4, rubble: 0.7, brazier: 0.7, coffin: 0.0, bookshelf: 0.0, altar: 0.3, puddle: 0.1, barrel: 0.9, chains: 0.3, banner: 0.1, statue: 0.1, throne: 0.0, cage: 0.2, weapon_rack: 0.4, torch_sconce: 0.7, skull_pile: 0.1, mushroom_cluster: 0.3, web: 0.6, fountain: 0.0, candelabra: 0.2, ritual_circle: 0.0, iron_maiden: 0.1, tombstone: 0.1 },
+    propAffinities: { pillar: 0.4, rubble: 0.7, brazier: 0.7, coffin: 0.0, bookshelf: 0.3, altar: 0.3, puddle: 0.1, barrel: 0.9, chains: 0.3, banner: 0.1, statue: 0.1, throne: 0.0, cage: 0.2, weapon_rack: 0.4, torch_sconce: 0.7, skull_pile: 0.1, mushroom_cluster: 0.3, web: 0.6, fountain: 0.0, candelabra: 0.2, ritual_circle: 0.0, iron_maiden: 0.1, tombstone: 0.1, lectern: 0.2, desk: 0.3, crate: 0.8, bone_pile: 0.2, hanging_lantern: 0.5 },
   },
   pale_ossuary: {
     id: 'pale_ossuary', name: 'Pale Ossuary',
@@ -149,7 +149,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(20, 18, 24, 0.55)', unexploredColor: '#08060c' },
     ambient: { vignetteStrength: 0.06, vignetteColor: 'rgba(40, 35, 50, 0.04)', ambientDarkness: 0.30 },
     edge: { style: 'clean_edge', intensity: 0.3, width: 1 },
-    propAffinities: { pillar: 0.6, rubble: 0.2, brazier: 0.4, coffin: 0.9, bookshelf: 0.1, altar: 0.8, puddle: 0.1, barrel: 0.2, chains: 0.5, banner: 0.3, statue: 0.6, throne: 0.4, cage: 0.3, weapon_rack: 0.1, torch_sconce: 0.5, skull_pile: 1.0, mushroom_cluster: 0.0, web: 0.3, fountain: 0.3, candelabra: 0.7, ritual_circle: 0.5, iron_maiden: 0.4, tombstone: 0.8 },
+    propAffinities: { pillar: 0.6, rubble: 0.2, brazier: 0.4, coffin: 0.9, bookshelf: 0.1, altar: 0.8, puddle: 0.1, barrel: 0.2, chains: 0.5, banner: 0.3, statue: 0.6, throne: 0.4, cage: 0.3, weapon_rack: 0.1, torch_sconce: 0.5, skull_pile: 1.0, mushroom_cluster: 0.0, web: 0.3, fountain: 0.3, candelabra: 0.7, ritual_circle: 0.5, iron_maiden: 0.4, tombstone: 0.8, lectern: 0.3, desk: 0.2, crate: 0.3, bone_pile: 0.9, hanging_lantern: 0.4 },
   },
   silent_vault: {
     id: 'silent_vault', name: 'Silent Vault',
@@ -160,7 +160,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(10, 15, 25, 0.55)', unexploredColor: '#060810' },
     ambient: { vignetteStrength: 0.06, vignetteColor: 'rgba(20, 30, 50, 0.04)', ambientDarkness: 0.35 },
     edge: { style: 'seam_line', intensity: 0.4, width: 1 },
-    propAffinities: { pillar: 0.8, rubble: 0.2, brazier: 0.3, coffin: 0.1, bookshelf: 0.9, altar: 0.5, puddle: 0.0, barrel: 0.3, chains: 0.2, banner: 0.7, statue: 0.6, throne: 0.5, cage: 0.1, weapon_rack: 0.2, torch_sconce: 0.5, skull_pile: 0.1, mushroom_cluster: 0.0, web: 0.3, fountain: 0.4, candelabra: 0.7, ritual_circle: 0.3, iron_maiden: 0.0, tombstone: 0.2 },
+    propAffinities: { pillar: 0.8, rubble: 0.2, brazier: 0.3, coffin: 0.1, bookshelf: 0.9, altar: 0.5, puddle: 0.0, barrel: 0.3, chains: 0.2, banner: 0.7, statue: 0.6, throne: 0.5, cage: 0.1, weapon_rack: 0.2, torch_sconce: 0.5, skull_pile: 0.1, mushroom_cluster: 0.0, web: 0.3, fountain: 0.4, candelabra: 0.7, ritual_circle: 0.3, iron_maiden: 0.0, tombstone: 0.2, lectern: 0.9, desk: 0.8, crate: 0.3, bone_pile: 0.1, hanging_lantern: 0.6 },
   },
   fungal_grotto: {
     id: 'fungal_grotto', name: 'Fungal Grotto',
@@ -171,7 +171,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(10, 20, 8, 0.55)', unexploredColor: '#060a05' },
     ambient: { vignetteStrength: 0.12, vignetteColor: 'rgba(30, 60, 15, 0.08)', ambientDarkness: 0.40 },
     edge: { style: 'spore_creep', intensity: 0.7, width: 5 },
-    propAffinities: { pillar: 0.4, rubble: 0.5, brazier: 0.3, coffin: 0.0, bookshelf: 0.0, altar: 0.4, puddle: 0.8, barrel: 0.3, chains: 0.2, banner: 0.0, statue: 0.2, throne: 0.0, cage: 0.1, weapon_rack: 0.1, torch_sconce: 0.2, skull_pile: 0.3, mushroom_cluster: 1.0, web: 0.7, fountain: 0.3, candelabra: 0.1, ritual_circle: 0.2, iron_maiden: 0.0, tombstone: 0.2 },
+    propAffinities: { pillar: 0.4, rubble: 0.5, brazier: 0.3, coffin: 0.0, bookshelf: 0.0, altar: 0.4, puddle: 0.8, barrel: 0.3, chains: 0.2, banner: 0.0, statue: 0.2, throne: 0.0, cage: 0.1, weapon_rack: 0.1, torch_sconce: 0.2, skull_pile: 0.3, mushroom_cluster: 1.0, web: 0.7, fountain: 0.3, candelabra: 0.1, ritual_circle: 0.2, iron_maiden: 0.0, tombstone: 0.2, lectern: 0.0, desk: 0.0, crate: 0.2, bone_pile: 0.3, hanging_lantern: 0.1 },
   },
   frozen_crypt: {
     id: 'frozen_crypt', name: 'Frozen Crypt',
@@ -182,7 +182,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(8, 12, 25, 0.55)', unexploredColor: '#040610' },
     ambient: { vignetteStrength: 0.10, vignetteColor: 'rgba(20, 40, 80, 0.06)', ambientDarkness: 0.35 },
     edge: { style: 'frost_creep', intensity: 0.8, width: 6 },
-    propAffinities: { pillar: 0.7, rubble: 0.4, brazier: 0.2, coffin: 0.3, bookshelf: 0.0, altar: 0.5, puddle: 0.0, barrel: 0.2, chains: 0.6, banner: 0.3, statue: 0.5, throne: 0.3, cage: 0.4, weapon_rack: 0.3, torch_sconce: 0.4, skull_pile: 0.4, mushroom_cluster: 0.0, web: 0.2, fountain: 0.2, candelabra: 0.4, ritual_circle: 0.3, iron_maiden: 0.3, tombstone: 0.6 },
+    propAffinities: { pillar: 0.7, rubble: 0.4, brazier: 0.2, coffin: 0.3, bookshelf: 0.2, altar: 0.5, puddle: 0.0, barrel: 0.2, chains: 0.6, banner: 0.3, statue: 0.5, throne: 0.3, cage: 0.4, weapon_rack: 0.3, torch_sconce: 0.4, skull_pile: 0.4, mushroom_cluster: 0.0, web: 0.2, fountain: 0.2, candelabra: 0.4, ritual_circle: 0.3, iron_maiden: 0.3, tombstone: 0.6, lectern: 0.2, desk: 0.1, crate: 0.3, bone_pile: 0.6, hanging_lantern: 0.3 },
   },
   cursed_shrine: {
     id: 'cursed_shrine', name: 'Cursed Shrine',
@@ -193,7 +193,7 @@ const BUILT_IN_THEMES = {
     fog: { exploredTint: 'rgba(25, 8, 12, 0.6)', unexploredColor: '#0a0408' },
     ambient: { vignetteStrength: 0.16, vignetteColor: 'rgba(100, 20, 15, 0.10)', ambientDarkness: 0.42 },
     edge: { style: 'blood_seep', intensity: 0.6, width: 4 },
-    propAffinities: { pillar: 0.5, rubble: 0.3, brazier: 0.8, coffin: 0.4, bookshelf: 0.2, altar: 1.0, puddle: 0.0, barrel: 0.1, chains: 0.7, banner: 0.9, statue: 0.6, throne: 0.5, cage: 0.5, weapon_rack: 0.3, torch_sconce: 0.7, skull_pile: 0.6, mushroom_cluster: 0.0, web: 0.3, fountain: 0.2, candelabra: 0.8, ritual_circle: 1.0, iron_maiden: 0.5, tombstone: 0.4 },
+    propAffinities: { pillar: 0.5, rubble: 0.3, brazier: 0.8, coffin: 0.4, bookshelf: 0.2, altar: 1.0, puddle: 0.0, barrel: 0.1, chains: 0.7, banner: 0.9, statue: 0.6, throne: 0.5, cage: 0.5, weapon_rack: 0.3, torch_sconce: 0.7, skull_pile: 0.6, mushroom_cluster: 0.0, web: 0.3, fountain: 0.2, candelabra: 0.8, ritual_circle: 1.0, iron_maiden: 0.5, tombstone: 0.4, lectern: 0.4, desk: 0.3, crate: 0.3, bone_pile: 0.6, hanging_lantern: 0.5 },
   },
 };
 
@@ -540,6 +540,28 @@ function drawWall_bloodStone(ctx, x, y, size, seed, pal, p) {
   ctx.fillStyle = hexAlpha(pal.accent, 0.08);
   for (let r = 1; r < blockRows; r++) ctx.fillRect(x, y + r * bH - 2, size, mortarWidth + 2);
   for (let c = 1; c < blockCols; c++) ctx.fillRect(x + c * bW - 2, y, mortarWidth + 2, size);
+}
+
+/** Wall top / cap — darker surface seen from above (faux 3/4 perspective). */
+function drawWallTop(ctx, x, y, size, seed, pal, p) {
+  const h = cellHash;
+  // Darkened base — looking straight down at the roof of the wall.
+  // Blend primary toward secondary to keep it readable (not void-black).
+  const baseColor = lerpColor(pal.primary, pal.secondary, 0.32);
+  ctx.fillStyle = shiftColor(baseColor, -6);
+  ctx.fillRect(x, y, size, size);
+  // Stone grain — sparse speckles for surface texture
+  const grainCount = 6 + Math.floor(h(0, seed, 500) * 4);
+  for (let i = 0; i < grainCount; i++) {
+    const gx = x + h(i, seed, 501) * (size - 2) + 1;
+    const gy = y + h(i, seed, 502) * (size - 2) + 1;
+    const shift = Math.floor((h(i, seed, 503) - 0.5) * 12);
+    ctx.fillStyle = shiftColor(baseColor, -6 + shift);
+    ctx.fillRect(gx, gy, 1 + Math.floor(h(i, seed, 504)), 1);
+  }
+  // NOTE: No mortar grid or edge definition lines on wall caps.
+  // These created a visible checkered grid pattern on interior walls
+  // behind the top plate / out of the player's field of view.
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1053,6 +1075,8 @@ export class ThemeEngine {
     const s = this.tileSize, seed = this._seed(gridX, gridY), pal = this.theme.palette;
     switch (tileType) {
       case 'door': {
+        // Doors now use drawDoorPerspective when orientation is known (extra.wallNS/wallEW).
+        // Fallback to legacy square door when called without neighbor info.
         drawCorridor(ctx, px, py, s, seed, pal, this.theme);
         const isOpen = extra.doorOpen === true;
         if (isOpen) {
@@ -1122,6 +1146,574 @@ export class ThemeEngine {
   }
 
   /**
+   * Draw a wall tile with faux 3/4 perspective (Enter the Gungeon style).
+   *
+   * Camera concept: looking from above, angled slightly south/downward.
+   *   - North boundary walls (floorBelow): cap top + brick face bottom — you see the south-facing wall face
+   *   - South boundary walls (floorAbove): brick face strip at TOP + cap below — the "top plate" effect
+   *   - Interior walls: full cap with subtle texture (not void-black)
+   *
+   * @param {boolean} floorBelow - true if tile to the south is non-wall
+   * @param {boolean} floorAbove - true if tile to the north is non-wall
+   * @param {boolean} floorLeft  - true if tile to the west is non-wall
+   * @param {boolean} floorRight - true if tile to the east is non-wall
+   */
+  drawWallPerspective(ctx, px, py, gridX, gridY, floorBelow, floorAbove, floorLeft, floorRight) {
+    if (!this._ready) return false;
+    const s = this.tileSize;
+    const v = this._variant(gridX, gridY);
+
+    // ── Lazy perspective cache: variant + 4-bit neighbor config → pre-rendered tile ──
+    // Only 8 variants × 16 neighbor combos = 128 max entries, all deterministic.
+    const neighborBits = (floorBelow ? 1 : 0) | (floorAbove ? 2 : 0) | (floorLeft ? 4 : 0) | (floorRight ? 8 : 0);
+    const cacheKey = `wp_${v}_${neighborBits}`;
+    const cached = this._wallPerspectiveCache?.get(cacheKey);
+    if (cached) {
+      ctx.drawImage(cached, px, py);
+      return true;
+    }
+
+    // Cache miss — render to offscreen canvas and store
+    const offCanvas = this._mkCanvas(s);
+    const offCtx = offCanvas.getContext('2d');
+    this._drawWallPerspectiveUncached(offCtx, 0, 0, v, floorBelow, floorAbove, floorLeft, floorRight);
+    if (this._wallPerspectiveCache) {
+      this._wallPerspectiveCache.set(cacheKey, offCanvas);
+    }
+    ctx.drawImage(offCanvas, px, py);
+    return true;
+  }
+
+  /** Internal: draw wall perspective composite (uncached, to an offscreen context). */
+  _drawWallPerspectiveUncached(ctx, px, py, v, floorBelow, floorAbove, floorLeft, floorRight) {
+    const s = this.tileSize;
+    const pal = this.theme.palette;
+
+    // ── Case 1: North boundary wall (floor to the south) ──
+    // Shows cap on top ~35%, brick face on bottom ~65%
+    if (floorBelow && !floorAbove) {
+      const capH = Math.round(s * 0.35);
+      const faceH = s - capH;
+
+      // Dark cap (upper portion)
+      const topCached = this.cache.get(`wall_top_${v}`);
+      if (topCached) ctx.drawImage(topCached, 0, 0, s, capH, px, py, s, capH);
+
+      // Wall face (lower portion — source from top of cached wall tile)
+      const faceCached = this.cache.get(`wall_${v}`);
+      if (faceCached) ctx.drawImage(faceCached, 0, 0, s, faceH, px, py + capH, s, faceH);
+
+      // Lip highlight at cap-face junction
+      ctx.fillStyle = shiftColor(pal.secondary, 18);
+      ctx.fillRect(px, py + capH - 1, s, 1);
+      ctx.fillStyle = shiftColor(pal.secondary, 10);
+      ctx.fillRect(px, py + capH, s, 1);
+
+      // Bottom edge darkening (wall base meeting floor)
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.fillRect(px, py + s - 2, s, 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      ctx.fillRect(px, py + s - 4, s, 2);
+
+      // Side depth strips
+      if (floorLeft) {
+        ctx.fillStyle = shiftColor(pal.secondary, 12);
+        ctx.fillRect(px, py + capH, 1, faceH);
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        ctx.fillRect(px + 1, py + capH, 2, faceH);
+      }
+      if (floorRight) {
+        ctx.fillStyle = shiftColor(pal.secondary, 12);
+        ctx.fillRect(px + s - 1, py + capH, 1, faceH);
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        ctx.fillRect(px + s - 3, py + capH, 2, faceH);
+      }
+      return true;
+    }
+
+    // ── Case 2: South boundary wall (floor to the north) — "top plate" ──
+    // Thin face strip at top (~18%), cap fills the rest below
+    if (floorAbove && !floorBelow) {
+      const plateH = Math.round(s * 0.18);
+
+      // Thin wall face strip at top (the plate you see looking down)
+      const faceCached = this.cache.get(`wall_${v}`);
+      if (faceCached) ctx.drawImage(faceCached, 0, s - plateH, s, plateH, px, py, s, plateH);
+
+      // Top edge highlight (lit edge of the plate)
+      ctx.fillStyle = shiftColor(pal.secondary, 14);
+      ctx.fillRect(px, py, s, 1);
+
+      // Bottom lip of plate where it meets the cap below
+      ctx.fillStyle = shiftColor(pal.secondary, -8);
+      ctx.fillRect(px, py + plateH - 1, s, 1);
+
+      // Cap fills the rest
+      const topCached = this.cache.get(`wall_top_${v}`);
+      if (topCached) ctx.drawImage(topCached, 0, plateH, s, s - plateH, px, py + plateH, s, s - plateH);
+
+      // Side strips
+      if (floorLeft) {
+        ctx.fillStyle = shiftColor(pal.secondary, 8);
+        ctx.fillRect(px, py, 1, plateH);
+      }
+      if (floorRight) {
+        ctx.fillStyle = shiftColor(pal.secondary, 8);
+        ctx.fillRect(px + s - 1, py, 1, plateH);
+      }
+      return true;
+    }
+
+    // ── Case 3: Both floor above AND below (thin wall between two rooms) ──
+    if (floorAbove && floorBelow) {
+      const plateH = Math.round(s * 0.18);
+      const capH = Math.round(s * 0.32);
+      const faceH = s - plateH - capH;
+
+      // Top plate strip
+      const faceCached = this.cache.get(`wall_${v}`);
+      if (faceCached) ctx.drawImage(faceCached, 0, s - plateH, s, plateH, px, py, s, plateH);
+      ctx.fillStyle = shiftColor(pal.secondary, 14);
+      ctx.fillRect(px, py, s, 1);
+
+      // Small cap band
+      const topCached = this.cache.get(`wall_top_${v}`);
+      if (topCached) ctx.drawImage(topCached, 0, 0, s, capH, px, py + plateH, s, capH);
+
+      // South-facing face
+      if (faceCached) ctx.drawImage(faceCached, 0, 0, s, faceH, px, py + plateH + capH, s, faceH);
+
+      // Lip between cap and south face
+      ctx.fillStyle = shiftColor(pal.secondary, 18);
+      ctx.fillRect(px, py + plateH + capH - 1, s, 1);
+
+      // Bottom darkening
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
+      ctx.fillRect(px, py + s - 2, s, 2);
+      return true;
+    }
+
+    // ── Case 4: Side-facing wall or pure interior ──
+
+    // 4a: Wall with floor to the left and/or right — side plate + cap
+    //     Mirrors the horizontal "top plate" from Case 2 but rotated vertical.
+    if (floorLeft || floorRight) {
+      const plateW = Math.round(s * 0.20);
+      const topCached = this.cache.get(`wall_top_${v}`);
+      const faceCached = this.cache.get(`wall_${v}`);
+
+      if (floorLeft && !floorRight) {
+        // Left side plate: thin brick face on left, cap fills right
+        if (faceCached) ctx.drawImage(faceCached, 0, 0, plateW, s, px, py, plateW, s);
+        if (topCached) ctx.drawImage(topCached, plateW, 0, s - plateW, s, px + plateW, py, s - plateW, s);
+
+        // Lit edge on exposed left side
+        ctx.fillStyle = shiftColor(pal.secondary, 14);
+        ctx.fillRect(px, py, 1, s);
+
+        // Lip where plate meets cap
+        ctx.fillStyle = shiftColor(pal.secondary, -8);
+        ctx.fillRect(px + plateW - 1, py, 1, s);
+
+        // Base darkening along plate bottom
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.fillRect(px, py + s - 2, plateW, 2);
+
+      } else if (floorRight && !floorLeft) {
+        // Right side plate: cap fills left, thin brick face on right
+        if (topCached) ctx.drawImage(topCached, 0, 0, s - plateW, s, px, py, s - plateW, s);
+        if (faceCached) ctx.drawImage(faceCached, s - plateW, 0, plateW, s, px + s - plateW, py, plateW, s);
+
+        // Lip where cap meets plate
+        ctx.fillStyle = shiftColor(pal.secondary, -8);
+        ctx.fillRect(px + s - plateW, py, 1, s);
+
+        // Lit edge on exposed right side
+        ctx.fillStyle = shiftColor(pal.secondary, 14);
+        ctx.fillRect(px + s - 1, py, 1, s);
+
+        // Base darkening along plate bottom
+        ctx.fillStyle = 'rgba(0,0,0,0.12)';
+        ctx.fillRect(px + s - plateW, py + s - 2, plateW, 2);
+
+      } else {
+        // Both sides exposed — plates on both sides, cap in middle
+        const capW = s - plateW * 2;
+        if (faceCached) ctx.drawImage(faceCached, 0, 0, plateW, s, px, py, plateW, s);
+        if (topCached) ctx.drawImage(topCached, plateW, 0, capW, s, px + plateW, py, capW, s);
+        if (faceCached) ctx.drawImage(faceCached, s - plateW, 0, plateW, s, px + s - plateW, py, plateW, s);
+
+        // Lit edges on both exposed sides
+        ctx.fillStyle = shiftColor(pal.secondary, 14);
+        ctx.fillRect(px, py, 1, s);
+        ctx.fillRect(px + s - 1, py, 1, s);
+
+        // Lips where plates meet cap
+        ctx.fillStyle = shiftColor(pal.secondary, -8);
+        ctx.fillRect(px + plateW - 1, py, 1, s);
+        ctx.fillRect(px + s - plateW, py, 1, s);
+      }
+      return true;
+    }
+
+    // 4b: Pure interior wall (no adjacent floor at all) — full cap
+    const topCached = this.cache.get(`wall_top_${v}`);
+    if (topCached) ctx.drawImage(topCached, px, py);
+    else return false;
+    return true;
+  }
+
+  /** Draw overhang shadow on a floor tile below a south-facing wall.
+   *  Uses pre-computed alpha LUT from _buildCache to avoid per-pixel string allocation.
+   */
+  drawOverhangShadow(ctx, px, py) {
+    if (!this._ready) return;
+    const s = this.tileSize;
+    const table = this._overhangAlphaTable;
+    if (!table) return;
+    for (let i = 0; i < table.length; i++) {
+      ctx.fillStyle = table[i];
+      ctx.fillRect(px, py + i, s, 1);
+    }
+  }
+
+  /**
+   * Draw a door tile with faux 3/4 perspective, oriented by neighboring walls.
+   *
+   * Orientation detection:
+   *   - wallNorth && wallSouth → East/West passage door (vertical planks side-on)
+   *   - wallEast  && wallWest  → North/South passage door (front-facing, top edge visible)
+   *   - Fallback: front-facing NS style
+   *
+   * @param {boolean} wallNorth - true if tile to the north is a wall
+   * @param {boolean} wallSouth - true if tile to the south is a wall
+   * @param {boolean} wallEast  - true if tile to the east is a wall
+   * @param {boolean} wallWest  - true if tile to the west is a wall
+   * @param {boolean} isOpen    - true if the door is currently open
+   */
+  drawDoorPerspective(ctx, px, py, gridX, gridY, wallNorth, wallSouth, wallEast, wallWest, isOpen) {
+    if (!this._ready) return false;
+    const s = this.tileSize;
+    const seed = this._seed(gridX, gridY);
+
+    // ── Lazy door cache: seed + orientation + state → pre-rendered tile ──
+    // Doors are fully deterministic from their grid position and state.
+    const isEW = wallNorth && wallSouth && !wallEast && !wallWest;
+    const cacheKey = `dp_${seed}_${isEW ? 'ew' : 'ns'}_${isOpen ? 'o' : 'c'}`;
+    const cached = this._wallPerspectiveCache?.get(cacheKey);
+    if (cached) {
+      ctx.drawImage(cached, px, py);
+      return true;
+    }
+
+    // Cache miss — render to offscreen canvas and store
+    const offCanvas = this._mkCanvas(s);
+    const offCtx = offCanvas.getContext('2d');
+    this._drawDoorPerspectiveUncached(offCtx, 0, 0, seed, isEW, isOpen);
+    if (this._wallPerspectiveCache) {
+      this._wallPerspectiveCache.set(cacheKey, offCanvas);
+    }
+    ctx.drawImage(offCanvas, px, py);
+    return true;
+  }
+
+  /** Internal: draw door perspective composite (uncached, to an offscreen context). */
+  _drawDoorPerspectiveUncached(ctx, px, py, seed, isEW, isOpen) {
+    const s = this.tileSize;
+    const pal = this.theme.palette;
+
+    // Floor underneath
+    drawCorridor(ctx, px, py, s, seed, pal, this.theme);
+
+    // Derive door palette from theme
+    const woodDark  = lerpColor(pal.secondary, '#5C3310', 0.6);
+    const woodMid   = lerpColor(pal.secondary, '#8B4513', 0.5);
+    const woodLight = lerpColor(pal.secondary, '#A0764B', 0.4);
+    const metalCol  = pal.metal || pal.secondary;
+    const metalDark = shiftColor(metalCol, -8);
+    const handleCol = pal.highlight || '#DAA520';
+    const frameSt   = shiftColor(pal.primary, 10);
+
+    if (isEW) {
+      if (isOpen) {
+        this._drawDoorEW_open(ctx, px, py, s, woodMid, woodLight, metalCol, frameSt);
+      } else {
+        this._drawDoorEW_closed(ctx, px, py, s, seed, woodDark, woodMid, woodLight, metalCol, metalDark, handleCol, frameSt);
+      }
+    } else {
+      if (isOpen) {
+        this._drawDoorNS_open(ctx, px, py, s, woodMid, woodLight, metalCol, frameSt);
+      } else {
+        this._drawDoorNS_closed(ctx, px, py, s, seed, woodDark, woodMid, woodLight, metalCol, metalDark, handleCol, frameSt);
+      }
+    }
+  }
+
+  // ── NS door (front-facing, camera sees top edge + face) ─────────
+
+  _drawDoorNS_closed(ctx, px, py, s, seed, woodDark, woodMid, woodLight, metalCol, metalDark, handleCol, frameSt) {
+    const inset = Math.round(s * 0.08);
+    const topH = Math.round(s * 0.14);  // top edge (looking down onto door top)
+    const faceY = py + topH;
+    const faceH = s - topH - inset;
+    const dw = s - inset * 2;
+
+    // Stone door frame (left + right jambs)
+    ctx.fillStyle = frameSt;
+    ctx.fillRect(px + inset - 2, py + topH, 3, faceH + inset);
+    ctx.fillRect(px + s - inset - 1, py + topH, 3, faceH + inset);
+    // Frame top lintel
+    ctx.fillRect(px + inset - 2, py + topH - 2, dw + 4, 3);
+
+    // Top edge of door (the "plate" you see looking down)
+    ctx.fillStyle = woodLight;
+    ctx.fillRect(px + inset, py, dw, topH);
+    // Highlight on leading edge
+    ctx.fillStyle = shiftColor(woodLight, 12);
+    ctx.fillRect(px + inset, py, dw, 1);
+    // Shadow at back of top edge
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
+    ctx.fillRect(px + inset, py + topH - 1, dw, 1);
+
+    // Door face (south-facing surface)
+    ctx.fillStyle = woodDark;
+    ctx.fillRect(px + inset, faceY, dw, faceH);
+
+    // Vertical wood planks (3 planks)
+    const plankCount = 3;
+    const plankW = dw / plankCount;
+    for (let i = 0; i < plankCount; i++) {
+      const plX = px + inset + i * plankW;
+      const colorVar = cellHash(seed, i, 55) * 6 - 3;
+      ctx.fillStyle = shiftColor(woodDark, colorVar);
+      ctx.fillRect(plX + 0.5, faceY + 1, plankW - 1, faceH - 2);
+      // Plank edge groove
+      ctx.fillStyle = 'rgba(0,0,0,0.12)';
+      ctx.fillRect(plX, faceY + 1, 1, faceH - 2);
+    }
+
+    // Iron bands (2 horizontal straps across face)
+    ctx.fillStyle = metalCol;
+    const bandH = Math.max(2, Math.round(s * 0.05));
+    const band1Y = faceY + Math.round(faceH * 0.28);
+    const band2Y = faceY + Math.round(faceH * 0.68);
+    ctx.fillRect(px + inset, band1Y, dw, bandH);
+    ctx.fillRect(px + inset, band2Y, dw, bandH);
+    // Band highlight
+    ctx.fillStyle = shiftColor(metalCol, 10);
+    ctx.fillRect(px + inset, band1Y, dw, 1);
+    ctx.fillRect(px + inset, band2Y, dw, 1);
+    // Band shadow
+    ctx.fillStyle = metalDark;
+    ctx.fillRect(px + inset, band1Y + bandH - 1, dw, 1);
+    ctx.fillRect(px + inset, band2Y + bandH - 1, dw, 1);
+
+    // Iron rivets (dots at plank-band intersections)
+    ctx.fillStyle = shiftColor(metalCol, 15);
+    for (let i = 0; i <= plankCount; i++) {
+      const rx = px + inset + i * plankW;
+      for (const ry of [band1Y + bandH / 2, band2Y + bandH / 2]) {
+        ctx.beginPath();
+        ctx.arc(rx, ry, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Ring pull handle (center of face)
+    const ringCX = px + s / 2;
+    const ringCY = faceY + faceH * 0.50;
+    // Mounting plate
+    ctx.fillStyle = metalDark;
+    ctx.fillRect(ringCX - 2, ringCY - 5, 4, 4);
+    // Ring
+    ctx.strokeStyle = handleCol;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(ringCX, ringCY + 1, 3.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Bottom threshold darkening
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.fillRect(px + inset, py + s - inset - 2, dw, 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.08)';
+    ctx.fillRect(px + inset, py + s - inset - 4, dw, 2);
+  }
+
+  _drawDoorNS_open(ctx, px, py, s, woodMid, woodLight, metalCol, frameSt) {
+    const inset = Math.round(s * 0.08);
+    const topH = Math.round(s * 0.14);
+    const faceH = s - topH - inset;
+    const dw = s - inset * 2;
+    const halfW = Math.round(dw * 0.48);
+    const panelDepth = Math.round(s * 0.22);
+
+    // Stone frame (stays visible when open)
+    ctx.fillStyle = frameSt;
+    ctx.fillRect(px + inset - 2, py + topH, 3, faceH + inset);
+    ctx.fillRect(px + s - inset - 1, py + topH, 3, faceH + inset);
+    ctx.fillRect(px + inset - 2, py + topH - 2, dw + 4, 3);
+
+    // Left panel — swung inward (trapezoid, wider at hinge, narrower at free edge)
+    ctx.fillStyle = woodMid;
+    ctx.beginPath();
+    ctx.moveTo(px + inset, py + topH);
+    ctx.lineTo(px + inset + panelDepth, py + topH + 4);
+    ctx.lineTo(px + inset + panelDepth, py + s - inset - 4);
+    ctx.lineTo(px + inset, py + s - inset);
+    ctx.closePath();
+    ctx.fill();
+    // Panel edge highlight
+    ctx.strokeStyle = woodLight;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    // Iron band on visible panel edge
+    ctx.fillStyle = metalCol;
+    const bandY1 = py + topH + Math.round(faceH * 0.30);
+    ctx.fillRect(px + inset, bandY1, panelDepth, 2);
+
+    // Right panel — swung inward (mirrored)
+    ctx.fillStyle = woodMid;
+    ctx.beginPath();
+    ctx.moveTo(px + s - inset, py + topH);
+    ctx.lineTo(px + s - inset - panelDepth, py + topH + 4);
+    ctx.lineTo(px + s - inset - panelDepth, py + s - inset - 4);
+    ctx.lineTo(px + s - inset, py + s - inset);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = woodLight;
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    ctx.fillStyle = metalCol;
+    ctx.fillRect(px + s - inset - panelDepth, bandY1, panelDepth, 2);
+
+    // Dark interior visible through the opening
+    const gapLeft = px + inset + panelDepth + 1;
+    const gapRight = px + s - inset - panelDepth - 1;
+    if (gapRight > gapLeft) {
+      ctx.fillStyle = 'rgba(0,0,0,0.10)';
+      ctx.fillRect(gapLeft, py + topH, gapRight - gapLeft, faceH);
+    }
+
+    // Top edge of frame visible (looking down)
+    ctx.fillStyle = shiftColor(frameSt, 6);
+    ctx.fillRect(px + inset - 2, py, dw + 4, topH);
+    ctx.fillStyle = shiftColor(frameSt, 12);
+    ctx.fillRect(px + inset - 2, py, dw + 4, 1);
+  }
+
+  // ── EW door (side-on view, camera sees narrow edge) ─────────
+
+  _drawDoorEW_closed(ctx, px, py, s, seed, woodDark, woodMid, woodLight, metalCol, metalDark, handleCol, frameSt) {
+    const inset = Math.round(s * 0.08);
+    const dh = s - inset * 2;
+    // For EW doors the "face" is viewed from the side — we see a narrow
+    // front face on one side and the edge thickness on the other.
+    const faceW = Math.round(s * 0.35);  // Wider visible face (west side)
+    const edgeW = Math.round(s * 0.14);  // Narrow thickness edge (east side)
+    const panelX = px + Math.round((s - faceW - edgeW) / 2);
+
+    // Stone door frame (top + bottom lintels)
+    ctx.fillStyle = frameSt;
+    ctx.fillRect(px + inset, py + inset - 2, s - inset * 2, 3);
+    ctx.fillRect(px + inset, py + s - inset - 1, s - inset * 2, 3);
+    // Left and right jambs
+    ctx.fillRect(panelX - 2, py + inset, 3, dh);
+    ctx.fillRect(panelX + faceW + edgeW - 1, py + inset, 3, dh);
+
+    // Door face (the wider visible portion)
+    ctx.fillStyle = woodDark;
+    ctx.fillRect(panelX, py + inset, faceW, dh);
+
+    // Vertical wood planks on face (3 planks, running top-to-bottom)
+    const plankCount = 3;
+    const plankH = dh / plankCount;
+    for (let i = 0; i < plankCount; i++) {
+      const plY = py + inset + i * plankH;
+      const colorVar = cellHash(seed, i, 66) * 6 - 3;
+      ctx.fillStyle = shiftColor(woodDark, colorVar);
+      ctx.fillRect(panelX + 1, plY + 0.5, faceW - 2, plankH - 1);
+      // Plank edge groove
+      ctx.fillStyle = 'rgba(0,0,0,0.12)';
+      ctx.fillRect(panelX + 1, plY, faceW - 2, 1);
+    }
+
+    // Iron bands (2 vertical straps on the face)
+    ctx.fillStyle = metalCol;
+    const bandW = Math.max(2, Math.round(s * 0.05));
+    const band1X = panelX + Math.round(faceW * 0.30);
+    const band2X = panelX + Math.round(faceW * 0.70);
+    ctx.fillRect(band1X, py + inset, bandW, dh);
+    ctx.fillRect(band2X, py + inset, bandW, dh);
+    // Band highlights
+    ctx.fillStyle = shiftColor(metalCol, 10);
+    ctx.fillRect(band1X, py + inset, 1, dh);
+    ctx.fillRect(band2X, py + inset, 1, dh);
+    // Band shadows
+    ctx.fillStyle = metalDark;
+    ctx.fillRect(band1X + bandW - 1, py + inset, 1, dh);
+    ctx.fillRect(band2X + bandW - 1, py + inset, 1, dh);
+
+    // Iron rivets
+    ctx.fillStyle = shiftColor(metalCol, 15);
+    for (let i = 0; i <= plankCount; i++) {
+      const ry = py + inset + i * plankH;
+      for (const rx of [band1X + bandW / 2, band2X + bandW / 2]) {
+        ctx.beginPath();
+        ctx.arc(rx, ry, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // Door edge/thickness (the narrow east side — depth perspective)
+    ctx.fillStyle = woodMid;
+    ctx.fillRect(panelX + faceW, py + inset, edgeW, dh);
+    // Edge top highlight
+    ctx.fillStyle = shiftColor(woodMid, 8);
+    ctx.fillRect(panelX + faceW, py + inset, edgeW, 1);
+    // Edge shadow at bottom
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillRect(panelX + faceW, py + s - inset - 2, edgeW, 2);
+    // Depth line between face and edge
+    ctx.fillStyle = 'rgba(0,0,0,0.20)';
+    ctx.fillRect(panelX + faceW, py + inset, 1, dh);
+
+    // Ring pull handle (on the face)
+    const ringCX = panelX + Math.round(faceW * 0.55);
+    const ringCY = py + s / 2;
+    ctx.fillStyle = metalDark;
+    ctx.fillRect(ringCX - 2, ringCY - 5, 4, 4);
+    ctx.strokeStyle = handleCol;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(ringCX, ringCY + 1, 3.5, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+
+  _drawDoorEW_open(ctx, px, py, s, woodMid, woodLight, metalCol, frameSt) {
+    const inset = Math.round(s * 0.08);
+    const dh = s - inset * 2;
+    const panelEdge = Math.round(s * 0.14);  // Thin edge of open panel
+
+    // Stone frame stays visible
+    ctx.fillStyle = frameSt;
+    ctx.fillRect(px + inset, py + inset - 2, s - inset * 2, 3);
+    ctx.fillRect(px + inset, py + s - inset - 1, s - inset * 2, 3);
+
+    // Panel swung flat against north wall — just the thin edge visible at top
+    ctx.fillStyle = woodMid;
+    ctx.fillRect(px + inset + 2, py + inset, s - inset * 2 - 4, panelEdge);
+    // Edge highlight
+    ctx.fillStyle = woodLight;
+    ctx.fillRect(px + inset + 2, py + inset, s - inset * 2 - 4, 1);
+    // Iron band on visible edge
+    ctx.fillStyle = metalCol;
+    ctx.fillRect(px + inset + 2, py + inset + panelEdge - 2, s - inset * 2 - 4, 2);
+    // Shadow under panel
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillRect(px + inset + 2, py + inset + panelEdge, s - inset * 2 - 4, 2);
+  }
+
+  /**
    * Draw themed fog of war.
    * @param {Map<string,number>|null} fogLightMap — per-tile alpha reduction from nearby light sources
    */
@@ -1182,13 +1774,16 @@ export class ThemeEngine {
         if (visibleTiles.has(key)) continue;
 
         const isRevealed = revealedTiles && revealedTiles.has(key);
+
         if (isRevealed) {
           // Modulate fog alpha near light sources on revealed tiles
           const lightReduction = fogLightMap ? (fogLightMap.get(key) || 0) : 0;
-          const alpha = Math.max(0.15, baseExploredAlpha - lightReduction);
+          const alpha = Math.max(0.10, baseExploredAlpha - lightReduction);
           offCtx.fillStyle = `rgba(${eTintR}, ${eTintG}, ${eTintB}, ${alpha.toFixed(3)})`;
+        } else if (revealedTiles) {
+          offCtx.fillStyle = uColor;
         } else {
-          offCtx.fillStyle = revealedTiles ? uColor : 'rgba(0,0,0,0.7)';
+          offCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
         }
         offCtx.fillRect((x - offsetX) * this.tileSize, (y - offsetY) * this.tileSize, this.tileSize, this.tileSize);
       }
@@ -1204,15 +1799,25 @@ export class ThemeEngine {
 
   _buildCache() {
     this.cache.clear();
+    this._wallPerspectiveCache = new Map(); // lazy cache for wall perspective composites
+    this._overhangAlphaTable = null;        // pre-computed alpha LUT for overhang shadow
     if (!this.theme) return;
     const s = this.tileSize, pal = this.theme.palette;
     const wFn = WALL_FN[this.theme.wall?.style] || drawWall_crackedStone;
     const fFn = FLOOR_FN[this.theme.floor?.style] || drawFloor_flagstone;
     for (let v = 0; v < VARIANTS; v++) {
       let c = this._mkCanvas(s); wFn(c.getContext('2d'), 0, 0, s, v * 137, pal, this.theme.wall); this.cache.set(`wall_${v}`, c);
+      c = this._mkCanvas(s); drawWallTop(c.getContext('2d'), 0, 0, s, v * 137, pal, this.theme.wall); this.cache.set(`wall_top_${v}`, c);
       c = this._mkCanvas(s); fFn(c.getContext('2d'), 0, 0, s, v * 251, pal, this.theme.floor); this.cache.set(`floor_${v}`, c);
       c = this._mkCanvas(s); drawCorridor(c.getContext('2d'), 0, 0, s, v * 349, pal, this.theme); this.cache.set(`corridor_${v}`, c);
       c = this._mkCanvas(s); drawSpawn(c.getContext('2d'), 0, 0, s, v * 503, pal, this.theme); this.cache.set(`spawn_${v}`, c);
+    }
+
+    // Pre-compute overhang shadow alpha lookup table
+    const shadowH = Math.round(s * 0.12);
+    this._overhangAlphaTable = new Array(shadowH);
+    for (let i = 0; i < shadowH; i++) {
+      this._overhangAlphaTable[i] = `rgba(0,0,0,${(0.18 * (1 - i / shadowH)).toFixed(3)})`;
     }
   }
 

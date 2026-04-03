@@ -5,6 +5,708 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [v0.1.37] - 2026-04-03 — Shaman Balance Pass (Spirit Link + Kiting Fix)
+
+### Problem
+Shaman was the weakest class in batch PVP testing — 42.6% win rate over 100 randomized matches (40W/52L across 94 appearances), dead last of all 11 classes. Root causes identified:
+1. **Kiting threshold too conservative**: Shaman kited at distance 1 (same as non-support classes), staying too close to enemies and taking unnecessary damage.
+2. **Soul Anchor too reactive**: The cheat-death mechanic only triggered at ≤30% HP — by then the ally was usually already lost. The ability felt invisible and rarely changed match outcomes.
+3. **Cooldown gaps**: 2–3 turn windows with no skills available left the Shaman doing nothing impactful.
+4. **Near-zero kill participation**: 0.00–0.13 K/D ratio, contributing almost no offensive pressure.
+
+### Changed — Kiting Threshold
+- **Kiting distance** 1 → 2 for `totemic_support` role. Shaman now maintains a 2-tile buffer from enemies (same as other ranged supports), reducing incidental melee damage taken. Applied to Follow stance, Aggressive stance, and core AI behavior.
+
+### Added — Spirit Link (New Skill, Replaces Soul Anchor)
+- **Spirit Link** 🔗 — Link your spirit to an ally; damage they take is split 50/50 between you for 4 turns. Link breaks if either party dies.
+  - Targeting: `ally_or_self` (cannot target self in AI logic)
+  - Range: 4 | Cooldown: 5 turns | Mana cost: 0
+  - Effect: `spirit_link` buff with `damage_share: 0.5`, `duration_turns: 4`
+  - Damage splitting applies to: ranged attacks, melee attacks, searing totem ticks
+  - If the linked Shaman dies from shared damage, the link breaks and remaining damage hits the original target
+
+### Changed — AI Priority Chain
+- Old: Healing Totem (P1) → Searing Totem (P2) → Earthgrasp (P3) → Soul Anchor (P4)
+- New: **Healing Totem (P1) → Spirit Link (P2) → Searing Totem (P3) → Earthgrasp (P4)**
+- Spirit Link AI targets frontline tanks (Crusader, Revenant, Blood Knight, Hexblade) first, then lowest HP% ally in range. Only casts when no active link exists.
+
+### Deprecated — Soul Anchor
+- Soul Anchor skill definition and handler code retained for backward compatibility (deaths_phase.py still processes the buff). Removed from Shaman's active class_skills loadout — no longer cast by AI. Skill `allowed_classes` remains `["shaman"]` but is not in class_skills.
+
+### Batch PVP Results (Post-Change)
+```
+Randomized 100 matches (baseline → post-fix):
+  shaman: 42.6% → 45.4% win rate (44W/48L in 97 games)
+  Moved from dead last (11th) to mid-pack (7th of 11)
+```
+
+### Files Changed
+- `server/app/core/ai_stances.py` — Kiting threshold 1 → 2 for totemic_support (2 locations: Follow + Aggressive)
+- `server/app/core/ai_behavior.py` — Kiting threshold 1 → 2 for totemic_support (1 location)
+- `server/configs/skills_config.json` — Added `spirit_link` skill definition; updated `class_skills.shaman` from `soul_anchor` to `spirit_link`
+- `server/app/core/skill_effects/summon.py` — Added `resolve_spirit_link()` handler (target validation, range check, buff application, removes existing links)
+- `server/app/core/skills.py` — Registered `spirit_link` effect type in resolve chain
+- `server/app/core/combat.py` — Added `try_split_spirit_link()` helper (damage splitting logic)
+- `server/app/core/turn_phases/combat_phase.py` — Spirit Link splitting at ranged + melee attack sites
+- `server/app/core/turn_phases/buffs_phase.py` — Spirit Link splitting for searing totem damage
+- `server/app/core/ai_skills.py` — Replaced Soul Anchor Priority 4 with Spirit Link Priority 2; updated tank class set and targeting logic
+- `server/tests/test_phase26a_shaman_config.py` — Updated skill order assertion, added spirit_link can_use test
+- `server/tests/test_phase26d_shaman_ai.py` — Replaced Soul Anchor AI tests with Spirit Link AI tests (7 tests), updated priority ordering tests
+- `server/tests/test_skills.py` — Updated skill count 53 → 54, added spirit_link to expected set, legacy skill exemptions
+
+---
+
+## [v0.1.36] - 2026-04-03 — Plague Doctor Balance Pass (DPS Uplift + Armor Shred)
+
+### Problem
+Plague Doctor was the weakest class in batch PVP testing — 46.7% win rate in randomized matches (bottom 4), and only 35% win rate in controlled team comp tests (crusader/confessor/plague_doctor/ranger/bard vs blood_knight/hexblade/mage/revenant/shaman). Replacing Plague Doctor with a Mage in the same slot improved team win rate to 60% — a **25-point swing** showing PD was actively dragging its team down. Root cause: personal damage was invisible (lowest DPT of all ranged classes at ~1.1 DPT) and debuff value was unnoticeable in AI-vs-AI matches where debuffs don't create feel-good moments.
+
+### Changed — Base Stats
+- **Ranged Damage** 12 → 14 (+17%). Auto-attacks now deal 16 after the 1.15× multiplier (up from 14). Closes the gap with Mage (16) while still trailing Ranger (21) and Hexblade (17).
+
+### Changed — Miasma (AoE Poison Cloud)
+- **Base damage** 10 → 15 (+50%). The signature area-denial skill now deals meaningful burst to clusters. vs 3 enemies: 45 total damage (up from 30). Against low-armor targets the damage is now felt immediately.
+
+### Changed — Plague Flask (Single-Target DoT)
+- **Damage per tick** 8 → 10 (+25%). Total DoT: 40 damage over 4 turns (up from 32). Effective DPT over cooldown cycle: 10.0 (up from 6.4). Now competitive with Wither's 8/tick × 4 = 32 by trading per-tick damage for shorter cooldown uptime.
+
+### Changed — Enfeeble (AoE Debuff)
+- **Cooldown** 5 → 4 turns. Enfeeble uptime increases from 60% → 100% (4-turn duration on 4-turn CD). The Plague Doctor's crown jewel can now be maintained continuously, making the class's defensive contribution consistent rather than bursty.
+- **Added armor shred**: Enfeeble now applies **-2 armor** to all enemies in the AoE in addition to the existing -25% damage dealt debuff. This gives the team a visible offensive benefit — enemies hit by Enfeeble also take more damage from everyone. Duration matches the damage reduction (4 turns).
+
+### Changed — Multi-Effect Debuff Handler
+- `resolve_aoe_debuff()` now supports **multiple effects per skill**. Previously only read the first `aoe_debuff` effect entry; now loops over all matching effects and applies each with a unique `buff_id` per stat (e.g., `enfeeble_damage_dealt_multiplier`, `enfeeble_armor`). This is a generic system improvement — any future skill can bundle multiple debuff effects.
+
+### Changed — Armor Debuff Support
+- `get_armor_buff_bonus()` now handles **debuff-type armor entries** (negative magnitudes). Previously only summed `type == "buff"` armor entries; now also includes `type == "debuff"` with `stat == "armor"`, enabling armor shred mechanics.
+
+### Changed — AI Compatibility
+- Enfeeble AI check in `_controller_skill_logic()` updated to use `startswith("enfeeble")` instead of exact `== "enfeeble"` match, compatible with the new per-stat buff IDs.
+
+### Batch PVP Results (Post-Change)
+```
+Controlled team comp (20 matches each):
+  PD comp vs DPS comp:   35% → 50%  (+15 points)
+  Mage comp vs DPS comp: 60% → 65%  (control, +5 variance)
+  PD-Mage gap:           25 pts → 15 pts (gap halved)
+
+Randomized 50 matches:
+  plague_doctor: 42.9% win rate (18W/22L in 42 games)
+  Mid-pack — no longer bottom-tier outlier
+```
+
+### Files Changed
+- `server/configs/classes_config.json` — `base_ranged_damage` 12 → 14
+- `server/configs/skills_config.json` — Miasma `base_damage` 10 → 15; Plague Flask `damage_per_tick` 8 → 10; Enfeeble `cooldown_turns` 5 → 4 + added second `aoe_debuff` effect (armor, -2, 4 turns)
+- `server/app/core/skill_effects/debuff.py` — `resolve_aoe_debuff()` multi-effect loop with unique buff IDs
+- `server/app/core/skills.py` — `get_armor_buff_bonus()` handles debuff-type armor entries
+- `server/app/core/ai_skills.py` — Enfeeble buff_id check uses `startswith("enfeeble")`
+- `server/tests/test_phase23a_plague_doctor_config.py` — Updated assertions for new values
+- `server/tests/test_phase23b_plague_doctor_handlers.py` — Updated damage/cooldown assertions
+- `server/tests/test_phase23d_plague_doctor_ai.py` — Updated enfeeble buff_id in test data
+
+### Design Notes
+- The Plague Doctor's core identity as a controller/debuffer is preserved — these are number tweaks, not role changes. The class still trades personal DPS for team survivability, but now its personal contributions are noticeable rather than invisible.
+- The armor shred on Enfeeble gives teammates a tangible "feel" when PD debuffs — enemies become visibly squishier. This addresses the "invisible value" problem without changing the class's strategic role.
+- 166 Plague Doctor tests passing after changes.
+
+---
+
+## [v0.1.35] - 2026-04-02 — Hexblade Balance Pass (Wither Lifesteal + Hex Strike)
+
+### Added — Wither Lifesteal
+- **Wither now heals the caster** — Each tick of Wither's DoT (8 damage/tick, 4 ticks) heals the Hexblade for 50% of the damage dealt (4 HP/tick, 16 HP total). This gives the Hexblade sustain comparable to Blood Knight's Lifesteal without requiring a dedicated heal skill.
+- Lifesteal is applied during the buff tick phase and logged as a heal ActionResult attributed to the Wither source.
+- The `lifesteal_pct` field is generic — any future DoT skill can opt in by adding `"lifesteal_pct"` to its effect config.
+
+### Added — Hex Strike (replaces Double Strike for Hexblade)
+- **New skill: Hex Strike** — Melee attack (range 1, CD 3) dealing 1.4× base melee damage. If the target has an active Wither DoT, Hex Strike deals bonus flat damage equal to Wither's `damage_per_tick` (8), bypassing armor. This rewards the Hexblade's intended Wither → melee combo loop.
+- Damage breakdown: 15 base × 1.4 = 21 base + 8 Wither bonus = **29 total** vs Double Strike's 21.
+- Hexblade's class skill list updated: `double_strike` → `hex_strike`. Double Strike remains available to Werewolf, Ghoul, and Demon Lord.
+
+### Changed — Hexblade AI (Hybrid DPS Logic)
+- Priority 3 in `_hybrid_dps_skill_logic` now uses `hex_strike` instead of `double_strike`.
+- AI prefers adjacent targets that already have the Wither DoT active to maximize the bonus damage synergy.
+
+### Files Changed
+- `server/configs/skills_config.json` — Added `hex_strike` skill definition; added `lifesteal_pct: 0.5` to Wither effect; swapped Hexblade class list from `double_strike` to `hex_strike`; removed `hexblade` from `double_strike.allowed_classes`
+- `server/app/core/skill_effects/damage.py` — Added `resolve_hex_strike()` resolver
+- `server/app/core/skill_effects/debuff.py` — Propagates `lifesteal_pct` from skill config into DoT buff entries
+- `server/app/core/turn_phases/buffs_phase.py` — DoT tick now heals source player when `lifesteal_pct` is present on the buff
+- `server/app/core/skill_effects/__init__.py` — Exported `resolve_hex_strike`
+- `server/app/core/skills.py` — Added `hex_strike` dispatch entry
+- `server/app/core/ai_skills.py` — Updated `_hybrid_dps_skill_logic` Priority 3 from Double Strike to Hex Strike with Wither-aware targeting
+
+### Design Notes
+- Hexblade was the lowest-performing class in batch PvP testing (43% win rate, lowest survival time, 0.60 K/D). These changes address the two root causes: zero sustain and a redundant melee skill (Double Strike) that added no synergy to the kit.
+- Wither lifesteal provides passive sustain through the Hexblade's existing DoT rotation. Hex Strike rewards applying Wither first, creating a clear tactical loop: Wither → Ward → close gap → Hex Strike.
+
+---
+
+## [v0.1.34] - 2026-04-02 — Arcane Barrage Per-Target Missiles
+
+### Reworked — Arcane Barrage Visual Effect
+Completely replaced the Arcane Barrage visual. The old design fired a single projectile to the AoE center and detonated a generic carpet-bomb explosion (rain + flash + ring + scorch) regardless of how many enemies were hit. The new design fires **one missile per enemy hit**, staggered, directly to each target.
+
+**New behavior:**
+- **Multiple enemies in AoE** — One arcane missile arcs from the Mage to each hit enemy, staggered 120ms apart. 3 enemies = 3 missiles, each arriving at its target with a compact 14-particle impact burst.
+- **Single enemy** — One missile, one impact. Clean and direct.
+- **No enemies (whiff)** — One missile fires to the AoE center with a small fizzle impact.
+
+**Added — Per-target impact preset**
+- New `arcane-missile-impact` skill preset — compact 14-particle burst (white → #ddaaff → #bb66ee → #8833cc → #440088), 6px spawn radius, 0.45s duration, `easeOutQuad` alpha fade. Fires at each target on missile arrival.
+
+**Added — Multi-projectile system**
+- New `multiProjectile` flag in particle-effects.json — when `true`, the ParticleManager fires one projectile per entry in `buff_applied.hit_ids` instead of a single projectile to the AoE center.
+- New `_launchMultiProjectile()` method in ParticleManager.js — resolves each hit target's position, launches staggered `ParticleProjectile` instances with configurable `stagger` delay.
+- Configurable `stagger` property on projectile config (default 120ms).
+
+**Added — Server hit_ids**
+- `resolve_aoe_magic_damage()` now includes `hit_ids` (all hit unit IDs) in `buff_applied`, not just `killed_ids`. This lets the client know exactly which enemies were struck.
+
+**Removed from arcane_barrage mapping:**
+- `arcane-barrage-rain`, `arcane-barrage-flash`, `arcane-barrage-ring`, `arcane-barrage-scorch` extras — the old carpet-bomb detonation. Presets remain in skills.json but are no longer referenced.
+
+### Visual Sequence
+- **Before:** Single bolt arcs to ground → 133-particle carpet-bomb explosion at AoE center (same visual whether 0 or 5 enemies hit)
+- **After:** N missiles arc from Mage to N enemies (staggered 120ms) → each arrives with a crisp 14-particle impact pop at the target. Whiff = 1 fizzle missile to empty ground.
+
+### Files Changed
+- `server/app/core/skill_effects/damage.py` — Added `hit_ids` list to `resolve_aoe_magic_damage` return data
+- `client/public/particle-effects.json` — Replaced `arcane_barrage` mapping: `multiProjectile: true`, removed extras, added `stagger: 120`
+- `client/public/particle-presets/skills.json` — Added `arcane-missile-impact` preset
+- `client/src/canvas/particles/ParticleManager.js` — Added `_launchMultiProjectile()` method; `_fireEffect()` routes to it when `multiProjectile` is set
+
+### Technical Notes
+- The `multiProjectile` system is generic — any future skill can use it by setting the flag and ensuring the server sends `hit_ids`.
+- Existing projectile presets (`arcane-missile-trail`, `arcane-missile-head`) are reused unchanged — only the routing and impact changed.
+- Skill mechanics (damage, radius, cooldown, targeting) are completely unchanged.
+
+---
+
+## [v0.1.33] - 2026-04-02 — Weapon Type Proficiency & Smart Loot Bias
+
+### Added — Weapon Type Proficiency (Phase 22A)
+- **Per-class weapon type restrictions** — Each class now has an `allowed_weapon_types` list that controls which specific weapon types (sword, mace, staff, bow, etc.) they can equip. This adds a second, finer-grained layer on top of the existing weapon category system (melee/ranged/caster/hybrid).
+- **Thematic enforcement** — A Confessor can no longer equip a Stiletto just because it's in the `melee` category. Confessors are limited to maces, flails, staves, and throwing axes. Each class has a curated list reflecting their fantasy:
+  - **Crusader:** sword, mace, warhammer, flail, greatsword, throwing_axes
+  - **Confessor:** mace, flail, staff, throwing_axes
+  - **Inquisitor:** bow, crossbow, staff, throwing_axes
+  - **Ranger:** bow, crossbow, throwing_axes
+  - **Hexblade:** all types (true hybrid)
+  - **Mage:** staff, dagger, throwing_axes
+  - **Bard:** staff, throwing_axes
+  - **Blood Knight:** sword, greatsword, dagger, stiletto, throwing_axes
+  - **Plague Doctor:** staff, dagger, throwing_axes
+  - **Revenant:** sword, greatsword, mace, flail, warhammer, throwing_axes
+  - **Shaman:** staff, mace, throwing_axes
+- **Dual enforcement** — Proficiency is checked both in-match (`equipment_manager.equip_item()`) and in town (`POST /town/equip`), with clear error messages on rejection.
+- **Backward compatible** — Items without `weapon_type` or classes without `allowed_weapon_types` bypass the check, so legacy items and mods still work.
+
+### Added — Smart Loot: Weapon Type Bias
+- **Party-aware weapon drops** — Loot generation now has a 60% chance to bias weapon drops toward weapon types the current party can actually use, mirroring the existing armor category bias system.
+- **Union of party preferences** — If your party has a Ranger and a Crusader, loot pools favor bows, crossbows, swords, maces, warhammers, flails, greatswords, and throwing_axes.
+
+### Added — Weapon Type Data
+- **All weapons tagged** — Every base weapon (16), unique weapon (6), and set weapon (5) now has a `weapon_type` field (sword, bow, mace, dagger, staff, crossbow, flail, throwing_axes, greatsword, warhammer, stiletto).
+
+### Files Changed
+- `server/configs/items_config.json` — Added `weapon_type` to all 16 weapon entries
+- `server/configs/uniques_config.json` — Added `weapon_type` to all 6 unique weapons
+- `server/configs/sets_config.json` — Added `weapon_type` to all 5 set weapon pieces
+- `server/configs/classes_config.json` — Added `allowed_weapon_types` to all 11 classes
+- `server/app/models/items.py` — Added `weapon_type: str = ""` to `Item` model
+- `server/app/models/player.py` — Added `allowed_weapon_types: list[str]` to `ClassDefinition`
+- `server/app/core/equipment_manager.py` — Added weapon type proficiency check in `equip_item()`
+- `server/app/routes/town.py` — Added weapon type proficiency check in `/town/equip`
+- `server/app/core/item_generator.py` — Propagated `weapon_type` through `generate_item()`, `generate_unique()`, `generate_set_piece()`
+- `server/app/core/loot.py` — Added `_get_party_preferred_weapon_types()` and weapon type bias in `_pick_base_type_from_pool()`
+
+---
+
+## [v0.1.32] - 2026-04-01 — Hiring Hall Rework: Class Identity & Starting Gear
+
+### Improved — Hero Cards Now Show Class Identity
+- **Role tag with icon** — Each hero card displays a colored role badge (Tank, Healer, Melee DPS, Ranged DPS, Support) with a matching emoji icon, so players can immediately tell what a class does.
+- **Class description** — A short one-liner from `classes_config.json` appears below the role tag, explaining the class fantasy (e.g. "Holy warrior wielding faith as a shield").
+- **Skill badge previews** — Up to 4 class skills are shown as icon badges on the card. Hovering a badge reveals a tooltip with the skill name, description, and cooldown.
+
+### Changed — Starting Gear Replaces Stat Rolling
+- **Flat base stats** — Tavern heroes now spawn with exact base stats from `classes_config.json`. The old ±5% stat variation system (`_vary_stat`) has been removed entirely.
+- **Random starting gear** — Heroes can roll a random weapon (55% chance), armor piece (40%), or accessory (20%) at hire. Gear uses a tavern rarity curve (60% common, 30% magic, 10% rare) and respects each class's allowed weapon categories and preferred armor type.
+- **Gear-based hire cost** — Hire cost is now `BASE_HIRE_COST (30g) + total gear sell value`. A naked hero costs 30g; a hero with a rare weapon may cost 45-60g. Replaces the old stat-point-based cost formula.
+- **Cost breakdown on card** — The hire button shows the total cost with a smaller breakdown line (e.g. "30g base + 12g gear").
+
+### Added — Class Skills API
+- **`/api/lobby/classes` now returns skill summaries** — Each class entry includes an array of skill objects (name, icon, description, cooldown) so the frontend can render skill previews without a second fetch.
+- **`_get_classes_dict()` exposes weapon/armor config** — `allowed_weapon_categories` and `preferred_armor` are now included in the classes API response, enabling gear-aware hero generation.
+
+### Files Changed
+- `server/app/models/profile.py` — Removed `_vary_stat`, `STAT_VARIATION_PERCENT`, `HIRE_COST_PER_STAT_POINT`. Added `_roll_starting_gear()`, `_tavern_rarity()`, gear chance constants. Rewrote `generate_hero()` for flat stats + random gear + gear-based cost.
+- `server/app/routes/lobby.py` — `/api/lobby/classes` now includes skill summaries per class.
+- `server/app/routes/town.py` — `_get_classes_dict()` now includes `allowed_weapon_categories` and `preferred_armor`.
+- `client/src/components/TownHub/HiringHall.jsx` — Complete rewrite: role tags, class descriptions, skill badge row with hover tooltips, gear slot display with rarity colors, cost breakdown.
+- `client/src/styles/town/_hiring-hall.css` — Added styles for role tags, skill badges, skill tooltips, gear slots, cost breakdown.
+- `server/tests/test_heroes.py` — Replaced `TestStatVariation` with `TestStartingGear`, updated generation tests for flat stats and gear-based cost.
+
+### Known Issue
+- `test_heroes.py` has a pre-existing syntax error (stray `"""` on line 1) blocking test collection — tracked as Bug #13 in `docs/bug-log.md`.
+
+---
+
+## [v0.1.31] - 2026-04-01 — Floating Combat Text Visual Polish
+
+### Improved — Floating Combat Text Animations
+- **Ease-out motion curves** — Floaters now burst upward quickly and decelerate, replacing the old linear drift. Feels far more impactful.
+- **Pop-in scale punch** — Numbers spawn at 1.3x size and rapidly settle to 1.0x over the first 150ms, giving a satisfying "impact" on every hit.
+- **Random X spread** — Each floater gets a random horizontal offset (±8px) at creation, preventing overlapping same-tile floaters (AoE, multi-attacks) from stacking unreadably.
+- **Hold-then-fade alpha** — Numbers hold full opacity for the first 40% of their lifetime before fading out, making them readable much longer than the old instant linear fade.
+- **Critical hit glow** — Hits dealing 31+ damage and kills now pulse a colored shadow glow behind the text that fades with the floater. Makes big moments visually dramatic.
+- **Heal floater bob** — Heal numbers (`+N`) gently bob with a sine wave overlaid on their upward drift, giving them a softer, magical feel distinct from damage.
+- **Color-matched outlines** — Text stroke outlines now use a darkened shade of the floater's own color (30% brightness) instead of flat black, adding warmth and polish.
+
+### Files Changed
+- `client/src/canvas/overlayRenderer.js` — Rewrote `drawDamageFloaters()` with eased Y drift, pop-in scale, random X spread, non-linear alpha, pulsing glow for big hits, heal sine-bob, and `darkenColor()` helper for color-matched strokes.
+- `client/src/utils/combatLogBuilder.js` — Added `randX` field (random ±8px offset) to all floater creation points in `buildFloater()`.
+
+---
+
+## [v0.1.30] - 2026-04-01 — Shaman Totem Placement Fix
+
+### Fixed — Totem Placement Blocked by Auto-Target
+- **Shaman totems now correctly enter tile-selection mode** — Placement skills (`healing_totem`, `searing_totem`, `earthgrasp`) were being overridden by the auto-target pursuit system, causing totems to cast on top of the nearest enemy instead of letting the player choose a tile.
+- **Auto-target cleared on totem activation** — Entering totem placement mode now clears any active auto-target and sends `clear_auto_target` to the server, preventing pursuit actions from pre-empting the placement.
+- **Occupied tiles excluded from totem highlights** — `ground_aoe` highlights for `place_totem` skills no longer show tiles occupied by units, since the server rejects placement on occupied tiles. Prevents silent failures when clicking an enemy's tile.
+- **Non-totem `ground_aoe` skills unaffected** — Arcane Barrage and other offensive `ground_aoe` skills retain target-first auto-fire behavior via the existing `isPlacementSkill` guard.
+
+### Files Changed
+- `client/src/components/BottomBar/BottomBar.jsx` — Clear auto-target when entering placement skill targeting mode; added `autoTargetId` to dependency array.
+- `client/src/hooks/useHighlights.js` — Filter occupied tiles from `ground_aoe` highlights when skill is a placement skill.
+
+---
+
+## [v0.1.29] - 2026-04-01 — Audio Workbench: Advanced DSP & Sound Upgrades
+
+### Added — New DSP Primitives (generate_sfx.py)
+- **FM synthesis** (`_fm_osc`) — Frequency modulation oscillator with carrier/modulator/index params. Produces rich inharmonic metallic and bell-like tones impossible with simple additive synthesis.
+- **Bitcrusher** (`_bitcrush`) — Bit-depth reduction and sample-rate downsampling for lo-fi, retro, and gritty textures. Configurable bit depth (2–16) and downsample factor.
+- **Ring modulation** (`_ring_mod`) — Multiplies signal with a modulator sine wave, creating dissonant sidebands and metallic resonances. Wet/dry mix control.
+- **Delay / Echo** (`_delay`) — Feedback delay line with configurable delay time (ms), feedback amount, wet/dry mix, and optional low-pass filtering on the feedback path.
+- **Formant filter** (`_formant`) — Vowel-shaped resonant filter bank (a/e/i/o/u) that imposes vocal character onto any signal. Intensity-blended with dry signal.
+- **Tremolo** (`_tremolo`) — Amplitude modulation with sine or triangle LFO. Rate and depth controls for pulsing, warbling effects.
+- **Pitch envelope oscillator** (`_pitch_env_osc`) — Oscillator with built-in pitch curves: drop (impact weight), rise (risers), overshoot (bouncy settle). Amount and waveform selectable.
+
+### Added — Template & Editor Integration
+- **Expanded post-processing chain** — `_apply_post_processing()` now chains: bitcrush → tremolo → chorus → delay → reverb → stereo (was chorus → reverb → stereo).
+- **7 new common params** in `COMMON_PARAM_SCHEMA` — `tremolo_rate`, `tremolo_depth`, `delay_ms`, `delay_feedback`, `delay_wet`, `bitcrush_depth`, `bitcrush_downsample`. Available on every template from the sound editor.
+- **Per-template DSP params** — `impact`: pitch envelope + ring mod. `sweep`: ring mod + pitch envelope. `chord`: formant filter. `drone`: formant + ring mod. `tonal_hit`: FM synthesis + ring mod. All exposed in the editor UI with labeled sliders/dropdowns.
+- **Updated template generators** — `generate_impact`, `generate_sweep`, `generate_chord`, `generate_drone`, `generate_tonal_hit` now use the new DSP when their params are set (backwards-compatible zero/none defaults).
+
+### Changed — Upgraded Bespoke Sound Generators (11 sounds)
+- **gen_melee_hit** — Sub-bass now uses `_pitch_env_osc(drop)` for visceral weight on every melee impact.
+- **gen_melee_crit** — Metallic ring replaced with `_fm_osc` (carrier=1200Hz, mod=1800Hz, index=2.5) for richer inharmonic metallic spectrum.
+- **gen_block** — Added `_ring_mod` (350Hz+) on metallic tones before chorus for authentic shield-clang resonance.
+- **gen_death** — Deep thud now uses `_pitch_env_osc(drop, amount=1.5)` for gut-punch low-end weight.
+- **gen_stun_hit** — Dissonant ring tones now processed through `_ring_mod(180Hz, mix=0.5)` then chorus for alien dissonance.
+- **gen_taunt** — Sawtooth growl now passes through `_formant('a', 0.6)` for throaty vocal aggression.
+- **gen_holy_ground** — Chord now processed with `_tremolo(3.5Hz, 0.3)` before chorus for celestial pulsing.
+- **gen_prayer** — Vibrato tone now passes through `_formant('a', 0.55)` for chanting vocal character.
+- **gen_undying_will** — Drone processed with `_tremolo(4Hz, 0.35)` for dark pulsing power activation feel.
+- **gen_war_cry** — Sweep now filtered through `_formant('o', 0.5)` for powerful battle-cry vocal quality.
+- **gen_portal_channel** — Added `_delay(180ms, fb=0.35, wet=0.25)` for dimensional spaciousness.
+
+### Changed — Updated SOUND_TEMPLATE_MAP Entries
+- `melee_hit_*` — Added `pitch_env: 'drop'`, `pitch_env_amt: 1.2`.
+- `block_*` — Added `ring_mod_freq` (per-variant), `ring_mod_mix: 0.4`.
+- `death_*` — Added `pitch_env: 'drop'`, `pitch_env_amt: 1.5`.
+- `stun_hit*` — Added `ring_mod_freq: 180`, `ring_mod_mix: 0.5`.
+- `skill_taunt` — Added `formant_vowel: 'a'`, `formant_intensity: 0.6`.
+- `skill_holy_ground` — Added `tremolo_rate: 3.5`, `tremolo_depth: 0.3`.
+- `skill_prayer` — Added `formant_vowel: 'a'`, `formant_intensity: 0.55`.
+- `skill_undying_will` — Added `tremolo_rate: 4.0`, `tremolo_depth: 0.35`.
+- `portal_channel` — Added `delay_ms: 180`, `delay_feedback: 0.35`, `delay_wet: 0.25`.
+
+### Files Changed
+`tools/audio-workbench/synth/generate_sfx.py`
+
+---
+
+## [v0.1.28] - 2026-04-01 — Audio Workbench: Sound Editor & Parameterized Templates
+
+### Added
+- **Parameterized template system** — 8 synthesis templates (`impact`, `sweep`, `chord`, `arpeggio`, `noise_texture`, `drone`, `tonal_hit`, `percussive`) with full parameter schemas (min/max/step/default/label). Each template is a self-contained generator with oscillator selection, envelope, and post-processing. All ~85 existing sound keys are mapped to a template with default-override params via `SOUND_TEMPLATE_MAP`. (`generate_sfx.py`)
+- **Common post-processing params** — `COMMON_PARAM_SCHEMA` defines 8 shared parameters (reverb decay/wet/room, stereo width/mode, chorus voices/depth/rate) applied to all templates via `_apply_post_processing()`. (`generate_sfx.py`)
+- **Single-sound generation CLI** — New CLI args `--params-json`, `--template`, `--list-templates`, `--editor-info` allow the server to regenerate individual sounds with custom parameters without running the full batch. (`generate_sfx.py`)
+- **Preset save/load system** — Presets stored in `synth-presets.json` persist user-tuned parameters per sound key. Loaded automatically when opening the editor. (`generate_sfx.py`, `server.js`)
+- **Server endpoints for editor** — Six new Express endpoints: `GET /api/synth/editor/:key` (param schema), `GET /api/synth/templates` (all templates), `POST /api/synth/generate-one` (single-key regen with params), `GET /api/synth/presets`, `POST /api/synth/presets`, `DELETE /api/synth/presets/:key`. (`server.js`)
+- **SoundEditor component** — React panel with per-parameter sliders/dropdowns/toggles, live preview generation, Web Audio playback, preset save, reset-to-defaults, compare integration, and modified-param indicators. (`SoundEditor.jsx`)
+- **CreateSound component** — Template picker dialog for creating new sounds: choose a template, name a key, assign a category, then open the editor. (`CreateSound.jsx`)
+- **Edit button per sound row** — Each sound in the synth list now has a ✏️ button that opens the SoundEditor in a side panel. (`SynthPreview.jsx`)
+- **"New Sound" button** — Header button opens the CreateSound dialog to create entirely new sounds from templates. (`SynthPreview.jsx`)
+- **Editor CSS** — Full styles for the editor panel, param controls (sliders with thumb styling, modified-state highlighting), split-panel layout, create-sound template grid, preview bar, and footer actions. Follows existing grimdark theme variables. (`workbench.css`)
+
+### Changed
+- **Manifest v2** — Synth manifest now includes `editable` and `template` fields per sound entry. (`generate_sfx.py`)
+- **Duration calc fix** — Stereo `(2, N)` signals now use `sig.shape[1] / RATE` instead of `len(sig) / RATE`. (`generate_sfx.py`)
+- **Synth list layout** — Sound list now uses a flex body container that supports a split view when the editor panel is open. (`SynthPreview.jsx`, `workbench.css`)
+
+### Files Changed
+`tools/audio-workbench/synth/generate_sfx.py`, `tools/audio-workbench/server.js`, `tools/audio-workbench/src/components/SoundEditor.jsx` (new), `tools/audio-workbench/src/components/CreateSound.jsx` (new), `tools/audio-workbench/src/components/SynthPreview.jsx`, `tools/audio-workbench/src/styles/workbench.css`
+
+---
+
+## [v0.1.27] - 2026-04-01 — Audio Workbench: Synth DSP Enhancement Pass
+
+### Added
+- **Schroeder reverb** (`_reverb`) — Comb-filter + allpass-chain reverb with damping lowpass on feedback. Three room presets: `dungeon` (short/dark), `hall` (longer/brighter), `tight` (very short/metallic). Wet/dry mix and decay are per-call tuneable. (`generate_sfx.py`)
+- **Chorus** (`_chorus`) — Multi-voice detuned delay with per-voice LFO-modulated delay lines. Configurable voice count, max delay, depth, and LFO rate for thickening tonal elements. (`generate_sfx.py`)
+- **Stereo imaging** (`_stereo`) — Mono-to-stereo widener with three modes: `haas` (inter-aural delay), `spread` (micro-delays + pitch detune per channel), `mid_side` (spectral difference between channels). Width parameter controls intensity. (`generate_sfx.py`)
+- **Resonant filter sweep** (`_resonant_sweep`) — Time-varying resonant bandpass processed in ~10 ms chunks. Sweeps center frequency from `f_start` → `f_end` over the signal duration with adjustable Q and filter order. (`generate_sfx.py`)
+
+### Changed
+- **Stereo WAV output** — `_write_wav` now detects 2D `(2, N)` stereo arrays and writes interleaved L/R 16-bit PCM. All 123 generated sounds are now stereo. (`generate_sfx.py`)
+- **Combat sounds** — Melee hits, crits, ranged hits, misses, dodges, blocks, deaths, stun-hits, and stun-locked all received per-sound reverb (mostly `tight`), optional chorus on metallic rings, and `haas` stereo at varying widths. (`generate_sfx.py`)
+- **Skill / class sounds** — Generic casts, Crusader, Ranger, Confessor, Hexblade, Bard, Blood Knight, Plague Doctor, Revenant, and Shaman skill generators now use resonant sweeps on sweep-based tones, chorus on sustained tonal layers, class-appropriate reverb rooms, and `spread` or `mid_side` stereo. (`generate_sfx.py`)
+- **Buff / debuff / heal sounds** — Heals use hall reverb with heavy chorus and wide spread stereo. Buffs get hall reverb and spread stereo. Debuffs and wither-tick use dungeon reverb with mid-side stereo. (`generate_sfx.py`)
+- **Event sounds** — Portal channel/open, wave clear, floor descend, match start/end, door open, and chest open all received reverb + stereo appropriate to their context. (`generate_sfx.py`)
+- **Item / UI / movement sounds** — Buy, sell, equip, potion, loot pickup use tight reverb and narrow haas stereo. UI clicks, confirm, cancel, lock, and select use minimal tight reverb with very narrow stereo. Footsteps use light dungeon reverb. (`generate_sfx.py`)
+
+### Fixed
+- **Retro melee hit lambda** — Updated the inline `melee_hit_retro` lambda to handle stereo `(2, N)` output from `gen_melee_hit` by applying distortion per channel. (`generate_sfx.py`)
+- **`gen_soul_anchor` dead code** — Removed unreachable lines after the return statement. (`generate_sfx.py`)
+
+### Files Changed
+`tools/audio-workbench/synth/generate_sfx.py`
+
+---
+
+## [v0.1.26] - 2026-03-31 — Phase 33: Unified Oscillation Handler
+
+### Changed
+- **Unified oscillation handler** — Replaced 4 independent anti-oscillation systems (A→B→A suppressor in `ai_behavior.py`, patrol back-step in `ai_patrol.py`, follower trail backtrack × 3 in `ai_stances.py`) with a single `check_oscillation()` function that returns a *disposition*: `"allow"`, `"redirect"`, or `"wait"`. The key improvement: instead of converting all detected oscillations to WAIT (which paralysed units when multiple systems piled up), the handler first tries to REDIRECT to a non-backtracking adjacent tile that still makes progress toward the unit's goal. WAIT is now the last resort when no walkable alternative exists. (`ai_behavior.py`)
+- **New `_find_redirect_tile()` helper** — Adjacent-tile picker used by the unified handler. Skips the backtrack tile, prefers tiles that close distance to the unit's move goal, and uses a random tiebreak to avoid deterministic oscillation between two equally-scored redirects. (`ai_behavior.py`)
+- **Patrol back-step → unified handler** — `_patrol_action()` now calls `check_oscillation()` instead of its own inline `history[-2]` comparison. On `"redirect"`, the patrol waypoint is cleared and the redirect tile is used. On `"wait"`, a new waypoint is picked. (`ai_patrol.py`)
+- **Follower trail backtrack × 3 → unified handler** — All three anti-backtrack sites in `_decide_follow_action()` (combat move, trail-to-owner, leader-tether) now delegate to `check_oscillation()` instead of each doing their own `_position_history[-2]` + corridor detection. The corridor exception logic is now implicit: `check_oscillation()` returns `"redirect"` when it finds an alternative tile (common in corridors), and only `"wait"` when truly stuck. (`ai_stances.py`)
+- **New reason tag `oscillation_redirect`** — Moves that were redirected by the unified handler in the `run_ai_decisions()` post-check are tagged with `reason="oscillation_redirect"` for batch analysis visibility. (`ai_behavior.py`)
+- **New reason tag `patrol_redirect`** — Patrol moves redirected by the unified handler. (`ai_patrol.py`)
+
+### Technical Detail
+The previous architecture had 4 separate detection systems (plus the Phase 30 stall breaker) that could all trigger on the same unit in the same tick, creating a cascade where the unit was forced to WAIT by multiple independent guards with no escape route. The hard timeout at 20 ticks (`_MAX_SUPPRESS_TURNS`) was the only exit, meaning stuck units wasted up to 20 turns standing still. The new unified handler absorbs the detection logic from all 4 systems into a single 4-stage check (A→B→A detection → enemy proximity → extended oscillation → bounding-box stall) and provides a redirect escape before falling back to WAIT, significantly reducing idle time for oscillating units.
+
+### Files Changed
+`ai_behavior.py`, `ai_patrol.py`, `ai_stances.py`
+
+---
+
+## [v0.1.25] - 2026-03-28 — Render Pipeline Performance Pass II
+
+### Changed
+- **measureText cache** — `unitRenderer.js` now caches `ctx.measureText()` results in a per-font+text Map (capped at 500 entries with LRU half-eviction). Nameplate text truncation no longer calls the expensive Canvas `measureText()` every frame for every visible unit. (`unitRenderer.js`)
+- **Date.now → performance.now** — `_getAnimatedHp()` in `unitRenderer.js` switched from `Date.now()` to `performance.now()` for sub-millisecond precision and to avoid repeated system-clock calls. (`unitRenderer.js`)
+- **Vignette gradient caching** — `ArenaRenderer.js` now caches the full-screen vignette radial gradient keyed on canvas dimensions and theme. Only recreated on canvas resize or theme change instead of every frame. (`ArenaRenderer.js`)
+- **Walkable tile Set caching** — `dungeonRenderer.js` now builds the walkable tile `Set` once per dungeon load (keyed on tile grid hash) instead of reconstructing it every frame during room-props rendering. Exposed `clearWalkableCache()` for floor transitions. (`dungeonRenderer.js`)
+- **PositionInterpolator zero-allocation** — `getInterpolatedPositions()` now reuses a persistent `Map` and pooled `{x, y}` position objects instead of creating new ones every frame. Added `_fillLerpedPos()` helper that writes directly into existing objects. (`PositionInterpolator.js`)
+- **Emitter forces object reuse** — `Emitter.update()` now mutates a pre-allocated `_forces` object instead of creating a new `{ gravityX, gravityY, friction, windX }` object per emitter per frame. (`Emitter.js`)
+
+### Added
+- **Unit cache cleanup utility** — New `cleanupUnitCaches(aliveUnitIds)` export from `unitRenderer.js` that purges stale entries from the nameplate expand and HP animation caches. Accepts a `Set` of alive unit IDs to selectively prune dead units, or `null` to clear everything. Re-exported from `ArenaRenderer.js` for convenient access. (`unitRenderer.js`, `ArenaRenderer.js`)
+
+### Reverted (caused regression)
+- **Shadow gradient caching** — The `ctx.save/translate/scale/restore` pattern used to position cached gradients was more expensive per-unit than simply creating a fresh `createRadialGradient`. Canvas state save/restore snapshots the entire state stack and is costlier than lightweight gradient construction.
+- **HP bar gradient caching** — Same issue: `ctx.save/translate/restore` per HP bar added more overhead than inline `createLinearGradient` with correct coordinates.
+- **Particle color string caching** — With alpha changing virtually every frame for fading particles, the cache hit rate was near-zero while adding 4 comparisons + quantization overhead per particle per frame.
+
+### Performance Impact
+- **Lesson learned:** Canvas 2D `ctx.save()`/`ctx.restore()` is expensive — it snapshots the entire context state. Caching gradient objects only helps if they can be used WITHOUT transform workarounds. Simple `createRadialGradient`/`createLinearGradient` calls are cheap in modern browsers; the bottleneck is draw calls and state changes, not gradient construction.
+
+### Files Changed
+`Emitter.js`, `unitRenderer.js`, `dungeonRenderer.js`, `ArenaRenderer.js`, `PositionInterpolator.js`, `Particle.js`
+
+---
+
+## [v0.1.24] - 2026-03-28 — Cinematic Intro Sequence
+
+### Added
+- **Rune Gate Studio splash screen** — Full-viewport studio logo reveal on game launch with the Rune Gate Studio PNG centered on a black background. Includes a pulsing cyan radial bloom behind the portal, two layers of CSS-only floating cyan particle motes drifting outward, and a smooth fade-in/fade-out cycle (~3.5s). (`IntroSequence.jsx`, `_intro.css`)
+- **Synthesized portal audio cue** — Web Audio API procedural sound effect on the studio splash: a filtered noise burst swept through a bandpass filter for a "whoosh" feel, layered with a low-frequency sine hum. Routes through the AudioManager's UI gain node to respect user volume settings. No external audio file required. (`IntroSequence.jsx`)
+- **Game title reveal screen** — After the studio fade, a second screen reveals "HERO'S CALL" in large Cinzel font with an ember-gold metallic gradient and a light-sweep animation across the letters. Below it, "A R E N A" fades in with expanding letter-spacing and blur-to-sharp transition. An ornamental divider and tagline fade in beneath. Warm ember particles rise from the bottom in two parallax layers, with a pulsing radial bloom and cinematic vignette overlay. (~4.5s, auto-advances to login). (`IntroSequence.jsx`, `_intro.css`)
+- **Click-to-skip with fast-forward** — Click or press any key to fast-forward through remaining intro screens rather than jumping straight to login. A subtle "Click or press any key to skip" hint fades in at the bottom-right. First interaction also resumes AudioContext and starts the music playlist. (`IntroSequence.jsx`)
+- **`prefers-reduced-motion` support** — All particle animations, sweeps, and bloom pulses are replaced with simple fades when the user has reduced-motion enabled. (`_intro.css`)
+
+### Changed
+- **App.jsx initial screen** — Default screen state changed from `'lobby'` to `'intro'`. IntroSequence renders as a fixed overlay before transitioning to the login lobby on completion. (`App.jsx`)
+- **useAmbientAudio hook** — Added `'intro'` to the explicit screen cases that call `stopAmbient()`, preventing any stale ambient from leaking into the intro. (`useAudio.js`)
+- **main.css** — Added `@import './screens/_intro.css'` to the Screens section. (`main.css`)
+
+### New Files
+- `client/src/components/Intro/IntroSequence.jsx` — React component with internal state machine: `studio → studio-fade → title → title-fade → done`
+- `client/src/styles/screens/_intro.css` — All intro animations, particle effects, bloom, vignette, title typography, and reduced-motion overrides
+- `client/public/rune-gate-studio.png` — Studio logo copied from `Assets/Sprites/rune gate.png`
+
+---
+
+## [v0.1.23] - 2026-03-29 — Render Pipeline Performance & FPS Overlay
+
+### Added
+- **PerfTracker module** — New lightweight singleton (`PerfTracker.js`) with a 120-frame ring buffer that records per-frame render cost and wall-clock timestamps. Exposes `getStats()` (fps, frameMs, avgMs, minMs, maxMs) and `getHistory(count)` for sparkline graphing. Shared between the render loop and DevOverlay without adding React re-renders. (`PerfTracker.js`)
+- **FPS / frame-time overlay in DevOverlay** — New collapsible "Performance" section in the backtick DevOverlay panel showing live FPS (color-coded green/yellow/orange/red), current frame time in ms, avg/min/max stats, and a 60-frame canvas sparkline bar chart with a 16.6 ms budget reference line. Stats polled at 4 Hz to avoid re-render spam. (`DevOverlayPanel.jsx`)
+- **PerfSparkline component** — Tiny canvas-based bar chart embedded in the DevOverlay. Each bar is color-coded by severity (green ≤12 ms, yellow ≤16.6 ms, orange ≤24 ms, red >24 ms). A dashed white line marks the 60 fps budget. (`DevOverlayPanel.jsx`)
+
+### Changed
+- **Hero light map caching** — `_buildHeroLightMap()` now caches its output keyed on hero grid positions. Since heroes move once per turn (integer tile coordinates), the triple-nested distance loop (~676 sqrt calls × 4 heroes) is skipped entirely between moves. Also uses squared-radius early rejection to skip `Math.sqrt` in the inner loop when tiles are clearly outside range. (`PropLighting.js`)
+- **Hero torch glow offscreen + throttle** — `drawHeroTorchGlow()` now composites 4 six-stop radial gradients onto a dedicated offscreen canvas and redraws at ~12 fps (80 ms interval) instead of creating fresh gradients on the main canvas every frame at 60 fps. Subsequent frames blit the cached canvas in one `drawImage` call. (`PropLighting.js`)
+- **FoV distance sqrt optimization** — `drawAmbientDarknessPass()` now uses squared distances for the bright-zone early exit, only calling `Math.sqrt` for tiles in the falloff band. (`PropLighting.js`)
+- **Wall perspective lazy cache** — `drawWallPerspective()` results are cached on first draw per variant + 4-bit neighbor key (max 128 entries: 8 variants × 16 neighbor combos). Subsequent frames blit the cached offscreen canvas instead of re-running 8–14 canvas operations per wall tile per frame. (`ThemeEngine.js`)
+- **Door perspective lazy cache** — `drawDoorPerspective()` results are cached per seed + orientation + open/closed state. Eliminates 50–65 canvas operations per door per frame after the first render. (`ThemeEngine.js`)
+- **Overhang shadow LUT** — `drawOverhangShadow()` now reads from a pre-computed alpha lookup table built during `_buildCache()`, removing per-pixel `toFixed(3)` string allocation in the tight loop. (`ThemeEngine.js`)
+- **Smart dungeon redraw throttle** — Replaced the unconditional `isDungeon → always redraw` flag in the render loop with a throttled check (~12 fps / 80 ms interval) so ambient dungeon animations still play but the full 30+ pass pipeline no longer fires at uncapped 60 fps. This was the single highest-impact fix. (`Arena.jsx`)
+- **Render loop frame instrumentation** — The `requestAnimationFrame` loop now wraps `renderFrame()` with `performance.now()` bookends and feeds timing data into `PerfTracker`. Passes `perfTracker` as a prop to `DevOverlayPanel`. (`Arena.jsx`)
+
+### Performance Impact
+- **Before:** Dungeon view forced unconditional 60 fps full-pipeline redraws; hero lighting recalculated every frame; wall/door composites drawn from scratch every frame. Perceived server tick lag was actually client-side frame drops delaying WebSocket message processing.
+- **After:** Dungeon ambient redraws throttled to ~12 fps; hero light map cached between turns; torch glow throttled to ~12 fps on offscreen canvas; wall and door composites cached after first draw; overhang shadow loop de-stringified. Net effect: dramatically reduced per-frame GPU/CPU cost, freeing the JS main thread to process server ticks on time.
+
+### Files Changed
+`PropLighting.js`, `ThemeEngine.js`, `Arena.jsx`, `DevOverlayPanel.jsx`, `PerfTracker.js` (new)
+
+---
+
+## [v0.1.22] - 2026-03-28 — Treasure Chest Visual Overhaul
+
+### Added
+- **Barrel-domed lid** — Chests now have a properly curved dome lid drawn with `quadraticCurveTo` instead of a flat rectangle. The dome includes a highlight gradient at the top and a horizontal metal band across its center. Opened chests show the curved lid tilted backward with a visible dark underside. (`chestRenderer.js`, `tilePatterns.js`)
+- **Ground shadow** — Each chest casts a subtle elliptical shadow beneath it, grounding it on the floor tile. (`chestRenderer.js`, `tilePatterns.js`)
+- **Wood plank texture** — 3 vertical plank groove lines are drawn across the chest body, giving it a wooden crate-to-chest visual upgrade. Opened chests render planks at 50% opacity. (`chestRenderer.js`, `tilePatterns.js`)
+- **Metal corner brackets with rivets** — Iron, Gold, Obsidian, and Boss chests now display L-shaped corner brackets at all four body corners with rivet dots at each junction. (`chestRenderer.js`)
+- **Band rivets** — Metal straps now feature 3 rivet dots each (spaced at 20%, 50%, 80% across the band width) for Iron+ tiers. (`chestRenderer.js`, `tilePatterns.js`)
+- **Rope binding (wooden tier)** — Wooden chests feature diagonal rope-cross lines across the body, differentiating them visually from metal-reinforced tiers. (`chestRenderer.js`)
+- **Rune engravings (obsidian/boss)** — Obsidian and Boss chests display glowing rune-line patterns (vertical line + cross marks) on the body in the latch color at 60% opacity. (`chestRenderer.js`)
+- **Tier-specific lock styles:**
+  - *Wooden:* Simple circular latch with centered keyhole dot and slot
+  - *Iron:* Shield-shaped lock plate with pointed bottom and precision keyhole
+  - *Gold/Boss:* Ornate double-ring circular lock with a colored gem center (green for gold, red for boss) and white gem highlight
+  - *Obsidian:* Skull-shaped lock with eye sockets, jaw line, and purple gem in forehead
+  (`chestRenderer.js`)
+- **Interior sparkle dots** — Opened non-wooden chests now show 2-4 sparkle dots (gold or purple for obsidian) with white center highlights inside the dark interior cavity, simulating visible loot glint. Boss chests get 4 sparkles, obsidian 3, others 2. (`chestRenderer.js`, `tilePatterns.js`)
+- **Golden inner rim** — Opened chests show a subtle gold-colored rim at the top of the body opening (25% opacity latch color). (`chestRenderer.js`, `tilePatterns.js`)
+- **`TIER_FEATURES` config table** — New per-tier feature flags (`planks`, `rope`, `rivets`, `cornerBrackets`, `gem`, `runes`, `lockStyle`) that drive structural differentiation between tiers beyond just color. (`chestRenderer.js`)
+
+### Changed
+- **Thicker metal bands** — Band height increased from `s * 0.04` to `s * 0.05` with added highlight (top 1px) and shadow (bottom 1px) edges for more visible iron straps. (`chestRenderer.js`, `tilePatterns.js`)
+- **Lid proportions** — Lid height increased from `s * 0.14` to `s * 0.18` to accommodate the dome shape. Lid overhang increased from 4% to 6% of chest width. (`chestRenderer.js`, `tilePatterns.js`)
+- **Tier glow effect** — Glow is now rendered as an elliptical aura around the chest center at 40% alpha rather than a rectangular shadow blur around the bounding box. (`chestRenderer.js`)
+- **Opened lid rendering** — The opened lid is now drawn as a foreshortened curved shape (matching the closed dome) instead of a flat narrow rectangle. Includes a visible dark underside strip. (`chestRenderer.js`, `tilePatterns.js`)
+- **Theme Designer `drawChest()` synced** — The theme-designer's palette-driven chest drawing (`tilePatterns.js`) updated with all the same structural improvements: curved lid, planks, bands with rivets, corner brackets, ground shadow, sparkle interior, and ornate lock. Uses `shiftColor()` for palette-derived colors.
+
+---
+
+## [v0.1.21] - 2026-03-28 — Orientation-Aware Door Perspective
+
+### Added
+- **Faux 3/4 perspective door rendering** — Doors now render differently based on which direction the passage runs through them, matching the Enter-the-Gungeon-style wall perspective from v0.1.19. The door's orientation is inferred at render time by checking neighboring tiles: walls to the north and south indicate an east/west passage, walls to the east and west indicate a north/south passage. (`ThemeEngine.js`, `dungeonRenderer.js`, `tilePatterns.js`)
+- **North/South passage doors (front-facing)** — These doors span a horizontal boundary between rooms. The camera's slight south-downward angle means you see the door's **top edge** (a lit wood strip, ~14% tile height) and the **south-facing front face** below it. The face features:
+  - 3 vertical wood planks with per-plank color variation and groove lines
+  - 2 horizontal iron band straps with highlight/shadow and rivet dots at plank intersections
+  - A ring-pull handle with mounting plate (replaces the old tiny gold dot)
+  - Stone door frame (left/right jambs + top lintel) using `palette.primary`
+  - Bottom threshold darkening where the door meets the floor
+- **East/West passage doors (side-on view)** — These doors span a vertical boundary. The camera sees the door from its narrow side, rendering a **face panel** (~35% tile width) with horizontal planks and vertical iron bands, plus a **thickness edge** (~14% width) showing the door's depth. Includes the same ring-pull handle, stone frame (top/bottom lintels + side jambs), and depth-separation line between face and edge.
+- **Open door states differ by orientation:**
+  - NS open: Two panels swing inward (toward the player), drawn as foreshortened trapezoids flanking the opening with a visible iron band on each panel. Stone frame and dark gap between panels visible through the doorway.
+  - EW open: Single panel swings flat against the north wall, showing only its thin edge with a highlight and iron band strip. Stone frame lintels remain visible.
+- **`drawDoorPerspective()` method on ThemeEngine** — New neighbor-aware door drawing method that composites floor, frame, planks, bands, rivets, and handle. Called from `dungeonRenderer.js` before the generic `drawTile()` path, same pattern as `drawWallPerspective()`. (`ThemeEngine.js`)
+- **`drawDoorPerspective()` export in tilePatterns.js** — Parallel implementation for the Theme Designer tool with identical visual output. Uses 4 internal helper functions: `_drawDoorNS_closed`, `_drawDoorNS_open`, `_drawDoorEW_closed`, `_drawDoorEW_open`. (`tilePatterns.js`)
+
+### Changed
+- **Doors in `dungeonRenderer.js` now use neighbor-aware dispatch** — Before falling through to the generic `drawTile()` path, door tiles check their north/south/east/west neighbors and route through `drawDoorPerspective()`. The check runs after the wall perspective dispatch and before the `extra` object is built. (`dungeonRenderer.js`)
+- **Flat-color fallback doors are orientation-aware** — The sprite/flat-color fallback path (used when ThemeEngine is not ready) now detects whether walls are to the N+S or E+W and draws an appropriately shaped door: NS closed shows a wider panel with visible top edge, EW closed draws a narrow centered vertical panel. Open states also differ (NS: two side panels, EW: thin strip at top). (`dungeonRenderer.js`)
+- **Theme Designer `ThemeRenderer.drawTile()` accepts neighbor info** — When `extra.wallNorth`, `extra.wallSouth`, `extra.wallEast`, `extra.wallWest` are provided, the door case routes through `drawDoorPerspective()` instead of the legacy `drawDoor()`. Falls back to `drawDoor()` when neighbor context is unavailable. (`themeRenderer.js`)
+- **DungeonPreview.jsx passes neighbor context for doors** — The tile rendering loop now includes a `_tileType()` helper and populates `extra.wallNorth/South/East/West` for door tiles so the Theme Designer's dungeon preview renders perspective doors. (`DungeonPreview.jsx`)
+- **PvpvePreview.jsx passes neighbor context for doors** — Same neighbor detection added to the PVPVE dungeon preview's base tile rendering loop. (`PvpvePreview.jsx`)
+- **RoomArchetypePreview.jsx passes neighbor context for doors** — Both the isolated room template and the full dungeon map rendering loops now detect door neighbors for perspective rendering. (`RoomArchetypePreview.jsx`)
+- **Legacy `drawDoor()` preserved as fallback** — The original flat square door rendering in both `ThemeEngine.js` and `tilePatterns.js` remains available for contexts where neighbor info is not passed (backward compatible). (`ThemeEngine.js`, `tilePatterns.js`)
+
+### Visual Design Notes
+- All door colors are derived from the theme palette (`palette.secondary`, `palette.metal`, `palette.highlight`, `palette.primary`) so doors look correct across all 13 grimdark themes.
+- The stone frame uses `shiftColor(palette.primary, 10)` — slightly lighter than the wall base — giving doors an inset "fitted into the wall" appearance.
+- Iron bands and rivets use `palette.metal` (falling back to `palette.secondary`), matching the existing torch sconce and chain prop aesthetic.
+- Per-plank color variation uses `cellHash` for deterministic seeds, so each door looks slightly different but stays consistent across frames.
+
+### Files Changed
+- `client/src/canvas/ThemeEngine.js` — `drawDoorPerspective()`, `_drawDoorNS_closed()`, `_drawDoorNS_open()`, `_drawDoorEW_closed()`, `_drawDoorEW_open()`
+- `client/src/canvas/dungeonRenderer.js` — Door neighbor detection dispatch + flat-color fallback orientation
+- `tools/theme-designer/src/engine/tilePatterns.js` — `drawDoorPerspective()` export + 4 helper functions
+- `tools/theme-designer/src/engine/themeRenderer.js` — `drawDoorPerspective` import, `drawTile()` door case updated
+- `tools/theme-designer/src/components/DungeonPreview.jsx` — `_tileType()` helper, door neighbor info in extra
+- `tools/theme-designer/src/components/PvpvePreview.jsx` — `_tileType()` helper, door neighbor info in extra
+- `tools/theme-designer/src/components/RoomArchetypePreview.jsx` — `_roomType()`/`_dungeonType()` helpers, door neighbor info in extra
+
+---
+
+## [v0.1.20] - 2026-03-28 — Wall Cap Cleanup & Side-Plate Perspective
+
+### Fixed
+- **Removed mortar grid and edge-definition lines from wall caps** — The `drawWallTop()` function previously drew a faint mortar grid (horizontal + vertical lines at alpha 0.14) and per-tile edge definition lines (1px highlight on top/left, 1px shadow on bottom/right). These created a ~14-point brightness difference at every tile boundary that survived through ambient darkness and fog, producing a visible checkered grid pattern in the dark areas behind walls (above the top plate, beyond field of view). The base color fill and subtle stone grain speckles are preserved for texture variation. (`ThemeEngine.js`)
+
+### Added
+- **Side-plate perspective for left/right-facing walls** — Interior walls adjacent to floor tiles on the left and/or right side now render a vertical brick face "plate" strip (~20% tile width) on the exposed side, with the dark cap filling the remaining area. This mirrors the horizontal top-plate treatment from south boundary walls (Case 2) but rotated vertically. Three sub-cases are handled: floor-left-only, floor-right-only, and floor-on-both-sides. Each includes a lit edge highlight on the exposed face and a lip shadow where the plate meets the cap. Previously these walls rendered as a full dark cap with only 1–3px edge hints, appearing as a featureless black void. (`ThemeEngine.js`)
+
+### Changed
+- **`drawWallPerspective()` Case 4 restructured** — The former "interior wall" case is now split into Case 4a (side-facing walls with `floorLeft`/`floorRight`) and Case 4b (pure interior walls with no adjacent floor at all). Case 4b still renders the full cap. (`ThemeEngine.js`)
+- **Chains moved from side walls to north wall** — Prison room chains now spawn via `on_wall_top` (south-facing wall above room) instead of `on_wall_left`/`on_wall_right`. With the new side-plate perspective, only a thin vertical strip is visible on side walls — chains need the full horizontal wall face to read properly. Prison rooms also gain side-wall torch sconces to compensate for the freed left/right slots. (`TileProps.js`)
+- **Weapon racks moved from side walls to north wall** — Boss room and armory weapon racks now exclusively use `on_wall_top`. The vertical side-plate is too narrow for weapon rack visuals to be readable. (`TileProps.js`)
+- **Hanging lanterns moved from side walls to north wall** — Loot, shrine, library, and cathedral rooms now place hanging lanterns via `on_wall_top` instead of `on_wall_left`. Only torch sconces remain on left/right side walls since their small flame glow works well on the narrow plate face. (`TileProps.js`)
+- **Side-wall prop visual offset (Option A)** — `_placeSlot()` now applies a 65% tileSize pixel offset inward for `on_wall_left` and `on_wall_right` positions, aligning the prop visually with the ~20%-width brick plate face instead of centering it on the full wall tile (which is mostly dark cap). Grid-integer position is preserved for lighting and collision. (`TileProps.js`)
+- **Stairs overlay wall streaks shifted to plate face** — The depth-suggesting accent streaks on left/right stairwell walls are offset inward by 65% tileSize to sit on the visible side-plate face instead of the dark cap void. (`RoomOverlays.js`)
+
+### Files Changed
+- `client/src/canvas/ThemeEngine.js` — `drawWallTop()` mortar/edge removal, `drawWallPerspective()` side-plate rendering (Cases 4a/4b)
+- `client/src/canvas/TileProps.js` — Wall prop slot reassignments (chains, weapon_rack, hanging_lantern → `on_wall_top`), side-wall visual offset in `_placeSlot()`
+- `client/src/canvas/RoomOverlays.js` — Stairs overlay wall streak offset
+
+---
+
+## [v0.1.19] - 2026-03-28 — Faux 3/4 Wall Perspective (Enter the Gungeon Style)
+
+### Added
+- **Faux 3/4 perspective wall rendering** — Dungeon walls are now drawn with a pseudo-3D perspective inspired by Enter the Gungeon. The camera is conceptually angled slightly south, so walls expose different surfaces depending on which direction they face. This replaces the flat top-down wall rendering that treated every wall tile identically. (`ThemeEngine.js`, `dungeonRenderer.js`)
+- **Four directional wall cases** — Walls now render differently based on neighboring floor tiles:
+  - **North boundary** (floor to the south): dark cap top ~35% + textured brick face bottom ~65% — you see the south-facing wall surface
+  - **South boundary** (floor to the north): thin brick "top plate" strip ~18% at top + cap below — the plate effect where you're peeking over the wall
+  - **Both sides exposed** (thin wall between areas): top plate + narrow cap + south face
+  - **Interior walls**: full cap with gradient depth texture
+- **`drawWallTop()` function** — New procedural wall cap renderer that uses a center-brightened radial gradient for 3D pillow/depth. Base color is anchored to the floor palette (much brighter than primary) so caps stay readable on all 13 grimdark themes instead of appearing void-black. (`ThemeEngine.js`)
+- **`drawWallPerspective()` method** — Neighbor-aware wall drawing method on ThemeEngine that composites cap and face tiles with lip highlights, base darkening, and side depth strips. (`ThemeEngine.js`)
+- **`drawOverhangShadow()` method** — Renders a soft downward-fading gradient shadow on floor tiles directly below south-facing walls, grounding the wall visually. Called during the edge rendering pass. (`ThemeEngine.js`, `dungeonRenderer.js`)
+- **`wall_top_` cache variants** — 8 pre-rendered wall cap tiles added to the tile cache alongside the existing 8 wall face variants. Uses `OffscreenCanvas` when available for performance. (`ThemeEngine.js`)
+- **Lip highlight at cap-face junction** — 2px graduated highlight line where the dark cap meets the brick face, selling the separation between the two surfaces. (`ThemeEngine.js`)
+- **Bottom edge darkening** — Wall base where face meets floor gets a 4px darkened strip for grounding. (`ThemeEngine.js`)
+- **Side depth strips** — East/west exposed wall faces get 3px highlight strips hinting at the wall's side surface. (`ThemeEngine.js`)
+
+### Changed
+- **Wall tiles in dungeonRenderer now use neighbor-aware dispatch** — Before falling through to the generic `drawTile()` path, wall tiles check their north/south/east/west neighbors and route through `drawWallPerspective()` for the 3/4 perspective effect. Non-theme paths (TileLoader sprites, flat color fallback) are unaffected. (`dungeonRenderer.js`)
+- **Edge rendering pass extended with overhang shadows** — Floor tiles with a wall to the north (`neighbors.top`) now receive an overhang shadow after the theme edge decoration (crumble, scorch, moss, etc.). (`dungeonRenderer.js`)
+
+### Files Changed
+- `client/src/canvas/ThemeEngine.js` — `drawWallTop()`, `drawWallPerspective()`, `drawOverhangShadow()`, `wall_top_` cache, gradient-based cap rendering
+- `client/src/canvas/dungeonRenderer.js` — Neighbor-aware wall dispatch, `floorAbove`/`floorBelow`/`floorLeft`/`floorRight` detection, overhang shadow in edge pass
+
+---
+
+## [v0.1.18] - 2026-03-28 — Wall-Mounted Prop Placement Overhaul
+
+### Added
+- **Three new position types: `on_wall_top`, `on_wall_left`, `on_wall_right`** — These resolve to actual wall tiles (one tile outside floor bounds) instead of floor tiles adjacent to walls. Wall-mounted decorations (banners, chains, hanging lanterns, weapon racks) now render on the wall surface where they visually belong. Positions bypass walkability checks since wall tiles are intentionally non-walkable. (`tileProps.js`, `TileProps.js`, `PropLighting.js`)
+- **`hanging_lantern` added to loot rooms** — Compensates for the removed wall alcove visual; loot rooms now have a 30% chance to spawn a hanging lantern on the top wall, restoring ambient lighting that was lost. (`tileProps.js`, `TileProps.js`)
+- **`weapon_rack` added to theme designer archetypes** — Boss (on_wall_right, 30%), enemy (on_wall_top, 50%), and armory (on_wall_top 70%, on_wall_left 50%) archetypes in the theme designer now include weapon racks for parity with the game client. (`tileProps.js`)
+
+### Fixed
+- **Wall banners no longer spawn on floor tiles** — Banners in boss, spawn, cathedral, and shrine rooms now use `on_wall_top` instead of `wall_top`, placing them on the actual wall tile (y_min−1) instead of the topmost floor tile (y_min). (`tileProps.js`, `TileProps.js`)
+- **Chains no longer spawn on floor tiles** — Chains in enemy, prison, torture, and empty rooms now use `on_wall_top`/`on_wall_left`/`on_wall_right` positions. Prison chains specifically moved from floor-adjacent positions to actual wall tiles on left and right walls. (`tileProps.js`, `TileProps.js`)
+- **Hanging lanterns placed on wall tiles** — Hanging lanterns in shrine, library, and cathedral rooms now use `on_wall_top` to render on the wall surface above the room. (`tileProps.js`, `TileProps.js`)
+- **Weapon racks placed on wall tiles** — Weapon racks in boss, enemy, and armory rooms now use `on_wall_top`/`on_wall_left`/`on_wall_right` instead of floor-adjacent positions, matching their wall-mounted visual. (`tileProps.js`, `TileProps.js`)
+- **Torch sconces placed on wall tiles** — All `torch_sconce` entries across every archetype (enemy, loot, spawn, stairs, shrine, library, prison, torture, armory) moved from `wall_left`/`wall_right`/`wall_top` to `on_wall_left`/`on_wall_right`/`on_wall_top`. Wall torches no longer render on the floor. (`tileProps.js`, `TileProps.js`)
+- **Wall alcove removed from loot room overlays** — The dark rectangle drawn along left/right walls in loot rooms looked out of place; removed from both the overlay drawing function and the `computeOverlayDecorations` tooltip data. Replaced by prop-system lighting (torch_sconce, hanging_lantern). (`roomArchetypes.js`, `RoomOverlays.js`)
+- **Prison overlay chains fixed** — Inline chain drawing in shrine (banners) and prison (chains) overlays updated to use wall tile coordinates (y_min−1, x_min−1, x_max+1) instead of floor tile coordinates. (`roomArchetypes.js`, `RoomOverlays.js`)
+
+### Changed
+- **`_POSITION_PRIORITY` map extended** — New `on_wall_top` (priority 12), `on_wall_left` (13), `on_wall_right` (14) entries added to the placement priority table. (`tileProps.js`, `TileProps.js`)
+- **`PropLighting.js` resolver updated** — The light-source position resolver now handles `on_wall_top`, `on_wall_left`, and `on_wall_right` for accurate glow pass positioning on wall-mounted light sources. (`PropLighting.js`)
+
+### Files Changed
+- `tools/theme-designer/src/engine/tileProps.js` — New on_wall_* positions, weapon_rack added to boss/enemy/armory, hanging_lantern to loot
+- `tools/theme-designer/src/engine/roomArchetypes.js` — Wall alcove removed from loot overlay, shrine/prison overlay wall coords fixed
+- `client/src/canvas/TileProps.js` — New on_wall_* positions, weapon_rack → on_wall_*, hanging_lantern to loot
+- `client/src/canvas/RoomOverlays.js` — Wall alcove removed from loot overlay
+- `client/src/canvas/PropLighting.js` — on_wall_* position support in light resolver
+
+---
+
+## [v0.1.17] - 2026-03-28 — PVPVE Chest Scarcity Rebalance
+
+### Changed
+- **PVPVE loot room density cut from 50% → 15%** — Drastically reduces the number of dedicated loot rooms in PVPVE dungeons. On an 8×8 grid (~50 flexible rooms), this drops loot rooms from ~25 down to ~8, making each chest discovery feel significant rather than routine. Freed room budget naturally flows to enemy and empty rooms, making the dungeon more dangerous. (`room_decorator.py`, `pvpveDecorator.js`, `pvpveGenerator.js`)
+- **Scatter chest probabilities halved across all room types** — Enemy rooms: 30% → 15%. Shrine rooms: 40% → 20%. Library rooms: 50% → 25%. Empty rooms: 10% → 5%. This cuts incidental chest spawns roughly in half, eliminating the "chests everywhere" feel. (`room_decorator.py`, `pvpveDecorator.js`)
+- **PVPVE loot rooms capped to 1 chest** — Loot rooms in PVPVE now always place exactly 1 chest instead of rolling 1–2. Combined with the density reduction, this ensures each loot room is a single meaningful find rather than a pile. Standard PvE dungeons are unaffected (still use `maxChests` from the module). (`room_decorator.py`, `pvpveDecorator.js`)
+- **PVPVE chest tier weights shifted toward better tiers** — Edge zone: wooden 55→35, iron 30→40, gold 12→18, obsidian 3→7. Mid zone: wooden 30→15, iron stays 35, gold 25→35, obsidian 10→15. Center zone unchanged. Players now find fewer wooden chests and more iron/gold even near spawn. (`loot_tables.json`)
+- **Wooden and Iron chest min_items raised from 1 → 2** — Every chest now guarantees at least 2 items. With fewer chests in the dungeon, each one should feel rewarding rather than disappointing. (`loot_tables.json`)
+
+### Estimated Impact
+- **Before:** ~30–45 chests per PVPVE dungeon, mostly wooden tier (1–2 common items each).
+- **After:** ~10–15 chests per PVPVE dungeon, better tier distribution, guaranteed 2+ items each.
+- The existing centrality-based risk/reward system (`roll_chest_tier_pvpve` with edge/mid/center zones) now has room to shine — players actively seek contested center territory for rare gold/obsidian chests instead of tripping over wooden ones everywhere.
+
+### Files Changed
+- `server/app/core/wfc/room_decorator.py` — lootDensity 0.50→0.15, scatter probabilities halved, loot room 1-chest cap (PVPVE only)
+- `server/configs/loot_tables.json` — PVPVE tier weights rebalanced, wooden/iron min_items 1→2
+- `tools/theme-designer/src/engine/pvpveDecorator.js` — lootDensity 0.50→0.15, scatter probabilities halved, loot room 1-chest cap
+- `tools/theme-designer/src/engine/pvpveGenerator.js` — PVPVE_DECORATOR_SETTINGS lootDensity 0.50→0.15
+
+### Technical Notes
+- Standard PvE dungeon decoration is unaffected — the loot density and scatter changes only apply to the PVPVE code paths (`_PVPVE_DECORATOR_DEFAULTS` / `pvpveDecorator.js`).
+- The loot room 1-chest cap uses `config.get("pvpve_mode")` in Python to gate the cap, preserving standard PvE behavior.
+- All 4006 tests passing (1 pre-existing library.json format mismatch unrelated to these changes).
+
+---
+
+## [v0.1.16] - 2026-03-28 — Prop Placement Floor Validation
+
+### Fixed
+- **Props no longer spawn on wall tiles** — `_resolvePosition()` in both `TileProps.js` and `PropLighting.js` now accepts an optional `walkableTiles` Set and filters every candidate position against it. Only floor and corridor tiles are considered valid placement targets. Previously, `corners`, `wall_left`, `wall_right`, `wall_top`, and `random_floor` positions were computed purely from bounding-box math and could land on wall tiles in irregularly-shaped rooms. (`TileProps.js`, `PropLighting.js`)
+- **`random_floor` uses rejection sampling** — Instead of blindly picking random (x,y) within bounds (which frequently hit walls in non-rectangular rooms), `random_floor` now tries up to 10× the needed count and only keeps positions that pass the walkable check. Props that previously "disappeared" (rendered behind walls) now land on visible floor tiles. (`TileProps.js`, `PropLighting.js`)
+- **Tight floor bounds replace fixed 1-tile inset** — `map_exporter.py` now scans each room module's actual tile grid and exports a `floor_bounds` rectangle computed from the tightest bounding box of all non-wall tiles. The client uses `floor_bounds` when available (falling back to the old ±1 inset for backward compatibility). This fixes center/corner/wall position calculations for rooms with asymmetric layouts, corridor openings, or internal wall features. (`map_exporter.py`, `dungeonRenderer.js`, `PropLighting.js`)
+- **Theme Designer tool prop placement parity** — Ported the same `walkableTiles` validation and `floor_bounds` computation to the Theme Designer tool. The tool's `_resolvePosition()` now accepts an optional `walkableTiles` Set (5th param) and filters all candidates, including its wall-adjacent `random_floor` bias. `PvpvePreview.jsx` and `RoomArchetypePreview.jsx` both build `walkableTiles` from their tile maps and compute tight `floor_bounds` per room before passing to `drawRoomOverlay()`. (`tileProps.js`, `PvpvePreview.jsx`, `RoomArchetypePreview.jsx`)
+
+### Changed
+- `drawDungeonTiles()` now builds a `walkableTiles` Set (all floor + corridor tile positions) from the tile grid and passes it through to `drawRoomOverlay()` → `drawRoomProps()` → `_resolvePosition()`. This is the data that enables per-tile prop validation. (`dungeonRenderer.js`)
+- `drawRoomProps()` destructures the new `walkableTiles` field from opts and forwards it to `_resolvePosition()`. (`TileProps.js`)
+- `collectLightSources()` in `PropLighting.js` now uses `room.floor_bounds` when available for more accurate light source positioning.
+- `_resolvePosition()` signature changed from `(position, bounds, seed)` → `(position, bounds, seed, walkableTiles)` in both `TileProps.js` and `PropLighting.js`. Fourth parameter is optional (null = no filtering, backward compatible).
+
+### Technical Notes
+- No changes to `room_decorator.py` — server-side gameplay tile placement (E/B/X/S/T) uses `spawnSlots` from `library.json`, which are hand-authored floor positions. This fix addresses the client-side decorative prop system only.
+- `floor_bounds` is computed from the normalized tile grid (where E/B markers are already converted to F), so it accurately reflects the client's view of the room.
+- All 4006 tests passing (1 pre-existing library.json format mismatch unrelated to these changes).
+
+### Files Changed
+- `server/app/core/wfc/map_exporter.py` — floor_bounds computation
+- `client/src/canvas/dungeonRenderer.js` — walkableTiles Set + floor_bounds usage
+- `client/src/canvas/TileProps.js` — _resolvePosition floor validation + drawRoomProps plumbing
+- `client/src/canvas/PropLighting.js` — _resolvePosition floor validation + floor_bounds usage
+- `tools/theme-designer/src/engine/tileProps.js` — _resolvePosition walkableTiles param + drawRoomProps plumbing
+- `tools/theme-designer/src/components/PvpvePreview.jsx` — walkableTiles Set + floor_bounds per room
+- `tools/theme-designer/src/components/RoomArchetypePreview.jsx` — walkableTiles Set + floor_bounds for both preview modes
+
+### Changed
+- **Slot Priority System (A)** — Every spawnSlot in `library.json` (152 slots across 21 flexible modules) now carries a `placement_hint` (center/corner/wall/interior) and per-role `priority` weights. Wall slots favor loot, center slots favor bosses/enemies, corners favor spawn points. Derived floor slots also receive hints automatically. (`library.json`, `room_decorator.py`, `roomDecorator.js`, `pvpveDecorator.js`)
+- **Door-Distance Sorting (D)** — Slot selection now factors Manhattan distance to the nearest door or edge opening. Enemies sort toward entrances (room guards), while loot, bosses, and stairs sort away from doors (deeper in the room). Small jitter preserves variety without undermining the spatial logic. (`room_decorator.py`, `roomDecorator.js`, `pvpveDecorator.js`)
+- **Chest Clustering (B)** — Loot rooms now pick a closed wall (one without a doorway) and cluster chests near it as a "treasure nook" instead of scattering them randomly across the room. Tiebreaks by proximity to room center for tight grouping. (`room_decorator.py`, `roomDecorator.js`, `pvpveDecorator.js`)
+
+### Fixed
+- **Boss room detection** — `map_exporter.py` now always sets `detected_purpose = "boss"` when a "B" tile is found (overriding any earlier loot/enemy detection from scan order). Boss room metadata lookup also falls back to `archetype == "boss"` so PVPVE boss rooms are correctly identified regardless of tile scan order. (`map_exporter.py`)
+
+### Technical Notes
+- New helper functions in `room_decorator.py`: `_classify_slot()`, `_get_slot_priority()`, `_find_door_positions()`, `_slot_door_distance()`, `_sort_slots_for_role()`, `_cluster_loot_slots()`.
+- Equivalent JS helpers added to both `roomDecorator.js` (WFC Lab tool) and `pvpveDecorator.js` (Theme Designer tool).
+- All 186 WFC/PVPVE tests passing. No client rendering or network changes.
+
+---
+
+## [v0.1.14] - 2026-03-28 — Torch-Light FoV Visual Overhaul
+
+### Changed
+- **FoV Distance Gradient** — Visible tiles now darken progressively with distance from the nearest hero, creating a natural torch-light falloff toward the edge of vision. Darkening begins at ~45% of vision range and ramps quadratically to full extra darkness at the FoV boundary. Eliminates the harsh bright-to-fog edge transition without changing any FoV mechanics. (`PropLighting.js`)
+- **Extended Hero Torch Glow** — Hero torch radius increased from 2.5 → 5.0 tiles so the warm orange glow extends much further, visually unifying the torch as the apparent light source for the entire visible area. Gradient stops refined from 4 to 6 for a smoother, more natural falloff (bright core → soft fade). Intensity tuned down slightly (0.20 → 0.18) to stay balanced at the larger radius. (`PropLighting.js`)
+- **Hero Torch Darkness Carve-out** — The darkness carve-out map (`_buildHeroLightMap`) updated to match the new torch radius. Falloff changed from quadratic to cubic for a brighter core with gentler outer fade, keeping tiles near heroes well-lit while allowing the distance gradient to take over at range. (`PropLighting.js`)
+
+### Technical Notes
+- No server changes — FoV computation, shadowcasting, and `visible_tiles` payload are unchanged.
+- All changes are purely visual (client-side rendering pass in `drawAmbientDarknessPass` and `drawHeroTorchGlow`).
+- Existing caching infrastructure (offscreen canvas, cache keys) handles the new distance computation with no extra invalidation needed — hero positions were already in the cache key.
+- Configurable via `FOV_DISTANCE_GRADIENT` constants: `visionRange` (7), `falloffStart` (0.45), `maxExtraDarkness` (0.45).
+
+---
+
 ## [v0.1.13] - 2026-03-27 — Dungeon Atmosphere Enhancements
 
 ### Added

@@ -118,6 +118,57 @@ Letting weapons change a unit's attack type (melee ↔ ranged) was rejected beca
 2. **Skill kits are built around class identity.** A melee-wielding Ranger would have Power Shot but no ranged attack — nonsensical.
 3. **Balance complexity.** Would require rebalancing every class's stat curve, AI priorities, and skill interactions.
 
+---
+
+## Phase 22A — Weapon Type Proficiency
+
+**Added:** April 2, 2026
+
+Phase 16 restricts by **weapon category** (melee/ranged/caster/hybrid). Phase 22A adds a second, finer-grained layer: **weapon type** (sword, mace, staff, bow, etc.). This prevents thematic mismatches like a Confessor wielding a Stiletto — it's technically `melee`, but doesn't fit the class fantasy.
+
+### Weapon Types
+
+| Type | Category | Items |
+|------|----------|-------|
+| `sword` | melee | Common Sword, Grimfang (unique) |
+| `greatsword` | melee | Uncommon Greatsword, Soulreaver (unique) |
+| `mace` | melee | Common Mace, Dawnbreaker (unique) |
+| `warhammer` | melee | Uncommon Warhammer, Crusader's Oath (set) |
+| `flail` | melee | Common/Uncommon Flail |
+| `dagger` | melee | Common Dagger |
+| `stiletto` | melee | Uncommon Stiletto |
+| `staff` | caster | Common/Uncommon Staff, Faith's Radiance (set) |
+| `bow` | ranged | Common Bow, Uncommon Longbow, The Whisper/Plaguebow (unique), Deadeye's Arsenal (set) |
+| `crossbow` | ranged | Common/Uncommon Crossbow, Seeker's Judgment (set) |
+| `throwing_axes` | hybrid | Common/Uncommon War Axes, Voidedge (unique), Voidwalker's Regalia (set) |
+
+### Class Weapon Type Proficiencies
+
+| Class | Allowed Weapon Types |
+|-------|---------------------|
+| **Crusader** | sword, mace, warhammer, flail, greatsword, throwing_axes |
+| **Confessor** | mace, flail, staff, throwing_axes |
+| **Inquisitor** | bow, crossbow, staff, throwing_axes |
+| **Ranger** | bow, crossbow, throwing_axes |
+| **Hexblade** | all types |
+| **Mage** | staff, dagger, throwing_axes |
+| **Bard** | staff, throwing_axes |
+| **Blood Knight** | sword, greatsword, dagger, stiletto, throwing_axes |
+| **Plague Doctor** | staff, dagger, throwing_axes |
+| **Revenant** | sword, greatsword, mace, flail, warhammer, throwing_axes |
+| **Shaman** | staff, mace, throwing_axes |
+
+### Smart Loot: Weapon Type Bias
+
+Loot generation now has a **60% chance** to bias weapon drops toward weapon types the current party can equip. This mirrors the existing armor category bias from Phase 21C. The bias is computed as the union of all party members' `allowed_weapon_types`.
+
+### Implementation
+
+- `weapon_type` field added to Item model and all weapon configs (base, unique, set)
+- `allowed_weapon_types` field added to ClassDefinition and all 11 class configs
+- Enforced at both equip points (equipment_manager + town endpoint)
+- Backward compatible: empty `weapon_type` or empty `allowed_weapon_types` bypasses the check
+
 ### Why NOT soft penalty instead of hard lock?
 
 A "reduced effectiveness" approach (e.g., Ranger gets 50% of melee weapon stats) was rejected because:

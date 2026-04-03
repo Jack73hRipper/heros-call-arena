@@ -104,6 +104,8 @@ def calculate_damage(
         "thorns_damage": 0,
         "unique_lifesteal_healed": 0,
         "dodge_retaliate_damage": 0,
+        "heal_on_hit_taken_healed": 0,
+        "fury_lifesteal_healed": 0,
     }
 
     # Phase 16D: Collect unique effects for attacker and defender
@@ -221,6 +223,27 @@ def calculate_damage(
                 if attacker.hp <= 0:
                     attacker.is_alive = False
 
+    # Phase 25R-C: Heal-on-hit-taken (Death's Embrace) — defender heals when hit
+    if final_damage > 0 and defender.is_alive:
+        heal_on_hit_buff = next((b for b in defender.active_buffs if b.get("stat") == "heal_on_hit_taken"), None)
+        if heal_on_hit_buff:
+            heal_amt = heal_on_hit_buff.get("magnitude", 0)
+            if heal_amt > 0:
+                old_hp = defender.hp
+                defender.hp = min(defender.max_hp, defender.hp + heal_amt)
+                combat_info["heal_on_hit_taken_healed"] = defender.hp - old_hp
+
+    # Phase 25R-C: Fury state lifesteal — attacker heals % of melee damage dealt
+    if final_damage > 0 and attacker.is_alive:
+        fury_buff = next((b for b in attacker.active_buffs if b.get("type") == "fury_state"), None)
+        if fury_buff:
+            lifesteal_pct = fury_buff.get("fury_lifesteal_pct", 0)
+            if lifesteal_pct > 0:
+                fury_heal = max(1, int(final_damage * lifesteal_pct))
+                old_hp = attacker.hp
+                attacker.hp = min(attacker.max_hp, attacker.hp + fury_heal)
+                combat_info["fury_lifesteal_healed"] = attacker.hp - old_hp
+
     return final_damage, combat_info
 
 
@@ -284,6 +307,8 @@ def calculate_ranged_damage(
         "unique_lifesteal_healed": 0,
         "dodge_retaliate_damage": 0,
         "plaguebow_applied": False,
+        "heal_on_hit_taken_healed": 0,
+        "fury_lifesteal_healed": 0,
     }
 
     # Phase 16D: Collect unique effects
@@ -402,6 +427,27 @@ def calculate_ranged_damage(
                 if attacker.hp <= 0:
                     attacker.is_alive = False
 
+    # Phase 25R-C: Heal-on-hit-taken (Death's Embrace) — defender heals when hit
+    if final_damage > 0 and defender.is_alive:
+        heal_on_hit_buff = next((b for b in defender.active_buffs if b.get("stat") == "heal_on_hit_taken"), None)
+        if heal_on_hit_buff:
+            heal_amt = heal_on_hit_buff.get("magnitude", 0)
+            if heal_amt > 0:
+                old_hp = defender.hp
+                defender.hp = min(defender.max_hp, defender.hp + heal_amt)
+                combat_info["heal_on_hit_taken_healed"] = defender.hp - old_hp
+
+    # Phase 25R-C: Fury state lifesteal — attacker heals % of ranged damage dealt
+    if final_damage > 0 and attacker.is_alive:
+        fury_buff = next((b for b in attacker.active_buffs if b.get("type") == "fury_state"), None)
+        if fury_buff:
+            lifesteal_pct = fury_buff.get("fury_lifesteal_pct", 0)
+            if lifesteal_pct > 0:
+                fury_heal = max(1, int(final_damage * lifesteal_pct))
+                old_hp = attacker.hp
+                attacker.hp = min(attacker.max_hp, attacker.hp + fury_heal)
+                combat_info["fury_lifesteal_healed"] = attacker.hp - old_hp
+
     return final_damage, combat_info
 
 
@@ -456,6 +502,38 @@ def apply_damage(defender: PlayerState, damage: int) -> bool:
         defender.is_alive = False
         return True
     return False
+
+
+def try_split_spirit_link(
+    defender: "PlayerState",
+    damage: int,
+    players: "dict[str, PlayerState]",
+) -> "tuple[int, PlayerState | None, int]":
+    """Check if the defender has a Spirit Link — if so, split the damage.
+
+    Returns (defender_damage, linked_shaman_or_None, shaman_damage).
+    If no spirit link is active, returns (damage, None, 0).
+
+    Phase 26G: Spirit Link damage splitting.
+    """
+    link = next(
+        (b for b in defender.active_buffs if b.get("stat") == "spirit_link"),
+        None,
+    )
+    if link is None:
+        return (damage, None, 0)
+
+    caster_id = link.get("caster_id")
+    shaman = players.get(caster_id) if caster_id else None
+
+    # Link must be to a living Shaman who isn't the defender themselves
+    if shaman is None or not shaman.is_alive or shaman.player_id == defender.player_id:
+        return (damage, None, 0)
+
+    share_ratio = link.get("damage_share", 0.5)
+    shared_dmg = int(damage * share_ratio)
+    defender_dmg = damage - shared_dmg  # No rounding loss
+    return (defender_dmg, shaman, shared_dmg)
 
 
 def is_adjacent(pos_a: Position, pos_b: Position) -> bool:

@@ -253,9 +253,10 @@ class TestDoubleStrikeSkill:
         result = resolve_multi_hit(attacker, None, None, skill_def, players, set())
         assert result.success is False
 
-    def test_double_strike_hexblade_can_use(self):
-        can, _ = can_use_skill(make_player(class_id="hexblade"), "double_strike")
-        assert can is True
+    def test_double_strike_hexblade_cannot_use(self):
+        can, reason = can_use_skill(make_player(class_id="hexblade"), "double_strike")
+        assert can is False
+        assert "class" in reason.lower()
 
     def test_double_strike_ranger_cannot_use(self):
         can, reason = can_use_skill(make_player(class_id="ranger"), "double_strike")
@@ -655,17 +656,18 @@ class TestSkillPhaseInTurnResolver:
         assert skill_results[0].success is True
         assert player.hp == 90
 
-    def test_double_strike_in_turn_resolver(self):
+    def test_hex_strike_in_turn_resolver(self):
         attacker = make_player(pid="p1", class_id="hexblade", x=5, y=5, damage=15, team="a")
         defender = make_player(pid="p2", username="Enemy", x=6, y=5, hp=100, armor=0, team="b")
         players = {"p1": attacker, "p2": defender}
-        actions = [make_skill_action("p1", "double_strike", 6, 5)]
+        actions = [make_skill_action("p1", "hex_strike", 6, 5)]
         result = resolve_turn("m1", 1, players, actions, 20, 20, set(),
                               team_a=["p1"], team_b=["p2"])
         skill_results = [r for r in result.actions if r.action_type == ActionType.SKILL]
         assert len(skill_results) == 1
         assert skill_results[0].success is True
-        assert defender.hp == 80
+        # 15 * 1.4 = 21 damage (no Wither on target, 0 armor)
+        assert defender.hp == 79
 
     def test_war_cry_then_melee_same_turn(self):
         """War Cry resolves before melee phase — so melee gets 2x buff."""
@@ -741,7 +743,7 @@ class TestSkillPhaseInTurnResolver:
         attacker = make_player(pid="p1", class_id="hexblade", x=5, y=5, damage=15, team="a")
         defender = make_player(pid="p2", username="Enemy", x=6, y=5, hp=5, armor=0, team="b")
         players = {"p1": attacker, "p2": defender}
-        actions = [make_skill_action("p1", "double_strike", 6, 5)]
+        actions = [make_skill_action("p1", "hex_strike", 6, 5)]
         result = resolve_turn("m1", 1, players, actions, 20, 20, set(),
                               team_a=["p1"], team_b=["p2"])
         assert "p2" in result.deaths

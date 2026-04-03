@@ -137,6 +137,8 @@ function classifyAction(act, updatedPlayers) {
  */
 function buildFloater(act, logType, turnNumber, updatedPlayers) {
   const now = Date.now();
+  // Random X pixel offset so overlapping same-tile floaters spread out
+  const randX = (Math.random() - 0.5) * 16;
 
   // Successful damage attacks → damage floater
   if ((act.action_type === 'attack' || act.action_type === 'ranged_attack')
@@ -150,7 +152,7 @@ function buildFloater(act, logType, turnNumber, updatedPlayers) {
         color: act.action_type === 'ranged_attack'
           ? (act.killed ? '#ff8800' : '#ffaa00')
           : (act.killed ? '#ff8800' : '#ff4444'),
-        damageAmount: act.damage_dealt, isKill: !!act.killed, createdAt: now,
+        damageAmount: act.damage_dealt, isKill: !!act.killed, randX, createdAt: now,
       };
     }
   }
@@ -165,7 +167,7 @@ function buildFloater(act, logType, turnNumber, updatedPlayers) {
         x: healTarget.position.x, y: healTarget.position.y,
         text: `+${act.heal_amount}`,
         color: isTickHeal ? '#88ddaa' : '#44ff44',
-        isTick: isTickHeal, createdAt: now,
+        isTick: isTickHeal, randX, createdAt: now,
       };
     }
   }
@@ -181,7 +183,7 @@ function buildFloater(act, logType, turnNumber, updatedPlayers) {
         x: skillTarget.position.x, y: skillTarget.position.y,
         text: `-${act.damage_dealt}`,
         color: act.killed ? '#ff8800' : (isTickDmg ? '#aa66dd' : '#cc66ff'),
-        isTick: isTickDmg, damageAmount: act.damage_dealt, isKill: !!act.killed, createdAt: now,
+        isTick: isTickDmg, damageAmount: act.damage_dealt, isKill: !!act.killed, randX, createdAt: now,
       };
     }
   }
@@ -195,7 +197,7 @@ function buildFloater(act, logType, turnNumber, updatedPlayers) {
       return {
         id: `${turnNumber}-${act.player_id}-reflect-${act.target_id}`,
         x: reflectTarget.position.x, y: reflectTarget.position.y,
-        text: 'REFLECT', color: '#cc88ff', isStatus: true, createdAt: now,
+        text: 'REFLECT', color: '#cc88ff', isStatus: true, randX, createdAt: now,
       };
     }
   }
@@ -210,7 +212,7 @@ function buildFloater(act, logType, turnNumber, updatedPlayers) {
         return {
           id: `${turnNumber}-${act.player_id}-dodge-${act.target_id}`,
           x: dodger.position.x, y: dodger.position.y,
-          text: 'DODGE', color: '#66ccff', isStatus: true, createdAt: now,
+          text: 'DODGE', color: '#66ccff', isStatus: true, randX, createdAt: now,
         };
       }
     }
@@ -220,7 +222,7 @@ function buildFloater(act, logType, turnNumber, updatedPlayers) {
         return {
           id: `${turnNumber}-${act.player_id}-stunned`,
           x: stunned.position.x, y: stunned.position.y,
-          text: 'STUNNED', color: '#ffcc00', isStatus: true, createdAt: now,
+          text: 'STUNNED', color: '#ffcc00', isStatus: true, randX, createdAt: now,
         };
       }
     }
@@ -230,7 +232,7 @@ function buildFloater(act, logType, turnNumber, updatedPlayers) {
         return {
           id: `${turnNumber}-${act.player_id}-slowed`,
           x: slowed.position.x, y: slowed.position.y,
-          text: 'SLOWED', color: '#6688ff', isStatus: true, createdAt: now,
+          text: 'SLOWED', color: '#6688ff', isStatus: true, randX, createdAt: now,
         };
       }
     }
@@ -241,7 +243,7 @@ function buildFloater(act, logType, turnNumber, updatedPlayers) {
         return {
           id: `${turnNumber}-${act.player_id}-miss-${act.target_id}`,
           x: missTarget.position.x, y: missTarget.position.y,
-          text: 'MISS', color: '#999999', isStatus: true, createdAt: now,
+          text: 'MISS', color: '#999999', isStatus: true, randX, createdAt: now,
         };
       }
     }

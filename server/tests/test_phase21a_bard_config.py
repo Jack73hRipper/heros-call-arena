@@ -187,7 +187,7 @@ class TestBardSkillsConfig:
         assert len(s["effects"]) == 1
         effect = s["effects"][0]
         assert effect["type"] == "aoe_buff"
-        assert effect["radius"] == 3
+        assert effect["radius"] == 4
         assert effect["stat"] == "all_damage_multiplier"
         assert effect["magnitude"] == 1.4
         assert effect["duration_turns"] == 3
@@ -219,29 +219,31 @@ class TestBardSkillsConfig:
         assert effect["magnitude"] == 1.30
         assert effect["duration_turns"] == 3
 
-    # -- Verse of Haste --
+    # -- War Hymn --
 
-    def test_verse_of_haste_exists(self, loaded_skills):
-        skill = get_skill("verse_of_haste")
+    def test_war_hymn_exists(self, loaded_skills):
+        skill = get_skill("war_hymn")
         assert skill is not None
 
-    def test_verse_of_haste_definition(self, loaded_skills):
-        s = get_skill("verse_of_haste")
-        assert s["skill_id"] == "verse_of_haste"
-        assert s["name"] == "Verse of Haste"
-        assert s["targeting"] == "ally_or_self"
-        assert s["range"] == 4
+    def test_war_hymn_definition(self, loaded_skills):
+        s = get_skill("war_hymn")
+        assert s["skill_id"] == "war_hymn"
+        assert s["name"] == "War Hymn"
+        assert s["targeting"] == "self"
+        assert s["range"] == 0
         assert s["cooldown_turns"] == 5
         assert s["mana_cost"] == 0
         assert s["requires_line_of_sight"] is False
         assert s["allowed_classes"] == ["bard"]
 
-    def test_verse_of_haste_effect(self, loaded_skills):
-        s = get_skill("verse_of_haste")
+    def test_war_hymn_effect(self, loaded_skills):
+        s = get_skill("war_hymn")
         assert len(s["effects"]) == 1
         effect = s["effects"][0]
-        assert effect["type"] == "cooldown_reduction"
-        assert effect["reduction"] == 2
+        assert effect["type"] == "aoe_hot"
+        assert effect["radius"] == 4
+        assert effect["heal_per_turn"] == 7
+        assert effect["duration_turns"] == 3
 
     # -- Cacophony --
 
@@ -304,7 +306,7 @@ class TestBardClassSkillsMapping:
             "auto_attack_ranged",
             "ballad_of_might",
             "dirge_of_weakness",
-            "verse_of_haste",
+            "war_hymn",
             "cacophony",
         ]
 
@@ -338,9 +340,9 @@ class TestBardCanUseSkill:
         ok, msg = can_use_skill(player, "dirge_of_weakness")
         assert ok is True
 
-    def test_bard_can_use_verse_of_haste(self, loaded_skills):
+    def test_bard_can_use_war_hymn(self, loaded_skills):
         player = _make_player(class_id="bard")
-        ok, msg = can_use_skill(player, "verse_of_haste")
+        ok, msg = can_use_skill(player, "war_hymn")
         assert ok is True
 
     def test_bard_can_use_cacophony(self, loaded_skills):
@@ -365,9 +367,9 @@ class TestBardCanUseSkill:
         ok, msg = can_use_skill(player, "dirge_of_weakness")
         assert ok is False
 
-    def test_non_bard_cannot_use_verse(self, loaded_skills):
+    def test_non_bard_cannot_use_war_hymn(self, loaded_skills):
         player = _make_player(class_id="mage")
-        ok, msg = can_use_skill(player, "verse_of_haste")
+        ok, msg = can_use_skill(player, "war_hymn")
         assert ok is False
 
     def test_non_bard_cannot_use_cacophony(self, loaded_skills):

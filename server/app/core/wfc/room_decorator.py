@@ -32,7 +32,7 @@ _PVPVE_DECORATOR_DEFAULTS = {
     "guaranteeSpawn": True,
     "guaranteeStairs": False,
     "enemyDensity": 0.50,
-    "lootDensity": 0.50,
+    "lootDensity": 0.15,
     "emptyRoomChance": 0.15,
     "maxEnemies": 4,
     "pvpve_mode": True,
@@ -117,8 +117,184 @@ def _infer_content_role(variant: dict) -> str:
     return "flexible"
 
 
+# ─── Slot Classification & Priority Sorting ───────────────────────────
+
+
+def _classify_slot(x: int, y: int, tiles: list[list[str]]) -> str:
+    """Classify a slot as 'center', 'corner', 'wall', or 'interior'."""
+    h = len(tiles)
+    w = len(tiles[0]) if h > 0 else 0
+    adj_wall = 0
+    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        nx, ny = x + dx, y + dy
+        if nx < 0 or nx >= w or ny < 0 or ny >= h:
+            adj_wall += 1
+        elif tiles[ny][nx] == "W":
+            adj_wall += 1
+    is_corner = (x <= 2 and y <= 2) or (x >= 5 and y <= 2) or (x <= 2 and y >= 5) or (x >= 5 and y >= 5)
+    is_center = 3 <= x <= 4 and 3 <= y <= 4
+    if is_center:
+        return "center"
+    if is_corner and adj_wall >= 1:
+        return "corner"
+    if adj_wall >= 1 and not is_corner:
+        return "wall"
+    if is_corner:
+        return "corner"
+    return "interior"
+
+
+# Default priority values for each hint type per role
+_HINT_PRIORITIES: dict[str, dict[str, float]] = {
+    "center":   {"loot": 0.3, "enemy": 0.9, "boss": 1.0, "spawn": 0.3},
+    "corner":   {"loot": 0.8, "enemy": 0.5, "boss": 0.7, "spawn": 0.9},
+    "wall":     {"loot": 1.0, "enemy": 0.6, "boss": 0.6, "spawn": 0.7},
+    "interior": {"loot": 0.5, "enemy": 0.8, "boss": 0.5, "spawn": 0.5},
+}
+
+
+def _get_slot_priority(slot: dict, role: str) -> float:
+    """Return the priority score for a slot when used for a given role."""
+    priority = slot.get("priority")
+    if priority and role in priority:
+        return priority[role]
+    # Fallback to hint-based lookup
+    hint = slot.get("placement_hint", "interior")
+    return _HINT_PRIORITIES.get(hint, _HINT_PRIORITIES["interior"]).get(role, 0.5)
+
+
+def _find_door_positions(tiles: list[list[str]]) -> list[tuple[int, int]]:
+    """Find door tile positions within a module's tile grid.
+
+    Also detects module-edge openings (floor tiles at row/col 0 or 7)
+    which indicate where corridors connect — these serve as virtual
+    door positions for distance calculations.
+    """
+    doors: list[tuple[int, int]] = []
+    h = len(tiles)
+    w = len(tiles[0]) if h > 0 else 0
+    for r in range(h):
+        for c in range(w):
+            t = tiles[r][c]
+            # Actual door tiles
+            if t == "D":
+                doors.append((c, r))
+            # Edge openings (corridor connections) — only on module boundary
+            elif t in ("F", "C") and (r == 0 or r == h - 1 or c == 0 or c == w - 1):
+                doors.append((c, r))
+    return doors
+
+
+def _slot_door_distance(slot: dict, door_positions: list[tuple[int, int]]) -> float:
+    """Manhattan distance from a slot to the nearest door/opening."""
+    if not door_positions:
+        return 0.0
+    return min(abs(slot["x"] - dx) + abs(slot["y"] - dy) for dx, dy in door_positions)
+
+
+def _sort_slots_for_role(
+    slots: list[dict],
+    role: str,
+    tiles: list[list[str]],
+    rng,
+    reverse: bool = False,
+) -> list[dict]:
+    """Sort slots by priority for a given role, with door-distance as tiebreaker.
+
+    For 'loot' roles: higher priority + farther from doors = sorted first
+    For 'enemy' roles: higher priority + closer to doors = sorted first
+    For 'boss' roles: higher priority + farthest from doors = sorted first
+    A small random jitter prevents identical layouts every time.
+
+    Args:
+        slots: List of slot dicts (not mutated).
+        role: The content role ('enemy', 'loot', 'boss', 'spawn', etc.).
+        tiles: The module's 8x8 tile grid for door detection.
+        rng: Seeded RNG function.
+        reverse: If True, reverse the sort (used for scatter placements).
+    """
+    door_positions = _find_door_positions(tiles)
+    sorted_slots = list(slots)
+
+    # Distance factor: loot/boss prefer far from doors, enemies prefer near doors
+    door_sign = -1.0 if role in ("enemy",) else 1.0
+
+    def _sort_key(s: dict) -> float:
+        priority = _get_slot_priority(s, role)
+        door_dist = _slot_door_distance(s, door_positions)
+        # Normalize door_dist to 0-1 range (max Manhattan distance in 8x8 is ~14)
+        norm_dist = door_dist / 14.0
+        # Small random jitter to avoid identical placements across seeds
+        jitter = rng() * 0.15
+        return -(priority + door_sign * norm_dist * 0.3 + jitter)
+
+    sorted_slots.sort(key=_sort_key)
+    if reverse:
+        sorted_slots.reverse()
+    return sorted_slots
+
+
+def _cluster_loot_slots(
+    slots: list[dict],
+    tiles: list[list[str]],
+    rng,
+) -> list[dict]:
+    """Sort loot slots to cluster chests near a chosen wall region.
+
+    Picks a focal wall (top/bottom/left/right) based on the RNG seed,
+    then sorts slots by distance to that wall. This ensures chests
+    in loot rooms group together in a "treasure nook" rather than
+    scattering across the room.
+    """
+    if len(slots) <= 1:
+        return slots
+
+    h = len(tiles)
+    w = len(tiles[0]) if h > 0 else 0
+
+    # Identify which walls have openings (doors/corridors) — avoid those
+    door_positions = _find_door_positions(tiles)
+    wall_has_opening = {"top": False, "bottom": False, "left": False, "right": False}
+    for dx, dy in door_positions:
+        if dy == 0:
+            wall_has_opening["top"] = True
+        if dy == h - 1:
+            wall_has_opening["bottom"] = True
+        if dx == 0:
+            wall_has_opening["left"] = True
+        if dx == w - 1:
+            wall_has_opening["right"] = True
+
+    # Prefer walls WITHOUT openings (treasure at the back, not near entrances)
+    closed_walls = [w for w, has_open in wall_has_opening.items() if not has_open]
+    if not closed_walls:
+        closed_walls = list(wall_has_opening.keys())
+
+    # Pick a wall deterministically from the seed
+    focal_wall = closed_walls[int(rng() * len(closed_walls)) % len(closed_walls)]
+
+    def _wall_distance(s: dict) -> float:
+        """Distance from slot to the chosen focal wall (lower = closer to wall)."""
+        if focal_wall == "top":
+            return s["y"]
+        elif focal_wall == "bottom":
+            return (h - 1) - s["y"]
+        elif focal_wall == "left":
+            return s["x"]
+        else:  # right
+            return (w - 1) - s["x"]
+
+    # Sort: closest to focal wall first, then clump horizontally/vertically
+    result = list(slots)
+    result.sort(key=lambda s: (_wall_distance(s), abs(s["x"] - w // 2) + abs(s["y"] - h // 2)))
+    return result
+
+
 def _derive_floor_slots(tiles: list[list[str]]) -> list[dict]:
-    """Derive floor slots from a tile grid (fallback when spawnSlots is empty)."""
+    """Derive floor slots from a tile grid (fallback when spawnSlots is empty).
+
+    Includes placement_hint and priority for each derived slot.
+    """
     slots = []
     if not tiles:
         return slots
@@ -127,7 +303,14 @@ def _derive_floor_slots(tiles: list[list[str]]) -> list[dict]:
     for r in range(1, h - 1):
         for c in range(1, w - 1):
             if tiles[r][c] == "F":
-                slots.append({"x": c, "y": r, "types": ["enemy", "loot", "spawn", "boss"]})
+                hint = _classify_slot(c, r, tiles)
+                priority = dict(_HINT_PRIORITIES.get(hint, _HINT_PRIORITIES["interior"]))
+                slots.append({
+                    "x": c, "y": r,
+                    "types": ["enemy", "loot", "spawn", "boss"],
+                    "placement_hint": hint,
+                    "priority": priority,
+                })
     return slots
 
 
@@ -737,53 +920,78 @@ def decorate_rooms(
 
         start_r = room["gridRow"] * MODULE_SIZE
         start_c = room["gridCol"] * MODULE_SIZE
+        room_tiles = room["variant"].get("tiles", [])
 
         placements = []
-        available_slots = _shuffle(list(room["slots"]), rng)
+        # Sort slots by priority for the assigned role (A) with door-distance (D)
+        available_slots = _sort_slots_for_role(
+            room["slots"], role, room_tiles, rng,
+        )
 
         if role == "boss":
-            boss_slots = [s for s in available_slots if s.get("types") and "boss" in s["types"]]
+            # Boss: sort boss-eligible slots with boss priority
+            boss_slots = _sort_slots_for_role(
+                [s for s in available_slots if s.get("types") and "boss" in s["types"]],
+                "boss", room_tiles, rng,
+            )
             if boss_slots:
                 bs = boss_slots[0]
                 _place_tile(decorated_map, start_r + bs["y"], start_c + bs["x"], "B")
                 placements.append({"x": start_c + bs["x"], "y": start_r + bs["y"], "type": "B"})
-                # Guard enemies — PVPVE gets more guards + chests in boss room
+                # Guard enemies — sorted by enemy priority (near doors)
                 guard_count = config.get("pvpve_boss_guards", 2) if pvpve_mode else 2
                 boss_chests = config.get("pvpve_boss_chests", 0) if pvpve_mode else 0
-                guard_slots = [s for s in available_slots
-                               if s is not bs and s.get("types") and "enemy" in s["types"]]
-                for i in range(min(guard_count, len(guard_slots))):
-                    _place_tile(decorated_map, start_r + guard_slots[i]["y"], start_c + guard_slots[i]["x"], "E")
-                    placements.append({"x": start_c + guard_slots[i]["x"], "y": start_r + guard_slots[i]["y"], "type": "E"})
+                guard_candidates = _sort_slots_for_role(
+                    [s for s in available_slots
+                     if s is not bs and s.get("types") and "enemy" in s["types"]],
+                    "enemy", room_tiles, rng,
+                )
+                for i in range(min(guard_count, len(guard_candidates))):
+                    _place_tile(decorated_map, start_r + guard_candidates[i]["y"], start_c + guard_candidates[i]["x"], "E")
+                    placements.append({"x": start_c + guard_candidates[i]["x"], "y": start_r + guard_candidates[i]["y"], "type": "E"})
                 # PVPVE boss room chests
                 if boss_chests > 0:
                     placed_positions = {(p["x"], p["y"]) for p in placements}
-                    chest_slots = [s for s in available_slots
-                                   if s.get("types") and "loot" in s["types"]
-                                   and (start_c + s["x"], start_r + s["y"]) not in placed_positions]
+                    chest_slots = _sort_slots_for_role(
+                        [s for s in available_slots
+                         if s.get("types") and "loot" in s["types"]
+                         and (start_c + s["x"], start_r + s["y"]) not in placed_positions],
+                        "loot", room_tiles, rng,
+                    )
                     for i in range(min(boss_chests, len(chest_slots))):
                         _place_tile(decorated_map, start_r + chest_slots[i]["y"], start_c + chest_slots[i]["x"], "X")
                         placements.append({"x": start_c + chest_slots[i]["x"], "y": start_r + chest_slots[i]["y"], "type": "X"})
 
         elif role == "spawn" or role.startswith("spawn_"):
-            # Standard spawn or PVPVE team spawn (spawn_a, spawn_b, etc.)
-            spawn_slots = [s for s in available_slots if s.get("types") and "spawn" in s["types"]]
+            # Standard spawn or PVPVE team spawn — sorted by spawn priority (corners first)
+            spawn_slots = _sort_slots_for_role(
+                [s for s in available_slots if s.get("types") and "spawn" in s["types"]],
+                "spawn", room_tiles, rng,
+            )
             count = min(4, len(spawn_slots))
             for i in range(count):
                 _place_tile(decorated_map, start_r + spawn_slots[i]["y"], start_c + spawn_slots[i]["x"], "S")
                 placements.append({"x": start_c + spawn_slots[i]["x"], "y": start_r + spawn_slots[i]["y"], "type": "S"})
 
         elif role == "stairs":
-            # Place a single staircase tile on a floor slot in this room
-            stair_slots = [s for s in available_slots if s.get("types")]
+            # Place staircase far from doors (use loot priority — back of room)
+            stair_slots = _sort_slots_for_role(
+                [s for s in available_slots if s.get("types")],
+                "loot", room_tiles, rng,
+            )
             if stair_slots:
                 _place_tile(decorated_map, start_r + stair_slots[0]["y"], start_c + stair_slots[0]["x"], "T")
                 placements.append({"x": start_c + stair_slots[0]["x"], "y": start_r + stair_slots[0]["y"], "type": "T"})
-            # Also scatter a guard enemy near the stairs
+            # Guard enemy near stairs (use enemy priority — near doors/center)
             if len(stair_slots) > 1:
-                guard = stair_slots[1]
-                _place_tile(decorated_map, start_r + guard["y"], start_c + guard["x"], "E")
-                placements.append({"x": start_c + guard["x"], "y": start_r + guard["y"], "type": "E"})
+                guard_candidates = _sort_slots_for_role(
+                    [s for s in stair_slots[1:] if s.get("types") and "enemy" in s["types"]],
+                    "enemy", room_tiles, rng,
+                )
+                if guard_candidates:
+                    guard = guard_candidates[0]
+                    _place_tile(decorated_map, start_r + guard["y"], start_c + guard["x"], "E")
+                    placements.append({"x": start_c + guard["x"], "y": start_r + guard["y"], "type": "E"})
 
         elif role == "enemy":
             # Phase 2: Softened rooms (distance 2 from spawn) get halved max enemies
@@ -797,59 +1005,82 @@ def decorate_rooms(
                 tier_max = _pvpve_get_max_enemies_for_tier(tier, room["maxEnemies"])
                 effective_max = min(effective_max, tier_max) if proximity_overrides.get(key) == "softened" else tier_max
 
-            enemy_slots = [s for s in available_slots if s.get("types") and "enemy" in s["types"]]
+            # Enemies sorted by enemy priority (center/interior, near doors)
+            enemy_slots = _sort_slots_for_role(
+                [s for s in available_slots if s.get("types") and "enemy" in s["types"]],
+                "enemy", room_tiles, rng,
+            )
             count = min(effective_max, len(enemy_slots))
             actual_count = max(1, int(rng() * count) + 1) if count <= 2 else max(2, int(rng() * count) + 1)
             for i in range(min(actual_count, len(enemy_slots))):
                 _place_tile(decorated_map, start_r + enemy_slots[i]["y"], start_c + enemy_slots[i]["x"], "E")
                 placements.append({"x": start_c + enemy_slots[i]["x"], "y": start_r + enemy_slots[i]["y"], "type": "E"})
-            # Scatter bonus chest
-            if config["scatterChests"] and rng() < 0.3:
+            # Scatter bonus chest — placed far from enemies (reverse enemy priority)
+            if config["scatterChests"] and rng() < 0.15:
                 placed_positions = {(p["x"], p["y"]) for p in placements}
-                chest_slots = [s for s in available_slots
-                               if s.get("types") and "loot" in s["types"]
-                               and (start_c + s["x"], start_r + s["y"]) not in placed_positions]
-                if chest_slots:
-                    _place_tile(decorated_map, start_r + chest_slots[0]["y"], start_c + chest_slots[0]["x"], "X")
-                    placements.append({"x": start_c + chest_slots[0]["x"], "y": start_r + chest_slots[0]["y"], "type": "X"})
+                chest_candidates = _sort_slots_for_role(
+                    [s for s in available_slots
+                     if s.get("types") and "loot" in s["types"]
+                     and (start_c + s["x"], start_r + s["y"]) not in placed_positions],
+                    "loot", room_tiles, rng,
+                )
+                if chest_candidates:
+                    _place_tile(decorated_map, start_r + chest_candidates[0]["y"], start_c + chest_candidates[0]["x"], "X")
+                    placements.append({"x": start_c + chest_candidates[0]["x"], "y": start_r + chest_candidates[0]["y"], "type": "X"})
 
         elif role == "loot":
-            loot_slots = [s for s in available_slots if s.get("types") and "loot" in s["types"]]
-            count = min(room["maxChests"], len(loot_slots))
-            actual_count = max(1, int(rng() * count) + 1)
+            # (B) Chest clustering: group chests near a wall away from doors
+            loot_eligible = [s for s in available_slots if s.get("types") and "loot" in s["types"]]
+            loot_slots = _cluster_loot_slots(loot_eligible, room_tiles, rng)
+            # PVPVE: cap to 1 chest per loot room for scarcity
+            pvpve_cap = 1 if config.get("pvpve_mode") else room["maxChests"]
+            count = min(pvpve_cap, len(loot_slots))
+            actual_count = max(1, count)
             for i in range(min(actual_count, len(loot_slots))):
                 _place_tile(decorated_map, start_r + loot_slots[i]["y"], start_c + loot_slots[i]["x"], "X")
                 placements.append({"x": start_c + loot_slots[i]["x"], "y": start_r + loot_slots[i]["y"], "type": "X"})
-            # Scatter guard enemy
+            # Scatter guard enemy — placed near door (enemy priority)
             if config["scatterEnemies"] and rng() < 0.45:
                 placed_positions = {(p["x"], p["y"]) for p in placements}
-                enemy_slots = [s for s in available_slots
-                               if s.get("types") and "enemy" in s["types"]
-                               and (start_c + s["x"], start_r + s["y"]) not in placed_positions]
-                if enemy_slots:
-                    _place_tile(decorated_map, start_r + enemy_slots[0]["y"], start_c + enemy_slots[0]["x"], "E")
-                    placements.append({"x": start_c + enemy_slots[0]["x"], "y": start_r + enemy_slots[0]["y"], "type": "E"})
+                guard_candidates = _sort_slots_for_role(
+                    [s for s in available_slots
+                     if s.get("types") and "enemy" in s["types"]
+                     and (start_c + s["x"], start_r + s["y"]) not in placed_positions],
+                    "enemy", room_tiles, rng,
+                )
+                if guard_candidates:
+                    _place_tile(decorated_map, start_r + guard_candidates[0]["y"], start_c + guard_candidates[0]["x"], "E")
+                    placements.append({"x": start_c + guard_candidates[0]["x"], "y": start_r + guard_candidates[0]["y"], "type": "E"})
 
         elif role == "shrine":
-            # Non-combat room — no enemies, optional chest for quest reward
-            if config["scatterChests"] and rng() < 0.4:
-                loot_slots = [s for s in available_slots if s.get("types") and "loot" in s["types"]]
+            # Non-combat room — chest placed at loot-priority position
+            if config["scatterChests"] and rng() < 0.2:
+                loot_slots = _sort_slots_for_role(
+                    [s for s in available_slots if s.get("types") and "loot" in s["types"]],
+                    "loot", room_tiles, rng,
+                )
                 if loot_slots:
                     _place_tile(decorated_map, start_r + loot_slots[0]["y"], start_c + loot_slots[0]["x"], "X")
                     placements.append({"x": start_c + loot_slots[0]["x"], "y": start_r + loot_slots[0]["y"], "type": "X"})
 
         elif role == "library":
-            # Non-combat discovery room — occasional loot
-            if config["scatterChests"] and rng() < 0.5:
-                loot_slots = [s for s in available_slots if s.get("types") and "loot" in s["types"]]
+            # Non-combat discovery room — chest at loot-priority position
+            if config["scatterChests"] and rng() < 0.25:
+                loot_slots = _sort_slots_for_role(
+                    [s for s in available_slots if s.get("types") and "loot" in s["types"]],
+                    "loot", room_tiles, rng,
+                )
                 if loot_slots:
                     _place_tile(decorated_map, start_r + loot_slots[0]["y"], start_c + loot_slots[0]["x"], "X")
                     placements.append({"x": start_c + loot_slots[0]["x"], "y": start_r + loot_slots[0]["y"], "type": "X"})
 
         elif role == "prison":
-            # Heavy enemy room — same logic as enemy but with more enemies
+            # Heavy enemy room — enemies sorted by priority
             effective_max = room["maxEnemies"]
-            enemy_slots = [s for s in available_slots if s.get("types") and "enemy" in s["types"]]
+            enemy_slots = _sort_slots_for_role(
+                [s for s in available_slots if s.get("types") and "enemy" in s["types"]],
+                "enemy", room_tiles, rng,
+            )
             count = min(effective_max, len(enemy_slots))
             actual_count = max(2, int(rng() * count) + 1) if count > 0 else 0
             for i in range(min(actual_count, len(enemy_slots))):
@@ -857,21 +1088,31 @@ def decorate_rooms(
                 placements.append({"x": start_c + enemy_slots[i]["x"], "y": start_r + enemy_slots[i]["y"], "type": "E"})
 
         elif role == "flooded":
-            # Environmental atmosphere room — occasional scattered enemy
+            # Environmental room — enemy at enemy-priority position
             if config["scatterEnemies"] and rng() < 0.3:
-                enemy_slots = [s for s in available_slots if s.get("types") and "enemy" in s["types"]]
+                enemy_slots = _sort_slots_for_role(
+                    [s for s in available_slots if s.get("types") and "enemy" in s["types"]],
+                    "enemy", room_tiles, rng,
+                )
                 if enemy_slots:
                     _place_tile(decorated_map, start_r + enemy_slots[0]["y"], start_c + enemy_slots[0]["x"], "E")
                     placements.append({"x": start_c + enemy_slots[0]["x"], "y": start_r + enemy_slots[0]["y"], "type": "E"})
 
         else:  # empty
             if config["scatterEnemies"] and rng() < 0.25:
-                enemy_slots = [s for s in available_slots if s.get("types") and "enemy" in s["types"]]
+                enemy_slots = _sort_slots_for_role(
+                    [s for s in available_slots if s.get("types") and "enemy" in s["types"]],
+                    "enemy", room_tiles, rng,
+                )
                 if enemy_slots:
                     _place_tile(decorated_map, start_r + enemy_slots[0]["y"], start_c + enemy_slots[0]["x"], "E")
                     placements.append({"x": start_c + enemy_slots[0]["x"], "y": start_r + enemy_slots[0]["y"], "type": "E"})
-            elif config["scatterChests"] and rng() < 0.1:
-                loot_slots = [s for s in available_slots if s.get("types") and "loot" in s["types"]]
+            elif config["scatterChests"] and rng() < 0.05:
+                # Empty room scatter chest — placed in corner (quiet cache)
+                loot_slots = _sort_slots_for_role(
+                    [s for s in available_slots if s.get("types") and "loot" in s["types"]],
+                    "loot", room_tiles, rng,
+                )
                 if loot_slots:
                     _place_tile(decorated_map, start_r + loot_slots[0]["y"], start_c + loot_slots[0]["x"], "X")
                     placements.append({"x": start_c + loot_slots[0]["x"], "y": start_r + loot_slots[0]["y"], "type": "X"})

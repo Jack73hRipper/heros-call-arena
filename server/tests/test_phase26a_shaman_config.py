@@ -198,8 +198,8 @@ class TestShamanSkillsConfig:
         effect = s["effects"][0]
         assert effect["type"] == "place_totem"
         assert effect["totem_type"] == "healing"
-        assert effect["totem_hp"] == 20
-        assert effect["heal_per_turn"] == 8
+        assert effect["totem_hp"] == 30
+        assert effect["heal_per_turn"] == 10
         assert effect["effect_radius"] == 2
         assert effect["duration_turns"] == 4
 
@@ -226,8 +226,8 @@ class TestShamanSkillsConfig:
         effect = s["effects"][0]
         assert effect["type"] == "place_totem"
         assert effect["totem_type"] == "searing"
-        assert effect["totem_hp"] == 20
-        assert effect["damage_per_turn"] == 4
+        assert effect["totem_hp"] == 30
+        assert effect["damage_per_turn"] == 5
         assert effect["effect_radius"] == 2
         assert effect["duration_turns"] == 4
 
@@ -293,7 +293,7 @@ class TestShamanSkillsConfig:
         effect = s["effects"][0]
         assert effect["type"] == "place_totem"
         assert effect["totem_type"] == "earthgrasp"
-        assert effect["totem_hp"] == 20
+        assert effect["totem_hp"] == 30
         assert effect["effect_radius"] == 2
         assert effect["duration_turns"] == 4
         assert effect["root_duration"] == 1
@@ -321,7 +321,7 @@ class TestShamanClassSkillsMapping:
             "auto_attack_ranged",
             "healing_totem",
             "searing_totem",
-            "soul_anchor",
+            "spirit_link",
             "earthgrasp",
         ]
 
@@ -358,6 +358,11 @@ class TestShamanCanUseSkill:
     def test_shaman_can_use_soul_anchor(self, loaded_skills):
         player = _make_player(class_id="shaman")
         ok, msg = can_use_skill(player, "soul_anchor")
+        assert ok is True
+
+    def test_shaman_can_use_spirit_link(self, loaded_skills):
+        player = _make_player(class_id="shaman")
+        ok, msg = can_use_skill(player, "spirit_link")
         assert ok is True
 
     def test_shaman_can_use_earthgrasp(self, loaded_skills):
@@ -433,8 +438,8 @@ class TestMatchStateTotems:
             "type": "healing_totem",
             "owner_id": "shaman1",
             "x": 5, "y": 5,
-            "hp": 20, "max_hp": 20,
-            "heal_per_turn": 8,
+            "hp": 30, "max_hp": 30,
+            "heal_per_turn": 10,
             "damage_per_turn": 0,
             "effect_radius": 2,
             "duration_remaining": 4,
@@ -448,14 +453,14 @@ class TestMatchStateTotems:
         """A Shaman can have both a healing and searing totem active."""
         healing = {
             "id": "totem_1", "type": "healing_totem", "owner_id": "shaman1",
-            "x": 5, "y": 5, "hp": 20, "max_hp": 20,
-            "heal_per_turn": 8, "damage_per_turn": 0,
+            "x": 5, "y": 5, "hp": 30, "max_hp": 30,
+            "heal_per_turn": 10, "damage_per_turn": 0,
             "effect_radius": 2, "duration_remaining": 4, "team": "team_1",
         }
         searing = {
             "id": "totem_2", "type": "searing_totem", "owner_id": "shaman1",
-            "x": 7, "y": 7, "hp": 20, "max_hp": 20,
-            "heal_per_turn": 0, "damage_per_turn": 6,
+            "x": 7, "y": 7, "hp": 30, "max_hp": 30,
+            "heal_per_turn": 0, "damage_per_turn": 5,
             "effect_radius": 2, "duration_remaining": 4, "team": "team_1",
         }
         ms = MatchState(match_id="test_match", totems=[healing, searing])
@@ -547,7 +552,7 @@ class TestRegressionExistingClasses:
         ]
         assert get_class_skills("bard") == [
             "auto_attack_ranged", "ballad_of_might", "dirge_of_weakness",
-            "verse_of_haste", "cacophony"
+            "war_hymn", "cacophony"
         ]
         assert get_class_skills("blood_knight") == [
             "auto_attack_melee", "blood_strike", "crimson_veil",
@@ -558,8 +563,8 @@ class TestRegressionExistingClasses:
             "enfeeble", "inoculate"
         ]
         assert get_class_skills("revenant") == [
-            "auto_attack_melee", "grave_thorns", "grave_chains",
-            "undying_will", "soul_rend"
+            "auto_attack_melee", "grasp_of_the_grave", "deaths_embrace",
+            "soul_rend", "undying_fury"
         ]
 
     def test_revenant_auto_attack_unchanged(self, loaded_skills):

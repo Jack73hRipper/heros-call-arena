@@ -1,0 +1,2550 @@
+{
+  "match_id": "2adf2e50",
+  "timestamp": "2026-04-03T03:56:36.932711+00:00",
+  "duration_turns": 28,
+  "map_id": "open_arena_large",
+  "match_type": "pvp",
+  "winner": "team_a",
+  "config": {
+    "max_players": 11,
+    "tick_rate": 1.0,
+    "ai_opponents": 5,
+    "ai_allies": 5,
+    "ai_opponent_classes": [
+      "blood_knight",
+      "crusader",
+      "inquisitor",
+      "mage",
+      "ranger"
+    ],
+    "ai_ally_classes": [
+      "bard",
+      "crusader",
+      "inquisitor",
+      "plague_doctor",
+      "ranger"
+    ]
+  },
+  "teams": {
+    "team_a": [
+      {
+        "unit_id": "ai-408fa0",
+        "username": "Bard",
+        "class_id": "bard",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 125,
+        "base_melee_damage": 0,
+        "base_armor": 6,
+        "hp": 75,
+        "max_hp": 125,
+        "attack": 13,
+        "defense": 6,
+        "weapon": {
+          "name": "Throwing Axes",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Invoker's Robes",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Consecrated Relic",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Throwing Axes",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Invoker's Robes",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Consecrated Relic",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-c5b4ac",
+        "username": "Crusader",
+        "class_id": "crusader",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 146,
+        "base_melee_damage": 0,
+        "base_armor": 15,
+        "hp": 146,
+        "max_hp": 146,
+        "attack": 20,
+        "defense": 15,
+        "weapon": {
+          "name": "Balanced War Axes",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Reinforced Plate",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Cracked Idol",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Balanced War Axes",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Reinforced Plate",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Cracked Idol",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-cfcd31",
+        "username": "Inquisitor",
+        "class_id": "inquisitor",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 90,
+        "base_melee_damage": 0,
+        "base_armor": 6,
+        "hp": 90,
+        "max_hp": 90,
+        "attack": 10,
+        "defense": 6,
+        "weapon": {
+          "name": "Hand Crossbow",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Hide Armor",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Cracked Idol",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Hand Crossbow",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Hide Armor",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Cracked Idol",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-fa6e58",
+        "username": "Plague Doctor",
+        "class_id": "plague_doctor",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 95,
+        "base_melee_damage": 0,
+        "base_armor": 5,
+        "hp": 95,
+        "max_hp": 95,
+        "attack": 10,
+        "defense": 5,
+        "weapon": {
+          "name": "Gnarled Staff",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Invoker's Robes",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Hoarder's Satchel",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Gnarled Staff",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Invoker's Robes",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Hoarder's Satchel",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-7b01ed",
+        "username": "Ranger",
+        "class_id": "ranger",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 103,
+        "base_melee_damage": 0,
+        "base_armor": 8,
+        "hp": 100,
+        "max_hp": 103,
+        "attack": 8,
+        "defense": 8,
+        "weapon": {
+          "name": "Yew Longbow",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Shadow Cloak",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Tarnished Relic",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Yew Longbow",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Shadow Cloak",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Tarnished Relic",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      }
+    ],
+    "team_b": [
+      {
+        "unit_id": "ai-12ffc5",
+        "username": "Blood Knight",
+        "class_id": "blood_knight",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 126,
+        "base_melee_damage": 0,
+        "base_armor": 13,
+        "hp": 0,
+        "max_hp": 126,
+        "attack": 19,
+        "defense": 13,
+        "weapon": {
+          "name": "Chipped Dagger",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Reinforced Plate",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Consecrated Relic",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Chipped Dagger",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Reinforced Plate",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Consecrated Relic",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-8e629d",
+        "username": "Crusader 2",
+        "class_id": "crusader",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 146,
+        "base_melee_damage": 0,
+        "base_armor": 10,
+        "hp": 0,
+        "max_hp": 146,
+        "attack": 20,
+        "defense": 10,
+        "weapon": {
+          "name": "Assassin's Stiletto",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Brigandine Coat",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Venom Fetish",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Assassin's Stiletto",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Brigandine Coat",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Venom Fetish",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-6e41f9",
+        "username": "Inquisitor 2",
+        "class_id": "inquisitor",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 100,
+        "base_melee_damage": 0,
+        "base_armor": 8,
+        "hp": 0,
+        "max_hp": 100,
+        "attack": 13,
+        "defense": 8,
+        "weapon": {
+          "name": "Throwing Axes",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Stalker's Hides",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Bloodhound Charm",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Throwing Axes",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Stalker's Hides",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Bloodhound Charm",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-52847d",
+        "username": "Mage",
+        "class_id": "mage",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 3,
+        "hp": 0,
+        "max_hp": 80,
+        "attack": 8,
+        "defense": 3,
+        "weapon": {
+          "name": "Gnarled Staff",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Tattered Robes",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Cracked Idol",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Gnarled Staff",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Tattered Robes",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Cracked Idol",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-9a9ef7",
+        "username": "Ranger 2",
+        "class_id": "ranger",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 90,
+        "base_melee_damage": 0,
+        "base_armor": 4,
+        "hp": 0,
+        "max_hp": 90,
+        "attack": 14,
+        "defense": 4,
+        "weapon": {
+          "name": "Balanced War Axes",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Hide Armor",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Stone Talisman",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Balanced War Axes",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Hide Armor",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Stone Talisman",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      }
+    ]
+  },
+  "unit_stats": {
+    "ai-408fa0": {
+      "unit_id": "ai-408fa0",
+      "username": "Bard",
+      "class_id": "bard",
+      "team": "a",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 31,
+      "damage_taken": 109,
+      "healing_done": 73,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 28,
+      "items_looted": 0,
+      "highest_hit": 11,
+      "overkill_damage": 0
+    },
+    "ai-c5b4ac": {
+      "unit_id": "ai-c5b4ac",
+      "username": "Crusader",
+      "class_id": "crusader",
+      "team": "a",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 12,
+      "damage_taken": 23,
+      "healing_done": 20,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 28,
+      "items_looted": 0,
+      "highest_hit": 7,
+      "overkill_damage": 0
+    },
+    "ai-cfcd31": {
+      "unit_id": "ai-cfcd31",
+      "username": "Inquisitor",
+      "class_id": "inquisitor",
+      "team": "a",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 176,
+      "damage_taken": 10,
+      "healing_done": 24,
+      "kills": 1,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 28,
+      "items_looted": 0,
+      "highest_hit": 60,
+      "overkill_damage": 0
+    },
+    "ai-fa6e58": {
+      "unit_id": "ai-fa6e58",
+      "username": "Plague Doctor",
+      "class_id": "plague_doctor",
+      "team": "a",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 44,
+      "damage_taken": 0,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 28,
+      "items_looted": 0,
+      "highest_hit": 26,
+      "overkill_damage": 0
+    },
+    "ai-7b01ed": {
+      "unit_id": "ai-7b01ed",
+      "username": "Ranger",
+      "class_id": "ranger",
+      "team": "a",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 556,
+      "damage_taken": 26,
+      "healing_done": 30,
+      "kills": 3,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 28,
+      "items_looted": 0,
+      "highest_hit": 128,
+      "overkill_damage": 0
+    },
+    "ai-12ffc5": {
+      "unit_id": "ai-12ffc5",
+      "username": "Blood Knight",
+      "class_id": "blood_knight",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 30,
+      "damage_taken": 140,
+      "healing_done": 7,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 24,
+      "items_looted": 0,
+      "highest_hit": 10,
+      "overkill_damage": 0
+    },
+    "ai-8e629d": {
+      "unit_id": "ai-8e629d",
+      "username": "Crusader 2",
+      "class_id": "crusader",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 30,
+      "damage_taken": 226,
+      "healing_done": 80,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 16,
+      "items_looted": 0,
+      "highest_hit": 10,
+      "overkill_damage": 0
+    },
+    "ai-6e41f9": {
+      "unit_id": "ai-6e41f9",
+      "username": "Inquisitor 2",
+      "class_id": "inquisitor",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 0,
+      "damage_taken": 197,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 8,
+      "items_looted": 0,
+      "highest_hit": 0,
+      "overkill_damage": 0
+    },
+    "ai-52847d": {
+      "unit_id": "ai-52847d",
+      "username": "Mage",
+      "class_id": "mage",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 83,
+      "damage_taken": 60,
+      "healing_done": 40,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 19,
+      "items_looted": 0,
+      "highest_hit": 34,
+      "overkill_damage": 0
+    },
+    "ai-9a9ef7": {
+      "unit_id": "ai-9a9ef7",
+      "username": "Ranger 2",
+      "class_id": "ranger",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 134,
+      "damage_taken": 46,
+      "healing_done": 80,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 27,
+      "items_looted": 0,
+      "highest_hit": 53,
+      "overkill_damage": 0
+    }
+  },
+  "timeline": [
+    {
+      "turn": 1,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            2,
+            1
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            0,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            3,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            4,
+            1
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-12ffc5",
+          "to": [
+            15,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8e629d",
+          "to": [
+            16,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-6e41f9",
+          "to": [
+            15,
+            17
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-52847d",
+          "to": [
+            14,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9a9ef7",
+          "to": [
+            14,
+            15
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 2,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            3,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            1,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            4,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            2,
+            1
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            5,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-12ffc5",
+          "to": [
+            14,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8e629d",
+          "to": [
+            15,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-6e41f9",
+          "to": [
+            14,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-52847d",
+          "to": [
+            13,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9a9ef7",
+          "to": [
+            13,
+            14
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 3,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            4,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            2,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            5,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            3,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            6,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-12ffc5",
+          "to": [
+            13,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8e629d",
+          "to": [
+            14,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-6e41f9",
+          "to": [
+            13,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-52847d",
+          "to": [
+            12,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9a9ef7",
+          "to": [
+            12,
+            13
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 4,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            5,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            3,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            4,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            7,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-12ffc5",
+          "to": [
+            12,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8e629d",
+          "to": [
+            13,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-6e41f9",
+          "to": [
+            12,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-52847d",
+          "to": [
+            11,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9a9ef7",
+          "to": [
+            11,
+            12
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 5,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            4,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            5,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            8,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-12ffc5",
+          "to": [
+            11,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8e629d",
+          "to": [
+            12,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-6e41f9",
+          "to": [
+            11,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-52847d",
+          "to": [
+            10,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9a9ef7",
+          "to": [
+            10,
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 6,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            5,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            9,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8e629d",
+          "to": [
+            11,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-6e41f9",
+          "to": [
+            10,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-52847d",
+          "to": [
+            9,
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 7,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            9,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            9,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "buff": "bulwark"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8e629d",
+          "tgt": "ai-8e629d",
+          "buff": "bulwark"
+        }
+      ]
+    },
+    {
+      "turn": 8,
+      "events": [
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "buff": "taunt"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cfcd31",
+          "tgt": "ai-6e41f9",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "damage",
+          "src": "ai-7b01ed",
+          "tgt": "ai-6e41f9",
+          "dmg": 48,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-7b01ed",
+          "tgt": "ai-6e41f9",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8e629d",
+          "tgt": "ai-8e629d",
+          "buff": "taunt"
+        },
+        {
+          "type": "buff",
+          "src": "ai-6e41f9",
+          "tgt": "ai-c5b4ac",
+          "buff": "seal_of_judgment"
+        }
+      ]
+    },
+    {
+      "turn": 9,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-cfcd31",
+          "tgt": "ai-6e41f9",
+          "dmg": 21,
+          "skill": "rebuke",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-7b01ed",
+          "tgt": "ai-6e41f9",
+          "dmg": 128,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "ai-6e41f9",
+          "killer": "ai-7b01ed"
+        }
+      ]
+    },
+    {
+      "turn": 10,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            6,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            7,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8e629d",
+          "to": [
+            11,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 11,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8e629d",
+          "to": [
+            10,
+            8
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "dirge_of_weakness"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cfcd31",
+          "tgt": "ai-8e629d",
+          "dmg": 41,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-7b01ed",
+          "tgt": null,
+          "dmg": 57,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-7b01ed",
+          "tgt": "ai-7b01ed",
+          "buff": "volley"
+        }
+      ]
+    },
+    {
+      "turn": 12,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            6,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-52847d",
+          "to": [
+            8,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-8e629d",
+          "tgt": "ai-cfcd31",
+          "dmg": 10,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-8e629d",
+          "tgt": "ai-cfcd31",
+          "buff": "shield_bash"
+        }
+      ]
+    },
+    {
+      "turn": 13,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            7,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-12ffc5",
+          "to": [
+            10,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9a9ef7",
+          "to": [
+            9,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            9,
+            7
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "buff": "bulwark"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8e629d",
+          "tgt": "ai-8e629d",
+          "buff": "bulwark"
+        },
+        {
+          "type": "damage",
+          "src": "ai-52847d",
+          "tgt": "ai-c5b4ac",
+          "dmg": 22,
+          "skill": "fireball",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 14,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            8,
+            5
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "war_hymn"
+        },
+        {
+          "type": "damage",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-8e629d",
+          "dmg": 4,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-8e629d",
+          "buff": "shield_bash"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cfcd31",
+          "tgt": "ai-8e629d",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "damage",
+          "src": "ai-7b01ed",
+          "tgt": "ai-8e629d",
+          "dmg": 36,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-7b01ed",
+          "tgt": "ai-8e629d",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "damage",
+          "src": "ai-52847d",
+          "tgt": null,
+          "dmg": 34,
+          "skill": "arcane_barrage",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-52847d",
+          "tgt": "ai-52847d",
+          "buff": "arcane_barrage"
+        }
+      ]
+    },
+    {
+      "turn": 15,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cfcd31",
+          "tgt": "ai-cfcd31",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-7b01ed",
+          "tgt": "ai-7b01ed",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "buff": "taunt"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cfcd31",
+          "tgt": "ai-8e629d",
+          "dmg": 8,
+          "skill": "rebuke",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-fa6e58",
+          "tgt": "ai-8e629d",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "damage",
+          "src": "ai-408fa0",
+          "tgt": "ai-8e629d",
+          "dmg": 10,
+          "skill": "ranged_attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 16,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "amt": 5,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cfcd31",
+          "tgt": "ai-cfcd31",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-7b01ed",
+          "tgt": "ai-7b01ed",
+          "amt": 2,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8e629d",
+          "tgt": "ai-8e629d",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            7,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-52847d",
+          "to": [
+            7,
+            11
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-fa6e58",
+          "tgt": "ai-fa6e58",
+          "buff": "enfeeble"
+        },
+        {
+          "type": "damage",
+          "src": "ai-7b01ed",
+          "tgt": "ai-8e629d",
+          "dmg": 32,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-8e629d",
+          "dmg": 7,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-8e629d",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 17,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-8e629d",
+          "tgt": "ai-8e629d",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-12ffc5",
+          "to": [
+            11,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "dirge_of_weakness"
+        },
+        {
+          "type": "damage",
+          "src": "ai-fa6e58",
+          "tgt": null,
+          "dmg": 18,
+          "skill": "miasma",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-fa6e58",
+          "tgt": "ai-fa6e58",
+          "buff": "miasma"
+        },
+        {
+          "type": "damage",
+          "src": "ai-7b01ed",
+          "tgt": "ai-8e629d",
+          "dmg": 68,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-9a9ef7",
+          "tgt": null,
+          "dmg": 22,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9a9ef7",
+          "tgt": "ai-9a9ef7",
+          "buff": "volley"
+        },
+        {
+          "type": "damage",
+          "src": "ai-52847d",
+          "tgt": "ai-c5b4ac",
+          "dmg": 1,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "ai-8e629d",
+          "killer": "ai-7b01ed"
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-8e629d",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 18,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-408fa0",
+          "to": [
+            6,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            10,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            6,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            9,
+            8
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-9a9ef7",
+          "tgt": "ai-408fa0",
+          "dmg": 19,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9a9ef7",
+          "tgt": "ai-408fa0",
+          "buff": "crippling_shot"
+        }
+      ]
+    },
+    {
+      "turn": 19,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            9,
+            6
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "buff": "bulwark"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cfcd31",
+          "tgt": "ai-9a9ef7",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "damage",
+          "src": "ai-7b01ed",
+          "tgt": null,
+          "dmg": 78,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-7b01ed",
+          "tgt": "ai-7b01ed",
+          "buff": "volley"
+        },
+        {
+          "type": "buff",
+          "src": "ai-12ffc5",
+          "tgt": "ai-12ffc5",
+          "buff": "crimson_veil"
+        },
+        {
+          "type": "damage",
+          "src": "ai-52847d",
+          "tgt": "ai-7b01ed",
+          "dmg": 26,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-9a9ef7",
+          "tgt": "ai-408fa0",
+          "dmg": 53,
+          "skill": "power_shot",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 20,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-12ffc5",
+          "tgt": "ai-12ffc5",
+          "amt": 6,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            9,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            10,
+            8
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-408fa0",
+          "tgt": null,
+          "dmg": 10,
+          "skill": "cacophony",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "cacophony"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cfcd31",
+          "tgt": "ai-52847d",
+          "dmg": 60,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "ai-52847d",
+          "killer": "ai-cfcd31"
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-52847d",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-9a9ef7",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 21,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-12ffc5",
+          "tgt": "ai-12ffc5",
+          "amt": 1,
+          "skill": "crimson_veil_hot"
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            9,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-12ffc5",
+          "to": [
+            11,
+            9
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "war_hymn"
+        },
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "buff": "taunt"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cfcd31",
+          "tgt": "ai-9a9ef7",
+          "dmg": 28,
+          "skill": "rebuke",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-fa6e58",
+          "tgt": "ai-408fa0",
+          "buff": "inoculate"
+        },
+        {
+          "type": "damage",
+          "src": "ai-9a9ef7",
+          "tgt": "ai-408fa0",
+          "dmg": 23,
+          "skill": "ranged_attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 22,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "amt": 5,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cfcd31",
+          "tgt": "ai-cfcd31",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-7b01ed",
+          "tgt": "ai-7b01ed",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            8,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-12ffc5",
+          "to": [
+            10,
+            8
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-fa6e58",
+          "tgt": "ai-12ffc5",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "damage",
+          "src": "ai-7b01ed",
+          "tgt": "ai-12ffc5",
+          "dmg": 15,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-7b01ed",
+          "tgt": "ai-12ffc5",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cfcd31",
+          "tgt": "ai-9a9ef7",
+          "dmg": 18,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-408fa0",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-9a9ef7",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 23,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cfcd31",
+          "tgt": "ai-cfcd31",
+          "amt": 3,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-7b01ed",
+          "tgt": "ai-7b01ed",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "damage",
+          "src": "ai-12ffc5",
+          "tgt": "ai-12ffc5",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            9,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9a9ef7",
+          "to": [
+            8,
+            10
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-fa6e58",
+          "tgt": "ai-fa6e58",
+          "buff": "enfeeble"
+        }
+      ]
+    },
+    {
+      "turn": 24,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-12ffc5",
+          "tgt": "ai-12ffc5",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-12ffc5",
+          "dmg": 1,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-12ffc5",
+          "buff": "shield_bash"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cfcd31",
+          "tgt": "ai-9a9ef7",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "damage",
+          "src": "ai-fa6e58",
+          "tgt": null,
+          "dmg": 26,
+          "skill": "miasma",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-fa6e58",
+          "tgt": "ai-fa6e58",
+          "buff": "miasma"
+        },
+        {
+          "type": "damage",
+          "src": "ai-9a9ef7",
+          "tgt": "ai-408fa0",
+          "dmg": 14,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9a9ef7",
+          "tgt": "ai-408fa0",
+          "buff": "crippling_shot"
+        }
+      ]
+    },
+    {
+      "turn": 25,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-12ffc5",
+          "tgt": "ai-12ffc5",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            8,
+            5
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "ballad_of_might"
+        },
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "buff": "bulwark"
+        },
+        {
+          "type": "damage",
+          "src": "ai-7b01ed",
+          "tgt": "ai-12ffc5",
+          "dmg": 94,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-9a9ef7",
+          "tgt": null,
+          "dmg": 3,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9a9ef7",
+          "tgt": "ai-9a9ef7",
+          "buff": "volley"
+        },
+        {
+          "type": "death",
+          "unit": "ai-12ffc5",
+          "killer": "ai-7b01ed"
+        }
+      ]
+    },
+    {
+      "turn": 26,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-c5b4ac",
+          "to": [
+            8,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            6,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "dirge_of_weakness"
+        }
+      ]
+    },
+    {
+      "turn": 27,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-cfcd31",
+          "to": [
+            6,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "war_hymn"
+        },
+        {
+          "type": "buff",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "buff": "taunt"
+        },
+        {
+          "type": "buff",
+          "src": "ai-9a9ef7",
+          "tgt": "ai-9a9ef7",
+          "buff": "evasion"
+        }
+      ]
+    },
+    {
+      "turn": 28,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-c5b4ac",
+          "tgt": "ai-c5b4ac",
+          "amt": 1,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "heal",
+          "src": "ai-7b01ed",
+          "tgt": "ai-7b01ed",
+          "amt": 7,
+          "skill": "war_hymn"
+        },
+        {
+          "type": "move",
+          "unit": "ai-fa6e58",
+          "to": [
+            6,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-7b01ed",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-408fa0",
+          "tgt": null,
+          "dmg": 11,
+          "skill": "cacophony",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-408fa0",
+          "tgt": "ai-408fa0",
+          "buff": "cacophony"
+        },
+        {
+          "type": "death",
+          "unit": "ai-9a9ef7"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "team_a_total_damage": 819,
+    "team_a_total_healing": 147,
+    "team_a_kills": 4,
+    "team_a_deaths": 0,
+    "team_b_total_damage": 277,
+    "team_b_total_healing": 207,
+    "team_b_kills": 0,
+    "team_b_deaths": 5,
+    "first_blood_turn": 9,
+    "first_blood_killer": "ai-7b01ed",
+    "first_blood_victim": "ai-6e41f9",
+    "mvp": "ai-7b01ed",
+    "mvp_damage": 556,
+    "mvp_kills": 3
+  }
+}

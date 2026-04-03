@@ -797,12 +797,20 @@ export class AudioManager {
 
   /** Handle skill-specific sounds, falling back to generic skill_cast. */
   _processSkillSound(act, skills, combat) {
-    // Phase 25F: Undying Will revive trigger — dramatic resurrection sound
+    // Phase 25R-F: Undying Fury revive trigger — dramatic resurrection explosion
     // The revive action has heal_amount set (the revive HP), distinguishing
     // it from the initial buff cast (which has buff_applied). Play a unique
     // dramatic sound instead of the normal cast sound.
-    if (act.skill_id === 'undying_will' && act.heal_amount) {
-      this._playCombatSound({ key: 'skill_undying_revive', volume: 0.9, pitchVariance: 0 }, act);
+    if (act.skill_id === 'undying_fury' && act.heal_amount) {
+      this._playCombatSound({ key: 'skill_undying_fury_trigger', volume: 0.9, pitchVariance: 0 }, act);
+      return;
+    }
+
+    // Phase 25R-F: Soul Rend empowered variant — deeper, more aggressive slash
+    // When Soul Rend triggers below 50% HP it applies a bleed (buff_applied set).
+    // Play the crit-weight sound instead of the normal gore-pierce.
+    if (act.skill_id === 'soul_rend' && act.buff_applied) {
+      this._playCombatSound({ key: 'skill_soul_rend_empowered', volume: 0.9, pitchVariance: 0.05 }, act);
       return;
     }
 

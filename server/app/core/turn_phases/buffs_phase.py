@@ -83,6 +83,29 @@ def _resolve_cooldowns_and_buffs(
                             is_tick=True,
                         ))
 
+                        # DoT lifesteal — heal the source for a percentage of tick damage
+                        ls_pct = buff.get("lifesteal_pct", 0.0)
+                        source_id = buff.get("source_id")
+                        if ls_pct > 0 and source_id:
+                            source = players.get(source_id)
+                            if source and source.is_alive and source.hp < source.max_hp:
+                                heal_amt = int(dmg * ls_pct)
+                                if heal_amt > 0:
+                                    source.hp = min(source.max_hp, source.hp + heal_amt)
+                                    results.append(ActionResult(
+                                        player_id=source.player_id,
+                                        username=source.username,
+                                        action_type=ActionType.SKILL,
+                                        skill_id=buff.get("buff_id", "dot"),
+                                        success=True,
+                                        message=f"{source.username} drains {heal_amt} HP from {buff.get('buff_id', 'DoT')}",
+                                        heal_amount=heal_amt,
+                                        target_id=source.player_id,
+                                        target_username=source.username,
+                                        target_hp_remaining=source.hp,
+                                        is_tick=True,
+                                    ))
+
             # Log HoT healing ticks
             for buff in p.active_buffs:
                 if buff.get("type") == "hot":
@@ -170,17 +193,42 @@ def _resolve_cooldowns_and_buffs(
                             ))
 
             elif totem.get("type") == "searing_totem":
-                damage_per_turn = totem.get("damage_per_turn", 4)
+                damage_per_turn = totem.get("damage_per_turn", 5)
                 for p in players.values():
                     if not p.is_alive or p.team == totem_team:
                         continue
                     dist = max(abs(p.position.x - totem_x), abs(p.position.y - totem_y))
                     if dist <= effect_radius:
-                        # Searing totem damage now respects armor
+                        # Searing totem spirit fire — half armor reduction (fire partially bypasses physical armor)
                         effective_armor = getattr(p, 'armor', 0)
-                        reduced_dmg = max(1, damage_per_turn - effective_armor)
+                        reduced_dmg = max(1, damage_per_turn - effective_armor // 2)
+                        # Phase 26G: Spirit Link — split searing totem damage
+                        from app.core.combat import try_split_spirit_link
+                        target_dmg, linked_shaman, shared_dmg = try_split_spirit_link(p, reduced_dmg, players)
+                        if linked_shaman and shared_dmg > 0:
+                            from app.core.combat import apply_damage as _apply_dmg
+                            shaman_killed = _apply_dmg(linked_shaman, shared_dmg)
+                            results.append(ActionResult(
+                                player_id=linked_shaman.player_id,
+                                username=linked_shaman.username,
+                                action_type=ActionType.SKILL,
+                                skill_id="spirit_link",
+                                success=True,
+                                message=f"Spirit Link redirects {shared_dmg} searing damage to {linked_shaman.username}"
+                                        + (f" — {linked_shaman.username} was killed!" if shaman_killed else ""),
+                                damage_dealt=shared_dmg,
+                                target_id=linked_shaman.player_id,
+                                target_username=linked_shaman.username,
+                                target_hp_remaining=linked_shaman.hp,
+                                killed=shaman_killed,
+                                is_tick=True,
+                            ))
+                            if shaman_killed and linked_shaman.player_id not in deaths:
+                                deaths.append(linked_shaman.player_id)
+                                for pp in players.values():
+                                    pp.active_buffs = [b for b in pp.active_buffs if not (b.get("stat") == "spirit_link" and b.get("caster_id") == linked_shaman.player_id)]
                         old_hp = p.hp
-                        p.hp = max(0, p.hp - reduced_dmg)
+                        p.hp = max(0, p.hp - target_dmg)
                         actual_dmg = old_hp - p.hp
                         if p.hp <= 0:
                             p.is_alive = False
@@ -210,6 +258,9 @@ def _resolve_cooldowns_and_buffs(
                         continue
                     dist = max(abs(p.position.x - totem_x), abs(p.position.y - totem_y))
                     if dist <= effect_radius:
+                        # Phase 25R-C: CC immune units resist root
+                        if any(b.get("cc_immune") for b in p.active_buffs):
+                            continue
                         # Refresh existing root (don't stack)
                         p.active_buffs = [b for b in p.active_buffs if b.get("stat") != "rooted"]
                         root_entry = {

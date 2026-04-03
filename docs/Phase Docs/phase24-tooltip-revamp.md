@@ -320,7 +320,7 @@ For each skill, audit the `description` field:
 | `rebuke` | "Deal 24 holy damage (36 vs Undead/Demons). 6-tile range." | "24 holy damage (36 vs Undead/Demons)." | "Judgement falls upon the wicked." |
 | `ballad_of_might` | "Sing a war hymn — all allies within 2 tiles gain +30% melee and ranged damage for 3 turns." | "+30% damage to all allies within 2 tiles for 3 turns." | "A hymn of war that stirs the blood." |
 | `dirge_of_weakness` | "Chant a dirge of doom — all enemies within 2 tiles of target take 25% more damage for 3 turns." | "+25% damage taken by all enemies within 2 tiles of target for 3 turns." | "A dirge of inevitable doom." |
-| `verse_of_haste` | "Accelerate an ally's recovery — reduce all skill cooldowns by 2 turns." | "Reduce all skill cooldowns by 2 turns for target ally or self." | "Time itself bends to the melody." |
+| `war_hymn` | "Sing a restorative hymn — all allies within 4 tiles heal 7 HP per turn for 3 turns." | "7 HP/turn for 3 turns to all allies within 4 tiles." | "A hymn of mending that knits flesh and bone." |
 | `cacophony` | "Unleash a deafening shriek — deal 10 damage and slow all enemies within 2 tiles for 2 turns." | "10 damage + slow to all enemies within 2 tiles for 2 turns." | "An ear-splitting shriek that shatters concentration." |
 | `blood_strike` | "A vampiric strike — deal 1.4x melee damage and heal yourself for 40% of damage dealt." | "1.4× melee damage + heal 40% of damage dealt." | "Drink deep of the enemy's lifeblood." |
 | `crimson_veil` | "Shroud yourself in stolen vitality — gain +30% melee damage and heal 6 HP/turn for 3 turns." | "+30% melee damage + 6 HP/turn for 3 turns." | "Stolen vitality cloaks the Blood Knight in crimson mist." |

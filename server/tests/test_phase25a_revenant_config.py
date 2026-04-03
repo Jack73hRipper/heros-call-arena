@@ -3,9 +3,10 @@ Tests for Phase 25A: Revenant class config & data model.
 
 Covers:
 - Revenant class loads correctly from classes_config.json
-- Revenant base stats match design spec (HP=130, melee=14, ranged=0, armor=5, vision=5, range=0)
+- Revenant base stats match design spec (HP=130, melee=16, ranged=0, armor=6, vision=5, range=0)
 - Revenant color is #708090 and shape is coffin
-- All 4 Revenant skills load from skills_config.json
+- All 4 Revenant rework skills load from skills_config.json
+  (grasp_of_the_grave, deaths_embrace, soul_rend, undying_fury)
 - Revenant skill definitions have correct fields and values
 - class_skills["revenant"] maps correctly (5 skills)
 - can_use_skill() validates Revenant skills for revenant class
@@ -171,86 +172,94 @@ class TestRevenantClassConfig:
 class TestRevenantSkillsConfig:
     """Tests for Revenant skill definitions in skills_config.json."""
 
-    # -- Grave Thorns --
+    # -- Grasp of the Grave (replaces Grave Chains) --
 
-    def test_grave_thorns_exists(self, loaded_skills):
-        skill = get_skill("grave_thorns")
+    def test_grasp_of_the_grave_exists(self, loaded_skills):
+        skill = get_skill("grasp_of_the_grave")
         assert skill is not None
 
-    def test_grave_thorns_definition(self, loaded_skills):
-        s = get_skill("grave_thorns")
-        assert s["skill_id"] == "grave_thorns"
-        assert s["name"] == "Grave Thorns"
-        assert s["targeting"] == "self"
-        assert s["range"] == 0
-        assert s["cooldown_turns"] == 5
-        assert s["mana_cost"] == 0
-        assert s["requires_line_of_sight"] is False
-        assert s["allowed_classes"] == ["revenant"]
-
-    def test_grave_thorns_effect(self, loaded_skills):
-        s = get_skill("grave_thorns")
-        assert len(s["effects"]) == 1
-        effect = s["effects"][0]
-        assert effect["type"] == "thorns_buff"
-        assert effect["thorns_damage"] == 12
-        assert effect["duration_turns"] == 4
-
-    # -- Grave Chains --
-
-    def test_grave_chains_exists(self, loaded_skills):
-        skill = get_skill("grave_chains")
-        assert skill is not None
-
-    def test_grave_chains_definition(self, loaded_skills):
-        s = get_skill("grave_chains")
-        assert s["skill_id"] == "grave_chains"
-        assert s["name"] == "Grave Chains"
+    def test_grasp_of_the_grave_definition(self, loaded_skills):
+        s = get_skill("grasp_of_the_grave")
+        assert s["skill_id"] == "grasp_of_the_grave"
+        assert s["name"] == "Grasp of the Grave"
         assert s["targeting"] == "enemy_ranged"
         assert s["range"] == 4
-        assert s["cooldown_turns"] == 5
+        assert s["cooldown_turns"] == 4
         assert s["mana_cost"] == 0
         assert s["requires_line_of_sight"] is True
         assert s["allowed_classes"] == ["revenant"]
 
-    def test_grave_chains_effect(self, loaded_skills):
-        s = get_skill("grave_chains")
+    def test_grasp_of_the_grave_effect(self, loaded_skills):
+        s = get_skill("grasp_of_the_grave")
         assert len(s["effects"]) == 1
         effect = s["effects"][0]
-        assert effect["type"] == "ranged_taunt"
-        assert effect["taunt_duration"] == 3
+        assert effect["type"] == "ranged_root"
+        assert effect["root_duration"] == 1
+        assert effect["empowered_hp_threshold"] == 0.50
+        assert effect["empowered_root_duration"] == 2
 
-    # -- Undying Will --
+    # -- Death's Embrace (replaces Grave Thorns) --
 
-    def test_undying_will_exists(self, loaded_skills):
-        skill = get_skill("undying_will")
+    def test_deaths_embrace_exists(self, loaded_skills):
+        skill = get_skill("deaths_embrace")
         assert skill is not None
 
-    def test_undying_will_definition(self, loaded_skills):
-        s = get_skill("undying_will")
-        assert s["skill_id"] == "undying_will"
-        assert s["name"] == "Undying Will"
+    def test_deaths_embrace_definition(self, loaded_skills):
+        s = get_skill("deaths_embrace")
+        assert s["skill_id"] == "deaths_embrace"
+        assert s["name"] == "Death's Embrace"
         assert s["targeting"] == "self"
         assert s["range"] == 0
-        assert s["cooldown_turns"] == 8
+        assert s["cooldown_turns"] == 5
         assert s["mana_cost"] == 0
         assert s["requires_line_of_sight"] is False
         assert s["allowed_classes"] == ["revenant"]
 
-    def test_undying_will_effect(self, loaded_skills):
-        s = get_skill("undying_will")
+    def test_deaths_embrace_effect(self, loaded_skills):
+        s = get_skill("deaths_embrace")
         assert len(s["effects"]) == 1
         effect = s["effects"][0]
-        assert effect["type"] == "cheat_death"
-        assert effect["revive_hp_pct"] == 0.30
-        assert effect["duration_turns"] == 5
+        assert effect["type"] == "deaths_embrace_buff"
+        assert effect["thorns_damage"] == 8
+        assert effect["armor_bonus"] == 2
+        assert effect["heal_on_hit_taken"] == 3
+        assert effect["duration_turns"] == 4
 
-    def test_undying_will_longest_cooldown(self, loaded_skills):
-        """Undying Will has the longest cooldown (8) of any Revenant skill."""
-        s = get_skill("undying_will")
-        assert s["cooldown_turns"] == 8
+    # -- Undying Fury (replaces Undying Will) --
 
-    # -- Soul Rend --
+    def test_undying_fury_exists(self, loaded_skills):
+        skill = get_skill("undying_fury")
+        assert skill is not None
+
+    def test_undying_fury_definition(self, loaded_skills):
+        s = get_skill("undying_fury")
+        assert s["skill_id"] == "undying_fury"
+        assert s["name"] == "Undying Fury"
+        assert s["targeting"] == "self"
+        assert s["range"] == 0
+        assert s["cooldown_turns"] == 12
+        assert s["mana_cost"] == 0
+        assert s["requires_line_of_sight"] is False
+        assert s["allowed_classes"] == ["revenant"]
+
+    def test_undying_fury_effect(self, loaded_skills):
+        s = get_skill("undying_fury")
+        assert len(s["effects"]) == 1
+        effect = s["effects"][0]
+        assert effect["type"] == "undying_fury"
+        assert effect["revive_hp_pct"] == 0.25
+        assert effect["activation_window"] == 5
+        assert effect["fury_duration"] == 3
+        assert effect["fury_damage_multiplier"] == 1.5
+        assert effect["fury_cc_immune"] is True
+        assert effect["fury_lifesteal_pct"] == 0.25
+
+    def test_undying_fury_longest_cooldown(self, loaded_skills):
+        """Undying Fury has the longest cooldown (12) of any Revenant skill."""
+        s = get_skill("undying_fury")
+        assert s["cooldown_turns"] == 12
+
+    # -- Soul Rend (reworked) --
 
     def test_soul_rend_exists(self, loaded_skills):
         skill = get_skill("soul_rend")
@@ -262,7 +271,7 @@ class TestRevenantSkillsConfig:
         assert s["name"] == "Soul Rend"
         assert s["targeting"] == "enemy_adjacent"
         assert s["range"] == 1
-        assert s["cooldown_turns"] == 4
+        assert s["cooldown_turns"] == 3
         assert s["mana_cost"] == 0
         assert s["requires_line_of_sight"] is False
         assert s["allowed_classes"] == ["revenant"]
@@ -271,9 +280,12 @@ class TestRevenantSkillsConfig:
         s = get_skill("soul_rend")
         assert len(s["effects"]) == 1
         effect = s["effects"][0]
-        assert effect["type"] == "melee_damage_slow"
-        assert effect["damage_multiplier"] == 1.5
-        assert effect["slow_duration"] == 2
+        assert effect["type"] == "melee_damage_conditional_bleed"
+        assert effect["damage_multiplier"] == 1.3
+        assert effect["empowered_hp_threshold"] == 0.50
+        assert effect["empowered_damage_multiplier"] == 1.8
+        assert effect["bleed_damage_per_turn"] == 5
+        assert effect["bleed_duration"] == 3
 
 
 # ============================================================
@@ -296,10 +308,10 @@ class TestRevenantClassSkillsMapping:
         skills = get_class_skills("revenant")
         assert skills == [
             "auto_attack_melee",
-            "grave_thorns",
-            "grave_chains",
-            "undying_will",
+            "grasp_of_the_grave",
+            "deaths_embrace",
             "soul_rend",
+            "undying_fury",
         ]
 
     def test_revenant_auto_attack_is_melee(self, loaded_skills):
@@ -321,20 +333,20 @@ class TestRevenantClassSkillsMapping:
 class TestRevenantCanUseSkill:
     """Tests for can_use_skill() with Revenant class and skills."""
 
-    def test_revenant_can_use_grave_thorns(self, loaded_skills):
+    def test_revenant_can_use_grasp_of_the_grave(self, loaded_skills):
         player = _make_player(class_id="revenant")
-        ok, msg = can_use_skill(player, "grave_thorns")
+        ok, msg = can_use_skill(player, "grasp_of_the_grave")
         assert ok is True
         assert msg == ""
 
-    def test_revenant_can_use_grave_chains(self, loaded_skills):
+    def test_revenant_can_use_deaths_embrace(self, loaded_skills):
         player = _make_player(class_id="revenant")
-        ok, msg = can_use_skill(player, "grave_chains")
+        ok, msg = can_use_skill(player, "deaths_embrace")
         assert ok is True
 
-    def test_revenant_can_use_undying_will(self, loaded_skills):
+    def test_revenant_can_use_undying_fury(self, loaded_skills):
         player = _make_player(class_id="revenant")
-        ok, msg = can_use_skill(player, "undying_will")
+        ok, msg = can_use_skill(player, "undying_fury")
         assert ok is True
 
     def test_revenant_can_use_soul_rend(self, loaded_skills):
@@ -348,20 +360,20 @@ class TestRevenantCanUseSkill:
         ok, msg = can_use_skill(player, "auto_attack_melee")
         assert ok is True
 
-    def test_non_revenant_cannot_use_grave_thorns(self, loaded_skills):
+    def test_non_revenant_cannot_use_grasp_of_the_grave(self, loaded_skills):
         player = _make_player(class_id="crusader")
-        ok, msg = can_use_skill(player, "grave_thorns")
+        ok, msg = can_use_skill(player, "grasp_of_the_grave")
         assert ok is False
         assert "class" in msg.lower()
 
-    def test_non_revenant_cannot_use_grave_chains(self, loaded_skills):
+    def test_non_revenant_cannot_use_deaths_embrace(self, loaded_skills):
         player = _make_player(class_id="ranger")
-        ok, msg = can_use_skill(player, "grave_chains")
+        ok, msg = can_use_skill(player, "deaths_embrace")
         assert ok is False
 
-    def test_non_revenant_cannot_use_undying_will(self, loaded_skills):
+    def test_non_revenant_cannot_use_undying_fury(self, loaded_skills):
         player = _make_player(class_id="mage")
-        ok, msg = can_use_skill(player, "undying_will")
+        ok, msg = can_use_skill(player, "undying_fury")
         assert ok is False
 
     def test_non_revenant_cannot_use_soul_rend(self, loaded_skills):
@@ -371,20 +383,20 @@ class TestRevenantCanUseSkill:
 
     def test_dead_revenant_cannot_use_skills(self, loaded_skills):
         player = _make_player(class_id="revenant", alive=False)
-        ok, msg = can_use_skill(player, "grave_thorns")
+        ok, msg = can_use_skill(player, "grasp_of_the_grave")
         assert ok is False
         assert "dead" in msg
 
     def test_revenant_skill_on_cooldown_rejected(self, loaded_skills):
-        player = _make_player(class_id="revenant", cooldowns={"grave_thorns": 3})
-        ok, msg = can_use_skill(player, "grave_thorns")
+        player = _make_player(class_id="revenant", cooldowns={"grasp_of_the_grave": 3})
+        ok, msg = can_use_skill(player, "grasp_of_the_grave")
         assert ok is False
         assert "cooldown" in msg.lower()
         assert "3" in msg
 
     def test_revenant_skill_zero_cooldown_allowed(self, loaded_skills):
-        player = _make_player(class_id="revenant", cooldowns={"grave_thorns": 0})
-        ok, msg = can_use_skill(player, "grave_thorns")
+        player = _make_player(class_id="revenant", cooldowns={"grasp_of_the_grave": 0})
+        ok, msg = can_use_skill(player, "grasp_of_the_grave")
         assert ok is True
 
 
@@ -467,7 +479,7 @@ class TestRegressionExistingClasses:
         ]
         assert get_class_skills("bard") == [
             "auto_attack_ranged", "ballad_of_might", "dirge_of_weakness",
-            "verse_of_haste", "cacophony"
+            "war_hymn", "cacophony"
         ]
         assert get_class_skills("blood_knight") == [
             "auto_attack_melee", "blood_strike", "crimson_veil",

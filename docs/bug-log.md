@@ -1,5 +1,33 @@
 # Bug Log
 
+## Bug #13 — test_heroes.py Module Docstring Causes SyntaxError
+
+**Date:** April 2026
+**Phase:** Hiring Hall Rework
+**Severity:** Low — test collection only, no runtime impact
+**Status:** Open
+
+### Symptoms
+
+`pytest tests/test_heroes.py` fails to collect with:
+```
+SyntaxError: unterminated triple-quoted string literal (detected at line 885)
+```
+
+### Root Cause
+
+Line 1 of `test_heroes.py` has a stray `"""` on its own line, immediately followed by the real module docstring opening `"""Tests for Phase 4E-1/4E-4...` on line 2. Python sees the first `"""` as opening a string, the second `"""` on line 2 as closing it, then the remaining text becomes invalid syntax. The file also contained several Unicode characters (em-dashes `—` on comment lines, arrows `→` in docstrings) that triggered earlier parse errors — the arrow on line 810 was already fixed.
+
+### Fix
+
+Remove the stray `"""` on line 1 so the module docstring starts cleanly on line 2, or merge them into a single opening. Verify no other Unicode characters remain in string literals (the em-dashes in `#` comments are harmless).
+
+### Files
+
+- `server/tests/test_heroes.py` — lines 1-2
+
+---
+
 ## Bug #11 — PVPVE AI Team Frozen at Spawn (Leader-Follower Deadlock)
 
 **Date:** March 2026

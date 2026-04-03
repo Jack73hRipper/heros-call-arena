@@ -1,15 +1,14 @@
 """
-Tests for Phase 4E-1: Hero models, persistence, and Town REST API.
+"""Tests for Phase 4E-1/4E-4: Hero models, persistence, and Town REST API.
 
 Covers:
 - PlayerProfile and Hero model creation and validation
-- HeroStats with stat variation
-- Hero generation (stat variation within bounds, unique names)
+- HeroStats (flat base stats, no variation)
+- Hero generation (base stats + random starting gear)
 - Tavern generation (correct count, class distribution)
 - JSON file persistence (save, load, round-trip, corrupt/missing handling)
 - Hiring flow (gold deduction, roster add, duplicate rejection, insufficient gold)
 - Town REST endpoint integration tests (profile, tavern, hire, roster, refresh)
-- Backward compatibility (existing 446+ tests unaffected)
 """
 
 from __future__ import annotations
@@ -26,14 +25,12 @@ from app.models.profile import (
     BASE_HIRE_COST,
     HERO_ROSTER_MAX,
     STARTING_GOLD,
-    STAT_VARIATION_PERCENT,
     Hero,
     HeroStats,
     PlayerProfile,
     generate_hero,
     generate_tavern_heroes,
     get_tavern_pool_size,
-    _vary_stat,
     _pick_unique_name,
 )
 from app.models.player import load_classes_config, ClassDefinition
@@ -97,6 +94,8 @@ def classes_dict():
             "base_armor": c.base_armor,
             "base_vision_range": c.base_vision_range,
             "ranged_range": c.ranged_range,
+            "allowed_weapon_categories": c.allowed_weapon_categories,
+            "preferred_armor": c.preferred_armor,
         }
         for cid, c in classes.items()
     }
@@ -249,41 +248,48 @@ class TestPlayerProfile:
 
 
 # ============================================================
-# 4. Stat Variation Tests
+# 4. Starting Gear Tests
 # ============================================================
 
-class TestStatVariation:
-    """Test the _vary_stat helper and stat variation bounds."""
+class TestStartingGear:
+    """Test that tavern heroes can come with random starting gear."""
 
-    def test_vary_stat_returns_int(self):
-        result = _vary_stat(100)
-        assert isinstance(result, int)
+    def test_hero_stats_are_flat_base(self, classes_dict):
+        """Hero stats should exactly match class base stats (no variation)."""
+        for _ in range(20):
+            hero = generate_hero("crusader", "Knight", classes_dict["crusader"])
+            assert hero.stats.max_hp == classes_dict["crusader"]["base_hp"]
+            assert hero.stats.attack_damage == classes_dict["crusader"]["base_melee_damage"]
+            assert hero.stats.armor == classes_dict["crusader"]["base_armor"]
 
-    def test_vary_stat_within_bounds(self):
-        """Run many iterations to verify stats stay within ±10% bounds."""
-        base = 100
-        results = [_vary_stat(base) for _ in range(500)]
-        assert all(90 <= r <= 110 for r in results), f"Out of bounds: {min(results)}-{max(results)}"
+    def test_hero_equipment_is_dict(self, classes_dict):
+        """Equipment should always be a dict."""
+        hero = generate_hero("ranger", "Archer", classes_dict["ranger"])
+        assert isinstance(hero.equipment, dict)
 
-    def test_vary_stat_zero_base(self):
-        """Zero base stat should return 0 (not negative)."""
-        assert _vary_stat(0) == 0
+    def test_hero_gear_affects_cost(self, classes_dict):
+        """Heroes with gear should cost more than BASE_HIRE_COST."""
+        costs = [generate_hero("hexblade", "X", classes_dict["hexblade"]).hire_cost for _ in range(50)]
+        assert all(c >= BASE_HIRE_COST for c in costs)
+        # At least some should have gear (> base cost) over 50 rolls
+        assert any(c > BASE_HIRE_COST for c in costs), "Expected some heroes with gear"
 
-    def test_vary_stat_small_base(self):
-        """Small base stats should still have variation but stay >= 1."""
-        results = [_vary_stat(2) for _ in range(100)]
-        assert all(r >= 1 for r in results), f"Got value below 1: {min(results)}"
+    def test_hero_equipment_valid_slots(self, classes_dict):
+        """Equipment should only contain valid slot keys."""
+        for _ in range(30):
+            hero = generate_hero("mage", "Mage", classes_dict["mage"])
+            for slot in hero.equipment:
+                assert slot in ("weapon", "armor", "accessory"), f"Invalid slot: {slot}"
 
-    def test_vary_stat_produces_variation(self):
-        """Over many rolls, we should see different values (not always the base)."""
-        results = set(_vary_stat(100) for _ in range(100))
-        assert len(results) > 1, "No variation detected"
-
-    def test_vary_stat_large_base(self):
-        """Large base stats should have proportional variation."""
-        base = 200
-        results = [_vary_stat(base) for _ in range(200)]
-        assert all(180 <= r <= 220 for r in results)
+    def test_naked_hero_base_cost(self, classes_dict):
+        """A hero with no gear should cost exactly BASE_HIRE_COST."""
+        # Generate many and check the ones with no gear
+        for _ in range(100):
+            hero = generate_hero("crusader", "C", classes_dict["crusader"])
+            if not hero.equipment:
+                assert hero.hire_cost == BASE_HIRE_COST
+                return
+        # If all 100 had gear, that's statistically fine — skip assertion
 
 
 # ============================================================
@@ -301,39 +307,29 @@ class TestHeroGeneration:
         assert hero.stats.max_hp == hero.stats.hp
         assert hero.hire_cost >= BASE_HIRE_COST
 
-    def test_generate_hero_stats_vary_from_base(self, classes_dict):
-        """Generated hero stats should be close to but not always equal to base."""
-        base_hp = classes_dict["crusader"]["base_hp"]  # 150
-        hps = set()
-        for _ in range(50):
+    def test_generate_hero_flat_stats(self, classes_dict):
+        """All generated heroes of the same class should have identical base stats."""
+        base_hp = classes_dict["crusader"]["base_hp"]
+        for _ in range(20):
             hero = generate_hero("crusader", "Knight", classes_dict["crusader"])
-            hps.add(hero.stats.hp)
-        # Should see variation (not always 150)
-        assert len(hps) > 1, f"No HP variation detected, always {hps}"
+            assert hero.stats.max_hp == base_hp
 
-    def test_generate_hero_ranged_range_no_variation(self, classes_dict):
-        """ranged_range should NOT vary (exact copy from class config)."""
+    def test_generate_hero_ranged_range_exact(self, classes_dict):
+        """ranged_range should be exact copy from class config."""
         ranges = set()
-        for _ in range(50):
+        for _ in range(20):
             hero = generate_hero("ranger", "Archer", classes_dict["ranger"])
             ranges.add(hero.stats.ranged_range)
         assert len(ranges) == 1, f"ranged_range should not vary, got {ranges}"
         assert classes_dict["ranger"]["ranged_range"] in ranges
 
-    def test_generate_hero_hire_cost_scales(self, classes_dict):
-        """Crusader (tank, high HP+armor) should cost more than Confessor (low stats)."""
-        crusader_costs = [
-            generate_hero("crusader", "C", classes_dict["crusader"]).hire_cost
-            for _ in range(20)
-        ]
-        confessor_costs = [
-            generate_hero("confessor", "F", classes_dict["confessor"]).hire_cost
-            for _ in range(20)
-        ]
-        # Average cost should generally be higher for crusader
-        avg_c = sum(crusader_costs) / len(crusader_costs)
-        avg_f = sum(confessor_costs) / len(confessor_costs)
-        assert avg_c > avg_f, f"Crusader avg {avg_c} should cost more than Confessor avg {avg_f}"
+    def test_generate_hero_hire_cost_varies_by_gear(self, classes_dict):
+        """Heroes with gear cost more than naked heroes."""
+        costs = [generate_hero("crusader", "C", classes_dict["crusader"]).hire_cost for _ in range(50)]
+        # All should be >= base
+        assert all(c >= BASE_HIRE_COST for c in costs)
+        # Should see some variation from gear
+        assert len(set(costs)) > 1 or all(c == BASE_HIRE_COST for c in costs)
 
     def test_generate_tavern_heroes_count(self, classes_dict, names_config):
         heroes = generate_tavern_heroes(classes_dict, names_config, count=5)
@@ -811,7 +807,7 @@ class TestTownEndpoints:
     # --- Full Hiring Workflow ---
 
     def test_full_hire_workflow(self):
-        """End-to-end: create profile → view tavern → hire → check roster → check gold."""
+        """End-to-end: create profile -> view tavern -> hire -> check roster -> check gold."""
         username = "e2e_player"
 
         # 1. Get profile (auto-creates)

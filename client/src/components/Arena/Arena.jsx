@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 import { useGameState, useGameDispatch } from '../../context/GameStateContext';
 import { TILE_SIZE, initCanvas, renderFrame, themeEngine } from '../../canvas/ArenaRenderer';
 import { positionInterpolator } from '../../canvas/PositionInterpolator';
+import { perfTracker } from '../../canvas/PerfTracker';
 import { ParticleManager } from '../../canvas/particles/ParticleManager';
 import { useAudioEvents } from '../../audio';
 import useHighlights from '../../hooks/useHighlights';
@@ -11,7 +12,7 @@ import useWASDMovement from '../../hooks/useWASDMovement';
 import HUD from '../HUD/HUD';
 import HeaderBar from '../HeaderBar/HeaderBar';
 import CombatLog from '../CombatLog/CombatLog';
-import BottomBar from '../BottomBar/BottomBar';
+import ActionBar from '../ActionBar/ActionBar';
 import Inventory from '../Inventory/Inventory';
 import PartyPanel from '../PartyPanel/PartyPanel';
 import EnemyPanel from '../EnemyPanel/EnemyPanel';
@@ -391,7 +392,7 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
     moveHighlights, attackHighlights, rangedHighlights, skillHighlights,
     hoveredTile, queuePreviewTiles, damageFloaters,
     visibleTiles: effectiveVisibleTiles,
-    revealedTiles: (isDungeon && !devOverlay.fogDisabled) ? revealedTiles : null,
+    revealedTiles: (isDungeon && !devOverlay.fogDisabled) ? new Set() : null, // Fog experiment: empty set so all non-FOV tiles are fully black
     playerId, myTeam, isDungeon, tiles, tileLegend, doorStates, chestStates,
     viewport: effectiveViewport, groundItems, lootHighlightTile, effectiveUnitId,
     selectedUnitIds, partyMembers: partyMembers || [],
@@ -433,19 +434,31 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
   useEffect(() => {
     let rafId = null;
     let running = true;
+    let lastAnimRedraw = 0;
+    const DUNGEON_ANIM_INTERVAL = 80; // ms — ~12fps for ambient animations (water, particles, prop flicker)
 
     function renderLoop() {
       if (!running) return;
 
+      const now = performance.now();
+
+      // Smart dungeon redraw: only force continuous redraws at a throttled rate
+      // for ambient animations, instead of unconditional 60fps.
+      const dungeonAnimNeeded = renderParamsRef.current?.isDungeon
+        && (now - lastAnimRedraw >= DUNGEON_ANIM_INTERVAL);
+
       const needsRedraw = renderDirtyRef.current || positionInterpolator.isAnimating()
         || (renderParamsRef.current?.groundZones?.length > 0)
         || (renderParamsRef.current?.totems?.length > 0)
-        || (renderParamsRef.current?.isDungeon); // Continuous redraw for ambient particles, water animation, prop flicker
+        || dungeonAnimNeeded;
 
       if (needsRedraw && ctxRef.current) {
         renderDirtyRef.current = false;
+        if (dungeonAnimNeeded) lastAnimRedraw = now;
         const p = renderParamsRef.current;
         const lerpPositions = positionInterpolator.getInterpolatedPositions();
+
+        const frameStart = performance.now();
 
         renderFrame(ctxRef.current, {
           gridWidth: p.gridWidth,
@@ -515,6 +528,10 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
             drawDevUnitLabels(ctxRef.current, p.players, devOx, devOy, p.playerId);
           }
         }
+
+        // Record frame timing for performance overlay
+        const frameEnd = performance.now();
+        perfTracker.recordFrame(frameEnd - frameStart, now);
       }
 
       rafId = requestAnimationFrame(renderLoop);
@@ -548,7 +565,7 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
     setHoveredTile,
   });
 
-  // ---------- Action Handler (for BottomBar) ----------
+  // ---------- Action Handler (for ActionBar) ----------
   const handleAction = useCallback((action) => {
     sendAction(action);
   }, [sendAction]);
@@ -632,8 +649,8 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
       </div>
 
       {/* Action bar — directly below header */}
-      <div className="arena-bottom-bar">
-        <BottomBar
+      <div className="arena-action-bar">
+        <ActionBar
           onAction={handleAction}
           onLeave={handleLeave}
         />
@@ -756,7 +773,7 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
         <EnemyPanel sendAction={sendAction} />
       </div>
 
-      {/* 6E-5: Inventory Overlay (toggle from BottomBar bag icon, dungeon only) */}
+      {/* 6E-5: Inventory Overlay (toggle from ActionBar bag icon, dungeon only) */}
       {isDungeon && showInventory && (
         <Inventory sendAction={sendAction} onClose={() => setShowInventory(false)} />
       )}
@@ -787,6 +804,7 @@ export default function Arena({ sendAction, onMatchEnd, audioManager }) {
         currentTurn={currentTurn}
         players={players}
         dungeonRooms={dungeonRooms}
+        perfTracker={perfTracker}
       />
 
       {/* Phase 15: ESC Menu Overlay */}

@@ -41,7 +41,7 @@ def resolve_multi_hit(
                 action_type=ActionType.SKILL,
                 skill_id=skill_id,
                 success=False,
-                message=f"{player.username} {skill_def['name']} failed — no target specified",
+                message=f"{player.username} {skill_def['name']} failed â€” no target specified",
             )
         return ActionResult(
             player_id=player.player_id,
@@ -49,7 +49,7 @@ def resolve_multi_hit(
             action_type=ActionType.SKILL,
             skill_id=skill_id,
             success=False,
-            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+            message=f"{player.username} {skill_def['name']} failed â€” no enemy at target",
         )
 
     # Must be adjacent (check against target's CURRENT position)
@@ -62,7 +62,7 @@ def resolve_multi_hit(
             action_type=ActionType.SKILL,
             skill_id=skill_id,
             success=False,
-            message=f"{player.username} {skill_def['name']} failed — target not adjacent",
+            message=f"{player.username} {skill_def['name']} failed â€” target not adjacent",
         )
 
     # Calculate per-hit damage with equipment bonuses
@@ -112,12 +112,108 @@ def resolve_multi_hit(
         skill_id=skill_id,
         success=True,
         message=f"{player.username} used {skill_def['name']} on {target.username} for {total_damage} damage ({hits} hits)"
-                + (f" — {target.username} was killed!" if killed else ""),
+                + (f" â€” {target.username} was killed!" if killed else ""),
         target_id=target.player_id,
         target_username=target.username,
         damage_dealt=total_damage,
         target_hp_remaining=target.hp,
         killed=killed,
+    )
+
+
+def resolve_hex_strike(
+    player: PlayerState,
+    target_x: int | None,
+    target_y: int | None,
+    skill_def: dict,
+    players: dict[str, PlayerState],
+    obstacles: set[tuple[int, int]],
+    target_id: str | None = None,
+) -> ActionResult:
+    """Resolve Hex Strike — cursed melee strike with Wither synergy.
+
+    Deals melee damage × multiplier. If the target has an active Wither DoT,
+    deals bonus flat damage equal to one Wither tick (ignores armor).
+    """
+    from app.core.combat import _get_equipment_bonuses, get_combat_config
+    from app.core.skills import get_melee_buff_multiplier, get_effective_armor, get_damage_taken_multiplier, get_damage_dealt_multiplier
+
+    skill_id = skill_def["skill_id"]
+    effect = skill_def["effects"][0]
+    damage_multiplier = effect.get("damage_multiplier", 1.4)
+    wither_bonus_skill = effect.get("wither_bonus_skill", "wither")
+
+    # Entity-based target resolution
+    target = _resolve_skill_entity_target(player, target_id, target_x, target_y, players, ally_target=False)
+
+    if target is None:
+        if target_x is None or target_y is None:
+            return ActionResult(
+                player_id=player.player_id, username=player.username,
+                action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+                message=f"{player.username} {skill_def['name']} failed — no target specified",
+            )
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+        )
+
+    # Must be adjacent (Chebyshev distance 1)
+    dx = abs(player.position.x - target.position.x)
+    dy = abs(player.position.y - target.position.y)
+    if dx > 1 or dy > 1 or (dx == 0 and dy == 0):
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — target not adjacent",
+        )
+
+    # Calculate base damage with equipment and buff multipliers
+    config = get_combat_config()
+    atk_bonuses = _get_equipment_bonuses(player)
+    melee_mult = get_melee_buff_multiplier(player)
+    raw_damage = int((player.attack_damage + atk_bonuses.attack_damage) * melee_mult * damage_multiplier)
+    # Phase 16A: skill_damage_pct bonus
+    skill_dmg_pct = getattr(player, 'skill_damage_pct', 0.0)
+    raw_damage = int(raw_damage * (1.0 + skill_dmg_pct))
+    effective_armor = get_effective_armor(target)
+    reduction = effective_armor * config.get("armor_reduction_per_point", 1)
+    damage = max(1, raw_damage - reduction)
+
+    # Phase 21C: Damage-taken multiplier
+    dmg_taken_mult = get_damage_taken_multiplier(target)
+    if dmg_taken_mult != 1.0:
+        damage = max(1, int(damage * dmg_taken_mult))
+    # Phase 23C: Damage-dealt multiplier
+    dmg_dealt_mult = get_damage_dealt_multiplier(player)
+    if dmg_dealt_mult != 1.0:
+        damage = max(1, int(damage * dmg_dealt_mult))
+
+    # Wither synergy bonus — if target has active Wither, add one tick of flat damage (ignores armor)
+    wither_bonus = 0
+    for buff in target.active_buffs:
+        if buff.get("buff_id") == wither_bonus_skill and buff.get("type") == "dot":
+            wither_bonus = buff.get("damage_per_tick", 0)
+            break
+    damage += wither_bonus
+
+    # Apply damage
+    target.hp = max(0, target.hp - damage)
+    killed = target.hp <= 0
+    if killed:
+        target.is_alive = False
+
+    _apply_skill_cooldown(player, skill_def, dealt_damage=True)
+
+    bonus_msg = f" (+{wither_bonus} curse bonus)" if wither_bonus > 0 else ""
+    kill_msg = f" — {target.username} was killed!" if killed else ""
+    return ActionResult(
+        player_id=player.player_id, username=player.username,
+        action_type=ActionType.SKILL, skill_id=skill_id, success=True,
+        message=f"{player.username} used {skill_def['name']} on {target.username} for {damage} damage{bonus_msg}{kill_msg}",
+        target_id=target.player_id, target_username=target.username,
+        damage_dealt=damage, target_hp_remaining=target.hp, killed=killed,
     )
 
 
@@ -156,7 +252,7 @@ def resolve_ranged_skill(
                 action_type=ActionType.SKILL,
                 skill_id=skill_id,
                 success=False,
-                message=f"{player.username} {skill_def['name']} failed — no target specified",
+                message=f"{player.username} {skill_def['name']} failed â€” no target specified",
             )
         return ActionResult(
             player_id=player.player_id,
@@ -164,7 +260,7 @@ def resolve_ranged_skill(
             action_type=ActionType.SKILL,
             skill_id=skill_id,
             success=False,
-            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+            message=f"{player.username} {skill_def['name']} failed â€” no enemy at target",
         )
 
     # Check range against target's CURRENT position
@@ -176,7 +272,7 @@ def resolve_ranged_skill(
             action_type=ActionType.SKILL,
             skill_id=skill_id,
             success=False,
-            message=f"{player.username} {skill_def['name']} failed — target out of range",
+            message=f"{player.username} {skill_def['name']} failed â€” target out of range",
         )
 
     # Check LOS against target's CURRENT position
@@ -192,7 +288,7 @@ def resolve_ranged_skill(
                 action_type=ActionType.SKILL,
                 skill_id=skill_id,
                 success=False,
-                message=f"{player.username} {skill_def['name']} failed — no line of sight",
+                message=f"{player.username} {skill_def['name']} failed â€” no line of sight",
             )
 
     # Calculate boosted ranged damage with equipment bonuses
@@ -232,7 +328,7 @@ def resolve_ranged_skill(
         skill_id=skill_id,
         success=True,
         message=f"{player.username} used {skill_def['name']} on {target.username} for {damage} damage"
-                + (f" — {target.username} was killed!" if killed else ""),
+                + (f" â€” {target.username} was killed!" if killed else ""),
         target_id=target.player_id,
         target_username=target.username,
         damage_dealt=damage,
@@ -274,12 +370,12 @@ def resolve_holy_damage(
             return ActionResult(
                 player_id=player.player_id, username=player.username,
                 action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-                message=f"{player.username} {skill_def['name']} failed — no target specified",
+                message=f"{player.username} {skill_def['name']} failed â€” no target specified",
             )
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+            message=f"{player.username} {skill_def['name']} failed â€” no enemy at target",
         )
 
     # Range check against target's CURRENT position
@@ -289,7 +385,7 @@ def resolve_holy_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — target out of range",
+            message=f"{player.username} {skill_def['name']} failed â€” target out of range",
         )
 
     # LOS check against target's CURRENT position
@@ -299,7 +395,7 @@ def resolve_holy_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no line of sight",
+            message=f"{player.username} {skill_def['name']} failed â€” no line of sight",
         )
 
     # Check creature tags for bonus damage
@@ -337,7 +433,7 @@ def resolve_holy_damage(
         player_id=player.player_id, username=player.username,
         action_type=ActionType.SKILL, skill_id=skill_id, success=True,
         message=f"{player.username} used {skill_def['name']} on {target.username} for {damage} damage{bonus_text}"
-                + (f" — {target.username} was killed!" if killed else ""),
+                + (f" â€” {target.username} was killed!" if killed else ""),
         target_id=target.player_id, target_username=target.username,
         damage_dealt=damage, target_hp_remaining=target.hp, killed=killed,
     )
@@ -372,7 +468,7 @@ def resolve_stun_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+            message=f"{player.username} {skill_def['name']} failed â€” no enemy at target",
         )
 
     # Must be adjacent
@@ -382,7 +478,7 @@ def resolve_stun_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — target not adjacent",
+            message=f"{player.username} {skill_def['name']} failed â€” target not adjacent",
         )
 
     # Calculate damage
@@ -424,7 +520,7 @@ def resolve_stun_damage(
         if cc_immune:
             stun_applied = False
         else:
-            # Don't stack stuns — refresh if already stunned
+            # Don't stack stuns â€” refresh if already stunned
             target.active_buffs = [b for b in target.active_buffs if b.get("type") != "stun"]
             stun_entry = {
                 "buff_id": skill_id,
@@ -440,14 +536,14 @@ def resolve_stun_damage(
     _apply_skill_cooldown(player, skill_def, dealt_damage=True)
 
     if cc_immune:
-        stun_msg = " — RESISTED (CC immune)!"
+        stun_msg = " â€” RESISTED (CC immune)!"
     else:
-        stun_msg = f" — STUNNED for {stun_duration} turn(s)!" if stun_applied else ""
+        stun_msg = f" â€” STUNNED for {stun_duration} turn(s)!" if stun_applied else ""
     return ActionResult(
         player_id=player.player_id, username=player.username,
         action_type=ActionType.SKILL, skill_id=skill_id, success=True,
         message=f"{player.username} used {skill_def['name']} on {target.username} for {damage} damage{stun_msg}"
-                + (f" — {target.username} was killed!" if killed else ""),
+                + (f" â€” {target.username} was killed!" if killed else ""),
         target_id=target.player_id, target_username=target.username,
         damage_dealt=damage, target_hp_remaining=target.hp, killed=killed,
         buff_applied={"type": "stun", "duration": stun_duration} if stun_applied else None,
@@ -464,7 +560,7 @@ def resolve_aoe_damage(
 ) -> ActionResult:
     """Resolve an AoE damage skill (e.g., Volley).
 
-    Targeting: ground_aoe — player targets a tile, all enemies within radius take damage.
+    Targeting: ground_aoe â€” player targets a tile, all enemies within radius take damage.
     Requires LOS to the center tile. Damage is calculated per-target with armor reduction.
     """
     from app.core.combat import _get_equipment_bonuses, get_combat_config, is_in_range
@@ -481,7 +577,7 @@ def resolve_aoe_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no target specified",
+            message=f"{player.username} {skill_def['name']} failed â€” no target specified",
         )
 
     # Range check to center tile
@@ -490,7 +586,7 @@ def resolve_aoe_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — target out of range",
+            message=f"{player.username} {skill_def['name']} failed â€” target out of range",
         )
 
     # LOS check to center tile
@@ -500,7 +596,7 @@ def resolve_aoe_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no line of sight",
+            message=f"{player.username} {skill_def['name']} failed â€” no line of sight",
         )
 
     # Calculate base damage
@@ -518,7 +614,7 @@ def resolve_aoe_damage(
     kills = 0
     killed_ids: list[str] = []
     hit_names: list[str] = []
-    # Phase 23C: Damage-dealt multiplier (Plague Doctor Enfeeble) — computed once for caster
+    # Phase 23C: Damage-dealt multiplier (Plague Doctor Enfeeble) â€” computed once for caster
     dmg_dealt_mult = get_damage_dealt_multiplier(player)
 
     for p in players.values():
@@ -549,11 +645,11 @@ def resolve_aoe_damage(
 
     if hits > 0:
         hit_str = ", ".join(hit_names)
-        kill_str = f" — {kills} killed!" if kills > 0 else ""
+        kill_str = f" â€” {kills} killed!" if kills > 0 else ""
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — hit {hits} enemies for {total_damage} total damage: {hit_str}{kill_str}",
+            message=f"{player.username} used {skill_def['name']} â€” hit {hits} enemies for {total_damage} total damage: {hit_str}{kill_str}",
             damage_dealt=total_damage, killed=kills > 0,
             to_x=target_x, to_y=target_y,
             buff_applied={"type": "aoe_damage", "hits": hits, "kills": kills, "killed_ids": killed_ids},
@@ -562,7 +658,7 @@ def resolve_aoe_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — no enemies in the blast radius",
+            message=f"{player.username} used {skill_def['name']} â€” no enemies in the blast radius",
             to_x=target_x, to_y=target_y,
         )
 
@@ -593,7 +689,7 @@ def resolve_aoe_magic_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no target specified",
+            message=f"{player.username} {skill_def['name']} failed â€” no target specified",
         )
 
     target_pos = Position(x=target_x, y=target_y)
@@ -601,7 +697,7 @@ def resolve_aoe_magic_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — target out of range",
+            message=f"{player.username} {skill_def['name']} failed â€” target out of range",
         )
 
     if requires_los and not has_line_of_sight(
@@ -610,7 +706,7 @@ def resolve_aoe_magic_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no line of sight",
+            message=f"{player.username} {skill_def['name']} failed â€” no line of sight",
         )
 
     config = get_combat_config()
@@ -625,6 +721,7 @@ def resolve_aoe_magic_damage(
     hits = 0
     kills = 0
     killed_ids: list[str] = []
+    hit_ids: list[str] = []
     hit_names: list[str] = []
     dmg_dealt_mult = get_damage_dealt_multiplier(player)
 
@@ -656,20 +753,20 @@ def resolve_aoe_magic_damage(
 
     if hits > 0:
         hit_str = ", ".join(hit_names)
-        kill_str = f" — {kills} killed!" if kills > 0 else ""
+        kill_str = f" â€” {kills} killed!" if kills > 0 else ""
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — hit {hits} enemies for {total_damage} total damage: {hit_str}{kill_str}",
+            message=f"{player.username} used {skill_def['name']} â€” hit {hits} enemies for {total_damage} total damage: {hit_str}{kill_str}",
             damage_dealt=total_damage, killed=kills > 0,
             to_x=target_x, to_y=target_y,
-            buff_applied={"type": "aoe_magic_damage", "hits": hits, "kills": kills, "killed_ids": killed_ids},
+            buff_applied={"type": "aoe_magic_damage", "hits": hits, "kills": kills, "killed_ids": killed_ids, "hit_ids": hit_ids},
         )
     else:
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — no enemies in the blast radius",
+            message=f"{player.username} used {skill_def['name']} â€” no enemies in the blast radius",
             to_x=target_x, to_y=target_y,
         )
 
@@ -705,7 +802,7 @@ def resolve_ranged_damage_slow(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+            message=f"{player.username} {skill_def['name']} failed â€” no enemy at target",
         )
 
     # Range check
@@ -714,7 +811,7 @@ def resolve_ranged_damage_slow(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — target out of range",
+            message=f"{player.username} {skill_def['name']} failed â€” target out of range",
         )
 
     # LOS check
@@ -724,7 +821,7 @@ def resolve_ranged_damage_slow(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no line of sight",
+            message=f"{player.username} {skill_def['name']} failed â€” no line of sight",
         )
 
     # Calculate damage
@@ -770,12 +867,12 @@ def resolve_ranged_damage_slow(
 
     _apply_skill_cooldown(player, skill_def, dealt_damage=True)
 
-    slow_msg = f" — SLOWED for {slow_duration} turn(s)!" if slow_applied else ""
+    slow_msg = f" â€” SLOWED for {slow_duration} turn(s)!" if slow_applied else ""
     return ActionResult(
         player_id=player.player_id, username=player.username,
         action_type=ActionType.SKILL, skill_id=skill_id, success=True,
         message=f"{player.username} used {skill_def['name']} on {target.username} for {damage} damage{slow_msg}"
-                + (f" — {target.username} was killed!" if killed else ""),
+                + (f" â€” {target.username} was killed!" if killed else ""),
         target_id=target.player_id, target_username=target.username,
         damage_dealt=damage, target_hp_remaining=target.hp, killed=killed,
         buff_applied={"type": "slow", "duration": slow_duration} if slow_applied else None,
@@ -815,12 +912,12 @@ def resolve_magic_damage(
             return ActionResult(
                 player_id=player.player_id, username=player.username,
                 action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-                message=f"{player.username} {skill_def['name']} failed — no target specified",
+                message=f"{player.username} {skill_def['name']} failed â€” no target specified",
             )
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+            message=f"{player.username} {skill_def['name']} failed â€” no enemy at target",
         )
 
     # Range check against target's CURRENT position
@@ -829,7 +926,7 @@ def resolve_magic_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — target out of range",
+            message=f"{player.username} {skill_def['name']} failed â€” target out of range",
         )
 
     # LOS check against target's CURRENT position
@@ -841,10 +938,10 @@ def resolve_magic_damage(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no line of sight",
+            message=f"{player.username} {skill_def['name']} failed â€” no line of sight",
         )
 
-    # Calculate magic damage: uses ranged_damage base × multiplier
+    # Calculate magic damage: uses ranged_damage base Ã— multiplier
     config = get_combat_config()
     atk_bonuses = _get_equipment_bonuses(player)
     ranged_mult = get_ranged_buff_multiplier(player)
@@ -882,7 +979,7 @@ def resolve_magic_damage(
         player_id=player.player_id, username=player.username,
         action_type=ActionType.SKILL, skill_id=skill_id, success=True,
         message=f"{player.username} used {skill_def['name']} on {target.username} for {damage} magic damage"
-                + (f" — {target.username} was killed!" if killed else ""),
+                + (f" â€” {target.username} was killed!" if killed else ""),
         target_id=target.player_id, target_username=target.username,
         damage_dealt=damage, target_hp_remaining=target.hp, killed=killed,
     )
@@ -921,7 +1018,7 @@ def resolve_aoe_damage_slow(
     killed_ids: list[str] = []
 
     config = get_combat_config()
-    # Phase 23C: Damage-dealt multiplier (Plague Doctor Enfeeble) — computed once for caster
+    # Phase 23C: Damage-dealt multiplier (Plague Doctor Enfeeble) â€” computed once for caster
     dmg_dealt_mult = get_damage_dealt_multiplier(player)
 
     for p in players.values():
@@ -968,12 +1065,12 @@ def resolve_aoe_damage_slow(
 
     if hits > 0:
         hit_str = ", ".join(hit_names)
-        slow_str = f" — {slowed_count} SLOWED for {slow_duration} turn(s)!" if slowed_count > 0 else ""
-        kill_str = f" — {kills} killed!" if kills > 0 else ""
+        slow_str = f" â€” {slowed_count} SLOWED for {slow_duration} turn(s)!" if slowed_count > 0 else ""
+        kill_str = f" â€” {kills} killed!" if kills > 0 else ""
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — hit {hits} enemies for {total_damage} total magic damage: {hit_str}{slow_str}{kill_str}",
+            message=f"{player.username} used {skill_def['name']} â€” hit {hits} enemies for {total_damage} total magic damage: {hit_str}{slow_str}{kill_str}",
             damage_dealt=total_damage, killed=kills > 0,
             buff_applied={"type": "aoe_damage_slow", "hits": hits, "kills": kills, "slowed": slowed_count, "killed_ids": killed_ids},
         )
@@ -981,7 +1078,7 @@ def resolve_aoe_damage_slow(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — no enemies in the blast radius",
+            message=f"{player.username} used {skill_def['name']} â€” no enemies in the blast radius",
         )
 
 
@@ -997,7 +1094,7 @@ def resolve_lifesteal_damage(
     """Resolve a lifesteal melee skill (e.g., Blood Strike).
 
     Targeting: entity (adjacent enemy), range 1.
-    Deals melee damage × multiplier, then heals caster for heal_pct of damage dealt.
+    Deals melee damage Ã— multiplier, then heals caster for heal_pct of damage dealt.
     Heal is based on post-armor final damage and is capped at max_hp.
     """
     from app.core.combat import _get_equipment_bonuses, get_combat_config
@@ -1016,22 +1113,22 @@ def resolve_lifesteal_damage(
             return ActionResult(
                 player_id=player.player_id, username=player.username,
                 action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-                message=f"{player.username} {skill_def['name']} failed — no target specified",
+                message=f"{player.username} {skill_def['name']} failed â€” no target specified",
             )
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+            message=f"{player.username} {skill_def['name']} failed â€” no enemy at target",
         )
 
-    # Must be adjacent (range 1 — Chebyshev distance)
+    # Must be adjacent (range 1 â€” Chebyshev distance)
     dx = abs(player.position.x - target.position.x)
     dy = abs(player.position.y - target.position.y)
     if dx > 1 or dy > 1 or (dx == 0 and dy == 0):
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — target not adjacent",
+            message=f"{player.username} {skill_def['name']} failed â€” target not adjacent",
         )
 
     # Calculate damage
@@ -1060,7 +1157,7 @@ def resolve_lifesteal_damage(
     if killed:
         target.is_alive = False
 
-    # Lifesteal heal — based on post-armor final damage, capped at max_hp
+    # Lifesteal heal â€” based on post-armor final damage, capped at max_hp
     heal_amount = int(damage * heal_pct)
     if heal_amount > 0 and player.is_alive:
         player.hp = min(player.max_hp, player.hp + heal_amount)
@@ -1068,7 +1165,7 @@ def resolve_lifesteal_damage(
     _apply_skill_cooldown(player, skill_def, dealt_damage=True)
 
     heal_msg = f", healed {heal_amount} HP" if heal_amount > 0 else ""
-    kill_msg = f" — {target.username} was killed!" if killed else ""
+    kill_msg = f" â€” {target.username} was killed!" if killed else ""
     return ActionResult(
         player_id=player.player_id, username=player.username,
         action_type=ActionType.SKILL, skill_id=skill_id, success=True,
@@ -1087,7 +1184,7 @@ def resolve_lifesteal_aoe(
 ) -> ActionResult:
     """Resolve a self-centered AoE lifesteal skill (e.g., Sanguine Burst).
 
-    Targeting: self-centered AoE. Deals melee damage × multiplier to all enemies
+    Targeting: self-centered AoE. Deals melee damage Ã— multiplier to all enemies
     within radius (Chebyshev distance). Heals caster for heal_pct of TOTAL damage dealt.
     """
     from app.core.combat import _get_equipment_bonuses, get_combat_config
@@ -1113,8 +1210,9 @@ def resolve_lifesteal_aoe(
     hits = 0
     kills = 0
     killed_ids: list[str] = []
+    hit_ids: list[str] = []
     hit_names: list[str] = []
-    # Phase 23C: Damage-dealt multiplier (Plague Doctor Enfeeble) — computed once for caster
+    # Phase 23C: Damage-dealt multiplier (Plague Doctor Enfeeble) â€” computed once for caster
     dmg_dealt_mult = get_damage_dealt_multiplier(player)
 
     for p in players.values():
@@ -1141,7 +1239,7 @@ def resolve_lifesteal_aoe(
                 kills += 1
                 killed_ids.append(p.player_id)
 
-    # Lifesteal heal — based on TOTAL damage dealt across all targets
+    # Lifesteal heal â€” based on TOTAL damage dealt across all targets
     heal_amount = int(total_damage * heal_pct) if total_damage > 0 else 0
     if heal_amount > 0 and player.is_alive:
         player.hp = min(player.max_hp, player.hp + heal_amount)
@@ -1150,20 +1248,20 @@ def resolve_lifesteal_aoe(
 
     if hits > 0:
         hit_str = ", ".join(hit_names)
-        heal_msg = f" — healed {heal_amount} HP" if heal_amount > 0 else ""
-        kill_str = f" — {kills} killed!" if kills > 0 else ""
+        heal_msg = f" â€” healed {heal_amount} HP" if heal_amount > 0 else ""
+        kill_str = f" â€” {kills} killed!" if kills > 0 else ""
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — hit {hits} enemies for {total_damage} total damage: {hit_str}{heal_msg}{kill_str}",
+            message=f"{player.username} used {skill_def['name']} â€” hit {hits} enemies for {total_damage} total damage: {hit_str}{heal_msg}{kill_str}",
             damage_dealt=total_damage, killed=kills > 0,
-            buff_applied={"type": "lifesteal_aoe", "hits": hits, "kills": kills, "heal": heal_amount, "killed_ids": killed_ids},
+            buff_applied={"type": "lifesteal_aoe", "hits": hits, "kills": kills, "heal": heal_amount, "killed_ids": killed_ids, "hit_ids": hit_ids},
         )
     else:
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — no enemies in range",
+            message=f"{player.username} used {skill_def['name']} â€” no enemies in range",
         )
 
 
@@ -1177,12 +1275,12 @@ def resolve_aoe_damage_slow_targeted(
 ) -> ActionResult:
     """Resolve a ground-targeted AoE damage + slow skill (e.g., Miasma).
 
-    Targeting: ground_aoe — player targets a tile at range, all enemies within
+    Targeting: ground_aoe â€” player targets a tile at range, all enemies within
     radius of that tile take magic damage and are slowed. Based on
     resolve_aoe_damage_slow() (Frost Nova) but uses target_x/target_y as the
     AoE center instead of the caster's position.
 
-    Phase 23B: Plague Doctor — Miasma.
+    Phase 23B: Plague Doctor â€” Miasma.
     """
     from app.core.combat import get_combat_config, is_in_range
     from app.core.skills import get_damage_dealt_multiplier, get_effective_armor, get_damage_taken_multiplier
@@ -1200,7 +1298,7 @@ def resolve_aoe_damage_slow_targeted(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no target specified",
+            message=f"{player.username} {skill_def['name']} failed â€” no target specified",
         )
 
     # Range check (Chebyshev) from caster to target tile
@@ -1209,7 +1307,7 @@ def resolve_aoe_damage_slow_targeted(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — target out of range",
+            message=f"{player.username} {skill_def['name']} failed â€” target out of range",
         )
 
     # LOS check from caster to target tile
@@ -1219,7 +1317,7 @@ def resolve_aoe_damage_slow_targeted(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no line of sight",
+            message=f"{player.username} {skill_def['name']} failed â€” no line of sight",
         )
 
     # Phase 17: skill_damage_pct + magic_damage_pct bonuses on base damage
@@ -1235,7 +1333,7 @@ def resolve_aoe_damage_slow_targeted(
     killed_ids: list[str] = []
 
     config = get_combat_config()
-    # Phase 23C: Damage-dealt multiplier (Plague Doctor Enfeeble) — computed once for caster
+    # Phase 23C: Damage-dealt multiplier (Plague Doctor Enfeeble) â€” computed once for caster
     dmg_dealt_mult = get_damage_dealt_multiplier(player)
 
     for p in players.values():
@@ -1282,12 +1380,12 @@ def resolve_aoe_damage_slow_targeted(
 
     if hits > 0:
         hit_str = ", ".join(hit_names)
-        slow_str = f" — {slowed_count} SLOWED for {slow_duration} turn(s)!" if slowed_count > 0 else ""
-        kill_str = f" — {kills} killed!" if kills > 0 else ""
+        slow_str = f" â€” {slowed_count} SLOWED for {slow_duration} turn(s)!" if slowed_count > 0 else ""
+        kill_str = f" â€” {kills} killed!" if kills > 0 else ""
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — hit {hits} enemies for {total_damage} total magic damage: {hit_str}{slow_str}{kill_str}",
+            message=f"{player.username} used {skill_def['name']} â€” hit {hits} enemies for {total_damage} total magic damage: {hit_str}{slow_str}{kill_str}",
             damage_dealt=total_damage, killed=kills > 0,
             to_x=target_x, to_y=target_y,
             buff_applied={"type": "aoe_damage_slow_targeted", "hits": hits, "kills": kills, "slowed": slowed_count, "killed_ids": killed_ids},
@@ -1296,7 +1394,7 @@ def resolve_aoe_damage_slow_targeted(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — no enemies in the blast radius",
+            message=f"{player.username} used {skill_def['name']} â€” no enemies in the blast radius",
             to_x=target_x, to_y=target_y,
         )
 
@@ -1310,11 +1408,11 @@ def resolve_melee_damage_slow(
     obstacles: set[tuple[int, int]],
     target_id: str | None = None,
 ) -> ActionResult:
-    """Resolve a melee damage + slow skill (Soul Rend).
+    """Resolve a melee damage + slow skill (Soul Rend â€” legacy pre-rework).
 
     Targeting: enemy_adjacent. Deals melee damage scaled by a multiplier,
     then applies a slow debuff preventing movement (but allowing attacks/skills).
-    Phase 25B: Revenant Soul Rend skill.
+    Phase 25B: Revenant Soul Rend skill (original).
     """
     from app.core.combat import _get_equipment_bonuses, get_combat_config
     from app.core.skills import get_melee_buff_multiplier, get_effective_armor, get_damage_taken_multiplier, get_damage_dealt_multiplier
@@ -1331,7 +1429,7 @@ def resolve_melee_damage_slow(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+            message=f"{player.username} {skill_def['name']} failed â€” no enemy at target",
         )
 
     # Must be adjacent (Chebyshev distance 1)
@@ -1341,7 +1439,7 @@ def resolve_melee_damage_slow(
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=False,
-            message=f"{player.username} {skill_def['name']} failed — target not adjacent",
+            message=f"{player.username} {skill_def['name']} failed â€” target not adjacent",
         )
 
     # Calculate damage (melee-based)
@@ -1387,13 +1485,146 @@ def resolve_melee_damage_slow(
 
     _apply_skill_cooldown(player, skill_def, dealt_damage=True)
 
-    slow_msg = f" — SLOWED for {slow_duration} turn(s)!" if slow_applied else ""
+    slow_msg = f" â€” SLOWED for {slow_duration} turn(s)!" if slow_applied else ""
     return ActionResult(
         player_id=player.player_id, username=player.username,
         action_type=ActionType.SKILL, skill_id=skill_id, success=True,
         message=f"{player.username} used {skill_def['name']} on {target.username} for {damage} damage{slow_msg}"
-                + (f" — {target.username} was killed!" if killed else ""),
+                + (f" â€” {target.username} was killed!" if killed else ""),
         target_id=target.player_id, target_username=target.username,
         damage_dealt=damage, target_hp_remaining=target.hp, killed=killed,
         buff_applied={"type": "slow", "duration": slow_duration} if slow_applied else None,
+    )
+
+
+def resolve_melee_damage_conditional_bleed(
+    player: PlayerState,
+    target_x: int | None,
+    target_y: int | None,
+    skill_def: dict,
+    players: dict[str, PlayerState],
+    obstacles: set[tuple[int, int]],
+    target_id: str | None = None,
+) -> ActionResult:
+    """Resolve a melee damage skill with HP-conditional bleed (Soul Rend rework).
+
+    Normal mode (HP >= threshold): deals multiplied melee damage.
+    Empowered mode (HP < threshold): deals higher multiplied melee damage
+    AND applies a bleed DoT (ignores armor, ticks each turn).
+
+    Phase 25R-B: Revenant rework — Soul Rend.
+    """
+    from app.core.combat import _get_equipment_bonuses, get_combat_config
+    from app.core.skills import get_melee_buff_multiplier, get_damage_taken_multiplier, get_damage_dealt_multiplier
+
+    skill_id = skill_def["skill_id"]
+    effect = skill_def["effects"][0]
+    damage_multiplier = effect.get("damage_multiplier", 1.3)
+    empowered_threshold = effect.get("empowered_hp_threshold", 0.50)
+    empowered_multiplier = effect.get("empowered_damage_multiplier", 1.8)
+    bleed_dpt = effect.get("bleed_damage_per_turn", 5)
+    bleed_duration = effect.get("bleed_duration", 3)
+
+    # HP-conditional empowerment check
+    hp_ratio = player.hp / player.max_hp if player.max_hp > 0 else 1.0
+    is_empowered = hp_ratio < empowered_threshold
+    active_multiplier = empowered_multiplier if is_empowered else damage_multiplier
+
+    # Entity-based target resolution (preferred)
+    target = _resolve_skill_entity_target(player, target_id, target_x, target_y, players, ally_target=False)
+
+    if target is None:
+        if target_x is None or target_y is None:
+            return ActionResult(
+                player_id=player.player_id, username=player.username,
+                action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+                message=f"{player.username} {skill_def['name']} failed — no target specified",
+            )
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+        )
+
+    # Must be adjacent (check against target's CURRENT position)
+    dx = abs(player.position.x - target.position.x)
+    dy = abs(player.position.y - target.position.y)
+    if dx > 1 or dy > 1 or (dx == 0 and dy == 0):
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — target not adjacent",
+        )
+
+    # Calculate damage with equipment bonuses
+    config = get_combat_config()
+    atk_bonuses = _get_equipment_bonuses(player)
+    def_bonuses = _get_equipment_bonuses(target)
+
+    melee_mult = get_melee_buff_multiplier(player)
+    raw_damage = int((player.attack_damage + atk_bonuses.attack_damage) * melee_mult)
+    # Phase 16A: skill_damage_pct bonus
+    skill_dmg_pct = getattr(player, 'skill_damage_pct', 0.0)
+    raw_damage = int(raw_damage * (1.0 + skill_dmg_pct))
+    effective_armor = target.armor + def_bonuses.armor
+    # Phase 16A: armor pen
+    effective_armor = max(0, effective_armor - getattr(player, 'armor_pen', 0))
+    armor_reduction = effective_armor * config.get("armor_reduction_per_point", 1)
+
+    # Phase 21C: Damage-taken multiplier (Bard Dirge of Weakness)
+    dmg_taken_mult = get_damage_taken_multiplier(target)
+    # Phase 23C: Damage-dealt multiplier (Plague Doctor Enfeeble)
+    dmg_dealt_mult = get_damage_dealt_multiplier(player)
+
+    hit_raw = int(raw_damage * active_multiplier)
+    damage = max(1, hit_raw - armor_reduction)
+    if dmg_taken_mult != 1.0:
+        damage = max(1, int(damage * dmg_taken_mult))
+    if dmg_dealt_mult != 1.0:
+        damage = max(1, int(damage * dmg_dealt_mult))
+
+    target.hp = max(0, target.hp - damage)
+    killed = target.hp <= 0
+    if killed:
+        target.is_alive = False
+
+    # Apply bleed DoT in empowered mode (if target survived)
+    bleed_applied = False
+    if is_empowered and target.is_alive:
+        # Refresh existing bleed from this skill (don't stack)
+        refreshed = False
+        for buff in target.active_buffs:
+            if buff.get("buff_id") == f"{skill_id}_bleed" and buff.get("type") == "dot":
+                buff["turns_remaining"] = bleed_duration
+                buff["damage_per_tick"] = bleed_dpt
+                buff["source_id"] = player.player_id
+                buff["magnitude"] = bleed_dpt
+                refreshed = True
+                bleed_applied = True
+                break
+        if not refreshed:
+            bleed_entry = {
+                "buff_id": f"{skill_id}_bleed",
+                "type": "dot",
+                "source_id": player.player_id,
+                "damage_per_tick": bleed_dpt,
+                "turns_remaining": bleed_duration,
+                "stat": None,
+                "magnitude": bleed_dpt,
+            }
+            target.active_buffs.append(bleed_entry)
+            bleed_applied = True
+
+    _apply_skill_cooldown(player, skill_def, dealt_damage=True)
+
+    empowered_str = " (EMPOWERED)" if is_empowered else ""
+    bleed_str = f" + bleed ({bleed_dpt}/turn for {bleed_duration} turns)" if bleed_applied else ""
+    return ActionResult(
+        player_id=player.player_id, username=player.username,
+        action_type=ActionType.SKILL, skill_id=skill_id, success=True,
+        message=f"{player.username} used {skill_def['name']} on {target.username} for {damage} damage{bleed_str}{empowered_str}"
+                + (f" — {target.username} was killed!" if killed else ""),
+        target_id=target.player_id, target_username=target.username,
+        damage_dealt=damage, target_hp_remaining=target.hp, killed=killed,
+        buff_applied={"type": "bleed", "damage_per_turn": bleed_dpt, "duration": bleed_duration} if bleed_applied else None,
     )

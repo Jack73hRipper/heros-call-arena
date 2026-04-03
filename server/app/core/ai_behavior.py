@@ -195,6 +195,197 @@ _ai_tick_counter: int = 0
 _POST_COMBAT_FOLLOW_GRACE = 5  # ticks of trailing after last combat
 
 
+# ---------------------------------------------------------------------------
+# Phase 33: Unified Oscillation Handler
+# ---------------------------------------------------------------------------
+# Replaces the four separate anti-oscillation systems with a single entry
+# point that returns a *disposition*:
+#
+#   "allow"    — the move is fine, proceed normally
+#   "redirect" — the move backtracks; here's an alternative tile to move to
+#   "wait"     — truly stuck, no alternative tile exists; WAIT one tick
+#
+# Callers (ai_behavior post-check, ai_patrol back-step, ai_stances follower
+# backtrack) all funnel through this instead of each independently converting
+# to WAIT.  The key improvement is the "redirect" path: instead of WAITing
+# (which can paralyse a unit for many ticks when multiple systems pile up),
+# we pick a non-backtracking adjacent tile that still makes progress.
+
+
+def check_oscillation(
+    ai_id: str,
+    target: tuple[int, int],
+    ai_pos: tuple[int, int],
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+    all_units: dict[str, PlayerState] | None = None,
+    is_leader: bool = False,
+    move_goal: tuple[int, int] | None = None,
+) -> tuple[str, tuple[int, int] | None]:
+    """Unified oscillation check for all AI movement decisions.
+
+    Parameters
+    ----------
+    ai_id : str
+        The moving unit's player_id.
+    target : (x, y)
+        The tile the unit is about to move to.
+    ai_pos : (x, y)
+        The unit's current position.
+    grid_width, grid_height : int
+        Map dimensions.
+    obstacles, occupied : set
+        Blocked / occupied tiles.
+    all_units : dict or None
+        All units in the match — used to check for nearby enemies.
+        When None, enemy proximity is not checked (caller already knows
+        combat context).
+    is_leader : bool
+        Whether this unit is a team leader (longer tolerance windows).
+    move_goal : (x, y) or None
+        The ultimate destination the unit is trying to reach (e.g. the
+        patrol waypoint, the owner's position).  Used to bias redirect
+        toward that goal.
+
+    Returns
+    -------
+    ("allow",    None)          — move is fine
+    ("redirect", (rx, ry))      — backtrack detected but found an alternative tile
+    ("wait",     None)          — backtrack detected, no alternative; WAIT
+    """
+    history = _position_history.get(ai_id, [])
+
+    # --- Stage 1: A→B→A detection ---
+    # Is the proposed target the same tile the unit occupied 2 ticks ago?
+    if len(history) < 2 or target != history[-2]:
+        return ("allow", None)
+
+    # A→B→A detected.  Check whether combat justifies a single reversal.
+    has_nearby_enemy = False
+    if all_units is not None:
+        for u in all_units.values():
+            if (
+                u.is_alive
+                and u.team != _get_team(ai_id, all_units)
+                and u.player_id != ai_id
+                and not getattr(u, 'extracted', False)
+            ):
+                dist = max(
+                    abs(u.position.x - ai_pos[0]),
+                    abs(u.position.y - ai_pos[1]),
+                )
+                if dist <= _OSCILLATION_COMBAT_RANGE:
+                    has_nearby_enemy = True
+                    break
+
+    # --- Stage 2: Extended oscillation — ≤2 unique tiles over a window ---
+    # Even if an enemy is nearby, being stuck on ≤2 tiles for many turns
+    # means no real progress.  The window is longer for leaders and for
+    # combat contexts.
+    confirmed_extended = False
+    if has_nearby_enemy:
+        osc_window = 6 if not is_leader else 12
+    else:
+        osc_window = 4 if not is_leader else 8
+
+    if len(history) >= osc_window and len(set(history[-osc_window:])) <= 2:
+        confirmed_extended = True
+
+    # --- Stage 3: Bounding-box stall (non-leaders, out-of-combat only) ---
+    # If the entire 12-tick history fits in a ≤2×2 box, the unit is
+    # shuffling in place.
+    confirmed_bbox = False
+    if not has_nearby_enemy and not is_leader and len(history) >= 12:
+        xs = [p[0] for p in history[-12:]]
+        ys = [p[1] for p in history[-12:]]
+        if max(xs) - min(xs) <= 2 and max(ys) - min(ys) <= 2:
+            confirmed_bbox = True
+
+    # --- Decision logic ---
+    # A single A→B→A with an enemy nearby is tolerated (kiting/retreating).
+    if has_nearby_enemy and not confirmed_extended:
+        return ("allow", None)
+
+    # Oscillation confirmed (either no enemy, or extended/bbox stall).
+    # Flag for suppression tracking.
+    if confirmed_extended or confirmed_bbox:
+        _explore_suppressed.add(ai_id)
+        _chest_seek_suppressed.add(ai_id)
+        _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
+
+    # --- Stage 4: Try to REDIRECT instead of WAITing ---
+    # Find an adjacent walkable tile that:
+    #   a) is NOT the backtrack tile (history[-2])
+    #   b) is NOT the current tile
+    #   c) preferably moves toward move_goal (if provided)
+    redirect = _find_redirect_tile(
+        ai_pos, history[-2] if len(history) >= 2 else None,
+        grid_width, grid_height, obstacles, occupied,
+        goal=move_goal,
+    )
+    if redirect:
+        return ("redirect", redirect)
+
+    # No alternative tile — must WAIT.
+    return ("wait", None)
+
+
+def _find_redirect_tile(
+    ai_pos: tuple[int, int],
+    backtrack_tile: tuple[int, int] | None,
+    grid_width: int,
+    grid_height: int,
+    obstacles: set[tuple[int, int]],
+    occupied: set[tuple[int, int]],
+    goal: tuple[int, int] | None = None,
+) -> tuple[int, int] | None:
+    """Find an adjacent tile that avoids backtracking.
+
+    Prefers tiles that move toward *goal* (if provided).  Returns None if
+    no valid adjacent tile exists.
+    """
+    candidates: list[tuple[int, int]] = []
+    for dx in (-1, 0, 1):
+        for dy in (-1, 0, 1):
+            if dx == 0 and dy == 0:
+                continue
+            nx, ny = ai_pos[0] + dx, ai_pos[1] + dy
+            if not (0 <= nx < grid_width and 0 <= ny < grid_height):
+                continue
+            tile = (nx, ny)
+            if tile in obstacles or tile in occupied:
+                continue
+            if tile == backtrack_tile:
+                continue
+            if tile == ai_pos:
+                continue
+            candidates.append(tile)
+
+    if not candidates:
+        return None
+
+    if goal:
+        # Sort by distance to goal (closest first), with a small random
+        # tiebreak to avoid deterministic oscillation between two equally
+        # good redirect tiles.
+        candidates.sort(key=lambda t: (
+            abs(t[0] - goal[0]) + abs(t[1] - goal[1]),
+            random.random(),
+        ))
+    else:
+        random.shuffle(candidates)
+
+    return candidates[0]
+
+
+def _get_team(ai_id: str, all_units: dict[str, PlayerState]) -> str | None:
+    """Helper to get a unit's team from the all_units dict."""
+    unit = all_units.get(ai_id)
+    return unit.team if unit else None
+
+
 def _find_nearest_ground_loot(
     ai: PlayerState,
     ground_items: dict[str, list] | None,
@@ -1215,9 +1406,8 @@ def _decide_aggressive_action(
     # Controller (Plague Doctor) kites at 3 tiles — squishy support that folds
     # to melee pressure.  Bard uses 2 like other ranged DPS so it stays closer
     # to the fight for Ballad/Cacophony coverage.
-    # Shaman only kites when adjacent (dist 1) — needs to stay close to
-    # frontline for totem placement.
-    _kite_threshold = 3 if role == "controller" else (1 if role == "totemic_support" else 2)
+    # Shaman kites at dist 2 like other ranged roles — totem range 4 is safe.
+    _kite_threshold = 3 if role == "controller" else 2
     if is_ranged_role and dist_to_target <= _kite_threshold:
         # Phase 21E: Bard ally-proximity retreat — when kiting, prefer retreat
         # tiles that stay near allies so buff/skill auras maintain coverage.
@@ -1907,6 +2097,20 @@ def run_ai_decisions(
     if match_id:
         expire_skipped_rooms(match_id, _ai_tick_counter)
 
+    # Phase 32E: Track position history for human players so that
+    # _decide_follow_action's tether check, breadcrumb trail, and autonomous
+    # wander logic work for AI followers whose owner is a human player.
+    # Without this, _position_history[human_id] is always empty and followers
+    # freeze instead of trailing the human through the dungeon.
+    for uid, unit in all_units.items():
+        if getattr(unit, 'unit_type', None) == "human" and unit.is_alive and not getattr(unit, 'extracted', False):
+            pos = (unit.position.x, unit.position.y)
+            if uid not in _position_history:
+                _position_history[uid] = []
+            _position_history[uid].append(pos)
+            if len(_position_history[uid]) > _POSITION_HISTORY_LEN:
+                _position_history[uid] = _position_history[uid][-_POSITION_HISTORY_LEN:]
+
     # Phase 7A-3: Track pending moves — {unit_id: (from_pos, to_pos)}
     # Each AI decision sees the pending moves of all previously-decided AI units
     # this tick, preventing sequential pathfinding from causing gridlock.
@@ -1980,13 +2184,10 @@ def run_ai_decisions(
             chest_states=chest_states,
         )
 
-        # Anti-oscillation: suppress MOVE if it returns to the immediately
-        # previous position (A→B→A pattern) and there is no nearby enemy
-        # that would justify the backtrack (kiting, retreating, chasing).
-        # Phase 32A: Exempt follow-regroup and follow-trail moves — these are
-        # intentional movements toward the party leader that should never be
-        # suppressed.  Followers hanging back behind corners is worse than a
-        # brief oscillation while navigating a tight corridor.
+        # Phase 33: Unified oscillation handler — replaces the old inline
+        # detection with a single check_oscillation() call that returns a
+        # disposition ("allow", "redirect", or "wait") instead of always
+        # forcing WAIT.  Exempt follow-regroup/trail moves (Phase 32A).
         _follow_exempt_reasons = (
             "follow_regroup", "follow_trail", "follow_rush_melee",
             "follow_move_to_target", "follow_corridor_push",
@@ -2003,74 +2204,36 @@ def run_ai_decisions(
             and action.target_x is not None
             and not _is_follow_exempt
         ):
-            history = _position_history.get(ai_id, [])
-            if len(history) >= 2:
-                target = (action.target_x, action.target_y)
-                prev_pos = history[-2]  # position one turn ago
-                if target == prev_pos:
-                    # Check for nearby enemies — allow oscillation in combat
-                    has_nearby_enemy = False
-                    for u in all_units.values():
-                        if (
-                            u.is_alive
-                            and u.team != ai.team
-                            and u.player_id != ai_id
-                            and not getattr(u, 'extracted', False)
-                        ):
-                            dist = max(
-                                abs(u.position.x - ai.position.x),
-                                abs(u.position.y - ai.position.y),
-                            )
-                            if dist <= _OSCILLATION_COMBAT_RANGE:
-                                has_nearby_enemy = True
-                                break
-                    if not has_nearby_enemy:
-                        # Clear patrol waypoint so patrol picks a fresh
-                        # target instead of routing back to the same tile.
-                        _patrol_targets.pop(ai_id, None)
-
-                    # Extended oscillation detection fires REGARDLESS of
-                    # nearby enemies.  A single A→B→A reversal is allowed
-                    # in combat (kiting, repositioning), but if the unit
-                    # has been stuck on ≤2 unique tiles for several turns
-                    # it's not making meaningful progress and should yield.
-                    # Combat context uses a longer window to tolerate brief
-                    # repositioning; out-of-combat is stricter.
-                    confirmed_oscillation = False
-                    _is_leader = getattr(ai, 'is_team_leader', False)
-
-                    if has_nearby_enemy:
-                        _osc_window = 6 if not _is_leader else 12
-                    else:
-                        _osc_window = 4 if not _is_leader else 8
-
-                    if len(history) >= _osc_window and len(set(history[-_osc_window:])) <= 2:
-                        _explore_suppressed.add(ai_id)
-                        _chest_seek_suppressed.add(ai_id)
-                        _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
-                        confirmed_oscillation = True
-
-                    # Broader stall detection: if the entire recent
-                    # history fits inside a tiny bounding box (<=2
-                    # tiles wide/tall), the unit is shuffling within
-                    # one room.  Only suppress non-leaders outside of
-                    # combat — combat units naturally stay in small areas,
-                    # and leaders need freedom to explore.
-                    if not has_nearby_enemy and not _is_leader and len(history) >= 12:
-                        xs = [p[0] for p in history[-12:]]
-                        ys = [p[1] for p in history[-12:]]
-                        if max(xs) - min(xs) <= 2 and max(ys) - min(ys) <= 2:
-                            _explore_suppressed.add(ai_id)
-                            _chest_seek_suppressed.add(ai_id)
-                            _suppress_start_tick.setdefault(ai_id, _ai_tick_counter)
-                            confirmed_oscillation = True
-
-                    if confirmed_oscillation:
-                        action = PlayerAction(
-                            player_id=ai_id,
-                            action_type=ActionType.WAIT,
-                            reason="oscillation_suppressed",
-                        )
+            _osc_target = (action.target_x, action.target_y)
+            _osc_disposition, _osc_redirect = check_oscillation(
+                ai_id=ai_id,
+                target=_osc_target,
+                ai_pos=ai_pos,
+                grid_width=grid_width,
+                grid_height=grid_height,
+                obstacles=obstacles,
+                occupied=_build_occupied_set(all_units, ai_id, pending_moves),
+                all_units=all_units,
+                is_leader=getattr(ai, 'is_team_leader', False),
+                move_goal=_osc_target,
+            )
+            if _osc_disposition == "redirect":
+                # Clear patrol waypoint so patrol picks a fresh target
+                _patrol_targets.pop(ai_id, None)
+                action = PlayerAction(
+                    player_id=ai_id,
+                    action_type=ActionType.MOVE,
+                    target_x=_osc_redirect[0],
+                    target_y=_osc_redirect[1],
+                    reason="oscillation_redirect",
+                )
+            elif _osc_disposition == "wait":
+                _patrol_targets.pop(ai_id, None)
+                action = PlayerAction(
+                    player_id=ai_id,
+                    action_type=ActionType.WAIT,
+                    reason="oscillation_suppressed",
+                )
 
         # Phase 30 stall breaker: if a non-leader unit has been at the same
         # position for 3+ consecutive turns and is still trying to MOVE, it

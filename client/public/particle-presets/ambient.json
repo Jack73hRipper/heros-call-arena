@@ -575,5 +575,41 @@
       "alpha": { "start": 0.35, "end": 0, "easing": "easeOutCubic" },
       "blendMode": "lighter"
     }
+  },
+  {
+    "name": "hero-torch-ember",
+    "version": 1,
+    "duration": 3,
+    "loop": true,
+    "tags": ["environment", "fire", "ambient", "hero"],
+    "emitter": {
+      "burstMode": false,
+      "spawnRate": 8,
+      "spawnShape": "line",
+      "spawnWidth": 4,
+      "angle": { "min": 250, "max": 290 },
+      "speed": { "min": 10, "max": 30 },
+      "gravity": { "x": 0, "y": -18 }
+    },
+    "particle": {
+      "lifetime": { "min": 0.2, "max": 0.5 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 1.5, "max": 3 },
+        "end": { "min": 0, "max": 0.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.2, "color": "#ffcc33" },
+          { "stop": 0.5, "color": "#ff6600" },
+          { "stop": 0.8, "color": "#cc2200" },
+          { "stop": 1, "color": "#220000" }
+        ]
+      },
+      "alpha": { "start": 0.6, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
   }
 ]

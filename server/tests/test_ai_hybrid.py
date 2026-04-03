@@ -130,14 +130,14 @@ def make_ally(pid="ally1", username="Ser Aldric", x=4, y=5,
 
 
 # ============================================================================
-# 1. _hybrid_dps_skill_logic() Tests — Double Strike (8E-3)
+# 1. _hybrid_dps_skill_logic() Tests — Hex Strike (8E-3 + Balance Pass)
 # ============================================================================
 
-class TestHybridDoubleStrike:
-    """Tests for Double Strike usage by Hybrid DPS role AI."""
+class TestHybridHexStrike:
+    """Tests for Hex Strike usage by Hybrid DPS role AI."""
 
-    def test_hexblade_double_strike_adjacent_enemy(self):
-        """Adjacent enemy + DS off CD + Wither on CD → uses Double Strike."""
+    def test_hexblade_hex_strike_adjacent_enemy(self):
+        """Adjacent enemy + HS off CD + Wither on CD → uses Hex Strike."""
         hexblade = make_hexblade(cooldowns={"wither": 3})
         enemy = make_enemy(x=6, y=5)  # Adjacent
         all_units = {hexblade.player_id: hexblade, enemy.player_id: enemy}
@@ -149,12 +149,12 @@ class TestHybridDoubleStrike:
 
         assert result is not None
         assert result.action_type == ActionType.SKILL
-        assert result.skill_id == "double_strike"
+        assert result.skill_id == "hex_strike"
         assert result.target_x == 6
         assert result.target_y == 5
 
-    def test_hexblade_double_strike_diagonal_adjacent(self):
-        """Enemy diagonally adjacent + Wither on CD → still uses DS (Chebyshev distance 1)."""
+    def test_hexblade_hex_strike_diagonal_adjacent(self):
+        """Enemy diagonally adjacent + Wither on CD → still uses HS (Chebyshev distance 1)."""
         hexblade = make_hexblade(cooldowns={"wither": 3})
         enemy = make_enemy(x=6, y=6)  # Diagonal
         all_units = {hexblade.player_id: hexblade, enemy.player_id: enemy}
@@ -165,13 +165,13 @@ class TestHybridDoubleStrike:
         )
 
         assert result is not None
-        assert result.skill_id == "double_strike"
+        assert result.skill_id == "hex_strike"
         assert result.target_x == 6
         assert result.target_y == 6
 
-    def test_hexblade_double_strike_on_cooldown(self):
-        """Adjacent enemy + DS on CD + Wither on CD → None (fall through to basic attack)."""
-        hexblade = make_hexblade(cooldowns={"double_strike": 2, "wither": 3})
+    def test_hexblade_hex_strike_on_cooldown(self):
+        """Adjacent enemy + HS on CD + Wither on CD → None (fall through to basic attack)."""
+        hexblade = make_hexblade(cooldowns={"hex_strike": 2, "wither": 3})
         enemy = make_enemy(x=6, y=5)  # Adjacent
         all_units = {hexblade.player_id: hexblade, enemy.player_id: enemy}
         enemies = [enemy]
@@ -180,11 +180,11 @@ class TestHybridDoubleStrike:
             hexblade, enemies, all_units, 15, 15, set()
         )
 
-        # DS on CD, enemy adjacent (too close for gap-close) → None
+        # HS on CD, enemy adjacent (too close for gap-close) → None
         assert result is None
 
-    def test_hexblade_ds_targets_lowest_hp(self):
-        """Two adjacent enemies, one low HP + Wither on CD → DS targets the hurt one."""
+    def test_hexblade_hs_targets_lowest_hp(self):
+        """Two adjacent enemies, one low HP + Wither on CD → HS targets the hurt one."""
         hexblade = make_hexblade(cooldowns={"wither": 3})
         enemy_full = make_enemy(pid="e_full", username="Demon A", x=6, y=5,
                                 hp=80, max_hp=80)
@@ -202,12 +202,12 @@ class TestHybridDoubleStrike:
         )
 
         assert result is not None
-        assert result.skill_id == "double_strike"
+        assert result.skill_id == "hex_strike"
         assert result.target_x == enemy_hurt.position.x
         assert result.target_y == enemy_hurt.position.y
 
-    def test_hexblade_no_ds_enemy_not_adjacent(self):
-        """Enemy 2 tiles away + DS off CD + Wither on CD → no DS (requires adjacent target)."""
+    def test_hexblade_no_hs_enemy_not_adjacent(self):
+        """Enemy 2 tiles away + HS off CD + Wither on CD → no HS (requires adjacent target)."""
         hexblade = make_hexblade(cooldowns={"wither": 3})
         enemy = make_enemy(x=7, y=5)  # 2 tiles away — not adjacent
         all_units = {hexblade.player_id: hexblade, enemy.player_id: enemy}
@@ -368,10 +368,10 @@ class TestHybridShadowStepGapClose:
 # ============================================================================
 
 class TestHybridPriorityChain:
-    """Tests for priority ordering: Double Strike > Shadow Step gap-close."""
+    """Tests for priority ordering: Hex Strike > Shadow Step gap-close."""
 
-    def test_ds_priority_over_shadow_step(self):
-        """Adjacent enemy + both DS/SS off CD + Wither on CD → Double Strike (not Shadow Step)."""
+    def test_hs_priority_over_shadow_step(self):
+        """Adjacent enemy + both HS/SS off CD + Wither on CD → Hex Strike (not Shadow Step)."""
         hexblade = make_hexblade(cooldowns={"wither": 3})
         enemy = make_enemy(x=6, y=5)  # Adjacent
         all_units = {hexblade.player_id: hexblade, enemy.player_id: enemy}
@@ -382,11 +382,43 @@ class TestHybridPriorityChain:
         )
 
         assert result is not None
-        assert result.skill_id == "double_strike"  # NOT shadow_step
+        assert result.skill_id == "hex_strike"  # NOT shadow_step
 
-    def test_ds_on_cd_no_gap_close_needed(self):
-        """Adjacent enemy + DS on CD + Wither on CD → None (adjacent = no gap-close trigger)."""
-        hexblade = make_hexblade(cooldowns={"double_strike": 2, "wither": 3})
+    def test_hex_strike_prefers_withered_target(self):
+        """Two adjacent enemies, one has Wither DoT + Wither on CD → HS targets the cursed one."""
+        hexblade = make_hexblade(cooldowns={"wither": 3})
+        enemy_clean = make_enemy(pid="e_clean", username="Demon A", x=6, y=5,
+                                 hp=80, max_hp=80)
+        enemy_cursed = make_enemy(pid="e_cursed", username="Demon B", x=4, y=5,
+                                  hp=80, max_hp=80)
+        # Give the cursed enemy an active Wither DoT buff
+        enemy_cursed.active_buffs.append({
+            "buff_id": "wither",
+            "type": "dot",
+            "source_id": hexblade.player_id,
+            "damage_per_tick": 8,
+            "turns_remaining": 3,
+            "lifesteal_pct": 0.5,
+        })
+        all_units = {
+            hexblade.player_id: hexblade,
+            enemy_clean.player_id: enemy_clean,
+            enemy_cursed.player_id: enemy_cursed,
+        }
+        enemies = [enemy_clean, enemy_cursed]
+
+        result = _hybrid_dps_skill_logic(
+            hexblade, enemies, all_units, 15, 15, set()
+        )
+
+        assert result is not None
+        assert result.skill_id == "hex_strike"
+        assert result.target_x == enemy_cursed.position.x
+        assert result.target_y == enemy_cursed.position.y
+
+    def test_hs_on_cd_no_gap_close_needed(self):
+        """Adjacent enemy + HS on CD + Wither on CD → None (adjacent = no gap-close trigger)."""
+        hexblade = make_hexblade(cooldowns={"hex_strike": 2, "wither": 3})
         enemy = make_enemy(x=6, y=5)  # Adjacent
         all_units = {hexblade.player_id: hexblade, enemy.player_id: enemy}
         enemies = [enemy]
@@ -395,14 +427,14 @@ class TestHybridPriorityChain:
             hexblade, enemies, all_units, 15, 15, set()
         )
 
-        # Adjacent → no gap-close, DS on CD → None (basic melee)
+        # Adjacent → no gap-close, HS on CD → None (basic melee)
         assert result is None
 
     def test_both_skills_on_cooldown(self):
         """DS + SS + Wither all on cooldown → returns None."""
         hexblade = make_hexblade(
             x=2, y=5,
-            cooldowns={"double_strike": 2, "shadow_step": 3, "wither": 4},
+            cooldowns={"hex_strike": 2, "shadow_step": 3, "wither": 4},
         )
         enemy = make_enemy(x=9, y=5)  # Far away
         all_units = {hexblade.player_id: hexblade, enemy.player_id: enemy}
@@ -584,7 +616,7 @@ class TestHybridDispatchIntegration:
 
         assert result is not None
         assert result.action_type == ActionType.SKILL
-        assert result.skill_id == "double_strike"
+        assert result.skill_id == "hex_strike"
 
     def test_hexblade_dispatch_gap_close(self):
         """Hexblade gap-close dispatches through _decide_skill_usage."""
@@ -605,7 +637,7 @@ class TestHybridDispatchIntegration:
         """All skills on CD, no adjacent enemies → None from dispatch."""
         hexblade = make_hexblade(
             x=5, y=5,
-            cooldowns={"double_strike": 2, "shadow_step": 3, "wither": 3},
+            cooldowns={"hex_strike": 2, "shadow_step": 3, "wither": 3},
         )
         enemy = make_enemy(x=7, y=5)  # 2 tiles — not adjacent, not far enough
         all_units = {hexblade.player_id: hexblade, enemy.player_id: enemy}
@@ -621,8 +653,8 @@ class TestHybridDispatchIntegration:
         """Hexblade maps to 'hybrid_dps' role."""
         assert _get_role_for_class("hexblade") == "hybrid_dps"
 
-    def test_action_format_double_strike(self):
-        """Double Strike action has correct format (SKILL, double_strike, target coords)."""
+    def test_action_format_hex_strike(self):
+        """Hex Strike action has correct format (SKILL, hex_strike, target coords)."""
         hexblade = make_hexblade(cooldowns={"wither": 3})
         enemy = make_enemy(x=6, y=5)
         all_units = {hexblade.player_id: hexblade, enemy.player_id: enemy}
@@ -633,7 +665,7 @@ class TestHybridDispatchIntegration:
 
         assert result.player_id == "hex1"
         assert result.action_type == ActionType.SKILL
-        assert result.skill_id == "double_strike"
+        assert result.skill_id == "hex_strike"
         assert result.target_x == 6
         assert result.target_y == 5
 

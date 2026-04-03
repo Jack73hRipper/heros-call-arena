@@ -220,7 +220,9 @@ export default function useHighlights({
         }
       }
     } else if (targeting === 'ground_aoe') {
-      // Ground AoE: highlight all tiles within range (walls excluded, enemies included)
+      // Ground AoE: highlight all tiles within range (walls excluded)
+      // Placement skills (totems) exclude occupied tiles since they can't be placed on units.
+      const isPlacement = activeSkillDef.effects?.some(e => e.type === 'place_totem') ?? false;
       const effectiveRange = range > 0 ? range : 5;
       for (let dx = -effectiveRange; dx <= effectiveRange; dx++) {
         for (let dy = -effectiveRange; dy <= effectiveRange; dy++) {
@@ -231,6 +233,7 @@ export default function useHighlights({
           if (nx < 0 || nx >= gridWidth || ny < 0 || ny >= gridHeight) continue;
           const key = `${nx},${ny}`;
           if (obstacleSet.has(key)) continue;
+          if (isPlacement && occupiedMap[key]) continue;
           tiles.push({ x: nx, y: ny });
         }
       }

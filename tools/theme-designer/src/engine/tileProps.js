@@ -1021,9 +1021,9 @@ function drawProp_candelabra(ctx, x, y, size, seed, palette) {
 }
 
 /**
- * Ritual Circle — Glowing arcane sigil inscribed on the floor.
+ * Ritual Circle — Large glowing arcane sigil inscribed on the floor.
  * Concentric rings with rune marks, pulsing energy lines, and
- * a central pentagram shape. Eerie ambient glow.
+ * a central pentagram shape. Spans multiple tiles for imposing scale.
  * Theme affinity: Boss rooms, Cursed Shrine, Shrine.
  */
 function drawProp_ritual_circle(ctx, x, y, size, seed, palette) {
@@ -1031,12 +1031,12 @@ function drawProp_ritual_circle(ctx, x, y, size, seed, palette) {
   const cy = y + size / 2;
   const h = cellHash;
   const glowColor = palette.accent;
-  const outerR = size * 0.38;
+  const outerR = size * 1.2;
 
   // Large ambient glow (ground-level radial)
   const ambientGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, outerR * 1.3);
-  ambientGrad.addColorStop(0, hexAlpha(glowColor, 0.1));
-  ambientGrad.addColorStop(0.6, hexAlpha(glowColor, 0.04));
+  ambientGrad.addColorStop(0, hexAlpha(glowColor, 0.12));
+  ambientGrad.addColorStop(0.5, hexAlpha(glowColor, 0.05));
   ambientGrad.addColorStop(1, hexAlpha(glowColor, 0));
   ctx.fillStyle = ambientGrad;
   ctx.beginPath();
@@ -1045,22 +1045,30 @@ function drawProp_ritual_circle(ctx, x, y, size, seed, palette) {
 
   // Outer ring (thick, slightly transparent)
   ctx.strokeStyle = hexAlpha(glowColor, 0.3);
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2.5;
   ctx.beginPath();
   ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
   ctx.stroke();
 
+  // Middle ring
+  const midR = outerR * 0.78;
+  ctx.strokeStyle = hexAlpha(glowColor, 0.2);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, midR, 0, Math.PI * 2);
+  ctx.stroke();
+
   // Inner ring
-  const innerR = outerR * 0.65;
+  const innerR = outerR * 0.55;
   ctx.strokeStyle = hexAlpha(glowColor, 0.25);
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
   ctx.stroke();
 
   // Pentagram/star shape (5-pointed, connecting every other vertex)
   ctx.strokeStyle = hexAlpha(glowColor, 0.35);
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
   for (let i = 0; i < 5; i++) {
     const angle = (i * 2 % 5) / 5 * Math.PI * 2 - Math.PI / 2;
@@ -1074,66 +1082,66 @@ function drawProp_ritual_circle(ctx, x, y, size, seed, palette) {
   }
   ctx.stroke();
 
-  // Rune marks between rings (6-8 small glyphs)
-  const runeCount = 6 + Math.floor(h(seed, 0, 220) * 3);
-  const runeR = (outerR + innerR) / 2;
+  // Rune marks between outer and middle rings (8-12 larger glyphs)
+  const runeCount = 8 + Math.floor(h(seed, 0, 220) * 5);
+  const runeR = (outerR + midR) / 2;
   for (let i = 0; i < runeCount; i++) {
-    const angle = (i / runeCount) * Math.PI * 2 + h(seed, i, 221) * 0.2;
+    const angle = (i / runeCount) * Math.PI * 2 + h(seed, i, 221) * 0.15;
     const rx = cx + Math.cos(angle) * runeR;
     const ry = cy + Math.sin(angle) * runeR;
 
-    // Each rune is a tiny glyph: vertical stroke + cross or dot
+    // Each rune is a small glyph: scaled up for visibility
     ctx.strokeStyle = hexAlpha(glowColor, 0.3 + h(seed, i, 222) * 0.15);
-    ctx.lineWidth = 0.7;
+    ctx.lineWidth = 0.9;
 
     const runeType = Math.floor(h(seed, i, 223) * 3);
     if (runeType === 0) {
       // Vertical line + horizontal tick
       ctx.beginPath();
-      ctx.moveTo(rx, ry - 2);
-      ctx.lineTo(rx, ry + 2);
-      ctx.moveTo(rx - 1.5, ry);
-      ctx.lineTo(rx + 1.5, ry);
+      ctx.moveTo(rx, ry - 3.5);
+      ctx.lineTo(rx, ry + 3.5);
+      ctx.moveTo(rx - 2.5, ry);
+      ctx.lineTo(rx + 2.5, ry);
       ctx.stroke();
     } else if (runeType === 1) {
       // Small diamond
       ctx.beginPath();
-      ctx.moveTo(rx, ry - 2);
-      ctx.lineTo(rx + 1.5, ry);
-      ctx.lineTo(rx, ry + 2);
-      ctx.lineTo(rx - 1.5, ry);
+      ctx.moveTo(rx, ry - 3.5);
+      ctx.lineTo(rx + 2.5, ry);
+      ctx.lineTo(rx, ry + 3.5);
+      ctx.lineTo(rx - 2.5, ry);
       ctx.closePath();
       ctx.stroke();
     } else {
       // Dot with halo
       ctx.fillStyle = hexAlpha(glowColor, 0.4);
       ctx.beginPath();
-      ctx.arc(rx, ry, 1.2, 0, Math.PI * 2);
+      ctx.arc(rx, ry, 2, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = hexAlpha(glowColor, 0.1);
       ctx.beginPath();
-      ctx.arc(rx, ry, 3, 0, Math.PI * 2);
+      ctx.arc(rx, ry, 5, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
   // Center eye / focal point
-  ctx.fillStyle = hexAlpha(glowColor, 0.4);
+  ctx.fillStyle = hexAlpha(glowColor, 0.45);
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.06, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.6);
   ctx.beginPath();
   ctx.arc(cx, cy, size * 0.03, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = hexAlpha(palette.highlight, 0.5);
-  ctx.beginPath();
-  ctx.arc(cx, cy, size * 0.015, 0, Math.PI * 2);
-  ctx.fill();
 
-  // Pulsing energy wisps (2-3 small radial streaks)
-  for (let w = 0; w < 3; w++) {
+  // Pulsing energy wisps (3-4 radial streaks from center to outer ring)
+  for (let w = 0; w < 4; w++) {
     const wAngle = h(seed, w, 224) * Math.PI * 2;
-    const wR1 = innerR * 0.4;
-    const wR2 = outerR * 0.9;
+    const wR1 = innerR * 0.3;
+    const wR2 = outerR * 0.95;
     ctx.strokeStyle = hexAlpha(glowColor, 0.08 + h(seed, w, 225) * 0.06);
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = 0.6;
     ctx.beginPath();
     ctx.moveTo(cx + Math.cos(wAngle) * wR1, cy + Math.sin(wAngle) * wR1);
     ctx.lineTo(cx + Math.cos(wAngle) * wR2, cy + Math.sin(wAngle) * wR2);
@@ -1413,6 +1421,896 @@ function drawProp_tombstone(ctx, x, y, size, seed, palette) {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  NEW PROPS (Variety Expansion Batch)
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Lectern — Open book on a wooden stand with angled reading
+ * surface. Thin pedestal, two visible pages, faint text lines.
+ * Theme affinity: Cathedral, Silent Vault, Library, Shrine.
+ */
+function drawProp_lectern(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const baseY = y + size * 0.82;
+  const woodColor = palette.furniture || palette.secondary;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(cx + 1, baseY + 2, size * 0.1, size * 0.04, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Pedestal
+  ctx.strokeStyle = shiftColor(woodColor, 3);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, baseY);
+  ctx.lineTo(cx, y + size * 0.4);
+  ctx.stroke();
+
+  // Base foot
+  ctx.fillStyle = shiftColor(woodColor, -2);
+  ctx.fillRect(cx - size * 0.08, baseY - 2, size * 0.16, 3);
+
+  // Book rest (angled surface)
+  const restTop = y + size * 0.25;
+  const restBot = y + size * 0.42;
+  const restW = size * 0.3;
+  ctx.fillStyle = shiftColor(woodColor, 5);
+  ctx.beginPath();
+  ctx.moveTo(cx - restW / 2, restBot);
+  ctx.lineTo(cx - restW / 2 - 2, restTop + 4);
+  ctx.lineTo(cx + restW / 2 + 2, restTop);
+  ctx.lineTo(cx + restW / 2, restBot);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = shiftColor(woodColor, -8);
+  ctx.lineWidth = 0.6;
+  ctx.stroke();
+
+  // Open book — two pages
+  const bookY = restTop + 2;
+  const pageW = restW * 0.4;
+  ctx.fillStyle = lerpColor('#d8d0c0', palette.secondary, 0.15);
+  ctx.fillRect(cx - pageW - 1, bookY, pageW, size * 0.12);
+  ctx.fillRect(cx + 1, bookY, pageW, size * 0.12);
+
+  // Spine line
+  ctx.strokeStyle = shiftColor(woodColor, -5);
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(cx, bookY - 1);
+  ctx.lineTo(cx, bookY + size * 0.13);
+  ctx.stroke();
+
+  // Text lines on pages
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 0.4;
+  for (let i = 0; i < 3; i++) {
+    const ly = bookY + 2 + i * 3;
+    ctx.beginPath();
+    ctx.moveTo(cx - pageW + 2, ly);
+    ctx.lineTo(cx - 3, ly);
+    ctx.moveTo(cx + 3, ly);
+    ctx.lineTo(cx + pageW - 2, ly);
+    ctx.stroke();
+  }
+}
+
+/**
+ * Desk — Small writing desk with quill, papers, and ink pot.
+ * Rectangular table surface on short legs. Scholarly feel.
+ * Theme affinity: Silent Vault, Cathedral, Library.
+ */
+function drawProp_desk(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const woodColor = palette.furniture || palette.secondary;
+  const dw = size * 0.6, dh = size * 0.4;
+  const dx = cx - dw / 2, dy = y + size * 0.35;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.fillRect(dx + 2, dy + dh + 1, dw, 3);
+
+  // Table surface
+  ctx.fillStyle = shiftColor(woodColor, 5);
+  ctx.fillRect(dx, dy, dw, dh);
+
+  // Border
+  ctx.strokeStyle = shiftColor(woodColor, -8);
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(dx, dy, dw, dh);
+
+  // Front edge shadow (thickness)
+  ctx.fillStyle = shiftColor(woodColor, -5);
+  ctx.fillRect(dx, dy + dh, dw, 3);
+
+  // Legs
+  ctx.strokeStyle = shiftColor(woodColor, -3);
+  ctx.lineWidth = 1.5;
+  const legH = size * 0.18;
+  ctx.beginPath();
+  ctx.moveTo(dx + 2, dy + dh + 3);
+  ctx.lineTo(dx + 2, dy + dh + 3 + legH);
+  ctx.moveTo(dx + dw - 2, dy + dh + 3);
+  ctx.lineTo(dx + dw - 2, dy + dh + 3 + legH);
+  ctx.stroke();
+
+  // Paper on surface
+  ctx.fillStyle = lerpColor('#d8d0c0', palette.secondary, 0.1);
+  ctx.fillRect(dx + dw * 0.15, dy + dh * 0.15, dw * 0.35, dh * 0.6);
+
+  // Quill
+  ctx.strokeStyle = shiftColor(palette.metal || palette.secondary, 8);
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(dx + dw * 0.65, dy + dh * 0.2);
+  ctx.lineTo(dx + dw * 0.8, dy + dh * 0.7);
+  ctx.stroke();
+
+  // Ink pot
+  ctx.fillStyle = 'rgba(10, 10, 20, 0.6)';
+  ctx.beginPath();
+  ctx.arc(dx + dw * 0.75, dy + dh * 0.3, size * 0.02, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/**
+ * Crate — Nailed wooden supply crate with X bracing and
+ * plank lines. Complements barrels in storage areas.
+ * Theme affinity: Cellar, Iron Depths, Armory, Loot rooms.
+ */
+function drawProp_crate(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2, cy = y + size / 2;
+  const woodColor = palette.furniture || palette.secondary;
+  const crateS = size * 0.14;
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(cx + 1, cy + crateS + 2, crateS * 1.5, size * 0.04, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Crate body
+  ctx.fillStyle = lerpColor(woodColor, '#5C3310', 0.4);
+  ctx.fillRect(cx - crateS, cy - crateS, crateS * 2, crateS * 2);
+
+  // Border
+  ctx.strokeStyle = shiftColor(woodColor, -10);
+  ctx.lineWidth = 0.8;
+  ctx.strokeRect(cx - crateS, cy - crateS, crateS * 2, crateS * 2);
+
+  // Plank lines
+  ctx.strokeStyle = shiftColor(woodColor, -6);
+  ctx.lineWidth = 0.5;
+  const third = crateS * 2 / 3;
+  ctx.beginPath();
+  ctx.moveTo(cx - crateS, cy - crateS + third);
+  ctx.lineTo(cx + crateS, cy - crateS + third);
+  ctx.moveTo(cx - crateS, cy - crateS + third * 2);
+  ctx.lineTo(cx + crateS, cy - crateS + third * 2);
+  ctx.stroke();
+
+  // X bracing
+  ctx.strokeStyle = shiftColor(palette.metal || palette.secondary, 5);
+  ctx.lineWidth = 0.7;
+  ctx.beginPath();
+  ctx.moveTo(cx - crateS + 2, cy - crateS + 2);
+  ctx.lineTo(cx + crateS - 2, cy + crateS - 2);
+  ctx.moveTo(cx + crateS - 2, cy - crateS + 2);
+  ctx.lineTo(cx - crateS + 2, cy + crateS - 2);
+  ctx.stroke();
+
+  // Corner nails
+  ctx.fillStyle = shiftColor(palette.metal || palette.secondary, 10);
+  for (const [nx, ny] of [
+    [cx - crateS + 3, cy - crateS + 3], [cx + crateS - 3, cy - crateS + 3],
+    [cx - crateS + 3, cy + crateS - 3], [cx + crateS - 3, cy + crateS - 3],
+  ]) {
+    ctx.beginPath();
+    ctx.arc(nx, ny, 0.8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Top highlight
+  ctx.fillStyle = shiftColor(woodColor, 4);
+  ctx.fillRect(cx - crateS + 1, cy - crateS + 1, crateS * 2 - 2, 1);
+}
+
+/**
+ * Bone Pile — Scattered long bones, ribcage fragments, and
+ * femur shapes. Less "skull tower", more "aftermath".
+ * Theme affinity: Catacombs, Ossuary, Torture, Graveyard.
+ */
+function drawProp_bone_pile(ctx, x, y, size, seed, palette) {
+  const h = cellHash;
+  const cx = x + size / 2;
+  const baseY = y + size * 0.65;
+  const boneColor = lerpColor(palette.secondary, '#d8d0c0', 0.35);
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.1)';
+  ctx.beginPath();
+  ctx.ellipse(cx, baseY + 3, size * 0.22, size * 0.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Scattered long bones (4-6 angled lines with knob ends)
+  const count = 4 + Math.floor(h(seed, 0, 250) * 3);
+  for (let i = 0; i < count; i++) {
+    const bx = cx + (h(seed, i, 251) - 0.5) * size * 0.35;
+    const by = baseY - size * 0.05 + (h(seed, i, 252) - 0.5) * size * 0.15;
+    const angle = (h(seed, i, 253) - 0.5) * Math.PI * 0.6;
+    const boneLen = size * 0.12 + h(seed, i, 254) * size * 0.08;
+
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.rotate(angle);
+
+    // Bone shaft
+    ctx.strokeStyle = shiftColor(boneColor, Math.floor((h(seed, i, 255) - 0.5) * 10));
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-boneLen / 2, 0);
+    ctx.lineTo(boneLen / 2, 0);
+    ctx.stroke();
+
+    // Bone knobs at ends
+    ctx.fillStyle = shiftColor(boneColor, 3);
+    ctx.beginPath();
+    ctx.arc(-boneLen / 2, 0, 1.5, 0, Math.PI * 2);
+    ctx.arc(boneLen / 2, 0, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  // Rib curve
+  if (h(seed, 0, 256) > 0.3) {
+    const ribX = cx + (h(seed, 0, 257) - 0.5) * size * 0.15;
+    const ribY = baseY - size * 0.08;
+    ctx.strokeStyle = shiftColor(boneColor, -3);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(ribX, ribY, size * 0.08, Math.PI * 0.2, Math.PI * 0.8);
+    ctx.stroke();
+  }
+}
+
+/**
+ * Hanging Lantern — Ceiling-hung iron lantern with warm glow.
+ * Chain suspension, rectangular frame, glass panes, inner flame.
+ * Different silhouette from sconces and braziers.
+ * Theme affinity: Cathedral, Silent Vault, Library, Shrine.
+ */
+function drawProp_hanging_lantern(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const metalColor = palette.metal || palette.secondary;
+  const lanternTop = y + size * 0.25;
+  const lanternBot = y + size * 0.52;
+  const lanternW = size * 0.18;
+  const lanternMid = (lanternTop + lanternBot) / 2;
+
+  // Warm glow
+  const grad = ctx.createRadialGradient(cx, lanternMid, 1, cx, lanternMid, size * 0.38);
+  grad.addColorStop(0, 'rgba(255, 190, 80, 0.14)');
+  grad.addColorStop(0.5, 'rgba(255, 140, 40, 0.05)');
+  grad.addColorStop(1, 'rgba(255, 100, 20, 0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, lanternMid, size * 0.38, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Chain from ceiling
+  ctx.strokeStyle = shiftColor(metalColor, 5);
+  ctx.lineWidth = 0.8;
+  for (let ly = y; ly < lanternTop; ly += 3) {
+    const off = ((ly / 3) | 0) % 2 === 0 ? -0.3 : 0.3;
+    ctx.beginPath();
+    ctx.moveTo(cx + off, ly);
+    ctx.lineTo(cx + off, Math.min(ly + 2, lanternTop));
+    ctx.stroke();
+  }
+
+  // Lantern frame
+  ctx.strokeStyle = shiftColor(metalColor, 3);
+  ctx.lineWidth = 1;
+  ctx.strokeRect(cx - lanternW / 2, lanternTop, lanternW, lanternBot - lanternTop);
+
+  // Top cap
+  ctx.fillStyle = shiftColor(metalColor, 6);
+  ctx.beginPath();
+  ctx.moveTo(cx - lanternW / 2 - 2, lanternTop);
+  ctx.lineTo(cx + lanternW / 2 + 2, lanternTop);
+  ctx.lineTo(cx + lanternW * 0.2, lanternTop - 3);
+  ctx.lineTo(cx - lanternW * 0.2, lanternTop - 3);
+  ctx.closePath();
+  ctx.fill();
+
+  // Bottom cap
+  ctx.fillStyle = shiftColor(metalColor, 4);
+  ctx.fillRect(cx - lanternW / 2 - 1, lanternBot, lanternW + 2, 2);
+
+  // Glass panes
+  ctx.fillStyle = hexAlpha(palette.accent, 0.12);
+  ctx.fillRect(cx - lanternW / 2 + 1, lanternTop + 1, lanternW - 2, lanternBot - lanternTop - 2);
+
+  // Inner flame
+  ctx.fillStyle = 'rgba(255, 200, 60, 0.6)';
+  ctx.beginPath();
+  ctx.arc(cx, lanternMid, 2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255, 240, 120, 0.75)';
+  ctx.beginPath();
+  ctx.arc(cx, lanternMid, 1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Center vertical frame bar
+  ctx.strokeStyle = shiftColor(metalColor, 0);
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(cx, lanternTop);
+  ctx.lineTo(cx, lanternBot);
+  ctx.stroke();
+
+  // Bottom shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.06)';
+  ctx.beginPath();
+  ctx.ellipse(cx, lanternBot + size * 0.12, lanternW * 0.6, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  OVERLAY DECORATION DRAW FUNCTIONS
+//  Single-tile preview versions of archetype overlay elements
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Corner Pillar — Boss room corner column with highlight ring.
+ */
+function drawProp_corner_pillar(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+  const r = size * 0.28;
+  const pillarColor = lerpColor(palette.metal || palette.secondary, palette.highlight, 0.3);
+
+  // Shadow
+  ctx.fillStyle = shiftColor(palette.primary, -10);
+  ctx.beginPath();
+  ctx.arc(cx + 1, cy + 1, r + 1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Pillar body
+  ctx.fillStyle = pillarColor;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Highlight ring
+  ctx.strokeStyle = hexAlpha(palette.highlight, 0.35);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r - 2, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+/**
+ * Floor Sigil — Geometric circle + diamond pattern for boss rooms.
+ */
+function drawProp_floor_sigil(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+  const r = size * 0.4;
+
+  // Outer circle
+  ctx.strokeStyle = hexAlpha(palette.accent, 0.25);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Inner diamond
+  const dr = r * 0.65;
+  ctx.strokeStyle = hexAlpha(palette.highlight, 0.20);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - dr);
+  ctx.lineTo(cx + dr, cy);
+  ctx.lineTo(cx, cy + dr);
+  ctx.lineTo(cx - dr, cy);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Center dot
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.30);
+  ctx.beginPath();
+  ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/**
+ * Wall Torch — Enemy room wall-mounted torch with glow.
+ */
+function drawProp_wall_torch(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+
+  // Glow radius
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.06);
+  ctx.beginPath();
+  ctx.arc(cx, y + size / 2, size * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Bracket on wall
+  ctx.fillStyle = shiftColor(palette.metal || palette.secondary, 10);
+  ctx.fillRect(cx - 2, y + size * 0.3, 4, size * 0.4);
+
+  // Flame outer
+  ctx.fillStyle = hexAlpha(palette.accent, 0.4);
+  ctx.beginPath();
+  ctx.arc(cx, y + size * 0.28, 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Flame core
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.7);
+  ctx.beginPath();
+  ctx.arc(cx, y + size * 0.28, 3, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/**
+ * Wall Alcove — Loot room recessed niche in wall.
+ */
+function drawProp_wall_alcove(ctx, x, y, size, seed, palette) {
+  const alcoveColor = shiftColor(palette.primary, -5);
+  const alcoveHighlight = shiftColor(palette.secondary, 8);
+
+  ctx.fillStyle = alcoveColor;
+  ctx.fillRect(x + size * 0.2, y + size * 0.15, size * 0.6, size * 0.7);
+  ctx.strokeStyle = alcoveHighlight;
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(x + size * 0.2, y + size * 0.15, size * 0.6, size * 0.7);
+}
+
+/**
+ * Corner Ornament — Loot room corner filigree L-shape with dot.
+ */
+function drawProp_corner_ornament(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+
+  ctx.strokeStyle = hexAlpha(palette.highlight, 0.30);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + 8);
+  ctx.lineTo(cx, cy);
+  ctx.lineTo(cx + 8, cy);
+  ctx.stroke();
+
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.25);
+  ctx.beginPath();
+  ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/**
+ * Arrival Circle — Spawn room center mark with glow.
+ */
+function drawProp_arrival_circle(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+
+  // Outer glow
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.04);
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.45, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Circle mark
+  ctx.strokeStyle = hexAlpha(palette.highlight, 0.18);
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.3, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Inner dot
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.15);
+  ctx.beginPath();
+  ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/**
+ * Archway — Spawn room flanking archway columns with curved top.
+ */
+function drawProp_archway(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const colW = 6;
+  const colH = size * 0.7;
+
+  // Left column
+  ctx.fillStyle = lerpColor(palette.secondary, palette.highlight, 0.25);
+  ctx.fillRect(cx - size * 0.3, y + size * 0.2, colW, colH);
+  // Right column
+  ctx.fillRect(cx + size * 0.3 - colW, y + size * 0.2, colW, colH);
+
+  // Arch top
+  ctx.strokeStyle = hexAlpha(palette.highlight, 0.18);
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(cx - size * 0.3, y + size * 0.25);
+  ctx.quadraticCurveTo(cx, y + size * 0.05, cx + size * 0.3, y + size * 0.25);
+  ctx.stroke();
+}
+
+/**
+ * Corner Rubble — Empty room corner debris cluster.
+ */
+function drawProp_corner_rubble(ctx, x, y, size, seed, palette) {
+  const rubbleColor = shiftColor(palette.secondary, -8);
+
+  ctx.fillStyle = rubbleColor;
+  ctx.fillRect(x + size * 0.15, y + size * 0.55, 10, 6);
+  ctx.fillRect(x + size * 0.3, y + size * 0.45, 8, 5);
+  ctx.fillRect(x + size * 0.1, y + size * 0.6, 6, 4);
+
+  // Shadow underneath
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.fillRect(x + size * 0.12, y + size * 0.68, 14, 2);
+}
+
+/**
+ * Stair Descent — Concentric border rings suggesting depth.
+ */
+function drawProp_stair_descent(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+
+  // Gradient darker toward center
+  const grad = ctx.createRadialGradient(cx, cy, size * 0.05, cx, cy, size * 0.45);
+  grad.addColorStop(0, 'rgba(0,0,0,0.20)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.45, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Concentric rings
+  ctx.strokeStyle = hexAlpha(palette.accent, 0.15);
+  ctx.lineWidth = 0.8;
+  for (let r = 1; r <= 3; r++) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, size * 0.1 * r, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+/**
+ * Wall Banner — Shrine room hanging banner with tattered edge.
+ */
+function drawProp_wall_banner(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const bw = size * 0.3;
+  const bh = size * 0.6;
+  const by = y + size * 0.1;
+
+  // Rod
+  ctx.fillStyle = shiftColor(palette.metal || palette.secondary, 5);
+  ctx.fillRect(cx - bw / 2 - 2, by, bw + 4, 2);
+
+  // Fabric body
+  ctx.fillStyle = hexAlpha(palette.accent, 0.5);
+  ctx.fillRect(cx - bw / 2, by + 2, bw, bh - 8);
+
+  // Tattered bottom
+  ctx.beginPath();
+  ctx.moveTo(cx - bw / 2, by + bh - 8);
+  const teeth = 3;
+  const toothW = bw / teeth;
+  for (let t = 0; t < teeth; t++) {
+    ctx.lineTo(cx - bw / 2 + t * toothW + toothW / 2, by + bh);
+    ctx.lineTo(cx - bw / 2 + (t + 1) * toothW, by + bh - 8);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+/**
+ * Wall Chains — Prison room dangling chain links on wall.
+ */
+function drawProp_wall_chains(ctx, x, y, size, seed, palette) {
+  const chainColor = shiftColor(palette.metal || palette.secondary, 5);
+  const h = cellHash;
+
+  for (let i = 0; i < 3; i++) {
+    const cx = x + size * 0.2 + (i / 2) * size * 0.6;
+    const chainLen = size * 0.5 + h(seed, i, 81) * size * 0.3;
+    ctx.strokeStyle = chainColor;
+    ctx.lineWidth = 1;
+    for (let ly = 0; ly < chainLen; ly += 4) {
+      const linkX = cx + ((ly / 4) % 2 === 0 ? -0.5 : 0.5);
+      ctx.beginPath();
+      ctx.moveTo(linkX, y + size * 0.1 + ly);
+      ctx.lineTo(linkX, y + size * 0.1 + Math.min(ly + 3, chainLen));
+      ctx.stroke();
+    }
+  }
+}
+
+/**
+ * Iron Bars — Prison room vertical bars across a doorway.
+ */
+function drawProp_iron_bars(ctx, x, y, size, seed, palette) {
+  ctx.strokeStyle = shiftColor(palette.metal || palette.secondary, 10);
+  ctx.lineWidth = 1.5;
+  for (let bar = 0; bar < 3; bar++) {
+    const barX = x + size * 0.2 + bar * (size * 0.3);
+    ctx.beginPath();
+    ctx.moveTo(barX, y + size * 0.1);
+    ctx.lineTo(barX, y + size * 0.9);
+    ctx.stroke();
+  }
+  // Horizontal cross bar
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + size * 0.15, y + size * 0.35);
+  ctx.lineTo(x + size * 0.85, y + size * 0.35);
+  ctx.stroke();
+}
+
+/**
+ * Ripple Pool — Flooded room concentric water ripple arcs.
+ */
+function drawProp_ripple_pool(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+
+  // Water tint
+  ctx.fillStyle = 'rgba(10, 50, 70, 0.20)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, size * 0.35, size * 0.25, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Ripple arcs
+  ctx.strokeStyle = 'rgba(100, 190, 230, 0.18)';
+  ctx.lineWidth = 0.6;
+  for (let ring = 0; ring < 3; ring++) {
+    const r = size * 0.08 + ring * size * 0.1;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, Math.PI * 0.1, Math.PI * 0.9);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, Math.PI * 1.1, Math.PI * 1.7);
+    ctx.stroke();
+  }
+}
+
+/**
+ * Nave Aisle — Cathedral center aisle darker strip with border lines.
+ */
+function drawProp_nave_aisle(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const aisleW = size * 0.7;
+
+  // Aisle strip
+  ctx.fillStyle = 'rgba(0,0,0,0.06)';
+  ctx.fillRect(cx - aisleW / 2, y, aisleW, size);
+
+  // Border lines
+  ctx.strokeStyle = hexAlpha(palette.highlight, 0.12);
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(cx - aisleW / 2, y);
+  ctx.lineTo(cx - aisleW / 2, y + size);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(cx + aisleW / 2, y);
+  ctx.lineTo(cx + aisleW / 2, y + size);
+  ctx.stroke();
+}
+
+/**
+ * Rose Window — Cathedral circular stained-glass motif with radial spokes.
+ */
+function drawProp_rose_window(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+  const r = size * 0.35;
+
+  // Outer ring
+  ctx.strokeStyle = hexAlpha(palette.accent, 0.20);
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Inner ring
+  ctx.strokeStyle = hexAlpha(palette.highlight, 0.15);
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 8 radial spokes
+  ctx.strokeStyle = hexAlpha(palette.accent, 0.12);
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(angle) * r * 0.3, cy + Math.sin(angle) * r * 0.3);
+    ctx.lineTo(cx + Math.cos(angle) * r * 0.9, cy + Math.sin(angle) * r * 0.9);
+    ctx.stroke();
+  }
+
+  // Center gem
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.25);
+  ctx.beginPath();
+  ctx.arc(cx, cy, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+/**
+ * Arcane Circle — Ritual room glowing containment ring with center glow.
+ */
+function drawProp_arcane_circle(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+
+  // Center glow
+  const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, size * 0.4);
+  grad.addColorStop(0, hexAlpha(palette.accent, 0.08));
+  grad.addColorStop(0.5, hexAlpha(palette.accent, 0.03));
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Containment ring
+  ctx.strokeStyle = hexAlpha(palette.accent, 0.15);
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.35, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+/**
+ * Floor Rune — Ritual room small cross-shaped rune mark.
+ */
+function drawProp_floor_rune(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+
+  ctx.strokeStyle = hexAlpha(palette.accent, 0.22);
+  ctx.lineWidth = 0.7;
+  // Vertical
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 4);
+  ctx.lineTo(cx, cy + 4);
+  ctx.stroke();
+  // Horizontal
+  ctx.beginPath();
+  ctx.moveTo(cx - 3, cy);
+  ctx.lineTo(cx + 3, cy);
+  ctx.stroke();
+}
+
+/**
+ * Disturbed Earth — Graveyard irregular darker earth patch.
+ */
+function drawProp_disturbed_earth(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+  const h = cellHash;
+
+  for (let i = 0; i < 3; i++) {
+    const px = cx + (h(seed, i, 160) - 0.5) * size * 0.4;
+    const py = cy + (h(seed, i, 161) - 0.5) * size * 0.3;
+    const rx = size * 0.12 + h(seed, i, 162) * size * 0.08;
+    const ry = size * 0.08 + h(seed, i, 163) * size * 0.05;
+    ctx.fillStyle = 'rgba(20, 15, 8, 0.12)';
+    ctx.beginPath();
+    ctx.ellipse(px, py, rx, ry, h(seed, i, 164) * Math.PI, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Soil dots
+  ctx.fillStyle = shiftColor(palette.floor || palette.primary, -6);
+  for (let d = 0; d < 5; d++) {
+    const dx = x + size * 0.2 + h(seed, d, 165) * size * 0.6;
+    const dy = y + size * 0.2 + h(seed, d, 166) * size * 0.6;
+    ctx.fillRect(dx, dy, 1.5, 1);
+  }
+}
+
+/**
+ * Weapon Peg — Armory wall-mounted display pegs for weapons.
+ */
+function drawProp_weapon_peg(ctx, x, y, size, seed, palette) {
+  ctx.fillStyle = shiftColor(palette.metal || palette.secondary, 12);
+  // Two pegs
+  ctx.fillRect(x + size * 0.3, y + size * 0.2, 2, 6);
+  ctx.fillRect(x + size * 0.6, y + size * 0.2, 2, 6);
+
+  // Rack bar
+  const trimColor = shiftColor(palette.metal || palette.secondary, 8);
+  ctx.fillStyle = trimColor;
+  ctx.fillRect(x + size * 0.15, y + size * 0.15, size * 0.7, 3);
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.10);
+  ctx.fillRect(x + size * 0.15, y + size * 0.15, size * 0.7, 1);
+}
+
+/**
+ * Wall Light — Armory warm glow spot on wall.
+ */
+function drawProp_wall_light(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+
+  const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, size * 0.4);
+  grad.addColorStop(0, 'rgba(255, 180, 80, 0.12)');
+  grad.addColorStop(1, 'rgba(255, 120, 40, 0)');
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Small fixture mark
+  ctx.fillStyle = shiftColor(palette.metal || palette.secondary, 10);
+  ctx.fillRect(cx - 2, cy - 3, 4, 6);
+}
+
+/**
+ * Bone Wall — Ossuary horizontal bone-layer texture on wall.
+ */
+function drawProp_bone_wall(ctx, x, y, size, seed, palette) {
+  const boneColor = 'rgba(180, 170, 150, 0.12)';
+  for (let row = 0; row < 5; row++) {
+    const ly = y + 4 + row * ((size - 8) / 5);
+    ctx.fillStyle = boneColor;
+    ctx.fillRect(x + 4, ly, size - 8, 2);
+  }
+  // Subtle frame
+  ctx.strokeStyle = 'rgba(180, 170, 150, 0.06)';
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(x + 2, y + 2, size - 4, size - 4);
+}
+
+/**
+ * Bone Alcove — Ossuary dark inset recess with border.
+ */
+function drawProp_bone_alcove(ctx, x, y, size, seed, palette) {
+  const alcoveColor = shiftColor(palette.primary, -5);
+  ctx.fillStyle = alcoveColor;
+  ctx.fillRect(x + size * 0.15, y + size * 0.1, size * 0.7, size * 0.4);
+  ctx.strokeStyle = shiftColor(palette.secondary, 5);
+  ctx.lineWidth = 0.5;
+  ctx.strokeRect(x + size * 0.15, y + size * 0.1, size * 0.7, size * 0.4);
+}
+
+/**
+ * Glow Pool — Fungal grotto bioluminescent center glow.
+ */
+function drawProp_glow_pool(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2;
+  const cy = y + size / 2;
+  const glowColor = palette.accent;
+
+  const grad = ctx.createRadialGradient(cx, cy, 1, cx, cy, size * 0.4);
+  grad.addColorStop(0, hexAlpha(glowColor, 0.12));
+  grad.addColorStop(0.6, hexAlpha(glowColor, 0.04));
+  grad.addColorStop(1, hexAlpha(glowColor, 0));
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(cx, cy, size * 0.4, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Damp highlight
+  ctx.fillStyle = 'rgba(100, 180, 120, 0.06)';
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, size * 0.2, size * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// ═══════════════════════════════════════════════════════════
 //  PROP DISPATCH MAP
 // ═══════════════════════════════════════════════════════════
 
@@ -1440,6 +2338,35 @@ const PROP_DRAW_MAP = {
   ritual_circle:     drawProp_ritual_circle,
   iron_maiden:       drawProp_iron_maiden,
   tombstone:         drawProp_tombstone,
+  lectern:           drawProp_lectern,
+  desk:              drawProp_desk,
+  crate:             drawProp_crate,
+  bone_pile:         drawProp_bone_pile,
+  hanging_lantern:   drawProp_hanging_lantern,
+  // Overlay decorations (archetype-specific structural elements)
+  corner_pillar:     drawProp_corner_pillar,
+  floor_sigil:       drawProp_floor_sigil,
+  wall_torch:        drawProp_wall_torch,
+  wall_alcove:       drawProp_wall_alcove,
+  corner_ornament:   drawProp_corner_ornament,
+  arrival_circle:    drawProp_arrival_circle,
+  archway:           drawProp_archway,
+  corner_rubble:     drawProp_corner_rubble,
+  stair_descent:     drawProp_stair_descent,
+  wall_banner:       drawProp_wall_banner,
+  wall_chains:       drawProp_wall_chains,
+  iron_bars:         drawProp_iron_bars,
+  ripple_pool:       drawProp_ripple_pool,
+  nave_aisle:        drawProp_nave_aisle,
+  rose_window:       drawProp_rose_window,
+  arcane_circle:     drawProp_arcane_circle,
+  floor_rune:        drawProp_floor_rune,
+  disturbed_earth:   drawProp_disturbed_earth,
+  weapon_peg:        drawProp_weapon_peg,
+  wall_light:        drawProp_wall_light,
+  bone_wall:         drawProp_bone_wall,
+  bone_alcove:       drawProp_bone_alcove,
+  glow_pool:         drawProp_glow_pool,
 };
 
 /**
@@ -1488,20 +2415,23 @@ export const ARCHETYPE_PROP_SLOTS = {
     ],
     accents: [
       { prop: 'brazier',      position: 'flanking_center',  chance: 0.7 },
-      { prop: 'banner',       position: 'wall_top',         chance: 0.5 },
+      { prop: 'banner',       position: 'on_wall_top',      chance: 0.5 },
       { prop: 'statue',       position: 'wall_left',        chance: 0.4 },
       { prop: 'candelabra',   position: 'flanking_center',  chance: 0.35 },
-      { prop: 'weapon_rack',  position: 'wall_right',       chance: 0.3 },
+      { prop: 'weapon_rack',  position: 'on_wall_right',    chance: 0.3 },
     ],
   },
-  // Enemy overlay draws: paired torches L/R walls, weapon rack lines on top wall, door path
+  // Enemy overlay draws: paired torches L/R walls, door path
   enemy: {
-    maxProps: 3,
+    maxProps: 4,
     accents: [
       { prop: 'brazier',      position: 'wall_left',        chance: 0.5 },
       { prop: 'brazier',      position: 'wall_right',       chance: 0.5 },
-      { prop: 'chains',       position: 'wall_top',         chance: 0.35 },
+      { prop: 'chains',       position: 'on_wall_top',      chance: 0.35 },
+      { prop: 'weapon_rack',  position: 'on_wall_top',      chance: 0.55 },
+      { prop: 'crate',        position: 'corners',          chance: 0.25 },
       { prop: 'rubble',       position: 'random_floor',     chance: 0.25 },
+      { prop: 'banner',       position: 'on_wall_left',     chance: 0.3 },
     ],
   },
   // Loot overlay draws: polished floor, wall alcoves, corner filigree (no prop overlap)
@@ -1509,9 +2439,11 @@ export const ARCHETYPE_PROP_SLOTS = {
     maxProps: 4,
     accents: [
       { prop: 'barrel',       position: 'corners',          chance: 0.6 },
+      { prop: 'crate',        position: 'random_floor',     chance: 0.4 },
       { prop: 'barrel',       position: 'random_floor',     chance: 0.3 },
       { prop: 'brazier',      position: 'wall_left',        chance: 0.3 },
-      { prop: 'torch_sconce', position: 'wall_right',       chance: 0.3 },
+      { prop: 'torch_sconce', position: 'on_wall_right',    chance: 0.3 },
+      { prop: 'hanging_lantern', position: 'on_wall_left',   chance: 0.3 },
       { prop: 'web',          position: 'corners',          chance: 0.15 },
     ],
   },
@@ -1519,20 +2451,22 @@ export const ARCHETYPE_PROP_SLOTS = {
   spawn: {
     maxProps: 3,
     accents: [
-      { prop: 'banner',       position: 'wall_top',         chance: 0.5 },
+      { prop: 'banner',       position: 'on_wall_top',      chance: 0.5 },
       { prop: 'brazier',      position: 'flanking_center',  chance: 0.4 },
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.3 },
+      { prop: 'torch_sconce', position: 'on_wall_left',     chance: 0.3 },
     ],
   },
   // Empty overlay draws: corner rubble, dark wash, wall darkening
   empty: {
-    maxProps: 2,
+    maxProps: 3,
     accents: [
       { prop: 'rubble',       position: 'random_floor',     chance: 0.4 },
-      { prop: 'web',          position: 'corners',          chance: 0.35 },
-      { prop: 'chains',       position: 'wall_left',        chance: 0.15 },
+      { prop: 'web',          position: 'corners',          chance: 0.45 },
+      { prop: 'chains',       position: 'on_wall_left',     chance: 0.2 },
+      { prop: 'bone_pile',    position: 'random_floor',     chance: 0.25 },
       { prop: 'skull_pile',   position: 'random_floor',     chance: 0.12 },
       { prop: 'tombstone',    position: 'random_floor',     chance: 0.12 },
+      { prop: 'hanging_lantern', position: 'on_wall_right', chance: 0.2 },
     ],
   },
   // Stairs overlay draws: wall streaks, floor borders (no prop overlap)
@@ -1541,24 +2475,30 @@ export const ARCHETYPE_PROP_SLOTS = {
     accents: [
       { prop: 'pillar',       position: 'wall_left',        chance: 0.4 },
       { prop: 'pillar',       position: 'wall_right',       chance: 0.4 },
-      { prop: 'torch_sconce', position: 'wall_top',         chance: 0.5 },
+      { prop: 'torch_sconce', position: 'on_wall_top',      chance: 0.5 },
     ],
   },
   // Shrine overlay draws: center altar+gem, flanking braziers, top-wall banners
   shrine: {
     maxProps: 3,
     accents: [
-      { prop: 'statue',       position: 'corners',          chance: 0.4 },
-      { prop: 'candelabra',   position: 'wall_right',       chance: 0.45 },
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.35 },
+      { prop: 'statue',          position: 'corners',          chance: 0.4 },
+      { prop: 'candelabra',      position: 'wall_right',       chance: 0.45 },
+      { prop: 'hanging_lantern', position: 'on_wall_left',  chance: 0.25 },
+      { prop: 'torch_sconce',    position: 'on_wall_left',     chance: 0.35 },
     ],
   },
-  // Library overlay draws: bookshelves on all 4 walls, dust motes
+  // Library overlay draws: bookshelves on top/bottom walls, lighter floor, dust motes.
   library: {
-    maxProps: 2,
+    maxProps: 4,
+    focal: [
+      { prop: 'lectern', weight: 0.6 },
+      { prop: 'desk',    weight: 0.4 },
+    ],
     accents: [
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.4 },
-      { prop: 'torch_sconce', position: 'wall_right',       chance: 0.3 },
+      { prop: 'hanging_lantern', position: 'on_wall_left',    chance: 0.35 },
+      { prop: 'torch_sconce',   position: 'on_wall_left',     chance: 0.4 },
+      { prop: 'torch_sconce',   position: 'on_wall_right',    chance: 0.3 },
     ],
   },
   // Prison overlay draws: chains on L/R walls, doorway iron bars, corner vignette
@@ -1569,18 +2509,24 @@ export const ARCHETYPE_PROP_SLOTS = {
       { prop: 'iron_maiden',  weight: 0.45 },
     ],
     accents: [
-      { prop: 'chains',       position: 'wall_top',         chance: 0.4 },
+      { prop: 'chains',       position: 'on_wall_top',      chance: 0.4 },
       { prop: 'skull_pile',   position: 'random_floor',     chance: 0.2 },
       { prop: 'iron_maiden',  position: 'wall_right',       chance: 0.3 },
     ],
   },
-  // Flooded overlay draws: water tint, floor puddles, reflective edges, ripple lines
+  // Flooded overlay draws: water tint, reflective edges, ripple lines. Props own: puddles, mushrooms, fountain.
   flooded: {
-    maxProps: 3,
+    maxProps: 5,
+    focal: [
+      { prop: 'fountain',          weight: 0.45 },
+      { prop: 'puddle',            weight: 0.55 },
+    ],
     accents: [
-      { prop: 'mushroom_cluster',  position: 'wall_left',        chance: 0.4 },
-      { prop: 'mushroom_cluster',  position: 'random_floor',     chance: 0.25 },
-      { prop: 'fountain',          position: 'center',           chance: 0.25 },
+      { prop: 'puddle',            position: 'random_floor',     chance: 0.65 },
+      { prop: 'puddle',            position: 'corners',          chance: 0.4 },
+      { prop: 'mushroom_cluster',  position: 'wall_left',        chance: 0.45 },
+      { prop: 'mushroom_cluster',  position: 'wall_right',       chance: 0.3 },
+      { prop: 'hanging_lantern',   position: 'on_wall_left',     chance: 0.25 },
     ],
   },
   // Cathedral overlay draws: central aisle, rose window, wall streaks (no center prop)
@@ -1592,11 +2538,13 @@ export const ARCHETYPE_PROP_SLOTS = {
       { prop: 'candelabra',   weight: 0.25 },
     ],
     accents: [
-      { prop: 'candelabra',   position: 'wall_left',        chance: 0.4 },
-      { prop: 'candelabra',   position: 'wall_right',       chance: 0.4 },
-      { prop: 'banner',       position: 'wall_top',         chance: 0.5 },
-      { prop: 'statue',       position: 'corners',          chance: 0.35 },
-      { prop: 'tombstone',    position: 'random_floor',     chance: 0.15 },
+      { prop: 'candelabra',      position: 'wall_left',        chance: 0.4 },
+      { prop: 'candelabra',      position: 'wall_right',       chance: 0.4 },
+      { prop: 'banner',          position: 'on_wall_top',      chance: 0.5 },
+      { prop: 'hanging_lantern', position: 'on_wall_left',  chance: 0.3 },
+      { prop: 'statue',          position: 'corners',          chance: 0.35 },
+      { prop: 'rubble',          position: 'random_floor',     chance: 0.15 },
+      { prop: 'tombstone',       position: 'random_floor',     chance: 0.15 },
     ],
   },
   // Ritual overlay draws: central glow, corner darkening, floor runes, containment ring
@@ -1613,25 +2561,34 @@ export const ARCHETYPE_PROP_SLOTS = {
   },
   // Torture overlay draws: blood stains, scratch marks, metal brackets, heavy vignette
   torture: {
-    maxProps: 4,
+    maxProps: 5,
     focal: [
       { prop: 'cage',         weight: 0.40 },
       { prop: 'iron_maiden',  weight: 0.60 },
     ],
     accents: [
-      { prop: 'chains',       position: 'wall_top',         chance: 0.7 },
-      { prop: 'skull_pile',   position: 'corners',          chance: 0.25 },
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.35 },
+      { prop: 'chains',       position: 'on_wall_top',      chance: 0.75 },
+      { prop: 'chains',       position: 'on_wall_right',    chance: 0.4 },
+      { prop: 'bone_pile',    position: 'random_floor',     chance: 0.5 },
+      { prop: 'skull_pile',   position: 'corners',          chance: 0.3 },
+      { prop: 'torch_sconce', position: 'on_wall_left',     chance: 0.45 },
     ],
   },
-  // Graveyard overlay draws: earth wash, soil patches, mist, row markers
+  // Graveyard overlay draws: earth wash, soil patches, mist, row markers, grave mounds
   graveyard: {
-    maxProps: 5,
+    maxProps: 7,
+    focal: [
+      { prop: 'tombstone',    weight: 0.70 },
+      { prop: 'coffin',       weight: 0.30 },
+    ],
     accents: [
-      { prop: 'tombstone',    position: 'random_floor',     chance: 0.75 },
-      { prop: 'tombstone',    position: 'corners',          chance: 0.5 },
-      { prop: 'tombstone',    position: 'wall_top',         chance: 0.3 },
-      { prop: 'skull_pile',   position: 'random_floor',     chance: 0.15 },
+      { prop: 'tombstone',    position: 'wall_top',         chance: 0.75 },
+      { prop: 'tombstone',    position: 'corners',          chance: 0.6 },
+      { prop: 'tombstone',    position: 'random_floor',     chance: 0.6 },
+      { prop: 'coffin',       position: 'wall_top',         chance: 0.4 },
+      { prop: 'bone_pile',    position: 'random_floor',     chance: 0.35 },
+      { prop: 'torch_sconce', position: 'on_wall_left',     chance: 0.3 },
+      { prop: 'skull_pile',   position: 'random_floor',     chance: 0.2 },
       { prop: 'web',          position: 'corners',          chance: 0.2 },
     ],
   },
@@ -1639,12 +2596,12 @@ export const ARCHETYPE_PROP_SLOTS = {
   armory: {
     maxProps: 5,
     accents: [
-      { prop: 'weapon_rack',  position: 'wall_bottom',      chance: 0.7 },
-      { prop: 'weapon_rack',  position: 'wall_left',        chance: 0.5 },
+      { prop: 'weapon_rack',  position: 'on_wall_top',      chance: 0.7 },
+      { prop: 'weapon_rack',  position: 'on_wall_left',     chance: 0.5 },
+      { prop: 'crate',        position: 'random_floor',     chance: 0.35 },
       { prop: 'barrel',       position: 'corners',          chance: 0.5 },
+      { prop: 'torch_sconce', position: 'on_wall_right',    chance: 0.45 },
       { prop: 'barrel',       position: 'random_floor',     chance: 0.25 },
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.45 },
-      { prop: 'torch_sconce', position: 'wall_right',       chance: 0.45 },
     ],
   },
   // Ossuary overlay draws: bone-stack wall texture, wall alcoves, candle warm spots
@@ -1659,19 +2616,24 @@ export const ARCHETYPE_PROP_SLOTS = {
       { prop: 'skull_pile',   position: 'wall_left',        chance: 0.6 },
       { prop: 'skull_pile',   position: 'wall_right',       chance: 0.6 },
       { prop: 'skull_pile',   position: 'corners',          chance: 0.4 },
+      { prop: 'bone_pile',    position: 'random_floor',     chance: 0.3 },
       { prop: 'coffin',       position: 'wall_top',         chance: 0.4 },
       { prop: 'tombstone',    position: 'random_floor',     chance: 0.25 },
     ],
   },
-  // Fungal grotto overlay draws: green wash, glow pools, organic wall bumps, spore motes
+  // Fungal grotto overlay draws: green wash, glow pools, organic wall bumps, spore motes, mycelium tendrils
   fungal_grotto: {
-    maxProps: 5,
+    maxProps: 6,
+    focal: [
+      { prop: 'mushroom_cluster', weight: 0.75 },
+      { prop: 'puddle',           weight: 0.25 },
+    ],
     accents: [
-      { prop: 'mushroom_cluster', position: 'wall_left',    chance: 0.75 },
-      { prop: 'mushroom_cluster', position: 'wall_right',   chance: 0.75 },
-      { prop: 'mushroom_cluster', position: 'corners',      chance: 0.5 },
-      { prop: 'mushroom_cluster', position: 'random_floor', chance: 0.3 },
-      { prop: 'puddle',           position: 'random_floor', chance: 0.4 },
+      { prop: 'mushroom_cluster', position: 'wall_left',    chance: 0.85 },
+      { prop: 'mushroom_cluster', position: 'wall_right',   chance: 0.85 },
+      { prop: 'mushroom_cluster', position: 'corners',      chance: 0.6 },
+      { prop: 'mushroom_cluster', position: 'random_floor', chance: 0.4 },
+      { prop: 'puddle',           position: 'random_floor', chance: 0.45 },
       { prop: 'web',              position: 'corners',      chance: 0.2 },
     ],
   },
@@ -1705,14 +2667,16 @@ function _isNearDoor(tx, ty, doorPositions) {
  * @param {Object} bounds - { x_min, y_min, x_max, y_max } inner floor area
  * @param {number} seed - Room seed for deterministic random placement
  * @param {Array<{x: number, y: number}>} [doorPositions] - Door tile coords
+ * @param {Set<string>} [walkableTiles] - Set of "x,y" keys for valid floor tiles
  * @returns {Array<{x: number, y: number}>}
  */
-function _resolvePosition(position, bounds, seed, doorPositions) {
+function _resolvePosition(position, bounds, seed, doorPositions, walkableTiles) {
   const { x_min, y_min, x_max, y_max } = bounds;
   const floorW = x_max - x_min + 1;
   const floorH = y_max - y_min + 1;
   const midX = Math.floor((x_min + x_max) / 2);
   const midY = Math.floor((y_min + y_max) / 2);
+  const _isWalkable = (p) => !walkableTiles || walkableTiles.has(`${p.x},${p.y}`);
 
   let tiles;
 
@@ -1786,7 +2750,7 @@ function _resolvePosition(position, bounds, seed, doorPositions) {
                             fy <= y_min + 1 || fy >= y_max - 1);
           // Must NOT be at room center (2-tile exclusion radius)
           const nearCenter = Math.abs(fx - midX) <= 1 && Math.abs(fy - midY) <= 1;
-          if (nearWall && !nearCenter) candidates.push({ x: fx, y: fy });
+          if (nearWall && !nearCenter && _isWalkable({ x: fx, y: fy })) candidates.push({ x: fx, y: fy });
         }
       }
       if (candidates.length === 0) break;
@@ -1797,11 +2761,42 @@ function _resolvePosition(position, bounds, seed, doorPositions) {
       break;
     }
 
+    case 'on_wall_top': {
+      // Actual wall tiles above the room floor — for wall-mounted decorations
+      tiles = [];
+      for (let tx = x_min + 1; tx < x_max; tx += 2) {
+        tiles.push({ x: tx, y: y_min - 1 });
+      }
+      // Wall tiles bypass walkability check
+      return tiles.filter(t => !_isNearDoor(t.x, t.y, doorPositions));
+    }
+
+    case 'on_wall_left': {
+      // Actual wall tile to the left of room floor
+      const wallTilesL = [];
+      for (let ty = y_min + 1; ty < y_max; ty++) wallTilesL.push({ x: x_min - 1, y: ty });
+      if (wallTilesL.length === 0) return [{ x: x_min - 1, y: midY }].filter(t => !_isNearDoor(t.x, t.y, doorPositions));
+      const pickL = Math.floor(cellHash(seed, 0, 95) * wallTilesL.length);
+      return [wallTilesL[pickL]].filter(t => !_isNearDoor(t.x, t.y, doorPositions));
+    }
+
+    case 'on_wall_right': {
+      // Actual wall tile to the right of room floor
+      const wallTilesR = [];
+      for (let ty = y_min + 1; ty < y_max; ty++) wallTilesR.push({ x: x_max + 1, y: ty });
+      if (wallTilesR.length === 0) return [{ x: x_max + 1, y: midY }].filter(t => !_isNearDoor(t.x, t.y, doorPositions));
+      const pickR = Math.floor(cellHash(seed, 0, 96) * wallTilesR.length);
+      return [wallTilesR[pickR]].filter(t => !_isNearDoor(t.x, t.y, doorPositions));
+    }
+
     default:
       tiles = [];
   }
 
-  // Filter out tiles on or adjacent to doors
+  // Filter out tiles that aren't walkable, then tiles on or adjacent to doors
+  if (walkableTiles && tiles.length > 0) {
+    tiles = tiles.filter(_isWalkable);
+  }
   return tiles.filter(t => !_isNearDoor(t.x, t.y, doorPositions));
 }
 
@@ -1840,6 +2835,9 @@ const _POSITION_PRIORITY = {
   center: 0,
   flanking_center: 1,
   corners: 2,
+  on_wall_top: 3,
+  on_wall_left: 3,
+  on_wall_right: 3,
   wall_top: 3,
   wall_bottom: 3,
   wall_left: 4,
@@ -1855,7 +2853,7 @@ const _POSITION_PRIORITY = {
  * Call this AFTER base floor tiles are drawn, BEFORE room archetype overlay.
  */
 export function drawRoomProps(ctx, opts) {
-  const { archetype, theme, tileSize, roomOffsetX, roomOffsetY, bounds, seed, doorPositions } = opts;
+  const { archetype, theme, tileSize, roomOffsetX, roomOffsetY, bounds, seed, doorPositions, walkableTiles } = opts;
 
   const config = ARCHETYPE_PROP_SLOTS[archetype];
   if (!config) return;
@@ -1869,7 +2867,7 @@ export function drawRoomProps(ctx, opts) {
 
   // --- Helper: place prop at resolved positions, returns true if any placed ---
   const _placeSlot = (propName, position, slotSeed) => {
-    const positions = _resolvePosition(position, bounds, slotSeed, doorPositions);
+    const positions = _resolvePosition(position, bounds, slotSeed, doorPositions, walkableTiles);
     let placedAny = false;
     for (const pos of positions) {
       const key = `${pos.x},${pos.y}`;
@@ -1913,6 +2911,69 @@ export function drawRoomProps(ctx, opts) {
       }
     }
   }
+}
+
+/**
+ * Compute a Map of "x,y" → propName for a room, mirroring drawRoomProps logic
+ * but without drawing. Used for hover tooltips and debugging.
+ *
+ * @param {Object} opts - Same options as drawRoomProps
+ * @returns {Map<string, string>} Map of "x,y" → prop name
+ */
+export function computeRoomPropMap(opts) {
+  const { archetype, theme, bounds, seed, doorPositions, walkableTiles } = opts;
+  const result = new Map();
+
+  const config = ARCHETYPE_PROP_SLOTS[archetype];
+  if (!config) return result;
+
+  const affinities = theme.propAffinities || {};
+  const maxProps = config.maxProps || 99;
+  let propsPlaced = 0;
+
+  const claimed = new Set();
+
+  const _placeSlot = (propName, position, slotSeed) => {
+    const positions = _resolvePosition(position, bounds, slotSeed, doorPositions, walkableTiles);
+    let placedAny = false;
+    for (const pos of positions) {
+      const key = `${pos.x},${pos.y}`;
+      if (claimed.has(key)) continue;
+      claimed.add(key);
+      placedAny = true;
+      result.set(key, propName);
+    }
+    return placedAny;
+  };
+
+  // Focal prop
+  if (config.focal && config.focal.length > 0 && propsPlaced < maxProps) {
+    const focalProp = _pickFocal(config.focal, seed, affinities);
+    if (focalProp && _placeSlot(focalProp, 'center', seed)) {
+      propsPlaced++;
+    }
+  }
+
+  // Accent props
+  if (config.accents) {
+    const sortedAccents = config.accents.map((s, i) => ({ ...s, _origIdx: i }))
+      .sort((a, b) => (_POSITION_PRIORITY[a.position] ?? 9) - (_POSITION_PRIORITY[b.position] ?? 9));
+
+    for (const slot of sortedAccents) {
+      if (propsPlaced >= maxProps) break;
+      const i = slot._origIdx;
+      const affinity = affinities[slot.prop];
+      if (affinity === undefined || affinity <= 0) continue;
+      const effectiveChance = slot.chance * affinity;
+      const roll = cellHash(seed, i, 100);
+      if (roll >= effectiveChance) continue;
+      if (_placeSlot(slot.prop, slot.position, seed + i * 13)) {
+        propsPlaced++;
+      }
+    }
+  }
+
+  return result;
 }
 
 export { PROP_DRAW_MAP };

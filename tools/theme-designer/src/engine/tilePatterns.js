@@ -1515,6 +1515,7 @@ export function drawCorridor(ctx, x, y, size, seed, palette, theme) {
 
 /**
  * Draw a door tile (open or closed) using theme palette.
+ * Legacy non-oriented version — used when neighbor context is unavailable.
  */
 export function drawDoor(ctx, x, y, size, seed, palette, theme, isOpen) {
   // Floor underneath
@@ -1559,8 +1560,283 @@ export function drawDoor(ctx, x, y, size, seed, palette, theme, isOpen) {
 }
 
 /**
+ * Draw a door tile with faux 3/4 perspective, oriented by neighboring walls.
+ *
+ * @param {boolean} wallNorth - true if tile to the north is a wall
+ * @param {boolean} wallSouth - true if tile to the south is a wall
+ * @param {boolean} wallEast  - true if tile to the east is a wall
+ * @param {boolean} wallWest  - true if tile to the west is a wall
+ */
+export function drawDoorPerspective(ctx, x, y, size, seed, palette, theme, isOpen, wallNorth, wallSouth, wallEast, wallWest) {
+  // Floor underneath
+  drawCorridor(ctx, x, y, size, seed, palette, theme);
+
+  const woodDark  = lerpColor(palette.secondary, '#5C3310', 0.6);
+  const woodMid   = lerpColor(palette.secondary, '#8B4513', 0.5);
+  const woodLight = lerpColor(palette.secondary, '#A0764B', 0.4);
+  const metalCol  = palette.metal || palette.secondary;
+  const metalDark = shiftColor(metalCol, -8);
+  const handleCol = palette.highlight || '#DAA520';
+  const frameSt   = shiftColor(palette.primary, 10);
+
+  if (wallNorth && wallSouth && !wallEast && !wallWest) {
+    // ── EW passage door ──
+    if (isOpen) {
+      _drawDoorEW_open(ctx, x, y, size, woodMid, woodLight, metalCol, frameSt);
+    } else {
+      _drawDoorEW_closed(ctx, x, y, size, seed, woodDark, woodMid, woodLight, metalCol, metalDark, handleCol, frameSt);
+    }
+  } else {
+    // ── NS passage door (default) ──
+    if (isOpen) {
+      _drawDoorNS_open(ctx, x, y, size, woodMid, woodLight, metalCol, frameSt);
+    } else {
+      _drawDoorNS_closed(ctx, x, y, size, seed, woodDark, woodMid, woodLight, metalCol, metalDark, handleCol, frameSt);
+    }
+  }
+}
+
+// ── NS door helpers (front-facing, top edge + face visible) ──
+
+function _drawDoorNS_closed(ctx, px, py, s, seed, woodDark, woodMid, woodLight, metalCol, metalDark, handleCol, frameSt) {
+  const inset = Math.round(s * 0.08);
+  const topH = Math.round(s * 0.14);
+  const faceY = py + topH;
+  const faceH = s - topH - inset;
+  const dw = s - inset * 2;
+
+  // Stone door frame
+  ctx.fillStyle = frameSt;
+  ctx.fillRect(px + inset - 2, py + topH, 3, faceH + inset);
+  ctx.fillRect(px + s - inset - 1, py + topH, 3, faceH + inset);
+  ctx.fillRect(px + inset - 2, py + topH - 2, dw + 4, 3);
+
+  // Top edge of door (looking down)
+  ctx.fillStyle = woodLight;
+  ctx.fillRect(px + inset, py, dw, topH);
+  ctx.fillStyle = shiftColor(woodLight, 12);
+  ctx.fillRect(px + inset, py, dw, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.fillRect(px + inset, py + topH - 1, dw, 1);
+
+  // Door face
+  ctx.fillStyle = woodDark;
+  ctx.fillRect(px + inset, faceY, dw, faceH);
+
+  // Vertical planks
+  const plankCount = 3;
+  const plankW = dw / plankCount;
+  for (let i = 0; i < plankCount; i++) {
+    const plX = px + inset + i * plankW;
+    const colorVar = cellHash(seed, i, 55) * 6 - 3;
+    ctx.fillStyle = shiftColor(woodDark, colorVar);
+    ctx.fillRect(plX + 0.5, faceY + 1, plankW - 1, faceH - 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillRect(plX, faceY + 1, 1, faceH - 2);
+  }
+
+  // Iron bands
+  ctx.fillStyle = metalCol;
+  const bandH = Math.max(2, Math.round(s * 0.05));
+  const band1Y = faceY + Math.round(faceH * 0.28);
+  const band2Y = faceY + Math.round(faceH * 0.68);
+  ctx.fillRect(px + inset, band1Y, dw, bandH);
+  ctx.fillRect(px + inset, band2Y, dw, bandH);
+  ctx.fillStyle = shiftColor(metalCol, 10);
+  ctx.fillRect(px + inset, band1Y, dw, 1);
+  ctx.fillRect(px + inset, band2Y, dw, 1);
+  ctx.fillStyle = metalDark;
+  ctx.fillRect(px + inset, band1Y + bandH - 1, dw, 1);
+  ctx.fillRect(px + inset, band2Y + bandH - 1, dw, 1);
+
+  // Iron rivets
+  ctx.fillStyle = shiftColor(metalCol, 15);
+  for (let i = 0; i <= plankCount; i++) {
+    const rx = px + inset + i * plankW;
+    for (const ry of [band1Y + bandH / 2, band2Y + bandH / 2]) {
+      ctx.beginPath();
+      ctx.arc(rx, ry, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Ring pull handle
+  const ringCX = px + s / 2;
+  const ringCY = faceY + faceH * 0.50;
+  ctx.fillStyle = metalDark;
+  ctx.fillRect(ringCX - 2, ringCY - 5, 4, 4);
+  ctx.strokeStyle = handleCol;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(ringCX, ringCY + 1, 3.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Bottom threshold
+  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillRect(px + inset, py + s - inset - 2, dw, 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
+  ctx.fillRect(px + inset, py + s - inset - 4, dw, 2);
+}
+
+function _drawDoorNS_open(ctx, px, py, s, woodMid, woodLight, metalCol, frameSt) {
+  const inset = Math.round(s * 0.08);
+  const topH = Math.round(s * 0.14);
+  const faceH = s - topH - inset;
+  const dw = s - inset * 2;
+  const panelDepth = Math.round(s * 0.22);
+
+  // Stone frame
+  ctx.fillStyle = frameSt;
+  ctx.fillRect(px + inset - 2, py + topH, 3, faceH + inset);
+  ctx.fillRect(px + s - inset - 1, py + topH, 3, faceH + inset);
+  ctx.fillRect(px + inset - 2, py + topH - 2, dw + 4, 3);
+
+  // Left panel swung inward
+  ctx.fillStyle = woodMid;
+  ctx.beginPath();
+  ctx.moveTo(px + inset, py + topH);
+  ctx.lineTo(px + inset + panelDepth, py + topH + 4);
+  ctx.lineTo(px + inset + panelDepth, py + s - inset - 4);
+  ctx.lineTo(px + inset, py + s - inset);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = woodLight; ctx.lineWidth = 0.5; ctx.stroke();
+  ctx.fillStyle = metalCol;
+  ctx.fillRect(px + inset, py + topH + Math.round(faceH * 0.30), panelDepth, 2);
+
+  // Right panel swung inward
+  ctx.fillStyle = woodMid;
+  ctx.beginPath();
+  ctx.moveTo(px + s - inset, py + topH);
+  ctx.lineTo(px + s - inset - panelDepth, py + topH + 4);
+  ctx.lineTo(px + s - inset - panelDepth, py + s - inset - 4);
+  ctx.lineTo(px + s - inset, py + s - inset);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = woodLight; ctx.lineWidth = 0.5; ctx.stroke();
+  ctx.fillStyle = metalCol;
+  ctx.fillRect(px + s - inset - panelDepth, py + topH + Math.round(faceH * 0.30), panelDepth, 2);
+
+  // Dark gap
+  const gapL = px + inset + panelDepth + 1;
+  const gapR = px + s - inset - panelDepth - 1;
+  if (gapR > gapL) {
+    ctx.fillStyle = 'rgba(0,0,0,0.10)';
+    ctx.fillRect(gapL, py + topH, gapR - gapL, faceH);
+  }
+
+  // Frame top edge
+  ctx.fillStyle = shiftColor(frameSt, 6);
+  ctx.fillRect(px + inset - 2, py, dw + 4, topH);
+  ctx.fillStyle = shiftColor(frameSt, 12);
+  ctx.fillRect(px + inset - 2, py, dw + 4, 1);
+}
+
+// ── EW door helpers (side-on view, narrow edge visible) ──
+
+function _drawDoorEW_closed(ctx, px, py, s, seed, woodDark, woodMid, woodLight, metalCol, metalDark, handleCol, frameSt) {
+  const inset = Math.round(s * 0.08);
+  const dh = s - inset * 2;
+  const faceW = Math.round(s * 0.35);
+  const edgeW = Math.round(s * 0.14);
+  const panelX = px + Math.round((s - faceW - edgeW) / 2);
+
+  // Stone frame
+  ctx.fillStyle = frameSt;
+  ctx.fillRect(px + inset, py + inset - 2, s - inset * 2, 3);
+  ctx.fillRect(px + inset, py + s - inset - 1, s - inset * 2, 3);
+  ctx.fillRect(panelX - 2, py + inset, 3, dh);
+  ctx.fillRect(panelX + faceW + edgeW - 1, py + inset, 3, dh);
+
+  // Door face (wider visible portion)
+  ctx.fillStyle = woodDark;
+  ctx.fillRect(panelX, py + inset, faceW, dh);
+
+  // Horizontal planks on face
+  const plankCount = 3;
+  const plankH = dh / plankCount;
+  for (let i = 0; i < plankCount; i++) {
+    const plY = py + inset + i * plankH;
+    const colorVar = cellHash(seed, i, 66) * 6 - 3;
+    ctx.fillStyle = shiftColor(woodDark, colorVar);
+    ctx.fillRect(panelX + 1, plY + 0.5, faceW - 2, plankH - 1);
+    ctx.fillStyle = 'rgba(0,0,0,0.12)';
+    ctx.fillRect(panelX + 1, plY, faceW - 2, 1);
+  }
+
+  // Iron bands (vertical)
+  ctx.fillStyle = metalCol;
+  const bandW = Math.max(2, Math.round(s * 0.05));
+  const band1X = panelX + Math.round(faceW * 0.30);
+  const band2X = panelX + Math.round(faceW * 0.70);
+  ctx.fillRect(band1X, py + inset, bandW, dh);
+  ctx.fillRect(band2X, py + inset, bandW, dh);
+  ctx.fillStyle = shiftColor(metalCol, 10);
+  ctx.fillRect(band1X, py + inset, 1, dh);
+  ctx.fillRect(band2X, py + inset, 1, dh);
+  ctx.fillStyle = metalDark;
+  ctx.fillRect(band1X + bandW - 1, py + inset, 1, dh);
+  ctx.fillRect(band2X + bandW - 1, py + inset, 1, dh);
+
+  // Rivets
+  ctx.fillStyle = shiftColor(metalCol, 15);
+  for (let i = 0; i <= plankCount; i++) {
+    const ry = py + inset + i * plankH;
+    for (const rx of [band1X + bandW / 2, band2X + bandW / 2]) {
+      ctx.beginPath();
+      ctx.arc(rx, ry, 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Door edge/thickness
+  ctx.fillStyle = woodMid;
+  ctx.fillRect(panelX + faceW, py + inset, edgeW, dh);
+  ctx.fillStyle = shiftColor(woodMid, 8);
+  ctx.fillRect(panelX + faceW, py + inset, edgeW, 1);
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fillRect(panelX + faceW, py + s - inset - 2, edgeW, 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.20)';
+  ctx.fillRect(panelX + faceW, py + inset, 1, dh);
+
+  // Ring pull handle
+  const ringCX = panelX + Math.round(faceW * 0.55);
+  const ringCY = py + s / 2;
+  ctx.fillStyle = metalDark;
+  ctx.fillRect(ringCX - 2, ringCY - 5, 4, 4);
+  ctx.strokeStyle = handleCol;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(ringCX, ringCY + 1, 3.5, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+function _drawDoorEW_open(ctx, px, py, s, woodMid, woodLight, metalCol, frameSt) {
+  const inset = Math.round(s * 0.08);
+  const dh = s - inset * 2;
+  const panelEdge = Math.round(s * 0.14);
+
+  // Stone frame
+  ctx.fillStyle = frameSt;
+  ctx.fillRect(px + inset, py + inset - 2, s - inset * 2, 3);
+  ctx.fillRect(px + inset, py + s - inset - 1, s - inset * 2, 3);
+
+  // Panel flat against north wall
+  ctx.fillStyle = woodMid;
+  ctx.fillRect(px + inset + 2, py + inset, s - inset * 2 - 4, panelEdge);
+  ctx.fillStyle = woodLight;
+  ctx.fillRect(px + inset + 2, py + inset, s - inset * 2 - 4, 1);
+  ctx.fillStyle = metalCol;
+  ctx.fillRect(px + inset + 2, py + inset + panelEdge - 2, s - inset * 2 - 4, 2);
+  ctx.fillStyle = 'rgba(0,0,0,0.12)';
+  ctx.fillRect(px + inset + 2, py + inset + panelEdge, s - inset * 2 - 4, 2);
+}
+
+/**
  * Draw a chest tile using theme palette.
- * Renders a detailed barrel-lidded chest with metal bands, clasp, and 3D shading.
+ * Renders a detailed barrel-lidded chest with curved dome lid, wood plank
+ * texture, metal corner brackets, prominent lock plate, ground shadow,
+ * and palette-driven colors. Supports opened/closed states.
  */
 export function drawChest(ctx, x, y, size, seed, palette, theme, isOpened) {
   // Floor underneath
@@ -1574,71 +1850,190 @@ export function drawChest(ctx, x, y, size, seed, palette, theme, isOpened) {
   const bodyHi = shiftColor(bodyColor, 20);
   const bandColor = shiftColor(palette.primary, -10);
   const latchColor = palette.highlight || '#FFD700';
+  const lidColor = shiftColor(bodyColor, 10);
 
   // Proportions
   const cw = size * 0.58;
   const ch = size * 0.42;
-  const lidH = size * 0.14;
+  const lidH = size * 0.18;
   const cx = x + (size - cw) / 2;
-  const cy = y + (size - ch - lidH) / 2 + size * 0.06;
+  const cy = y + (size - ch - lidH) / 2 + size * 0.08;
   const lidY = cy - lidH;
-  const lidOverhang = cw * 0.04;
+  const lidOverhang = cw * 0.06;
   const lx = cx - lidOverhang;
   const lw = cw + lidOverhang * 2;
+  const domeH = lidH * 0.85;
+
+  // ── Ground shadow ──
+  ctx.save();
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+  ctx.beginPath();
+  ctx.ellipse(cx + cw / 2, cy + ch + size * 0.02, cw * 0.52, size * 0.05, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // ── Helper: barrel-curved lid path ──
+  const _lidPath = () => {
+    ctx.beginPath();
+    ctx.moveTo(lx, lidY + lidH);
+    ctx.lineTo(lx, lidY + lidH - domeH * 0.3);
+    ctx.quadraticCurveTo(lx + lw * 0.5, lidY - domeH * 0.4, lx + lw, lidY + lidH - domeH * 0.3);
+    ctx.lineTo(lx + lw, lidY + lidH);
+    ctx.closePath();
+  };
+
+  // ── Helper: draw wood plank lines ──
+  const _drawPlanks = (px2, py2, w, h2, color, count) => {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 0.7;
+    const gap = w / (count + 1);
+    for (let i = 1; i <= count; i++) {
+      const ppx = px2 + gap * i;
+      ctx.beginPath();
+      ctx.moveTo(ppx, py2 + 1);
+      ctx.lineTo(ppx, py2 + h2 - 1);
+      ctx.stroke();
+    }
+  };
+
+  // ── Helper: corner brackets ──
+  const _drawCornerBrackets = () => {
+    const bLen = Math.max(3, cw * 0.14);
+    const bW = Math.max(1.5, cw * 0.04);
+    ctx.fillStyle = bandColor;
+    ctx.fillRect(cx, cy, bLen, bW);
+    ctx.fillRect(cx, cy, bW, bLen);
+    ctx.fillRect(cx + cw - bLen, cy, bLen, bW);
+    ctx.fillRect(cx + cw - bW, cy, bW, bLen);
+    ctx.fillRect(cx, cy + ch - bW, bLen, bW);
+    ctx.fillRect(cx, cy + ch - bLen, bW, bLen);
+    ctx.fillRect(cx + cw - bLen, cy + ch - bW, bLen, bW);
+    ctx.fillRect(cx + cw - bW, cy + ch - bLen, bW, bLen);
+    // Corner rivets
+    const rr = Math.max(1, bW * 0.7);
+    ctx.fillStyle = bodyHi;
+    for (const [rx, ry] of [
+      [cx + bW, cy + bW], [cx + cw - bW, cy + bW],
+      [cx + bW, cy + ch - bW], [cx + cw - bW, cy + ch - bW],
+    ]) {
+      ctx.beginPath();
+      ctx.arc(rx, ry, rr, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
+
+  // ── Helper: band rivets ──
+  const _drawBandRivets = (bandY2, bandH2) => {
+    const rr = Math.max(0.8, bandH2 * 0.5);
+    ctx.fillStyle = bodyHi;
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.arc(cx + cw * (0.2 + i * 0.3), bandY2 + bandH2 / 2, rr, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  };
 
   if (!isOpened) {
-    // Lid
-    ctx.fillStyle = shiftColor(bodyColor, 10);
-    ctx.fillRect(lx, lidY, lw, lidH);
-    ctx.fillStyle = bodyHi;
-    ctx.fillRect(lx + 1, lidY, lw - 2, 2);
-    ctx.strokeStyle = bodyDark;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(lx, lidY, lw, lidH);
-
-    // Body
+    // ── Body ──
     ctx.fillStyle = bodyColor;
     ctx.fillRect(cx, cy, cw, ch);
+    // Wood plank lines
+    _drawPlanks(cx, cy, cw, ch, bodyDark, 3);
+    // Right-edge shadow
     ctx.fillStyle = bodyDark;
     ctx.fillRect(cx + cw - cw * 0.12, cy, cw * 0.12, ch);
+    // Left-edge highlight
     ctx.fillStyle = bodyHi;
     ctx.fillRect(cx, cy, cw * 0.06, ch);
+    // Body border
     ctx.strokeStyle = bodyDark;
     ctx.lineWidth = 1;
     ctx.strokeRect(cx, cy, cw, ch);
 
-    // Metal bands
+    // ── Metal bands (thicker, with highlights & shadow) ──
+    const bandH = Math.max(2, size * 0.05);
+    const band1Y = cy + ch * 0.22;
+    const band2Y = cy + ch * 0.68;
     ctx.fillStyle = bandColor;
-    const bandH = Math.max(2, size * 0.04);
-    ctx.fillRect(cx + 1, cy + ch * 0.25, cw - 2, bandH);
-    ctx.fillRect(cx + 1, cy + ch * 0.70, cw - 2, bandH);
-
-    // Latch
-    const latchW = Math.max(4, size * 0.10);
-    const latchH2 = Math.max(6, size * 0.12);
-    const latchX = cx + cw / 2 - latchW / 2;
-    const latchY2 = cy + ch * 0.35;
-    ctx.fillStyle = latchColor;
-    ctx.fillRect(latchX, latchY2, latchW, latchH2);
-    ctx.strokeStyle = bodyDark;
-    ctx.lineWidth = 0.5;
-    ctx.strokeRect(latchX, latchY2, latchW, latchH2);
+    ctx.fillRect(cx, band1Y, cw, bandH);
+    ctx.fillRect(cx, band2Y, cw, bandH);
+    ctx.fillStyle = bodyHi;
+    ctx.globalAlpha = 0.3;
+    ctx.fillRect(cx, band1Y, cw, 1);
+    ctx.fillRect(cx, band2Y, cw, 1);
+    ctx.globalAlpha = 1.0;
     ctx.fillStyle = bodyDark;
-    ctx.beginPath();
-    ctx.arc(latchX + latchW / 2, latchY2 + latchH2 * 0.6, Math.max(1, size * 0.02), 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(cx, band1Y + bandH - 1, cw, 1);
+    ctx.fillRect(cx, band2Y + bandH - 1, cw, 1);
+    // Band rivets
+    _drawBandRivets(band1Y, bandH);
+    _drawBandRivets(band2Y, bandH);
 
-    // Seam
+    // ── Corner brackets ──
+    _drawCornerBrackets();
+
+    // ── Curved lid ──
+    ctx.fillStyle = lidColor;
+    _lidPath();
+    ctx.fill();
+    // Lid highlight
+    ctx.save();
+    _lidPath();
+    ctx.clip();
+    ctx.fillStyle = bodyHi;
+    ctx.globalAlpha = 0.35;
+    ctx.fillRect(lx + 2, lidY, lw - 4, lidH * 0.35);
+    ctx.globalAlpha = 1.0;
+    ctx.restore();
+    // Lid border
     ctx.strokeStyle = bodyDark;
     ctx.lineWidth = 1;
+    _lidPath();
+    ctx.stroke();
+    // Lid metal band
+    const lidBandY = lidY + lidH * 0.55;
+    ctx.fillStyle = bandColor;
+    ctx.fillRect(lx + 1, lidBandY, lw - 2, Math.max(1.5, size * 0.03));
+
+    // ── Lock (ornate circular with keyhole) ──
+    const lockCX = cx + cw / 2;
+    const lockCY = cy + ch * 0.30;
+    const lockR = Math.max(3.5, size * 0.06);
+    ctx.fillStyle = latchColor;
     ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.lineTo(cx + cw, cy);
+    ctx.arc(lockCX, lockCY + lockR, lockR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = bandColor;
+    ctx.lineWidth = Math.max(1.2, size * 0.025);
+    ctx.stroke();
+    ctx.strokeStyle = bodyHi;
+    ctx.lineWidth = 0.6;
+    ctx.beginPath();
+    ctx.arc(lockCX, lockCY + lockR, lockR * 0.65, 0, Math.PI * 2);
+    ctx.stroke();
+    // Keyhole
+    ctx.fillStyle = bodyDark;
+    ctx.beginPath();
+    ctx.arc(lockCX, lockCY + lockR, Math.max(1.2, size * 0.02), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(lockCX - size * 0.008, lockCY + lockR, size * 0.016, lockR * 0.5);
+
+    // ── Lid-to-body seam ──
+    ctx.strokeStyle = bodyDark;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx - lidOverhang * 0.5, cy);
+    ctx.lineTo(cx + cw + lidOverhang * 0.5, cy);
     ctx.stroke();
   } else {
-    // Opened body
+    // ── Opened body ──
     ctx.fillStyle = bodyColor;
     ctx.fillRect(cx, cy, cw, ch);
+    // Faded plank lines
+    ctx.globalAlpha = 0.5;
+    _drawPlanks(cx, cy, cw, ch, bodyDark, 3);
+    ctx.globalAlpha = 1.0;
+    // Right-edge shadow
     ctx.fillStyle = bodyDark;
     ctx.fillRect(cx + cw - cw * 0.12, cy, cw * 0.12, ch);
     ctx.strokeStyle = bodyDark;
@@ -1646,29 +2041,64 @@ export function drawChest(ctx, x, y, size, seed, palette, theme, isOpened) {
     ctx.strokeRect(cx, cy, cw, ch);
 
     // Faded bands
+    const bandH = Math.max(2, size * 0.05);
     ctx.fillStyle = bandColor;
-    ctx.globalAlpha = 0.5;
-    const bandH = Math.max(2, size * 0.04);
-    ctx.fillRect(cx + 1, cy + ch * 0.25, cw - 2, bandH);
-    ctx.fillRect(cx + 1, cy + ch * 0.70, cw - 2, bandH);
+    ctx.globalAlpha = 0.45;
+    ctx.fillRect(cx, cy + ch * 0.22, cw, bandH);
+    ctx.fillRect(cx, cy + ch * 0.68, cw, bandH);
     ctx.globalAlpha = 1.0;
 
-    // Interior
-    ctx.fillStyle = '#0a0a14';
-    ctx.fillRect(cx + 2, cy + 1, cw - 4, ch * 0.35);
+    // Faded corner brackets
+    ctx.globalAlpha = 0.5;
+    _drawCornerBrackets();
+    ctx.globalAlpha = 1.0;
 
-    // Open lid
-    const openLidH = lidH * 0.6;
-    const openLidY = lidY - openLidH * 0.3;
+    // ── Interior (dark cavity with golden rim + sparkles) ──
+    const interiorH = ch * 0.40;
+    ctx.fillStyle = latchColor;
+    ctx.globalAlpha = 0.25;
+    ctx.fillRect(cx + 1, cy, cw - 2, 2);
+    ctx.globalAlpha = 1.0;
+    ctx.fillStyle = '#08081A';
+    ctx.fillRect(cx + 2, cy + 2, cw - 4, interiorH);
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.2)';
+    ctx.fillRect(cx + 3, cy + 3, cw - 6, interiorH - 2);
+    // Sparkle dots
+    for (let i = 0; i < 2; i++) {
+      const sx = cx + cw * 0.25 + cw * 0.5 * (i / 2);
+      const sy2 = cy + interiorH * 0.3 + (i % 2) * interiorH * 0.3;
+      const sr = Math.max(0.8, size * 0.015);
+      ctx.fillStyle = '#FFE880';
+      ctx.beginPath();
+      ctx.arc(sx, sy2, sr, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.beginPath();
+      ctx.arc(sx, sy2, sr * 0.4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // ── Open lid (curved, tilted back) ──
+    const openLidH = lidH * 0.5;
+    const openLidY = lidY - openLidH * 0.2;
     ctx.fillStyle = bodyColor;
-    ctx.fillRect(lx, openLidY, lw, openLidH);
+    ctx.beginPath();
+    ctx.moveTo(lx, openLidY + openLidH);
+    ctx.lineTo(lx, openLidY + openLidH * 0.4);
+    ctx.quadraticCurveTo(lx + lw * 0.5, openLidY - openLidH * 0.2, lx + lw, openLidY + openLidH * 0.4);
+    ctx.lineTo(lx + lw, openLidY + openLidH);
+    ctx.closePath();
+    ctx.fill();
     ctx.strokeStyle = bodyDark;
     ctx.lineWidth = 1;
-    ctx.strokeRect(lx, openLidY, lw, openLidH);
+    ctx.stroke();
+    // Lid inside (dark underside)
+    ctx.fillStyle = bodyDark;
+    ctx.fillRect(lx + 2, openLidY + openLidH * 0.7, lw - 4, openLidH * 0.3);
 
     // Hinges
     ctx.fillStyle = bandColor;
-    const hingeR = Math.max(1, size * 0.015);
+    const hingeR = Math.max(1.2, size * 0.02);
     ctx.beginPath();
     ctx.arc(cx + 2, cy, hingeR, 0, Math.PI * 2);
     ctx.fill();

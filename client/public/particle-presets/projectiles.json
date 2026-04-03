@@ -1222,5 +1222,75 @@
       "alpha": { "start": 1, "end": 0.4, "easing": "easeOutQuad" },
       "blendMode": "lighter"
     }
+  },
+  {
+    "name": "arcane-missile-trail",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": ["projectile", "trail", "arcane", "mage"],
+    "emitter": {
+      "burstMode": false,
+      "rate": 85,
+      "spawnShape": "circle",
+      "spawnRadius": 2,
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 8, "max": 22 },
+      "gravity": { "x": 0, "y": -10 },
+      "friction": 0.04
+    },
+    "particle": {
+      "lifetime": { "min": 0.12, "max": 0.32 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 2, "max": 4.5 },
+        "end": { "min": 0, "max": 1 },
+        "easing": "easeOutCubic"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.15, "color": "#dd88ff" },
+          { "stop": 0.5, "color": "#9944dd" },
+          { "stop": 1, "color": "#330066" }
+        ]
+      },
+      "alpha": { "start": 0.9, "end": 0, "easing": "easeOutCubic" },
+      "blendMode": "lighter"
+    }
+  },
+  {
+    "name": "arcane-missile-head",
+    "version": 1,
+    "duration": 5,
+    "loop": true,
+    "tags": ["projectile", "head", "arcane", "mage"],
+    "emitter": {
+      "burstMode": false,
+      "rate": 70,
+      "spawnShape": "point",
+      "angle": { "min": 0, "max": 360 },
+      "speed": { "min": 2, "max": 6 },
+      "gravity": { "x": 0, "y": 0 },
+      "friction": 0.05
+    },
+    "particle": {
+      "lifetime": { "min": 0.06, "max": 0.12 },
+      "shape": "circle",
+      "size": {
+        "start": { "min": 3.5, "max": 5.5 },
+        "end": { "min": 1.5, "max": 2.5 },
+        "easing": "easeOutQuad"
+      },
+      "color": {
+        "gradient": [
+          { "stop": 0, "color": "#ffffff" },
+          { "stop": 0.3, "color": "#dd99ff" },
+          { "stop": 1, "color": "#aa55ee" }
+        ]
+      },
+      "alpha": { "start": 1, "end": 0.5, "easing": "easeOutQuad" },
+      "blendMode": "lighter"
+    }
   }
 ]

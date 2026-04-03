@@ -66,13 +66,19 @@ def equip_item(match_id: str, player_id: str, item_id: str) -> dict | None:
 
     # Phase 16: Weapon class-lock — reject weapons incompatible with class
     if item.equip_slot == EquipSlot.WEAPON and player.class_id:
+        from app.models.player import get_class_definition
+        class_def = get_class_definition(player.class_id)
+
         weapon_cat = item_data.get("weapon_category", "")
-        if weapon_cat:
-            from app.models.player import get_class_definition
-            class_def = get_class_definition(player.class_id)
-            if class_def and class_def.allowed_weapon_categories:
-                if weapon_cat not in class_def.allowed_weapon_categories:
-                    return None  # Class cannot equip this weapon category
+        if weapon_cat and class_def and class_def.allowed_weapon_categories:
+            if weapon_cat not in class_def.allowed_weapon_categories:
+                return None  # Class cannot equip this weapon category
+
+        # Phase 22A: Weapon type proficiency — reject weapon types not in class proficiency
+        weapon_type = item_data.get("weapon_type", "")
+        if weapon_type and class_def and class_def.allowed_weapon_types:
+            if weapon_type not in class_def.allowed_weapon_types:
+                return None  # Class is not proficient with this weapon type
 
     slot_name = item.equip_slot.value  # "weapon", "armor", or "accessory"
 

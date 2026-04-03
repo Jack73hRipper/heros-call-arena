@@ -100,8 +100,8 @@ _CLASS_ROLE_MAP: dict[str, str] = {
     "blood_knight": "sustain_dps",     # blood_strike, crimson_veil, sanguine_burst, blood_frenzy
     # Phase 23: Plague Doctor class
     "plague_doctor": "controller",      # miasma, plague_flask, enfeeble, inoculate
-    # Phase 25: Revenant class
-    "revenant": "retaliation_tank",      # grave_thorns, grave_chains, undying_will, soul_rend
+    # Phase 25: Revenant class (25R rework)
+    "revenant": "retaliation_tank",      # grasp_of_the_grave, deaths_embrace, soul_rend, undying_fury
     # Phase 26: Shaman class
     "shaman": "totemic_support",           # healing_totem, searing_totem, soul_anchor, earthgrasp
 }
@@ -919,14 +919,14 @@ def _hybrid_dps_skill_logic(
     grid_height: int,
     obstacles: set[tuple[int, int]],
 ) -> PlayerAction | None:
-    """Hybrid DPS role: Wither for DoT, Ward for reflection, gap-close + Double Strike.
+    """Hybrid DPS role: Wither for DoT, Ward for reflection, gap-close + Hex Strike.
 
-    Phase 8E-3 + Phase 11 + Hexblade balance pass (March 2026).
+    Phase 8E-3 + Phase 11 + Hexblade balance pass (April 2026).
 
     Priority:
       1. Wither: if enemy in range + LOS + not already cursed → apply DoT (immediate value)
       2. Ward: if not active AND enemies visible → activate reflective shield
-      3. Double Strike: if adjacent to enemy AND off cooldown
+      3. Hex Strike: if adjacent to enemy AND off cooldown (prefers Withered targets)
       4. Shadow Step gap-close: if closest enemy > 2 tiles away AND off cooldown
       5. Return None → fall through to basic attack/move logic.
 
@@ -934,6 +934,7 @@ def _hybrid_dps_skill_logic(
       - Hexblade opens with Wither at range for immediate DoT pressure, then pops Ward.
       - Ward is activated before committing to melee — Hexblade expects to take hits.
       - Wither applied to high-HP targets for efficient armor-bypassing damage.
+      - Hex Strike prioritizes Withered targets for the bonus damage synergy.
     """
     if not enemies:
         return None
@@ -1000,22 +1001,32 @@ def _hybrid_dps_skill_logic(
                              target_x=sr_target.position.x, target_y=sr_target.position.y,
                              target_id=sr_target.player_id)
 
-    # --- Priority 3: Double Strike (adjacent enemy) ---
+    # --- Priority 3: Hex Strike (adjacent enemy, prefer Withered targets) ---
     adjacent_enemies = [
         e for e in enemies
         if is_adjacent(ai_pos_obj, Position(x=e.position.x, y=e.position.y))
     ]
     if adjacent_enemies:
-        from app.core.ai_memory import _pick_best_target
-        target = _pick_best_target(ai, adjacent_enemies, all_units)
-        ds_action = _try_skill(
-            ai, "double_strike",
+        # Prefer targets that already have the Wither DoT for bonus damage synergy
+        withered = [
+            e for e in adjacent_enemies
+            if any(b.get("buff_id") == "wither" and b.get("type") == "dot"
+                   for b in getattr(e, "active_buffs", []))
+        ]
+        if withered:
+            from app.core.ai_memory import _pick_best_target
+            target = _pick_best_target(ai, withered, all_units)
+        else:
+            from app.core.ai_memory import _pick_best_target
+            target = _pick_best_target(ai, adjacent_enemies, all_units)
+        hs_action = _try_skill(
+            ai, "hex_strike",
             target_x=target.position.x,
             target_y=target.position.y,
             target_id=target.player_id,
         )
-        if ds_action:
-            return ds_action
+        if hs_action:
+            return hs_action
 
     # --- Priority 4: Shadow Step gap-close (offensive) ---
     closest_enemy = min(
@@ -1473,13 +1484,13 @@ def _scout_skill_logic(
 
 
 # ---------------------------------------------------------------------------
-# Phase 21D: Offensive Support (Bard) — buff allies, debuff enemies, CDR
+# Phase 21D: Offensive Support (Bard) — buff allies, debuff enemies, AoE HoT
 # ---------------------------------------------------------------------------
 
 # Minimum ally count thresholds for AoE buffs/debuffs
 _BALLAD_MIN_ALLIES = 1       # Need 1+ ally in radius to justify Ballad (single DPS buff still high-value)
 _DIRGE_MIN_ENEMIES = 1       # Need 1+ enemy to justify Dirge (was 2 — too restrictive, Bard lost a key tool in spread fights)
-_VERSE_MIN_COOLDOWN_DEBT = 1 # Ally must have 1+ total cooldown turns to merit Verse (lowered from 2 — lets Bard use CDR more aggressively)
+_WAR_HYMN_HP_THRESHOLD = 0.85  # Bard uses War Hymn when any ally in radius is below 85% HP
 _CACOPHONY_EMERGENCY_HP_PCT = 0.50  # Bard promotes Cacophony to priority 1 when HP below this AND enemy adjacent
 
 
@@ -1491,15 +1502,16 @@ def _offensive_support_skill_logic(
     grid_height: int,
     obstacles: set[tuple[int, int]],
 ) -> PlayerAction | None:
-    """Offensive support (Bard): buff allies → debuff enemies → reduce cooldowns → self-peel.
+    """Offensive support (Bard): buff allies → debuff enemies → AoE HoT → self-peel.
 
-    Phase 21D implementation.
+    Phase 21D implementation (updated: Verse of Haste → War Hymn).
 
     Priority:
-      1. Ballad of Might:  if 2+ allies within radius 2, off cooldown
-      2. Dirge of Weakness: if 2+ enemies clustered (within radius 2 of a tile), off cooldown
-      3. Verse of Haste:   on the ally with the highest cooldown debt, off cooldown
-      4. Cacophony:        if enemy adjacent (self-peel emergency)
+      0. Cacophony (emergency): low HP + enemies in radius 2 → self-peel
+      1. Ballad of Might:  if 1+ unbuffed allies within radius, off cooldown
+      2. Dirge of Weakness: if 1+ enemies clustered in AoE, off cooldown
+      3. War Hymn:         if any ally in radius below 85% HP, off cooldown
+      4. Cacophony:        if enemies within radius 2
       5. Return None →     fall through to basic attack logic
     """
     ai_pos = (ai.position.x, ai.position.y)
@@ -1575,31 +1587,34 @@ def _offensive_support_skill_logic(
             return _try_skill(ai, "dirge_of_weakness",
                              target_x=best_tile[0], target_y=best_tile[1])
 
-    # --- Priority 3: Verse of Haste (cooldown reduction on ally) ---
-    verse_action = _try_skill(ai, "verse_of_haste")
-    if verse_action is not None:
-        verse_def = get_skill("verse_of_haste")
-        verse_range = verse_def["range"] if verse_def else 3
+    # --- Priority 3: War Hymn (AoE heal-over-time) ---
+    war_hymn_action = _try_skill(ai, "war_hymn")
+    if war_hymn_action is not None:
+        war_hymn_def = get_skill("war_hymn")
+        hymn_radius = war_hymn_def["effects"][0].get("radius", 4) if war_hymn_def else 4
 
-        # Score each ally by total cooldown debt (sum of remaining CDs > 0)
-        verse_candidates: list[tuple[int, PlayerState]] = []
-        for ally in allies:
-            dist = _chebyshev(ai_pos, (ally.position.x, ally.position.y))
-            if dist > verse_range:
-                continue
-            cd_debt = sum(
-                cd for cd in ally.cooldowns.values() if cd > 0
+        # Check if self or any ally in radius needs healing
+        allies_in_radius = [
+            a for a in allies
+            if _chebyshev(ai_pos, (a.position.x, a.position.y)) <= hymn_radius
+        ]
+        # Include self in the heal check
+        needs_healing = (ai.max_hp > 0 and (ai.hp / ai.max_hp) < _WAR_HYMN_HP_THRESHOLD)
+        if not needs_healing:
+            needs_healing = any(
+                a.max_hp > 0 and (a.hp / a.max_hp) < _WAR_HYMN_HP_THRESHOLD
+                for a in allies_in_radius
             )
-            if cd_debt >= _VERSE_MIN_COOLDOWN_DEBT:
-                verse_candidates.append((cd_debt, ally))
-
-        if verse_candidates:
-            # Pick ally with highest cooldown debt
-            verse_candidates.sort(key=lambda t: t[0], reverse=True)
-            target = verse_candidates[0][1]
-            return _try_skill(ai, "verse_of_haste",
-                             target_x=target.position.x, target_y=target.position.y,
-                             target_id=target.player_id)
+        # Don't stack — skip if most allies already have the HoT
+        unhotted = [
+            a for a in allies_in_radius
+            if not any(b.get("buff_id") == "war_hymn" for b in a.active_buffs)
+        ]
+        # Also check self
+        self_has_hot = any(b.get("buff_id") == "war_hymn" for b in ai.active_buffs)
+        if needs_healing and (unhotted or not self_has_hot):
+            return _try_skill(ai, "war_hymn",
+                             target_x=ai.position.x, target_y=ai.position.y)
 
     # --- Priority 4: Cacophony (AoE damage + slow when enemies within radius 2) ---
     cacophony_action = _try_skill(ai, "cacophony")
@@ -1719,7 +1734,7 @@ def _controller_skill_logic(
             count = sum(
                 1 for e in enemies
                 if _chebyshev((e.position.x, e.position.y), (ex, ey)) <= enfeeble_radius
-                and not any(b.get("buff_id") == "enfeeble" for b in e.active_buffs)
+                and not any(b.get("buff_id", "").startswith("enfeeble") for b in e.active_buffs)
             )
             if count > best_count:
                 best_count = count
@@ -1833,8 +1848,8 @@ _HEALING_TOTEM_OOC_HP_THRESHOLD = 0.90
 # (Lowered from 2→1 so Shaman uses searing totem in single-target fights;
 #  tile scoring still naturally prefers placements that catch multiple enemies)
 _SEARING_TOTEM_MIN_ENEMIES = 1
-# Soul Anchor: ally HP% below which we consider anchoring
-_SOUL_ANCHOR_HP_THRESHOLD = 0.30
+# Spirit Link: cast on frontline ally when combat starts (proactive protection)
+_SPIRIT_LINK_TANK_CLASSES = {"crusader", "revenant", "blood_knight", "hexblade"}
 # Earthgrasp Totem: minimum enemies in radius to justify placement
 _EARTHGRASP_MIN_ENEMIES = 1
 # Earthgrasp Totem radius (matches skill config)
@@ -1843,30 +1858,30 @@ _EARTHGRASP_RADIUS = 2
 _TOTEM_PLACEMENT_RANGE = 4
 # Totem effect radius (matches skill config)
 _TOTEM_EFFECT_RADIUS = 2
-# Frontline classes that Soul Anchor prefers to protect
-_SOUL_ANCHOR_TANK_CLASSES = {"crusader", "revenant", "blood_knight", "hexblade"}
 # Frontline/tank classes that Healing Totem placement prioritizes
 _HEALING_TOTEM_TANK_CLASSES = {"crusader", "revenant", "blood_knight"}
 
 # ---------------------------------------------------------------------------
-# Phase 25D: Retaliation Tank AI — Revenant
+# Phase 25R-D: Retaliation Tank AI — Revenant (Reworked)
 # ---------------------------------------------------------------------------
-# Undying Will HP threshold — cast preemptively when below this ratio
-_UNDYING_WILL_HP_THRESHOLD = 0.40
-# Grave Thorns minimum nearby enemies to trigger proactive thorns
-# (Lowered from 2→1 so Revenant activates thorns in single-target fights too)
-_GRAVE_THORNS_MIN_NEARBY = 1
-# Grave Thorns nearby range check (enemies within this Chebyshev distance)
-_GRAVE_THORNS_NEARBY_RANGE = 2
-# Grave Chains max range (matches skill config)
-_GRAVE_CHAINS_RANGE = 4
-# Squishy class priority for Grave Chains targeting (higher = taunt first)
-_GRAVE_CHAINS_SQUISHY_PRIORITY: dict[str, int] = {
+# Undying Fury HP threshold — cast preemptively when below this ratio
+_UNDYING_FURY_HP_THRESHOLD = 0.35
+# Death's Embrace minimum nearby enemies to trigger proactive aura
+_DEATHS_EMBRACE_MIN_NEARBY = 1
+# Death's Embrace nearby range check (enemies within this Chebyshev distance)
+_DEATHS_EMBRACE_NEARBY_RANGE = 2
+# Grasp of the Grave max range (matches skill config)
+_GRASP_OF_THE_GRAVE_RANGE = 4
+# Soul Rend empowered HP threshold (below 50% HP triggers empowered mode)
+_SOUL_REND_EMPOWERED_THRESHOLD = 0.50
+# Grasp of the Grave target priority — prefer ranged/kiting enemies (higher = root first)
+_GRASP_TARGET_PRIORITY: dict[str, int] = {
     "mage": 5,
     "ranger": 4,
     "bard": 3,
     "confessor": 3,
     "plague_doctor": 3,
+    "shaman": 3,
     "inquisitor": 2,
 }
 
@@ -1884,23 +1899,23 @@ def _totemic_support_skill_logic(
     obstacles: set[tuple[int, int]],
     match_state=None,
 ) -> PlayerAction | None:
-    """Totemic Support role (Shaman): triple totem placement, earthgrasp combos, soul anchor.
+    """Totemic Support role (Shaman): triple totem placement, spirit link, earthgrasp combos.
 
-    Phase 26D implementation.
+    Phase 26D implementation.  Phase 26G: Soul Anchor replaced with Spirit Link.
 
     Priority:
       1. Healing Totem:    1+ allies below 70% HP (or any below 40%) within range, no active healing totem → place near injured cluster
-      2. Searing Totem:    2+ enemies clustered, no active searing totem → place near enemy cluster (combo with root)
-      3. Earthgrasp Totem: 1+ enemies within range, no active earthgrasp totem → place root zone near enemies
-      4. Soul Anchor:      frontline ally (or self) below 30% HP, no active anchor → cheat-death insurance
+      2. Spirit Link:      frontline ally in range, no active link, enemies present → proactive damage sharing
+      3. Searing Totem:    1+ enemies reachable, no active searing totem → place near enemy cluster (combo with root)
+      4. Earthgrasp Totem: 1+ enemies within range, no active earthgrasp totem → place root zone near enemies
       5. Return None →     fall through to basic ranged attack/move logic
 
     Design:
       - Shaman is a backline support — places totems strategically, never charges.
       - Healing Totem is prioritized when allies are hurt (sustain the party).
+      - Spirit Link is cast proactively on the frontline tank to share incoming damage.
       - Searing Totem is placed near enemy clusters for passive damage.
       - Earthgrasp Totem combos with Searing Totem — root enemies in the damage zone.
-      - Soul Anchor is saved for frontline allies in real danger (below 30% HP).
       - Match state is needed to check for existing active totems.
     """
     ai_pos = (ai.position.x, ai.position.y)
@@ -1980,7 +1995,51 @@ def _totemic_support_skill_logic(
                         target_x=best_tile[0], target_y=best_tile[1],
                     )
 
-    # --- Priority 2: Searing Totem (place near enemy cluster) ---
+    # --- Priority 2: Spirit Link (proactive damage sharing with frontline ally) ---
+    sl_action = _try_skill(ai, "spirit_link")
+    if sl_action is not None:
+        # Check if we already have an active Spirit Link on someone
+        has_active_link = False
+        for unit in all_units.values():
+            if any(
+                b.get("stat") == "spirit_link" and b.get("caster_id") == ai.player_id
+                for b in unit.active_buffs
+            ):
+                has_active_link = True
+                break
+
+        if not has_active_link:
+            sl_def = get_skill("spirit_link")
+            sl_range = sl_def["range"] if sl_def else 4
+
+            # Find best ally to link: prefer tanks/frontliners in range
+            link_candidates = []
+            for candidate in allies:
+                if not candidate.is_alive or candidate.max_hp <= 0:
+                    continue
+                if candidate.player_id == ai.player_id:
+                    continue  # Can't link to self
+                dist = _chebyshev(ai_pos, (candidate.position.x, candidate.position.y))
+                if dist > sl_range:
+                    continue
+                link_candidates.append(candidate)
+
+            if link_candidates:
+                # Prefer tanks/frontliners, then lowest HP%
+                def _link_priority(u: PlayerState) -> tuple[int, float]:
+                    is_tank = 0 if (u.class_id or "") in _SPIRIT_LINK_TANK_CLASSES else 1
+                    hp_pct = u.hp / u.max_hp if u.max_hp > 0 else 1.0
+                    return (is_tank, hp_pct)
+
+                link_candidates.sort(key=_link_priority)
+                target = link_candidates[0]
+                return _try_skill(
+                    ai, "spirit_link",
+                    target_x=target.position.x, target_y=target.position.y,
+                    target_id=target.player_id,
+                )
+
+    # --- Priority 3: Searing Totem (place near enemy cluster) ---
     if not has_searing_totem:
         st_action = _try_skill(ai, "searing_totem")
         if st_action is not None:
@@ -2003,7 +2062,7 @@ def _totemic_support_skill_logic(
                         target_x=best_tile[0], target_y=best_tile[1],
                     )
 
-    # --- Priority 3: Earthgrasp Totem (place root totem near enemy cluster) ---
+    # --- Priority 4: Earthgrasp Totem (place root totem near enemy cluster) ---
     if not has_earthgrasp_totem:
         eg_action = _try_skill(ai, "earthgrasp")
         if eg_action is not None:
@@ -2028,54 +2087,6 @@ def _totemic_support_skill_logic(
                         ai, "earthgrasp",
                         target_x=best_tile[0], target_y=best_tile[1],
                     )
-
-    # --- Priority 4: Soul Anchor (cheat-death on endangered frontline ally) ---
-    sa_action = _try_skill(ai, "soul_anchor")
-    if sa_action is not None:
-        # Check if we already have an active Soul Anchor on someone
-        has_active_anchor = False
-        for unit in all_units.values():
-            if any(
-                b.get("stat") == "soul_anchor" and b.get("caster_id") == ai.player_id
-                for b in unit.active_buffs
-            ):
-                has_active_anchor = True
-                break
-
-        if not has_active_anchor:
-            sa_def = get_skill("soul_anchor")
-            sa_range = sa_def["range"] if sa_def else 4
-
-            # Find endangered allies (or self) — below HP threshold
-            anchor_candidates = []
-            for candidate in allies + [ai]:
-                if not candidate.is_alive or candidate.max_hp <= 0:
-                    continue
-                if candidate.hp / candidate.max_hp >= _SOUL_ANCHOR_HP_THRESHOLD:
-                    continue
-                dist = _chebyshev(ai_pos, (candidate.position.x, candidate.position.y))
-                if dist > sa_range:
-                    continue
-                # Already has soul_anchor?
-                has_anchor = any(b.get("stat") == "soul_anchor" for b in candidate.active_buffs)
-                if has_anchor:
-                    continue
-                anchor_candidates.append(candidate)
-
-            if anchor_candidates:
-                # Prefer tanks/frontliners, then lowest HP%
-                def _anchor_priority(u: PlayerState) -> tuple[int, float]:
-                    is_tank = 0 if (u.class_id or "") in _SOUL_ANCHOR_TANK_CLASSES else 1
-                    hp_pct = u.hp / u.max_hp if u.max_hp > 0 else 1.0
-                    return (is_tank, hp_pct)
-
-                anchor_candidates.sort(key=_anchor_priority)
-                target = anchor_candidates[0]
-                return _try_skill(
-                    ai, "soul_anchor",
-                    target_x=target.position.x, target_y=target.position.y,
-                    target_id=target.player_id,
-                )
 
     # --- No skill to use → fall through to basic ranged attack/move ---
     return None
@@ -2218,26 +2229,28 @@ def _retaliation_tank_skill_logic(
     grid_height: int,
     obstacles: set[tuple[int, int]],
 ) -> PlayerAction | None:
-    """Retaliation Tank role (Revenant): aggressive punishment tank.
+    """Retaliation Tank role (Revenant): damage-through-punishment bruiser tank.
 
-    Phase 25D implementation.  Balance-pass revision: Soul Rend promoted to
-    priority 2 so the Revenant leads with damage instead of spending opening
-    turns on self-buffs.
+    Phase 25R-D implementation (reworked kit).
 
     Priority:
-      1. Undying Will:  HP < 40% AND no cheat_death buff active → preemptive safety net
-      2. Soul Rend:     adjacent enemy exists → damage + slow (lead with damage)
-      3. Grave Thorns:  enemies within 2 tiles AND no thorns buff active → retaliation aura
-      4. Grave Chains:  ranged/squishy enemy within 4 tiles, not adjacent → taunt into melee
-      5. Return None →  fall through to basic melee attack/move logic
+      1. Undying Fury:       HP < 35% AND no undying_fury/fury_state buff active → cheat death safety net
+      2. Soul Rend:          adjacent enemy exists → melee damage (empowered below 50% HP: 1.8× + bleed)
+      3. Death's Embrace:    enemies within 2 tiles AND no embrace buff active → thorns + armor + heal-on-hit aura
+      4. Grasp of the Grave: ranged/kiting enemy within 4 tiles with LOS, not adjacent → root to prevent kiting
+      5. Return None →       fall through to basic melee attack/move logic
 
     Design:
       - Revenant plays aggressively — charges into enemy groups and punishes focus fire.
-      - Undying Will is the panic button: cast preemptively when wounded, not reactively.
-      - Soul Rend opens combat with real damage + a slow, establishing threat immediately.
-      - Grave Thorns goes up turn 2 — still near-permanent uptime (4/5 = 80%).
-      - Grave Chains pulls ranged enemies into melee where thorns + auto-attacks punish them.
-      - No retreat when Undying Will is available — the safety net emboldens aggression.
+      - Undying Fury is the panic button: cast preemptively when wounded so the 5-turn
+        activation window covers the danger zone.  Never retreat while fury buff is active.
+      - Soul Rend leads with damage — below 50% HP it becomes devastating (1.8× + bleed).
+      - Death's Embrace goes up when enemies are nearby — thorns (8/hit) + armor (+2) +
+        heal-on-hit (3 HP/hit) creates a 13-point swing per attack received.
+      - Grasp of the Grave roots ranged/kiting enemies to keep them in melee range where
+        thorns and auto-attacks punish them.  Empowered (below 50% HP): 2-turn root.
+      - During Fury state: +50% melee damage, CC immune, auto-attacks heal 25% of damage
+        dealt.  AI should be maximally aggressive — no retreating, prioritize Soul Rend.
     """
     if not enemies:
         return None
@@ -2251,19 +2264,28 @@ def _retaliation_tank_skill_logic(
         if is_adjacent(ai_pos_obj, Position(x=e.position.x, y=e.position.y))
     ]
 
-    # --- Priority 1: Undying Will (cheat death when HP < 40%) ---
-    has_cheat_death = any(
-        b.get("stat") == "cheat_death" for b in ai.active_buffs
+    # Check for active fury-related buffs
+    has_undying_fury_buff = any(
+        b.get("type") == "undying_fury" or b.get("stat") == "cheat_death"
+        for b in ai.active_buffs
     )
-    if not has_cheat_death and ai.max_hp > 0 and (ai.hp / ai.max_hp) < _UNDYING_WILL_HP_THRESHOLD:
-        uw_action = _try_skill(ai, "undying_will")
-        if uw_action is not None:
+    has_fury_state = any(
+        b.get("type") == "fury_state" for b in ai.active_buffs
+    )
+
+    # --- Priority 1: Undying Fury (cheat death when HP < 35%) ---
+    # Skip if already have undying_fury buff OR currently in fury_state
+    if (not has_undying_fury_buff and not has_fury_state
+            and ai.max_hp > 0 and (ai.hp / ai.max_hp) < _UNDYING_FURY_HP_THRESHOLD):
+        uf_action = _try_skill(ai, "undying_fury")
+        if uf_action is not None:
             return _try_skill(
-                ai, "undying_will",
+                ai, "undying_fury",
                 target_x=ai.position.x, target_y=ai.position.y,
             )
 
-    # --- Priority 2: Soul Rend (melee slow on adjacent enemy — lead with damage) ---
+    # --- Priority 2: Soul Rend (melee damage + conditional bleed) ---
+    # During Fury state, Soul Rend is especially devastating (1.8× × 1.5 Fury = ~43 dmg + bleed)
     if adjacent_enemies:
         sr_action = _try_skill(ai, "soul_rend")
         if sr_action is not None:
@@ -2275,55 +2297,59 @@ def _retaliation_tank_skill_logic(
                 target_id=target.player_id,
             )
 
-    # --- Priority 3: Grave Thorns (self-buff when enemies nearby) ---
-    has_thorns = any(
-        b.get("stat") == "thorns_damage" for b in ai.active_buffs
+    # --- Priority 3: Death's Embrace (thorns + armor + heal-on-hit aura) ---
+    has_embrace = any(
+        b.get("type") == "deaths_embrace_buff" or b.get("buff_id") == "deaths_embrace"
+        for b in ai.active_buffs
     )
-    if not has_thorns:
+    if not has_embrace:
         nearby_enemies = [
             e for e in enemies
-            if _chebyshev(ai_pos, (e.position.x, e.position.y)) <= _GRAVE_THORNS_NEARBY_RANGE
+            if _chebyshev(ai_pos, (e.position.x, e.position.y)) <= _DEATHS_EMBRACE_NEARBY_RANGE
         ]
-        if len(nearby_enemies) >= _GRAVE_THORNS_MIN_NEARBY:
-            gt_action = _try_skill(ai, "grave_thorns")
-            if gt_action is not None:
+        if len(nearby_enemies) >= _DEATHS_EMBRACE_MIN_NEARBY:
+            de_action = _try_skill(ai, "deaths_embrace")
+            if de_action is not None:
                 return _try_skill(
-                    ai, "grave_thorns",
+                    ai, "deaths_embrace",
                     target_x=ai.position.x, target_y=ai.position.y,
                 )
 
-    # --- Priority 4: Grave Chains (ranged taunt on squishy/ranged enemy) ---
-    gc_action = _try_skill(ai, "grave_chains")
-    if gc_action is not None:
-        # Find non-adjacent enemies within Grave Chains range (4 tiles) with LOS
-        taunt_candidates = []
+    # --- Priority 4: Grasp of the Grave (ranged root on kiting/ranged enemy) ---
+    gg_action = _try_skill(ai, "grasp_of_the_grave")
+    if gg_action is not None:
+        # Find non-adjacent enemies within Grasp range (4 tiles) with LOS
+        root_candidates = []
         for enemy in enemies:
             dist = _chebyshev(ai_pos, (enemy.position.x, enemy.position.y))
-            if dist < 2 or dist > _GRAVE_CHAINS_RANGE:
+            if dist < 2 or dist > _GRASP_OF_THE_GRAVE_RANGE:
                 continue  # Skip adjacent (already in melee) and out-of-range
-            # Check for existing taunt (forced_target) — don't re-taunt
-            already_taunted = any(
-                b.get("stat") == "forced_target" for b in enemy.active_buffs
+            # Skip already-rooted enemies — don't waste the root
+            already_rooted = any(
+                b.get("stat") == "rooted" for b in enemy.active_buffs
             )
-            if already_taunted:
+            if already_rooted:
                 continue
             if has_line_of_sight(ai.position.x, ai.position.y,
                                 enemy.position.x, enemy.position.y, obstacles):
-                taunt_candidates.append(enemy)
+                root_candidates.append(enemy)
 
-        if taunt_candidates:
-            # Score each candidate: squishy class priority + ranged bonus
-            def _taunt_score(e: PlayerState) -> int:
-                score = _GRAVE_CHAINS_SQUISHY_PRIORITY.get(e.class_id or "", 0)
-                # Bonus for ranged enemies (ranged_range > 0)
+        if root_candidates:
+            # Score each candidate: ranged/squishy class priority + ranged bonus
+            def _root_score(e: PlayerState) -> int:
+                score = _GRASP_TARGET_PRIORITY.get(e.class_id or "", 0)
+                # Bonus for ranged enemies (ranged_range > 0) — they're the ones kiting
                 if getattr(e, "ranged_range", 0) > 0:
                     score += 3
+                # Bonus for low-HP enemies (root them to prevent fleeing)
+                if e.max_hp > 0 and (e.hp / e.max_hp) < 0.30:
+                    score += 2
                 return score
 
-            taunt_candidates.sort(key=_taunt_score, reverse=True)
-            target = taunt_candidates[0]
+            root_candidates.sort(key=_root_score, reverse=True)
+            target = root_candidates[0]
             return _try_skill(
-                ai, "grave_chains",
+                ai, "grasp_of_the_grave",
                 target_x=target.position.x, target_y=target.position.y,
                 target_id=target.player_id,
             )
@@ -2484,7 +2510,7 @@ def _decide_skill_usage(
         # Phase 23D: Plague Doctor — AoE debuffs, DoTs, ally cleanse
         return _controller_skill_logic(ai, enemies, all_units, grid_width, grid_height, obstacles)
     elif role == "retaliation_tank":
-        # Phase 25D: Revenant — thorns, taunt, cheat death, melee slow
+        # Phase 25R-D: Revenant — grasp (root), deaths_embrace (thorns aura), soul_rend (conditional bleed), undying_fury (cheat death + fury state)
         return _retaliation_tank_skill_logic(ai, enemies, all_units, grid_width, grid_height, obstacles)
     elif role == "totemic_support":
         # Phase 26D: Shaman — dual totems, soul anchor, earthgrasp root

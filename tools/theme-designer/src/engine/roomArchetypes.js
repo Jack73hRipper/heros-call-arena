@@ -34,7 +34,7 @@ export const ROOM_ARCHETYPES = {
   },
   enemy: {
     label: 'Barracks (Enemy)',
-    description: 'Wall brackets, paired torches, worn floor path between doors.',
+    description: 'Paired torches, worn floor path between doors.',
   },
   loot: {
     label: 'Vault (Loot)',
@@ -78,7 +78,7 @@ export const ROOM_ARCHETYPES = {
   },
   torture: {
     label: 'Torture Chamber',
-    description: 'Blood-stained floor, iron fixtures on the walls, suffocating darkness. Pain lingers in the stones.',
+    description: 'Blood-stained floor, suffocating darkness. Pain lingers in the stones.',
   },
   graveyard: {
     label: 'Burial Ground',
@@ -118,6 +118,172 @@ export const ROOM_ARCHETYPES = {
  * @param {Array}  opts.doorPositions - [{ x, y }] door tile coords (room-local)
  * @param {number} opts.seed
  */
+/**
+ * Return a Map of "x,y" → decorationLabel for the structural
+ * decorations each archetype overlay draws at specific tiles.
+ * This mirrors the drawing logic in each _draw*Overlay() but
+ * produces data only (no canvas context needed).
+ */
+export function computeOverlayDecorations(archetype, bounds, doorPositions, seed) {
+  const map = new Map();
+  const set = (x, y, label) => map.set(`${x},${y}`, label);
+
+  const midX = Math.floor((bounds.x_min + bounds.x_max) / 2);
+  const midY = Math.floor((bounds.y_min + bounds.y_max) / 2);
+  const centerX = Math.floor((bounds.x_min + bounds.x_max + 1) / 2);
+  const centerY = Math.floor((bounds.y_min + bounds.y_max + 1) / 2);
+
+  switch (archetype) {
+    case 'boss': {
+      // 4 corner pillars
+      set(bounds.x_min, bounds.y_min, 'Corner Pillar');
+      set(bounds.x_max, bounds.y_min, 'Corner Pillar');
+      set(bounds.x_min, bounds.y_max, 'Corner Pillar');
+      set(bounds.x_max, bounds.y_max, 'Corner Pillar');
+      break;
+    }
+    case 'enemy': {
+      // Paired torches on left/right mid-walls
+      set(bounds.x_min, midY, 'Wall Torch');
+      set(bounds.x_max, midY, 'Wall Torch');
+      break;
+    }
+    case 'loot': {
+      // Corner ornaments
+      set(bounds.x_min, bounds.y_min, 'Corner Ornament');
+      set(bounds.x_max, bounds.y_min, 'Corner Ornament');
+      set(bounds.x_min, bounds.y_max, 'Corner Ornament');
+      set(bounds.x_max, bounds.y_max, 'Corner Ornament');
+      break;
+    }
+    case 'spawn': {
+      // Archway flanks at doors
+      if (doorPositions) {
+        for (const d of doorPositions) set(d.x, d.y, 'Archway');
+      }
+      break;
+    }
+    case 'empty': {
+      // Corner rubble — BL and TR always
+      set(bounds.x_min, bounds.y_max, 'Corner Rubble');
+      set(bounds.x_max, bounds.y_min, 'Corner Rubble');
+      break;
+    }
+    case 'stairs': {
+      // Center tile → descent glow
+      set(centerX, centerY, 'Stair Descent');
+      break;
+    }
+    case 'shrine': {
+      // Center altar
+      set(centerX, centerY, 'Altar');
+      // Flanking braziers (±1 tile from center)
+      if (centerX - 1 >= bounds.x_min) set(centerX - 1, centerY, 'Brazier');
+      if (centerX + 1 <= bounds.x_max) set(centerX + 1, centerY, 'Brazier');
+      // Wall banners on top wall (wall tile above floor)
+      for (let x = bounds.x_min + 1; x < bounds.x_max; x += 2) {
+        set(x, bounds.y_min - 1, 'Wall Banner');
+      }
+      break;
+    }
+    case 'library': {
+      // Bookshelves on top/bottom walls (every 3rd tile)
+      for (let x = bounds.x_min; x <= bounds.x_max; x += 3) {
+        set(x, bounds.y_min, 'Bookshelf');
+        set(x, bounds.y_max, 'Bookshelf');
+      }
+      break;
+    }
+    case 'prison': {
+      // Chains on wall tiles left/right of room
+      set(bounds.x_min - 1, midY, 'Wall Chains');
+      set(bounds.x_max + 1, midY, 'Wall Chains');
+      if (bounds.y_max - bounds.y_min > 3) {
+        set(bounds.x_min - 1, bounds.y_min + 1, 'Wall Chains');
+        set(bounds.x_max + 1, bounds.y_min + 1, 'Wall Chains');
+      }
+      // Iron bars at doors
+      if (doorPositions) {
+        for (const d of doorPositions) set(d.x, d.y, 'Iron Bars');
+      }
+      break;
+    }
+    case 'flooded': {
+      // Center ripple area
+      set(centerX, centerY, 'Ripple Pool');
+      break;
+    }
+    case 'cathedral': {
+      // Central nave aisle (vertical center column)
+      for (let y = bounds.y_min; y <= bounds.y_max; y++) {
+        set(centerX, y, 'Nave Aisle');
+      }
+      // Rose window on top wall center
+      set(centerX, bounds.y_min, 'Rose Window');
+      break;
+    }
+    case 'ritual': {
+      // Center arcane circle
+      set(centerX, centerY, 'Arcane Circle');
+      // Edge runes on top/bottom walls (every 2nd tile)
+      for (let x = bounds.x_min + 1; x < bounds.x_max; x += 2) {
+        set(x, bounds.y_min, 'Floor Rune');
+        set(x, bounds.y_max, 'Floor Rune');
+      }
+      break;
+    }
+    case 'torture': {
+      break;
+    }
+    case 'graveyard': {
+      // Center area → disturbed earth
+      set(centerX, centerY, 'Disturbed Earth');
+      // Grave mounds along row lines
+      const gRowSpacing = Math.max(2, Math.floor((bounds.y_max - bounds.y_min) / 3));
+      for (let row = 1; row < 3; row++) {
+        const gy = bounds.y_min + row * gRowSpacing;
+        if (gy >= bounds.y_min && gy <= bounds.y_max) {
+          set(centerX, gy, 'Grave Mound');
+        }
+      }
+      break;
+    }
+    case 'armory': {
+      // Display pegs on top wall inner tiles
+      for (let x = bounds.x_min + 1; x < bounds.x_max; x++) {
+        set(x, bounds.y_min, 'Weapon Peg');
+      }
+      // Wall lights left/right at midY
+      set(bounds.x_min, midY, 'Wall Light');
+      set(bounds.x_max, midY, 'Wall Light');
+      break;
+    }
+    case 'ossuary': {
+      // Bone-stack walls left/right
+      for (let y = bounds.y_min; y <= bounds.y_max; y++) {
+        set(bounds.x_min, y, 'Bone Wall');
+        set(bounds.x_max, y, 'Bone Wall');
+      }
+      // Alcoves on top/bottom walls (every 2nd tile)
+      for (let x = bounds.x_min + 1; x < bounds.x_max; x += 2) {
+        set(x, bounds.y_min, 'Bone Alcove');
+        set(x, bounds.y_max, 'Bone Alcove');
+      }
+      break;
+    }
+    case 'fungal_grotto': {
+      // Center glow pool
+      set(centerX, centerY, 'Glow Pool');
+      // Mycelium tendrils from walls toward center
+      set(bounds.x_min, centerY, 'Mycelium Tendril');
+      set(bounds.x_max, centerY, 'Mycelium Tendril');
+      break;
+    }
+  }
+
+  return map;
+}
+
 export function drawRoomOverlay(ctx, opts) {
   const { archetype } = opts;
 
@@ -192,35 +358,7 @@ function _drawBossOverlay(ctx, opts) {
     ctx.stroke();
   }
 
-  // 3. Center floor sigil — geometric pattern
-  const cx = ox + ((bounds.x_min + bounds.x_max + 1) / 2) * s;
-  const cy = oy + ((bounds.y_min + bounds.y_max + 1) / 2) * s;
-  const sigilR = s * 1.2;
-
-  // Outer circle
-  ctx.strokeStyle = hexAlpha(pal.accent, 0.25);
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(cx, cy, sigilR, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Inner diamond
-  ctx.strokeStyle = hexAlpha(pal.highlight, 0.20);
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  const dr = sigilR * 0.65;
-  ctx.moveTo(cx, cy - dr);
-  ctx.lineTo(cx + dr, cy);
-  ctx.lineTo(cx, cy + dr);
-  ctx.lineTo(cx - dr, cy);
-  ctx.closePath();
-  ctx.stroke();
-
-  // Center dot
-  ctx.fillStyle = hexAlpha(pal.highlight, 0.30);
-  ctx.beginPath();
-  ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-  ctx.fill();
+  // 3. (Floor sigil removed)
 
   // 4. Wall trim line along bottom of wall tiles (top/bottom inner edges)
   ctx.fillStyle = hexAlpha(pal.highlight, 0.15);
@@ -277,25 +415,7 @@ function _drawEnemyOverlay(ctx, opts) {
     ctx.fill();
   }
 
-  // 2. Wall-adjacent floor trim — weapon rack lines along top and bottom walls
-  const rackColor = shiftColor(pal.metal || pal.secondary, 5);
-  // Top inner edge
-  for (let x = bounds.x_min + 1; x < bounds.x_max; x++) {
-    const px = ox + x * s;
-    const py = oy + bounds.y_min * s;
-    ctx.fillStyle = rackColor;
-    ctx.fillRect(px + 4, py + 2, s - 8, 3);
-    ctx.fillStyle = shiftColor(pal.metal || pal.secondary, 12);
-    ctx.fillRect(px + 4, py + 2, s - 8, 1);
-    // Vertical pegs (evenly spaced)
-    for (let p = 0; p < 3; p++) {
-      const pegX = px + 8 + p * ((s - 16) / 2);
-      ctx.fillStyle = shiftColor(pal.metal || pal.secondary, 8);
-      ctx.fillRect(pegX, py + 5, 2, 4);
-    }
-  }
-
-  // 3. Worn path between doors — darker floor stripe
+  // 2. Worn path between doors — darker floor stripe
   if (doorPositions && doorPositions.length > 0) {
     const door = doorPositions[0];
     // Draw a path from the door straight into the room center
@@ -328,26 +448,7 @@ function _drawLootOverlay(ctx, opts) {
   ctx.fillStyle = hexAlpha(pal.highlight, 0.03);
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
-  // 2. Wall alcoves — uniform recesses along left and right walls
-  const alcoveColor = shiftColor(pal.primary, -5);
-  const alcoveHighlight = shiftColor(pal.secondary, 8);
-  for (let y = bounds.y_min + 1; y < bounds.y_max; y++) {
-    // Left wall alcoves
-    const lx = ox + bounds.x_min * s;
-    const ly = oy + y * s;
-    ctx.fillStyle = alcoveColor;
-    ctx.fillRect(lx + 2, ly + 6, 6, s - 12);
-    ctx.strokeStyle = alcoveHighlight;
-    ctx.lineWidth = 0.5;
-    ctx.strokeRect(lx + 2, ly + 6, 6, s - 12);
-
-    // Right wall alcoves
-    const rx = ox + bounds.x_max * s;
-    ctx.fillStyle = alcoveColor;
-    ctx.fillRect(rx + s - 8, ly + 6, 6, s - 12);
-    ctx.strokeStyle = alcoveHighlight;
-    ctx.strokeRect(rx + s - 8, ly + 6, 6, s - 12);
-  }
+  // 2. (Wall alcoves removed — looked out of place)
 
   // 3. Four corner ornaments — matching filigree marks
   const corners = [
@@ -427,28 +528,7 @@ function _drawSpawnOverlay(ctx, opts) {
     }
   }
 
-  // 3. Arrival circle at room center
-  const cx = ox + ((bounds.x_min + bounds.x_max + 1) / 2) * s;
-  const cy = oy + ((bounds.y_min + bounds.y_max + 1) / 2) * s;
-
-  // Outer glow
-  ctx.fillStyle = hexAlpha(pal.highlight, 0.04);
-  ctx.beginPath();
-  ctx.arc(cx, cy, s * 1.5, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Circle mark
-  ctx.strokeStyle = hexAlpha(pal.highlight, 0.18);
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.arc(cx, cy, s * 0.8, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Inner dot
-  ctx.fillStyle = hexAlpha(pal.highlight, 0.15);
-  ctx.beginPath();
-  ctx.arc(cx, cy, 3, 0, Math.PI * 2);
-  ctx.fill();
+  // 3. (Arrival circle removed)
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -617,11 +697,11 @@ function _drawShrineOverlay(ctx, opts) {
     ctx.fill();
   }
 
-  // 5. Wall-adjacent banners on top wall (every other tile)
+  // 5. Wall-adjacent banners on top wall tile (one tile above floor area)
   ctx.fillStyle = hexAlpha(pal.accent, 0.5);
   for (let tx = bounds.x_min + 1; tx < bounds.x_max; tx += 2) {
     const bx = ox + tx * s + s * 0.35;
-    const by = oy + bounds.y_min * s + 2;
+    const by = oy + (bounds.y_min - 1) * s + 2;
     const bw = s * 0.3;
     const bh = s * 0.5;
 
@@ -664,26 +744,18 @@ function _drawLibraryOverlay(ctx, opts) {
   ctx.fillStyle = hexAlpha(pal.highlight, 0.02);
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
-  // 2. Bookshelves along all 4 walls (every other wall tile)
+  // 2. Bookshelves along walls (every 3rd tile, top/bottom only — left/right handled by prop system)
   const shelfColor = shiftColor(pal.furniture || pal.secondary, 5);
   const shelfBorder = shiftColor(pal.furniture || pal.secondary, -8);
   const h = cellHash;
 
   // Top wall bookshelves
-  for (let tx = bounds.x_min; tx <= bounds.x_max; tx += 2) {
+  for (let tx = bounds.x_min; tx <= bounds.x_max; tx += 3) {
     _drawWallBookshelf(ctx, ox + tx * s, oy + bounds.y_min * s, s, seed + tx, pal, shelfColor, shelfBorder);
   }
   // Bottom wall bookshelves
-  for (let tx = bounds.x_min; tx <= bounds.x_max; tx += 2) {
+  for (let tx = bounds.x_min; tx <= bounds.x_max; tx += 3) {
     _drawWallBookshelf(ctx, ox + tx * s, oy + bounds.y_max * s, s, seed + tx + 100, pal, shelfColor, shelfBorder);
-  }
-  // Left wall bookshelves
-  for (let ty = bounds.y_min + 1; ty < bounds.y_max; ty += 2) {
-    _drawWallBookshelf(ctx, ox + bounds.x_min * s, oy + ty * s, s, seed + ty + 200, pal, shelfColor, shelfBorder);
-  }
-  // Right wall bookshelves
-  for (let ty = bounds.y_min + 1; ty < bounds.y_max; ty += 2) {
-    _drawWallBookshelf(ctx, ox + bounds.x_max * s, oy + ty * s, s, seed + ty + 300, pal, shelfColor, shelfBorder);
   }
 
   // 3. Faint dust motes near center (2-3 tiny 1px dots)
@@ -770,17 +842,17 @@ function _drawPrisonOverlay(ctx, opts) {
   // Bottom-right corner
   ctx.fillRect(innerX + innerW - s, innerY + innerH - s, s, s);
 
-  // 3. Chains on left and right wall tiles
+  // 3. Chains on wall tiles left and right of room
   const chainColor = shiftColor(pal.metal || pal.secondary, 5);
   const midY = Math.floor((bounds.y_min + bounds.y_max) / 2);
   const chainPositions = [
-    { x: bounds.x_min, y: midY },
-    { x: bounds.x_max, y: midY },
+    { x: bounds.x_min - 1, y: midY },
+    { x: bounds.x_max + 1, y: midY },
   ];
   if (bounds.y_max - bounds.y_min > 3) {
     chainPositions.push(
-      { x: bounds.x_min, y: bounds.y_min + 1 },
-      { x: bounds.x_max, y: bounds.y_min + 1 },
+      { x: bounds.x_min - 1, y: bounds.y_min + 1 },
+      { x: bounds.x_max + 1, y: bounds.y_min + 1 },
     );
   }
   for (const pos of chainPositions) {
@@ -1004,8 +1076,11 @@ function _drawRitualOverlay(ctx, opts) {
   const innerY = bounds.y_min * s + oy;
   const innerW = (bounds.x_max - bounds.x_min + 1) * s;
   const innerH = (bounds.y_max - bounds.y_min + 1) * s;
-  const cx = ox + ((bounds.x_min + bounds.x_max + 1) / 2) * s;
-  const cy = oy + ((bounds.y_min + bounds.y_max + 1) / 2) * s;
+  // Center pixel aligned with prop system: midX = floor((min+max)/2), pixel = tile origin + half tile
+  const midTileX = Math.floor((bounds.x_min + bounds.x_max) / 2);
+  const midTileY = Math.floor((bounds.y_min + bounds.y_max) / 2);
+  const cx = ox + midTileX * s + s / 2;
+  const cy = oy + midTileY * s + s / 2;
 
   // 1. Dark ambient wash — oppressive
   ctx.fillStyle = 'rgba(0,0,0,0.10)';
@@ -1013,8 +1088,8 @@ function _drawRitualOverlay(ctx, opts) {
 
   // 2. Central arcane glow — radial gradient from center
   const glowGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, s * 2);
-  glowGrad.addColorStop(0, hexAlpha(pal.accent, 0.08));
-  glowGrad.addColorStop(0.5, hexAlpha(pal.accent, 0.03));
+  glowGrad.addColorStop(0, hexAlpha(pal.accent, 0.12));
+  glowGrad.addColorStop(0.5, hexAlpha(pal.accent, 0.05));
   glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = glowGrad;
   ctx.beginPath();
@@ -1050,11 +1125,11 @@ function _drawRitualOverlay(ctx, opts) {
     ctx.stroke();
   }
 
-  // 5. Outer containment ring — accent circle around center area
+  // 5. Outer containment ring — accent circle encompassing center area
   ctx.strokeStyle = hexAlpha(pal.accent, 0.15);
   ctx.lineWidth = 1.2;
   ctx.beginPath();
-  ctx.arc(cx, cy, Math.min(innerW, innerH) * 0.38, 0, Math.PI * 2);
+  ctx.arc(cx, cy, Math.min(innerW, innerH) * 0.45, 0, Math.PI * 2);
   ctx.stroke();
 }
 
@@ -1108,18 +1183,7 @@ function _drawTortureOverlay(ctx, opts) {
   ctx.fillRect(innerX, innerY + innerH - s, s, s);
   ctx.fillRect(innerX + innerW - s, innerY + innerH - s, s, s);
 
-  // 5. Metal fixture marks on walls — horizontal brackets
-  const metalColor = shiftColor(pal.metal || pal.secondary, 8);
-  ctx.fillStyle = metalColor;
-  for (let ty = bounds.y_min + 1; ty < bounds.y_max; ty += 2) {
-    const py = oy + ty * s;
-    // Left wall brackets
-    ctx.fillRect(ox + bounds.x_min * s + s - 6, py + s * 0.3, 4, 2);
-    ctx.fillRect(ox + bounds.x_min * s + s - 6, py + s * 0.6, 4, 2);
-    // Right wall brackets
-    ctx.fillRect(ox + bounds.x_max * s + 2, py + s * 0.3, 4, 2);
-    ctx.fillRect(ox + bounds.x_max * s + 2, py + s * 0.6, 4, 2);
-  }
+
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1135,49 +1199,61 @@ function _drawGraveyardOverlay(ctx, opts) {
   const innerW = (bounds.x_max - bounds.x_min + 1) * s;
   const innerH = (bounds.y_max - bounds.y_min + 1) * s;
 
-  // 1. Earthy muted wash — desaturated brown-green
-  ctx.fillStyle = 'rgba(30, 25, 15, 0.08)';
+  // 1. Earthy muted wash — desaturated brown-green (stronger)
+  ctx.fillStyle = 'rgba(30, 25, 15, 0.14)';
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
-  // 2. Disturbed earth patches — irregular darker spots
+  // 2. Disturbed earth patches — irregular darker spots (more visible)
   const h = cellHash;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     const patchX = innerX + s * 0.3 + h(seed, i, 160) * (innerW - s * 0.6);
     const patchY = innerY + s * 0.3 + h(seed, i, 161) * (innerH - s * 0.6);
-    const patchRx = s * 0.2 + h(seed, i, 162) * s * 0.15;
-    const patchRy = s * 0.12 + h(seed, i, 163) * s * 0.1;
-    ctx.fillStyle = 'rgba(20, 15, 8, 0.10)';
+    const patchRx = s * 0.25 + h(seed, i, 162) * s * 0.2;
+    const patchRy = s * 0.15 + h(seed, i, 163) * s * 0.12;
+    ctx.fillStyle = 'rgba(20, 15, 8, 0.18)';
     ctx.beginPath();
     ctx.ellipse(patchX, patchY, patchRx, patchRy, h(seed, i, 164) * Math.PI, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // 3. Faint mist — lighter semi-transparent wash at floor level
-  const mistGrad = ctx.createLinearGradient(innerX, innerY + innerH * 0.5, innerX, innerY + innerH);
+  // 3. Faint mist — lighter semi-transparent wash at floor level (stronger)
+  const mistGrad = ctx.createLinearGradient(innerX, innerY + innerH * 0.4, innerX, innerY + innerH);
   mistGrad.addColorStop(0, 'rgba(0,0,0,0)');
-  mistGrad.addColorStop(0.4, 'rgba(160, 160, 140, 0.04)');
-  mistGrad.addColorStop(1, 'rgba(180, 180, 160, 0.06)');
+  mistGrad.addColorStop(0.3, 'rgba(160, 160, 140, 0.06)');
+  mistGrad.addColorStop(1, 'rgba(180, 180, 160, 0.10)');
   ctx.fillStyle = mistGrad;
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
   // 4. Uneven ground texture — small random dots for soil feeling
   ctx.fillStyle = shiftColor(pal.floor || pal.primary, -6);
-  for (let d = 0; d < 10; d++) {
+  for (let d = 0; d < 12; d++) {
     const dx = innerX + h(seed, d, 165) * innerW;
     const dy = innerY + h(seed, d, 166) * innerH;
-    ctx.fillRect(dx, dy, 1.5, 1);
+    ctx.fillRect(dx, dy, 2, 1.5);
   }
 
-  // 5. Row markers — faint horizontal lines suggesting grave row paths
-  ctx.strokeStyle = 'rgba(0,0,0,0.05)';
-  ctx.lineWidth = 0.6;
+  // 5. Row markers — horizontal lines suggesting grave row paths (stronger)
+  ctx.strokeStyle = 'rgba(0,0,0,0.10)';
+  ctx.lineWidth = 0.8;
   const rowSpacing = Math.max(2, Math.floor((bounds.y_max - bounds.y_min) / 3));
   for (let row = 1; row < 3; row++) {
     const ry = oy + (bounds.y_min + row * rowSpacing) * s;
     ctx.beginPath();
-    ctx.moveTo(innerX + s * 0.3, ry + s * 0.5);
-    ctx.lineTo(innerX + innerW - s * 0.3, ry + s * 0.5);
+    ctx.moveTo(innerX + s * 0.2, ry + s * 0.5);
+    ctx.lineTo(innerX + innerW - s * 0.2, ry + s * 0.5);
     ctx.stroke();
+  }
+
+  // 6. Grave mound silhouettes — low bumps along row lines
+  ctx.fillStyle = shiftColor(pal.floor || pal.primary, -10);
+  for (let row = 1; row < 3; row++) {
+    const ry = oy + (bounds.y_min + row * rowSpacing) * s;
+    for (let mx = 0; mx < 3; mx++) {
+      const moundX = innerX + s * 0.8 + h(seed, row * 10 + mx, 167) * (innerW - s * 1.6);
+      ctx.beginPath();
+      ctx.ellipse(moundX, ry + s * 0.3, s * 0.2, s * 0.08, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
   }
 }
 
@@ -1333,21 +1409,37 @@ function _drawFungalGrottoOverlay(ctx, opts) {
   const innerY = bounds.y_min * s + oy;
   const innerW = (bounds.x_max - bounds.x_min + 1) * s;
   const innerH = (bounds.y_max - bounds.y_min + 1) * s;
+  const midTileX = Math.floor((bounds.x_min + bounds.x_max) / 2);
+  const midTileY = Math.floor((bounds.y_min + bounds.y_max) / 2);
+  const centerPx = ox + midTileX * s + s / 2;
+  const centerPy = oy + midTileY * s + s / 2;
   const h = cellHash;
 
   // 1. Green-tinted ambient wash — bioluminescent atmosphere
   const glowColor = pal.accent;
-  ctx.fillStyle = hexAlpha(glowColor, 0.05);
+  ctx.fillStyle = hexAlpha(glowColor, 0.08);
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
-  // 2. Bioluminescent glow pools — 2-3 radial glows on floor
-  for (let i = 0; i < 3; i++) {
+  // 2. Central bioluminescent glow pool — prominent focal point
+  const centralR = s * 0.9;
+  const centralGrad = ctx.createRadialGradient(centerPx, centerPy, 2, centerPx, centerPy, centralR);
+  centralGrad.addColorStop(0, hexAlpha(pal.highlight, 0.18));
+  centralGrad.addColorStop(0.3, hexAlpha(glowColor, 0.12));
+  centralGrad.addColorStop(0.7, hexAlpha(glowColor, 0.04));
+  centralGrad.addColorStop(1, hexAlpha(glowColor, 0));
+  ctx.fillStyle = centralGrad;
+  ctx.beginPath();
+  ctx.arc(centerPx, centerPy, centralR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 3. Secondary glow pools — 2 additional off-center
+  for (let i = 0; i < 2; i++) {
     const gx = innerX + s * 0.5 + h(seed, i, 170) * (innerW - s);
     const gy = innerY + s * 0.5 + h(seed, i, 171) * (innerH - s);
-    const gr = s * 0.4 + h(seed, i, 172) * s * 0.3;
+    const gr = s * 0.5 + h(seed, i, 172) * s * 0.3;
     const grad = ctx.createRadialGradient(gx, gy, 1, gx, gy, gr);
-    grad.addColorStop(0, hexAlpha(glowColor, 0.10));
-    grad.addColorStop(0.6, hexAlpha(glowColor, 0.03));
+    grad.addColorStop(0, hexAlpha(glowColor, 0.14));
+    grad.addColorStop(0.6, hexAlpha(glowColor, 0.05));
     grad.addColorStop(1, hexAlpha(glowColor, 0));
     ctx.fillStyle = grad;
     ctx.beginPath();
@@ -1355,28 +1447,28 @@ function _drawFungalGrottoOverlay(ctx, opts) {
     ctx.fill();
   }
 
-  // 3. Damp sheen — reflective highlights near walls
-  ctx.fillStyle = 'rgba(100, 180, 120, 0.04)';
-  ctx.fillRect(innerX, innerY, innerW, s * 0.3);
-  ctx.fillRect(innerX, innerY + innerH - s * 0.3, innerW, s * 0.3);
-  ctx.fillRect(innerX, innerY, s * 0.3, innerH);
-  ctx.fillRect(innerX + innerW - s * 0.3, innerY, s * 0.3, innerH);
+  // 4. Damp sheen — reflective highlights near walls
+  ctx.fillStyle = 'rgba(100, 180, 120, 0.06)';
+  ctx.fillRect(innerX, innerY, innerW, s * 0.4);
+  ctx.fillRect(innerX, innerY + innerH - s * 0.4, innerW, s * 0.4);
+  ctx.fillRect(innerX, innerY, s * 0.4, innerH);
+  ctx.fillRect(innerX + innerW - s * 0.4, innerY, s * 0.4, innerH);
 
-  // 4. Organic wall edges — uneven blobs along walls suggesting growth
-  ctx.fillStyle = hexAlpha(glowColor, 0.06);
+  // 5. Organic wall edges — uneven blobs along walls suggesting growth
+  ctx.fillStyle = hexAlpha(glowColor, 0.10);
   for (let ty = bounds.y_min; ty <= bounds.y_max; ty++) {
     const py = oy + ty * s;
     // Left wall organic bumps
-    if (h(seed, ty, 173) > 0.4) {
-      const blobR = s * 0.06 + h(seed, ty, 174) * s * 0.06;
+    if (h(seed, ty, 173) > 0.3) {
+      const blobR = s * 0.08 + h(seed, ty, 174) * s * 0.07;
       const blobY = py + h(seed, ty, 175) * s;
       ctx.beginPath();
       ctx.arc(ox + bounds.x_min * s + s - 2, blobY, blobR, 0, Math.PI * 2);
       ctx.fill();
     }
     // Right wall organic bumps
-    if (h(seed, ty, 176) > 0.4) {
-      const blobR = s * 0.06 + h(seed, ty, 177) * s * 0.06;
+    if (h(seed, ty, 176) > 0.3) {
+      const blobR = s * 0.08 + h(seed, ty, 177) * s * 0.07;
       const blobY = py + h(seed, ty, 178) * s;
       ctx.beginPath();
       ctx.arc(ox + bounds.x_max * s + 2, blobY, blobR, 0, Math.PI * 2);
@@ -1384,13 +1476,30 @@ function _drawFungalGrottoOverlay(ctx, opts) {
     }
   }
 
-  // 5. Spore dust motes — tiny bright dots floating in the room
-  ctx.fillStyle = hexAlpha(pal.highlight, 0.15);
-  for (let i = 0; i < 6; i++) {
+  // 6. Spore dust motes — bright dots floating in the room
+  ctx.fillStyle = hexAlpha(pal.highlight, 0.25);
+  for (let i = 0; i < 8; i++) {
     const dx = innerX + h(seed, i, 179) * innerW;
     const dy = innerY + h(seed, i, 180) * innerH;
     ctx.beginPath();
-    ctx.arc(dx, dy, 0.8 + h(seed, i, 181) * 0.6, 0, Math.PI * 2);
+    ctx.arc(dx, dy, 1.0 + h(seed, i, 181) * 0.8, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // 7. Mycelium tendril lines — faint organic veins from walls toward center
+  ctx.strokeStyle = hexAlpha(glowColor, 0.10);
+  ctx.lineWidth = 0.8;
+  for (let i = 0; i < 4; i++) {
+    const startX = (i < 2) ? innerX + h(seed, i, 182) * s * 0.3
+                           : innerX + innerW - h(seed, i, 182) * s * 0.3;
+    const startY = innerY + s * 0.5 + h(seed, i, 183) * (innerH - s);
+    ctx.beginPath();
+    ctx.moveTo(startX, startY);
+    ctx.quadraticCurveTo(
+      centerPx + (h(seed, i, 184) - 0.5) * s,
+      centerPy + (h(seed, i, 185) - 0.5) * s,
+      centerPx, centerPy
+    );
+    ctx.stroke();
   }
 }

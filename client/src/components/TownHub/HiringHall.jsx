@@ -7,14 +7,42 @@ import HeroSprite from './HeroSprite';
  * HiringHall — displays tavern heroes available for hire.
  * Fetches from GET /api/town/tavern, hires via POST /api/town/hire.
  *
- * Phase 4E-3: Consumes stable 4E-1 REST API.
+ * Phase 4E-4: Overhauled cards with class identity (role, description, skill
+ * preview) and random starting gear display. Stat variation removed.
  */
+
+/** Rarity color map for item display */
+const RARITY_COLORS = {
+  common: '#9d9d9d',
+  magic: '#4a8fd0',
+  rare: '#f0e060',
+  epic: '#a050f0',
+  unique: '#e07020',
+  set: '#40c040',
+};
+
+/** Role icon map */
+const ROLE_ICONS = {
+  'Tank': '🛡️',
+  'Support': '✚',
+  'Scout': '👁',
+  'Ranged DPS': '🏹',
+  'Hybrid DPS': '⚔',
+  'Caster DPS': '🔥',
+  'Offensive Support': '🎵',
+  'Sustain Melee DPS': '🩸',
+  'Controller': '☠',
+  'Retaliation Tank': '⛓',
+  'Totemic Healer': '🪵',
+};
+
 export default function HiringHall({ availableClasses }) {
   const gameState = useGameState();
   const dispatch = useGameDispatch();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [hoveredSkill, setHoveredSkill] = useState(null);
 
   const tavernHeroes = gameState.tavernHeroes || [];
   const gold = gameState.gold;
@@ -62,13 +90,10 @@ export default function HiringHall({ availableClasses }) {
 
   const getClassDef = (classId) => availableClasses?.[classId] || {};
 
-  const getStatDiff = (heroStat, baseStat) => {
-    if (baseStat === 0 && heroStat === 0) return null;
-    const diff = heroStat - baseStat;
-    if (diff === 0) return null;
-    return diff > 0
-      ? { text: `+${diff}`, className: 'stat-bonus' }
-      : { text: `${diff}`, className: 'stat-penalty' };
+  /** Count how many gear slots are filled */
+  const getGearCount = (equipment) => {
+    if (!equipment) return 0;
+    return ['weapon', 'armor', 'accessory'].filter(s => equipment[s]).length;
   };
 
   return (
@@ -93,8 +118,11 @@ export default function HiringHall({ availableClasses }) {
           {tavernHeroes.map((hero) => {
             const classDef = getClassDef(hero.class_id);
             const canAfford = gold >= hero.hire_cost;
+            const gearCount = getGearCount(hero.equipment);
+            const skills = classDef.skills || [];
             return (
               <div key={hero.hero_id} className="tavern-hero-card">
+                {/* --- Header: Sprite + Name + Role --- */}
                 <div className="hero-card-header">
                   <HeroSprite
                     classId={hero.class_id}
@@ -107,21 +135,88 @@ export default function HiringHall({ availableClasses }) {
                     <span className="hero-class-label" style={{ color: classDef.color || '#aaa' }}>
                       {classDef.name || hero.class_id}
                     </span>
+                    {classDef.role && (
+                      <span className="hero-role-tag" style={{ borderColor: classDef.color || '#555' }}>
+                        <span className="hero-role-icon">{ROLE_ICONS[classDef.role] || '⚔'}</span>
+                        {classDef.role}
+                      </span>
+                    )}
                   </div>
                 </div>
 
+                {/* --- Class Description --- */}
+                {classDef.description && (
+                  <p className="hero-card-description">{classDef.description}</p>
+                )}
+
+                {/* --- Skills Preview --- */}
+                {skills.length > 0 && (
+                  <div className="hero-card-skills">
+                    <span className="hero-skills-label">Skills</span>
+                    <div className="hero-skill-badges">
+                      {skills.map((skill) => (
+                        <div
+                          key={skill.skill_id}
+                          className="hero-skill-badge"
+                          onMouseEnter={() => setHoveredSkill(`${hero.hero_id}-${skill.skill_id}`)}
+                          onMouseLeave={() => setHoveredSkill(null)}
+                        >
+                          <span className="skill-badge-icon">{skill.icon || '◆'}</span>
+                          {hoveredSkill === `${hero.hero_id}-${skill.skill_id}` && (
+                            <div className="skill-tooltip">
+                              <div className="skill-tooltip-name">{skill.name}</div>
+                              <div className="skill-tooltip-desc">{skill.description}</div>
+                              {skill.cooldown_turns > 0 && (
+                                <div className="skill-tooltip-cd">{skill.cooldown_turns} turn cooldown</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* --- Stats Block --- */}
                 <div className="hero-card-stats">
-                  <StatRow label="HP" value={hero.stats.max_hp} base={classDef.base_hp} diff={getStatDiff(hero.stats.max_hp, classDef.base_hp)} />
-                  <StatRow label="Melee" value={hero.stats.attack_damage} base={classDef.base_melee_damage} diff={getStatDiff(hero.stats.attack_damage, classDef.base_melee_damage)} />
-                  <StatRow label="Ranged" value={hero.stats.ranged_damage} base={classDef.base_ranged_damage} diff={getStatDiff(hero.stats.ranged_damage, classDef.base_ranged_damage)} />
-                  <StatRow label="Armor" value={hero.stats.armor} base={classDef.base_armor} diff={getStatDiff(hero.stats.armor, classDef.base_armor)} />
-                  <StatRow label="Vision" value={hero.stats.vision_range} base={classDef.base_vision_range} diff={getStatDiff(hero.stats.vision_range, classDef.base_vision_range)} />
+                  <StatRow label="HP" value={hero.stats.max_hp} />
+                  <StatRow label="Melee" value={hero.stats.attack_damage} />
+                  <StatRow label="Ranged" value={hero.stats.ranged_damage} />
+                  <StatRow label="Armor" value={hero.stats.armor} />
+                  <StatRow label="Vision" value={hero.stats.vision_range} />
+                  <StatRow label="Range" value={hero.stats.ranged_range} />
                 </div>
 
+                {/* --- Starting Gear --- */}
+                {gearCount > 0 && (
+                  <div className="hero-card-gear">
+                    <span className="hero-gear-label">Comes With</span>
+                    <div className="hero-gear-slots">
+                      {['weapon', 'armor', 'accessory'].map((slot) => {
+                        const item = hero.equipment?.[slot];
+                        if (!item) return null;
+                        const rarityColor = RARITY_COLORS[item.rarity] || RARITY_COLORS.common;
+                        return (
+                          <div key={slot} className="hero-gear-item" style={{ borderColor: rarityColor }}>
+                            <span className="gear-item-name" style={{ color: rarityColor }}>
+                              {item.display_name || item.name}
+                            </span>
+                            <span className="gear-item-slot">{slot}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* --- Footer: Cost + Hire --- */}
                 <div className="hero-card-footer">
-                  <span className="hero-hire-cost">
-                    {hero.hire_cost}g
-                  </span>
+                  <div className="hero-hire-cost-block">
+                    <span className="hero-hire-cost">{hero.hire_cost}g</span>
+                    {gearCount > 0 && (
+                      <span className="hero-cost-breakdown">{BASE_HIRE_COST}g base + gear</span>
+                    )}
+                  </div>
                   <button
                     className={`btn-hire ${!canAfford ? 'btn-hire-disabled' : ''}`}
                     onClick={() => handleHire(hero.hero_id)}
@@ -140,17 +235,14 @@ export default function HiringHall({ availableClasses }) {
   );
 }
 
-/** Stat row with optional diff indicator */
-function StatRow({ label, value, base, diff }) {
+const BASE_HIRE_COST = 30;
+
+/** Stat row — flat display, no diff (stats are now always class base) */
+function StatRow({ label, value }) {
   return (
     <div className="hero-stat-row">
       <span className="hero-stat-label">{label}</span>
       <span className="hero-stat-value">{value}</span>
-      {diff && (
-        <span className={`hero-stat-diff ${diff.className}`}>
-          ({diff.text})
-        </span>
-      )}
     </div>
   );
 }

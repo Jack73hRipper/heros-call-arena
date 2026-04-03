@@ -204,9 +204,9 @@ class TestHealingTotem:
         resolve_place_totem(player, action, skill_def, players, set(), match_state)
 
         totem = match_state.totems[0]
-        assert totem["hp"] == 20
-        assert totem["max_hp"] == 20
-        assert totem["heal_per_turn"] == 8
+        assert totem["hp"] == 30
+        assert totem["max_hp"] == 30
+        assert totem["heal_per_turn"] == 10
         assert totem["damage_per_turn"] == 0
         assert totem["effect_radius"] == 2
         assert totem["duration_remaining"] == 4
@@ -376,10 +376,10 @@ class TestSearingTotem:
         resolve_place_totem(player, action, skill_def, players, set(), match_state)
 
         totem = match_state.totems[0]
-        assert totem["hp"] == 20
-        assert totem["max_hp"] == 20
+        assert totem["hp"] == 30
+        assert totem["max_hp"] == 30
         assert totem["heal_per_turn"] == 0
-        assert totem["damage_per_turn"] == 4
+        assert totem["damage_per_turn"] == 5
         assert totem["effect_radius"] == 2
         assert totem["duration_remaining"] == 4
 
@@ -832,7 +832,7 @@ class TestEarthgrasp:
         assert totem["type"] == "earthgrasp_totem"
         assert totem["x"] == 7
         assert totem["y"] == 5
-        assert totem["hp"] == 20
+        assert totem["hp"] == 30
         assert totem["effect_radius"] == 2
         assert totem["duration_remaining"] == 4
 

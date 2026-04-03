@@ -19,6 +19,7 @@ import {
   FLOOR_DRAW_MAP,
   drawCorridor,
   drawDoor,
+  drawDoorPerspective,
   drawChest,
   drawStairs,
   drawSpawn,
@@ -123,8 +124,14 @@ export class ThemeRenderer {
 
       case 'door': {
         const isOpen = extra.doorOpen === true;
-        // Doors are drawn directly (state-dependent)
-        drawDoor(ctx, px, py, size, this._tileSeed(gridX, gridY), this.theme.palette, this.theme, isOpen);
+        // Use perspective rendering when neighbor info is available
+        if (extra.wallNorth != null) {
+          drawDoorPerspective(ctx, px, py, size, this._tileSeed(gridX, gridY), this.theme.palette, this.theme, isOpen,
+            extra.wallNorth, extra.wallSouth, extra.wallEast, extra.wallWest);
+        } else {
+          // Legacy fallback (no neighbor context)
+          drawDoor(ctx, px, py, size, this._tileSeed(gridX, gridY), this.theme.palette, this.theme, isOpen);
+        }
         return true;
       }
 

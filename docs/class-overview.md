@@ -331,7 +331,7 @@ All classes have either `auto_attack_melee` (1.15× melee damage) or `auto_attac
 
 > *War-poet who empowers allies with battle hymns and debilitates enemies with dark dirges.*
 
-**Identity:** The team's force multiplier. Where the Confessor keeps the party alive, the Bard makes the party lethal. Ballad of Might gives +40% damage to nearby allies, Dirge of Weakness makes enemies take +30% damage, Verse of Haste accelerates ally cooldowns, and Cacophony provides self-peel with AoE damage + slow. Support through offense, not defense.
+**Identity:** The team's force multiplier. Where the Confessor keeps the party alive, the Bard makes the party lethal. Ballad of Might gives +40% damage to nearby allies, Dirge of Weakness makes enemies take +30% damage, War Hymn provides AoE heal-over-time to sustain the team, and Cacophony provides self-peel with AoE damage + slow. Support through offense, not defense.
 
 | Stat | Value |
 |------|-------|
@@ -348,16 +348,16 @@ All classes have either `auto_attack_melee` (1.15× melee damage) or `auto_attac
 | Slot | Skill | Icon | Target | Range | CD | Effect |
 |:----:|-------|:----:|--------|:-----:|:--:|--------|
 | 0 | Auto Attack | — | Enemy (ranged) | 4 | 0 | 1.15× ranged damage |
-| 1 | Ballad of Might | 🎵 | Self (AoE r=3) | 0 | 5 | +40% damage to all allies within 3 tiles for 3 turns |
+| 1 | Ballad of Might | 🎵 | Self (AoE r=4) | 0 | 5 | +40% damage to all allies within 4 tiles for 3 turns |
 | 2 | Dirge of Weakness | 💀 | Ground AoE (r=2) | 4 | 5 | +30% damage taken by enemies in radius for 3 turns |
-| 3 | Verse of Haste | ⏩ | Ally or Self | 4 | 5 | Reduce all skill cooldowns by 2 turns |
+| 3 | War Hymn | 🎶 | Self (AoE r=4) | 0 | 5 | Heal 7 HP/turn for 3 turns to all allies in radius |
 | 4 | Cacophony | 🔊 | Self (AoE r=2) | 0 | 5 | 11 damage + slow 2 turns to all enemies in radius |
 
 #### Team Value Examples
 
 - Ballad on a 4-ally team for 3 turns: effectively ~96% of a DPS slot's output
 - Dirge + Ballad stacked: allies deal 1.4× damage to targets taking 1.3× damage = **1.82× effective damage**
-- Verse of Haste on a Mage: Fireball back online 2 turns early
+- War Hymn on 3 allies: 7 HP/turn × 3 turns × 3 allies = 63 total healing
 
 ---
 
@@ -537,9 +537,9 @@ All classes have either `auto_attack_melee` (1.15× melee damage) or `auto_attac
 | | Frost Nova | AoE+CC | 6 | 16 flat dmg + slow r=2, 2 turns |
 | | Arcane Barrage | AoE Magic | 5 | 1.0× magic to r=1 (50% armor bypass) |
 | | Blink | Mobility | 5 | Teleport 4 tiles |
-| **Bard** | Ballad of Might | AoE Buff | 5 | +40% damage to allies r=3, 3 turns |
+| **Bard** | Ballad of Might | AoE Buff | 5 | +40% damage to allies r=4, 3 turns |
 | | Dirge of Weakness | AoE Debuff | 5 | +30% damage taken r=2, 3 turns |
-| | Verse of Haste | CDR | 5 | -2 turns all cooldowns on target |
+| | War Hymn | AoE HoT | 5 | 7 HP/turn r=4, 3 turns |
 | | Cacophony | AoE+CC | 5 | 11 dmg + slow r=2, 2 turns |
 | **Blood Knight** | Blood Strike | Lifesteal | 4 | 1.4× melee + heal 40% dealt |
 | | Crimson Veil | Self Buff | 6 | +30% melee + 6 HP/turn, 3 turns |
@@ -609,7 +609,7 @@ All classes have either `auto_attack_melee` (1.15× melee damage) or `auto_attac
 
 **Bard vs Confessor (Supports):**
 - Confessor: Keeps the party *alive* (heals, shields, Prayer).
-- Bard: Makes the party *lethal* (damage buffs, enemy debuffs, cooldown reduction).
+- Bard: Makes the party *lethal* (damage buffs, enemy debuffs, AoE HoT sustain).
 
 ### Balance Target
 

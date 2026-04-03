@@ -252,11 +252,17 @@ def get_attack_damage_buff_bonus(player: PlayerState) -> int:
 # ---------- Phase 11: Generic Stat Pipeline ----------
 
 def get_armor_buff_bonus(player: PlayerState) -> int:
-    """Return the total armor bonus from active buffs (e.g. Shield of Faith, Bulwark)."""
+    """Return the total armor bonus from active buffs and debuffs (e.g. Shield of Faith, Enfeeble).
+
+    Buffs add positive armor, debuffs (negative magnitude) reduce it.
+    """
     bonus = 0
     for buff in player.active_buffs:
-        if buff.get("stat") == "armor" and buff.get("type", "buff") == "buff":
-            bonus += int(buff["magnitude"])
+        if buff.get("stat") == "armor":
+            if buff.get("type", "buff") == "buff":
+                bonus += int(buff["magnitude"])
+            elif buff.get("type") == "debuff":
+                bonus += int(buff["magnitude"])  # magnitude is already negative (e.g. -2)
     return bonus
 
 
@@ -460,6 +466,10 @@ def resolve_skill_action(
         return resolve_aoe_damage_slow_targeted(player, target_x, target_y, skill_def, players, obstacles)
     elif effect_type == "melee_damage_slow":
         return resolve_melee_damage_slow(player, target_x, target_y, skill_def, players, obstacles, target_id=target_id)
+    elif effect_type == "melee_damage_conditional_bleed":
+        return resolve_melee_damage_conditional_bleed(player, target_x, target_y, skill_def, players, obstacles, target_id=target_id)
+    elif effect_type == "hex_strike":
+        return resolve_hex_strike(player, target_x, target_y, skill_def, players, obstacles, target_id=target_id)
 
     # --- Buffs ---
     elif effect_type == "buff":
@@ -478,8 +488,14 @@ def resolve_skill_action(
         return resolve_thorns_buff(player, skill_def)
     elif effect_type == "cheat_death":
         return resolve_cheat_death(player, skill_def)
+    elif effect_type == "deaths_embrace_buff":
+        return resolve_deaths_embrace(player, skill_def)
+    elif effect_type == "undying_fury":
+        return resolve_undying_fury(player, skill_def)
     elif effect_type == "buff_cleanse":
         return resolve_buff_cleanse(player, skill_def, target_x=target_x, target_y=target_y, players=players, target_id=target_id)
+    elif effect_type == "aoe_hot":
+        return resolve_aoe_hot(player, skill_def, players)
 
     # --- Debuffs / CC ---
     elif effect_type == "dot":
@@ -494,6 +510,8 @@ def resolve_skill_action(
         return resolve_ranged_taunt(player, target_x, target_y, skill_def, players, obstacles, target_id=target_id)
     elif effect_type == "aoe_root":
         return resolve_aoe_root(player, action, skill_def, players, obstacles)
+    elif effect_type == "ranged_root":
+        return resolve_ranged_root(player, target_x, target_y, skill_def, players, obstacles, target_id=target_id)
 
     # --- Movement ---
     elif effect_type == "teleport":
@@ -512,6 +530,8 @@ def resolve_skill_action(
         return resolve_place_totem(player, action, skill_def, players, obstacles, match_state=match_state)
     elif effect_type == "soul_anchor":
         return resolve_soul_anchor(player, action, skill_def, players, target_id=target_id)
+    elif effect_type == "spirit_link":
+        return resolve_spirit_link(player, action, skill_def, players, target_id=target_id)
 
     # --- Passive (no active use) ---
     elif effect_type in ("passive_aura_ally_buff", "passive_enrage"):
@@ -552,10 +572,12 @@ from app.core.skill_effects.damage import (  # noqa: E402, F401
     resolve_aoe_damage_slow,
     resolve_aoe_damage_slow_targeted,
     resolve_aoe_magic_damage,
+    resolve_hex_strike,
     resolve_holy_damage,
     resolve_lifesteal_aoe,
     resolve_lifesteal_damage,
     resolve_magic_damage,
+    resolve_melee_damage_conditional_bleed,
     resolve_melee_damage_slow,
     resolve_multi_hit,
     resolve_ranged_damage_slow,
@@ -569,14 +591,18 @@ from app.core.skill_effects.buff import (  # noqa: E402, F401
     resolve_cheat_death,
     resolve_conditional_buff,
     resolve_damage_absorb,
+    resolve_deaths_embrace,
     resolve_evasion,
     resolve_shield_charges,
     resolve_thorns_buff,
+    resolve_undying_fury,
+    resolve_aoe_hot,
 )
 from app.core.skill_effects.debuff import (  # noqa: E402, F401
     resolve_aoe_debuff,
     resolve_aoe_root,
     resolve_dot,
+    resolve_ranged_root,
     resolve_ranged_taunt,
     resolve_targeted_debuff,
     resolve_taunt,
@@ -585,6 +611,7 @@ from app.core.skill_effects.movement import resolve_teleport  # noqa: E402, F401
 from app.core.skill_effects.summon import (  # noqa: E402, F401
     resolve_place_totem,
     resolve_soul_anchor,
+    resolve_spirit_link,
 )
 from app.core.skill_effects.utility import (  # noqa: E402, F401
     resolve_cooldown_reduction,

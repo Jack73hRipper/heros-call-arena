@@ -108,9 +108,16 @@
       "extras": ["frost-nova-ring"]
     },
     "arcane_barrage": {
-      "effect": "arcane-barrage-rain",
+      "effect": "arcane-missile-impact",
       "target": "destination",
-      "extras": ["arcane-barrage-flash"]
+      "multiProjectile": true,
+      "projectile": {
+        "trail": "arcane-missile-trail",
+        "head": "arcane-missile-head",
+        "speed": 550,
+        "arc": 0.15,
+        "stagger": 120
+      }
     },
     "shield_of_faith": {
       "effect": "faith-descend",
@@ -205,16 +212,11 @@
       "target": "destination",
       "extras": ["dirge-miasma-burst"]
     },
-    "verse_of_haste": {
-      "effect": "verse-haste-burst",
-      "target": "victim",
-      "follow": true,
-      "projectile": {
-        "trail": "verse-haste-trail",
-        "head": "verse-haste-head",
-        "speed": 800,
-        "arc": 0
-      }
+    "war_hymn": {
+      "effect": "war-hymn-pulse",
+      "target": "caster",
+      "extras": ["war-hymn-ring-inner", "war-hymn-ring-outer"],
+      "follow": true
     },
     "cacophony": {
       "effect": "cacophony-blast",
@@ -235,8 +237,9 @@
     "sanguine_burst": {
       "effect": "sanguine-burst-nova",
       "target": "caster",
-      "extras": ["sanguine-burst-droplets"],
-      "extrasTarget": "caster"
+      "extras": ["sanguine-burst-droplets", "sanguine-burst-ring", "sanguine-burst-pool"],
+      "extrasTarget": "caster",
+      "hitEffect": "sanguine-burst-hit"
     },
     "blood_frenzy": {
       "effect": "blood-frenzy-ignite",
@@ -271,23 +274,26 @@
       "extras": ["plague-inoculate-cleanse"],
       "follow": true
     },
-    "grave_thorns": {
-      "effect": "revenant-thorns-cast",
+    "grasp_of_the_grave": {
+      "effect": "revenant-grasp-chains",
+      "target": "victim",
+      "extras": ["revenant-grasp-ground-crack"]
+    },
+    "deaths_embrace": {
+      "effect": "revenant-embrace-aura",
       "target": "caster",
-      "follow": true
+      "follow": true,
+      "extras": ["revenant-embrace-bone-shards"]
     },
-    "grave_chains": {
-      "effect": "revenant-chains-taunt",
-      "target": "victim"
-    },
-    "undying_will": {
+    "undying_fury": {
       "effect": "revenant-undying-activate",
       "target": "caster",
       "follow": true
     },
     "soul_rend": {
       "effect": "revenant-soul-rend",
-      "target": "victim"
+      "target": "victim",
+      "extras": ["revenant-soul-rend-empowered"]
     },
     "healing_totem": {
       "effect": "shaman-totem-place",

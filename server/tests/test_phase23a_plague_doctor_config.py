@@ -109,7 +109,7 @@ class TestPlagueDoctorClassConfig:
         assert loaded_classes["plague_doctor"].base_melee_damage == 8
 
     def test_plague_doctor_base_ranged_damage(self, loaded_classes):
-        assert loaded_classes["plague_doctor"].base_ranged_damage == 12
+        assert loaded_classes["plague_doctor"].base_ranged_damage == 14
 
     def test_plague_doctor_base_armor(self, loaded_classes):
         assert loaded_classes["plague_doctor"].base_armor == 3
@@ -148,7 +148,7 @@ class TestPlagueDoctorClassConfig:
         assert player.hp == 95
         assert player.max_hp == 95
         assert player.attack_damage == 8
-        assert player.ranged_damage == 12
+        assert player.ranged_damage == 14
         assert player.armor == 3
         assert player.vision_range == 7
         assert player.ranged_range == 5
@@ -160,7 +160,7 @@ class TestPlagueDoctorClassConfig:
     def test_plague_doctor_is_ranged(self, loaded_classes):
         """Plague Doctor has ranged capability — midline controller."""
         pd = loaded_classes["plague_doctor"]
-        assert pd.base_ranged_damage == 12
+        assert pd.base_ranged_damage == 14
         assert pd.ranged_range == 5
 
 
@@ -194,7 +194,7 @@ class TestPlagueDoctorSkillsConfig:
         effect = s["effects"][0]
         assert effect["type"] == "aoe_damage_slow_targeted"
         assert effect["radius"] == 2
-        assert effect["base_damage"] == 10
+        assert effect["base_damage"] == 15
         assert effect["slow_duration"] == 2
 
     # -- Plague Flask --
@@ -219,7 +219,7 @@ class TestPlagueDoctorSkillsConfig:
         assert len(s["effects"]) == 1
         effect = s["effects"][0]
         assert effect["type"] == "dot"
-        assert effect["damage_per_tick"] == 8
+        assert effect["damage_per_tick"] == 10
         assert effect["duration_turns"] == 4
 
     # -- Enfeeble --
@@ -234,20 +234,26 @@ class TestPlagueDoctorSkillsConfig:
         assert s["name"] == "Enfeeble"
         assert s["targeting"] == "ground_aoe"
         assert s["range"] == 4
-        assert s["cooldown_turns"] == 5
+        assert s["cooldown_turns"] == 4
         assert s["mana_cost"] == 0
         assert s["requires_line_of_sight"] is True
         assert s["allowed_classes"] == ["plague_doctor"]
 
     def test_enfeeble_effect(self, loaded_skills):
         s = get_skill("enfeeble")
-        assert len(s["effects"]) == 1
+        assert len(s["effects"]) == 2
         effect = s["effects"][0]
         assert effect["type"] == "aoe_debuff"
         assert effect["radius"] == 2
         assert effect["stat"] == "damage_dealt_multiplier"
         assert effect["magnitude"] == 0.75
         assert effect["duration_turns"] == 4
+        # Second effect: armor shred
+        effect2 = s["effects"][1]
+        assert effect2["type"] == "aoe_debuff"
+        assert effect2["stat"] == "armor"
+        assert effect2["magnitude"] == -2
+        assert effect2["duration_turns"] == 4
 
     # -- Inoculate --
 
@@ -485,7 +491,7 @@ class TestRegressionExistingClasses:
         ]
         assert get_class_skills("bard") == [
             "auto_attack_ranged", "ballad_of_might", "dirge_of_weakness",
-            "verse_of_haste", "cacophony"
+            "war_hymn", "cacophony"
         ]
         assert get_class_skills("blood_knight") == [
             "auto_attack_melee", "blood_strike", "crimson_veil",

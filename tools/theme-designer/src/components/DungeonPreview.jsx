@@ -40,6 +40,12 @@ export default function DungeonPreview({ themeId, sampleMapId }) {
     ctx.fillStyle = '#0a0a12';
     ctx.fillRect(0, 0, canvasW, canvasH);
 
+    // Helper: resolve tile type at grid position
+    const _tileType = (gx, gy) => {
+      if (gy < 0 || gy >= map.tiles.length || gx < 0 || gx >= (map.tiles[0] || []).length) return 'wall';
+      return TILE_LEGEND[map.tiles[gy][gx]] || 'wall';
+    };
+
     // Draw all tiles
     for (let y = 0; y < map.tiles.length; y++) {
       const row = map.tiles[y];
@@ -50,8 +56,14 @@ export default function DungeonPreview({ themeId, sampleMapId }) {
         const py = y * tileSize;
 
         const extra = {};
-        // Doors default to closed, chests default to closed
-        if (tileType === 'door') extra.doorOpen = false;
+        // Doors: pass neighbor info for perspective rendering
+        if (tileType === 'door') {
+          extra.doorOpen = false;
+          extra.wallNorth = _tileType(x, y - 1) === 'wall';
+          extra.wallSouth = _tileType(x, y + 1) === 'wall';
+          extra.wallEast  = _tileType(x + 1, y) === 'wall';
+          extra.wallWest  = _tileType(x - 1, y) === 'wall';
+        }
         if (tileType === 'chest') extra.chestOpened = false;
 
         renderer.drawTile(ctx, tileType, px, py, x, y, extra);

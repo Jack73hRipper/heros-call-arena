@@ -113,6 +113,11 @@ export default function RoomArchetypePreview({ themeId }) {
     ctx.fillStyle = '#0d0d1a';
     ctx.fillRect(0, 0, totalW, totalH);
 
+    const _roomType = (gx, gy) => {
+      if (gy < 0 || gy >= ROOM_H || gx < 0 || gx >= ROOM_W) return 'wall';
+      return TILE_LEGEND[ROOM_TILES[gy][gx]] || 'wall';
+    };
+
     const drawRoom = (offX, offY) => {
       for (let y = 0; y < ROOM_H; y++) {
         for (let x = 0; x < ROOM_W; x++) {
@@ -121,7 +126,13 @@ export default function RoomArchetypePreview({ themeId }) {
           const px = offX + x * tileSize;
           const py = offY + y * tileSize;
           const extra = {};
-          if (tileType === 'door') extra.doorOpen = false;
+          if (tileType === 'door') {
+            extra.doorOpen = false;
+            extra.wallNorth = _roomType(x, y - 1) === 'wall';
+            extra.wallSouth = _roomType(x, y + 1) === 'wall';
+            extra.wallEast  = _roomType(x + 1, y) === 'wall';
+            extra.wallWest  = _roomType(x - 1, y) === 'wall';
+          }
           if (tileType === 'chest') extra.chestOpened = false;
           renderer.drawTile(ctx, tileType, px, py, x, y, extra);
         }
@@ -136,6 +147,15 @@ export default function RoomArchetypePreview({ themeId }) {
     drawRoom(0, labelH);
 
     // Columns 1+: Each archetype
+    // Build walkable tile set for the isolated room template
+    const isoWalkable = new Set();
+    for (let y = 0; y < ROOM_H; y++) {
+      for (let x = 0; x < ROOM_W; x++) {
+        const tileType = TILE_LEGEND[ROOM_TILES[y][x]] || 'wall';
+        if (tileType !== 'wall') isoWalkable.add(`${x},${y}`);
+      }
+    }
+
     archetypeKeys.forEach((key, i) => {
       const colX = (i + 1) * (roomPxW + gap);
       const archetype = ROOM_ARCHETYPES[key];
@@ -155,6 +175,7 @@ export default function RoomArchetypePreview({ themeId }) {
         roomHeight: ROOM_H,
         bounds: ROOM_BOUNDS,
         doorPositions: DOOR_POSITIONS,
+        walkableTiles: isoWalkable,
         seed: 42,
       });
     });
@@ -175,6 +196,12 @@ export default function RoomArchetypePreview({ themeId }) {
     ctx.fillStyle = '#0d0d1a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // Helper: resolve tile type at grid position
+    const _dungeonType = (gx, gy) => {
+      if (gy < 0 || gy >= DUNGEON_H || gx < 0 || gx >= DUNGEON_W) return 'wall';
+      return TILE_LEGEND[DUNGEON_MAP[gy][gx]] || 'wall';
+    };
+
     // Draw base tiles
     for (let y = 0; y < DUNGEON_H; y++) {
       for (let x = 0; x < DUNGEON_W; x++) {
@@ -183,14 +210,46 @@ export default function RoomArchetypePreview({ themeId }) {
         const px = x * tileSize;
         const py = y * tileSize;
         const extra = {};
-        if (tileType === 'door') extra.doorOpen = false;
+        if (tileType === 'door') {
+          extra.doorOpen = false;
+          extra.wallNorth = _dungeonType(x, y - 1) === 'wall';
+          extra.wallSouth = _dungeonType(x, y + 1) === 'wall';
+          extra.wallEast  = _dungeonType(x + 1, y) === 'wall';
+          extra.wallWest  = _dungeonType(x - 1, y) === 'wall';
+        }
         if (tileType === 'chest') extra.chestOpened = false;
         renderer.drawTile(ctx, tileType, px, py, x, y, extra);
       }
     }
 
     // Draw room archetype overlays
+    // Build walkable tile set from dungeon map
+    const dungeonWalkable = new Set();
+    for (let y = 0; y < DUNGEON_H; y++) {
+      for (let x = 0; x < DUNGEON_W; x++) {
+        const tileType = TILE_LEGEND[DUNGEON_MAP[y][x]] || 'wall';
+        if (tileType !== 'wall') dungeonWalkable.add(`${x},${y}`);
+      }
+    }
+
     for (const room of DUNGEON_ROOMS) {
+      // Compute tight floor_bounds by scanning actual non-wall tiles
+      const b = room.bounds;
+      let fxMin = b.x_max, fyMin = b.y_max, fxMax = b.x_min, fyMax = b.y_min;
+      for (let ry = b.y_min; ry <= b.y_max; ry++) {
+        for (let rx = b.x_min; rx <= b.x_max; rx++) {
+          if (dungeonWalkable.has(`${rx},${ry}`)) {
+            if (rx < fxMin) fxMin = rx;
+            if (rx > fxMax) fxMax = rx;
+            if (ry < fyMin) fyMin = ry;
+            if (ry > fyMax) fyMax = ry;
+          }
+        }
+      }
+      const inner = fxMax >= fxMin
+        ? { x_min: fxMin, y_min: fyMin, x_max: fxMax, y_max: fyMax }
+        : { x_min: b.x_min + 1, y_min: b.y_min + 1, x_max: b.x_max - 1, y_max: b.y_max - 1 };
+
       drawRoomOverlay(ctx, {
         archetype: room.purpose,
         theme: renderer.getTheme(),
@@ -199,8 +258,9 @@ export default function RoomArchetypePreview({ themeId }) {
         roomOffsetY: 0,
         roomWidth: DUNGEON_W,
         roomHeight: DUNGEON_H,
-        bounds: room.bounds,
+        bounds: inner,
         doorPositions: room.doors,
+        walkableTiles: dungeonWalkable,
         seed: 42,
       });
 

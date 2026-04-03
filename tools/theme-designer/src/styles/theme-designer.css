@@ -130,6 +130,47 @@ body {
   color: var(--accent-hover);
 }
 
+/* ─── PVPVE Toolbar Controls ────────────────────────── */
+
+.toolbar-pvpve-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+}
+
+.toolbar-input {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.toolbar-input:hover,
+.toolbar-input:focus {
+  border-color: var(--border-active);
+  outline: none;
+}
+
+.regenerate-btn {
+  border-color: var(--accent);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.regenerate-btn:hover {
+  background: var(--accent-glow);
+  color: var(--accent-hover);
+}
+
+.regenerate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ─── Theme Selector (Left Sidebar) ─────────────────── */
 
 .theme-selector {
@@ -259,6 +300,214 @@ body {
 .preview-canvas-wrap canvas {
   border: 1px solid var(--border);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* ─── PVPVE Preview ─────────────────────────────────── */
+
+.pvpve-overlay-toggles {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 16px;
+  background: var(--bg-panel);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.pvpve-overlay-toggles label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pvpve-overlay-toggles input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 13px;
+  height: 13px;
+}
+
+.pvpve-stats {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-left: 12px;
+  font-family: 'Consolas', 'Courier New', monospace;
+}
+
+.pvpve-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.pvpve-error-icon {
+  font-size: 32px;
+}
+
+.pvpve-error-detail {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: 'Consolas', 'Courier New', monospace;
+}
+
+/* ─── PVPVE Hover Tooltip (Fixed Info Panel) ────────── */
+
+.pvpve-hover-tooltip {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  height: 90px;
+  overflow-y: auto;
+  background: rgba(12, 12, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 6px 12px;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.4);
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-family: 'Consolas', 'Courier New', monospace;
+  line-height: 1.45;
+  margin-top: 6px;
+}
+
+.pvpve-hover-tooltip .tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pvpve-hover-tooltip .tooltip-placeholder {
+  color: var(--text-dim);
+  font-style: italic;
+  padding: 2px 0;
+}
+
+.pvpve-hover-tooltip .tooltip-module {
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-left: auto;
+}
+
+.pvpve-hover-tooltip .tooltip-pos {
+  color: var(--text-dim);
+}
+
+.pvpve-hover-tooltip .tooltip-tile-type {
+  text-transform: capitalize;
+}
+
+.pvpve-hover-tooltip .tooltip-tile-type.tile-wall { color: #7a7a9a; }
+.pvpve-hover-tooltip .tooltip-tile-type.tile-floor { color: #9a9a7e; }
+.pvpve-hover-tooltip .tooltip-tile-type.tile-corridor { color: #8a8a7e; }
+.pvpve-hover-tooltip .tooltip-tile-type.tile-door { color: #c9a02c; }
+.pvpve-hover-tooltip .tooltip-tile-type.tile-chest { color: #e9c04c; }
+.pvpve-hover-tooltip .tooltip-tile-type.tile-spawn { color: #6a9a6a; }
+
+.pvpve-hover-tooltip .tooltip-char {
+  color: var(--text-dim);
+  font-size: 10px;
+}
+
+.pvpve-hover-tooltip .tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 0;
+}
+
+.pvpve-hover-tooltip .tooltip-label {
+  color: var(--text-dim);
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.pvpve-hover-tooltip .tooltip-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 4px 0;
+}
+
+.pvpve-hover-tooltip .tooltip-prop {
+  color: #cc9940;
+}
+
+.pvpve-hover-tooltip .tooltip-prop-name {
+  color: #e0b050;
+  font-weight: 600;
+}
+
+.pvpve-hover-tooltip .tooltip-prop-id {
+  color: #8a7a5a;
+  font-size: 10px;
+}
+
+.pvpve-hover-tooltip .tooltip-overlay-name {
+  color: #70b0d0;
+  font-weight: 600;
+}
+
+.pvpve-hover-tooltip .tooltip-role {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.pvpve-hover-tooltip .tooltip-role.role-boss { color: #ffc828; }
+.pvpve-hover-tooltip .tooltip-role.role-enemy { color: #cc4444; }
+.pvpve-hover-tooltip .tooltip-role.role-loot { color: #44cc44; }
+.pvpve-hover-tooltip .tooltip-role.role-spawn { color: #4488ff; }
+.pvpve-hover-tooltip .tooltip-role.role-empty { color: #888888; }
+.pvpve-hover-tooltip .tooltip-role.role-stairs { color: #9a9aaa; }
+
+.pvpve-hover-tooltip .tooltip-archetype {
+  color: #b0a0d0;
+}
+
+.pvpve-hover-tooltip .tooltip-desc {
+  color: var(--text-dim);
+  font-size: 10px;
+  font-style: italic;
+  padding: 2px 0 2px 4px;
+  line-height: 1.35;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.pvpve-hover-tooltip .tooltip-tier {
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.pvpve-hover-tooltip .tooltip-tier.tier-boss { color: #ffc828; }
+.pvpve-hover-tooltip .tooltip-tier.tier-elite { color: #dc2828; }
+.pvpve-hover-tooltip .tooltip-tier.tier-hard { color: #dc8c1e; }
+.pvpve-hover-tooltip .tooltip-tier.tier-normal { color: #8a8a8a; }
+
+.pvpve-hover-tooltip .tooltip-team { font-weight: 600; }
+.pvpve-hover-tooltip .tooltip-team.team-a { color: #5599ff; }
+.pvpve-hover-tooltip .tooltip-team.team-b { color: #ff5555; }
+.pvpve-hover-tooltip .tooltip-team.team-c { color: #55dd55; }
+.pvpve-hover-tooltip .tooltip-team.team-d { color: #ffdd44; }
+
+.pvpve-hover-tooltip .tooltip-enemies {
+  color: #cc4444;
+  margin-right: 8px;
+}
+
+.pvpve-hover-tooltip .tooltip-chests {
+  color: #e9c04c;
+}
+
+.pvpve-hover-tooltip .tooltip-source {
+  font-size: 10px;
+  color: var(--text-dim);
 }
 
 /* ─── Palette Editor (Right Sidebar) ────────────────── */

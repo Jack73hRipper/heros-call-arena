@@ -192,24 +192,40 @@ async def get_chat(match_id: str):
 
 @router.get("/classes")
 async def get_classes():
-    """Get all available character classes and their stats."""
+    """Get all available character classes, their stats, and skill summaries."""
+    from app.core.skills import get_class_skills, get_skill
+
     all_classes = get_all_classes()
-    return {
-        "classes": {
-            cid: {
-                "class_id": c.class_id,
-                "name": c.name,
-                "role": c.role,
-                "description": c.description,
-                "base_hp": c.base_hp,
-                "base_melee_damage": c.base_melee_damage,
-                "base_ranged_damage": c.base_ranged_damage,
-                "base_armor": c.base_armor,
-                "base_vision_range": c.base_vision_range,
-                "ranged_range": c.ranged_range,
-                "color": c.color,
-                "shape": c.shape,
-            }
-            for cid, c in all_classes.items()
+    classes_out = {}
+    for cid, c in all_classes.items():
+        # Build skill summaries (exclude auto-attacks)
+        skill_ids = get_class_skills(cid)
+        skill_summaries = []
+        for sid in skill_ids:
+            skill_def = get_skill(sid)
+            if not skill_def or skill_def.get("is_auto_attack"):
+                continue
+            skill_summaries.append({
+                "skill_id": sid,
+                "name": skill_def.get("name", sid),
+                "icon": skill_def.get("icon", ""),
+                "description": skill_def.get("description", ""),
+                "cooldown_turns": skill_def.get("cooldown_turns", 0),
+            })
+
+        classes_out[cid] = {
+            "class_id": c.class_id,
+            "name": c.name,
+            "role": c.role,
+            "description": c.description,
+            "base_hp": c.base_hp,
+            "base_melee_damage": c.base_melee_damage,
+            "base_ranged_damage": c.base_ranged_damage,
+            "base_armor": c.base_armor,
+            "base_vision_range": c.base_vision_range,
+            "ranged_range": c.ranged_range,
+            "color": c.color,
+            "shape": c.shape,
+            "skills": skill_summaries,
         }
-    }
+    return {"classes": classes_out}

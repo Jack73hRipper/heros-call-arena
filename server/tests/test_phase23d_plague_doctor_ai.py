@@ -245,7 +245,7 @@ class TestEnfeeble:
     def test_skips_enfeeble_enemies_already_debuffed(self):
         """Enfeeble skipped when all enemies already have the enfeeble debuff."""
         pd = _make_plague_doctor(x=5, y=5)
-        debuff = {"buff_id": "enfeeble", "type": "debuff",
+        debuff = {"buff_id": "enfeeble_damage_dealt_multiplier", "type": "debuff",
                   "stat": "damage_dealt_multiplier", "magnitude": 0.75, "turns_remaining": 2}
         enemy1 = _make_enemy(player_id="enemy1", x=8, y=5, active_buffs=[debuff.copy()])
         enemy2 = _make_enemy(player_id="enemy2", x=9, y=5, active_buffs=[debuff.copy()])

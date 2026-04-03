@@ -72,6 +72,14 @@ export class ParticleManager {
     this._propEmitters = new Map();
 
     /**
+     * Hero Torch: Persistent ember emitters that follow friendly heroes in
+     * dungeon mode, giving each hero a small carried-torch particle trail.
+     * Keyed by playerId.
+     * @type {Map<string, { emitter: Emitter, playerId: string }>}
+     */
+    this._heroTorchEmitters = new Map();
+
+    /**
      * Phase 14G: Active projectiles in flight.
      * Each projectile moves from caster → victim in pixel-space, emitting a
      * trail, then fires the impact effect on arrival.
@@ -235,6 +243,7 @@ export class ParticleManager {
       this._ccEmitters.clear();
       this._buffEmitters.clear();
       this._affixEmitters.clear();
+      this._heroTorchEmitters.clear();
 
       // 4. Rebuild persistent auras from current game state.  The next
       //    React-driven call to updateCCStatus / updateBuffStatus will
@@ -279,6 +288,9 @@ export class ParticleManager {
 
     // Phase 18E (E5): Reposition affix ambient emitters
     this._updateAffixEmitters();
+
+    // Hero Torch: Reposition hero torch emitters to follow heroes
+    this._updateHeroTorchEmitters();
 
     // Phase 23: Clean up dead zone emitters
     this._cleanupZoneEmitters();
@@ -533,6 +545,11 @@ export class ParticleManager {
     // Phase 14G: If the mapping has a projectile config, launch a traveling
     // projectile instead of firing the impact instantly.
     if (mapping.projectile && mapping.projectile.trail) {
+      // Multi-projectile mode: fire one missile per hit target (staggered)
+      if (mapping.multiProjectile) {
+        this._launchMultiProjectile(mapping, act, players, pos);
+        return;
+      }
       this._launchProjectile(mapping, act, players, pos);
       return;
     }
@@ -948,6 +965,85 @@ export class ParticleManager {
     }
   }
 
+  // ─── Hero Torch: Carried Torch Ember Emitters ───────────────────────────
+
+  /**
+   * Reposition hero torch emitters to follow their bound hero each frame.
+   * Removes emitters whose hero has died or been extracted.
+   */
+  _updateHeroTorchEmitters() {
+    if (this._heroTorchEmitters.size === 0) return;
+    const players = this._playersRef;
+
+    for (const [key, tracked] of this._heroTorchEmitters) {
+      if (tracked.emitter.isDead) {
+        this._heroTorchEmitters.delete(key);
+        continue;
+      }
+      const p = players && players[tracked.playerId];
+      if (p?.position) {
+        const px = this._tileToPx(p.position.x, p.position.y);
+        // Offset upward so embers rise from above the sprite (like a handheld torch)
+        tracked.emitter.moveTo(px.x, px.y - 8);
+      }
+    }
+  }
+
+  /**
+   * Create/remove looping hero torch emitters for friendly heroes in dungeon mode.
+   * Called from Arena.jsx whenever players change while in a dungeon.
+   *
+   * @param {Object} players — { id: { position, is_alive, unit_type, team, ... } }
+   * @param {string} myTeam — the local player's team identifier
+   * @param {Set|null} visibleTiles — FOV tile set (null = show all)
+   */
+  updateHeroTorches(players, myTeam, visibleTiles) {
+    if (this._hidden) return;
+    if (!players) return;
+
+    const activeKeys = new Set();
+
+    for (const [pid, p] of Object.entries(players)) {
+      // Only friendly heroes (human units on my team) get torches
+      if (!p.is_alive || p.is_alive === false) continue;
+      if (p.extracted) continue;
+      if (p.unit_type === 'enemy') continue;
+      if (p.team !== myTeam) continue;
+      if (!p.position) continue;
+
+      // Skip units outside FOV
+      if (visibleTiles && !visibleTiles.has(`${p.position.x},${p.position.y}`)) continue;
+
+      activeKeys.add(pid);
+
+      if (!this._heroTorchEmitters.has(pid)) {
+        const pos = this._tileToPx(p.position.x, p.position.y);
+        const emitter = this.engine.emit('hero-torch-ember', pos.x, pos.y - 8);
+        if (emitter) {
+          this._heroTorchEmitters.set(pid, { emitter, playerId: pid });
+        }
+      }
+    }
+
+    // Stop emitters for heroes no longer present / alive / visible
+    for (const [key, tracked] of this._heroTorchEmitters) {
+      if (!activeKeys.has(key)) {
+        tracked.emitter.loop = false;
+        this._heroTorchEmitters.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Remove all hero torch emitters (call when leaving dungeon).
+   */
+  clearHeroTorches() {
+    for (const [, tracked] of this._heroTorchEmitters) {
+      tracked.emitter.loop = false;
+    }
+    this._heroTorchEmitters.clear();
+  }
+
   // ─── Prop Lighting: Ambient Prop Particle Emitters ──────────────────────
 
   /** Particle preset lookup for light-emitting props. */
@@ -1067,6 +1163,76 @@ export class ParticleManager {
   }
 
   /**
+   * Launch one projectile per hit target (staggered), each traveling from caster
+   * to that target's position. Used for multi-missile skills like Arcane Barrage.
+   *
+   * Falls back to a single projectile aimed at the destination if no hit targets
+   * are available (whiff / no enemies in AoE).
+   *
+   * @param {object} mapping — effect mapping with multiProjectile: true
+   * @param {object} act — action result from server (buff_applied.hit_ids)
+   * @param {object} players — player map
+   * @param {{ x: number, y: number }} destPos — resolved destination (AoE center)
+   */
+  _launchMultiProjectile(mapping, act, players, destPos) {
+    const casterPos = this._resolvePosition('caster', act, players);
+    if (!casterPos) {
+      console.warn('[ParticleManager] MultiProjectile: no caster position, firing impact immediately');
+      this._fireImpact(mapping, act, players, destPos);
+      return;
+    }
+
+    const hitIds = act.buff_applied?.hit_ids;
+    const projCfg = mapping.projectile;
+    const stagger = projCfg.stagger || 120;
+
+    if (!hitIds || hitIds.length === 0) {
+      // No targets hit — fire a single missile to the AoE center (fizzle)
+      const projectile = new ParticleProjectile(this.engine, {
+        trailPreset: projCfg.trail,
+        headPreset: projCfg.head || null,
+        fromX: casterPos.x,
+        fromY: casterPos.y,
+        toX: destPos.x,
+        toY: destPos.y,
+        speed: projCfg.speed || 400,
+        arc: projCfg.arc || 0,
+        onArrive: () => {
+          this.engine.emit(mapping.effect, destPos.x, destPos.y);
+        },
+      });
+      this._projectiles.push(projectile);
+      console.log(`[ParticleManager] MultiProjectile: no targets — fizzle missile to AoE center`);
+      return;
+    }
+
+    // Fire one missile per hit target, staggered
+    hitIds.forEach((victimId, index) => {
+      setTimeout(() => {
+        const victim = players[victimId];
+        if (!victim?.position) return;
+        const targetPos = this._tileToPx(victim.position.x, victim.position.y);
+
+        const projectile = new ParticleProjectile(this.engine, {
+          trailPreset: projCfg.trail,
+          headPreset: projCfg.head || null,
+          fromX: casterPos.x,
+          fromY: casterPos.y,
+          toX: targetPos.x,
+          toY: targetPos.y,
+          speed: projCfg.speed || 400,
+          arc: projCfg.arc || 0,
+          onArrive: () => {
+            this.engine.emit(mapping.effect, targetPos.x, targetPos.y);
+          },
+        });
+        this._projectiles.push(projectile);
+      }, index * stagger);
+    });
+    console.log(`[ParticleManager] MultiProjectile: ${hitIds.length} missiles staggered at ${stagger}ms`);
+  }
+
+  /**
    * Fire the impact portion of an effect mapping at a resolved position.
    * This is what _fireEffect does today, but extracted so projectiles can
    * call it on arrival without re-resolving positions.
@@ -1094,6 +1260,17 @@ export class ParticleManager {
       const followId = this._resolveFollowId(mapping.target, act);
       if (followId) {
         this._trackedEmitters.push({ emitter, playerId: followId });
+      }
+    }
+
+    // Fire per-victim hit effects (AoE visual feedback on each target)
+    if (mapping.hitEffect && act.buff_applied?.hit_ids) {
+      for (const victimId of act.buff_applied.hit_ids) {
+        const victim = players[victimId];
+        if (victim?.position) {
+          const victimPos = this._tileToPx(victim.position.x, victim.position.y);
+          this.engine.emit(mapping.hitEffect, victimPos.x, victimPos.y);
+        }
       }
     }
 
@@ -1140,6 +1317,7 @@ export class ParticleManager {
     this._affixEmitters.clear();
     this._zoneEmitters.clear();
     this._propEmitters.clear();
+    this._heroTorchEmitters.clear();
     this._playersRef = null;
     this._lastVisibleTiles = null;
   }

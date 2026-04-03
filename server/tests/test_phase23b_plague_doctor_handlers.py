@@ -260,28 +260,28 @@ class TestMiasmaAoeDamageSlowTargeted:
     def test_miasma_magic_armor_50_percent(self, loaded_skills):
         """Miasma uses 50% armor effectiveness (magic damage)."""
         pd = _make_player()
-        # Enemy with 4 armor → magic armor = 4 * 0.5 = 2 → damage = max(1, 10-2) = 8
+        # Enemy with 4 armor → magic armor = 4 * 0.5 = 2 → damage = max(1, 15-2) = 13
         enemy = _make_enemy(player_id="e1", x=7, y=5, hp=50, armor=4)
         players = _make_players(pd, enemy)
         skill = get_skill("miasma")
 
         resolve_aoe_damage_slow_targeted(pd, 7, 5, skill, players, set())
 
-        assert enemy.hp == 50 - 8
+        assert enemy.hp == 50 - 13
 
     def test_miasma_respects_skill_damage_pct_bonus(self, loaded_skills):
         """Miasma applies skill_damage_pct and magic_damage_pct bonuses."""
         pd = _make_player()
         pd.skill_damage_pct = 0.20  # +20%
         pd.magic_damage_pct = 0.10  # +10%
-        # Base 10 * (1.0 + 0.20 + 0.10) = 10 * 1.3 = 13
+        # Base 15 * (1.0 + 0.20 + 0.10) = 15 * 1.3 = 19
         enemy = _make_enemy(player_id="e1", x=7, y=5, hp=50, armor=0)
         players = _make_players(pd, enemy)
         skill = get_skill("miasma")
 
         resolve_aoe_damage_slow_targeted(pd, 7, 5, skill, players, set())
 
-        assert enemy.hp == 50 - 13
+        assert enemy.hp == 50 - 19
 
     def test_miasma_fails_no_target_specified(self, loaded_skills):
         """Miasma fails when target_x/target_y is None."""
@@ -314,7 +314,7 @@ class TestPlagueFlaskDot:
         assert result.success is True
         dot_buffs = [b for b in enemy.active_buffs if b.get("type") == "dot"]
         assert len(dot_buffs) == 1
-        assert dot_buffs[0]["damage_per_tick"] == 8
+        assert dot_buffs[0]["damage_per_tick"] == 10
         assert dot_buffs[0]["turns_remaining"] == 4
 
     def test_plague_flask_refreshes_duration_on_recast(self, loaded_skills):
@@ -381,7 +381,7 @@ class TestPlagueFlaskDot:
 
         dot = [b for b in enemy.active_buffs if b.get("type") == "dot"][0]
         total_damage = dot["damage_per_tick"] * dot["turns_remaining"]
-        assert total_damage == 32
+        assert total_damage == 40
 
 
 # ============================================================
@@ -427,8 +427,10 @@ class TestEnfeebleAoeDebuff:
         """Recasting Enfeeble refreshes duration instead of stacking."""
         pd = _make_player(x=5, y=5)
         enemy = _make_enemy(player_id="e1", x=7, y=5, active_buffs=[
-            {"buff_id": "enfeeble", "type": "debuff", "stat": "damage_dealt_multiplier",
-             "magnitude": 0.75, "turns_remaining": 1}
+            {"buff_id": "enfeeble_damage_dealt_multiplier", "type": "debuff", "stat": "damage_dealt_multiplier",
+             "magnitude": 0.75, "turns_remaining": 1},
+            {"buff_id": "enfeeble_armor", "type": "debuff", "stat": "armor",
+             "magnitude": -2, "turns_remaining": 1},
         ])
         players = _make_players(pd, enemy)
         skill = get_skill("enfeeble")
@@ -473,7 +475,7 @@ class TestEnfeebleAoeDebuff:
 
         resolve_aoe_debuff(pd, 7, 5, skill, players, set())
 
-        assert pd.cooldowns.get("enfeeble", 0) == 5
+        assert pd.cooldowns.get("enfeeble", 0) == 4
 
     def test_enfeeble_no_enemies_in_radius(self, loaded_skills):
         """Enfeeble succeeds but reports no enemies when radius is empty."""

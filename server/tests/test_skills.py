@@ -87,12 +87,12 @@ class TestSkillsConfigLoading:
 
     def test_config_has_five_skills(self, loaded_config: dict):
         skills = loaded_config["skills"]
-        assert len(skills) == 52
+        assert len(skills) == 54
 
     def test_all_skill_ids_present(self, loaded_config: dict):
         expected = {
             "auto_attack_melee", "auto_attack_ranged",
-            "heal", "double_strike", "power_shot", "war_cry", "shadow_step",
+            "heal", "double_strike", "hex_strike", "power_shot", "war_cry", "shadow_step",
             "wither", "ward", "shield_of_faith", "exorcism", "prayer",
             "rebuke", "seal_of_judgment", "venom_gaze", "soul_reap",
             "taunt", "shield_bash", "holy_ground", "bulwark",
@@ -101,15 +101,16 @@ class TestSkillsConfigLoading:
             # Phase 18I — enemy identity skills
             "enrage", "bone_shield", "frenzy_aura", "dark_pact", "profane_ward",
             # Phase 21 — Bard skills
-            "ballad_of_might", "dirge_of_weakness", "verse_of_haste", "cacophony",
+            "ballad_of_might", "dirge_of_weakness", "war_hymn", "cacophony",
             # Phase 22 — Blood Knight skills
             "blood_strike", "crimson_veil", "sanguine_burst", "blood_frenzy",
             # Phase 23 — Plague Doctor skills
             "miasma", "plague_flask", "enfeeble", "inoculate",
-            # Phase 25 — Revenant skills
-            "grave_thorns", "grave_chains", "undying_will", "soul_rend",
+            # Phase 25 — Revenant skills (reworked Phase 25R)
+            "grasp_of_the_grave", "deaths_embrace", "soul_rend", "undying_fury",
             # Phase 26 — Shaman skills
             "healing_totem", "searing_totem", "soul_anchor", "earthgrasp",
+            "spirit_link",
         }
         assert set(loaded_config["skills"].keys()) == expected
 
@@ -139,11 +140,20 @@ class TestSkillsConfigLoading:
         assert ds["targeting"] == "enemy_adjacent"
         assert ds["range"] == 1
         assert ds["cooldown_turns"] == 3
-        assert "hexblade" in ds["allowed_classes"]
         assert "werewolf" in ds["allowed_classes"]
+        assert "hexblade" not in ds["allowed_classes"]
         assert ds["effects"][0]["type"] == "melee_damage"
         assert ds["effects"][0]["hits"] == 2
         assert ds["effects"][0]["damage_multiplier"] == 0.7
+
+    def test_hex_strike_skill_definition(self, loaded_config: dict):
+        hs = loaded_config["skills"]["hex_strike"]
+        assert hs["targeting"] == "enemy_adjacent"
+        assert hs["range"] == 1
+        assert hs["cooldown_turns"] == 3
+        assert hs["allowed_classes"] == ["hexblade"]
+        assert hs["effects"][0]["type"] == "hex_strike"
+        assert hs["effects"][0]["damage_multiplier"] == 1.4
 
     def test_power_shot_skill_definition(self, loaded_config: dict):
         ps = loaded_config["skills"]["power_shot"]
@@ -218,9 +228,10 @@ class TestSkillLookups:
 
     def test_get_all_skills_returns_all(self, loaded_config: dict):
         all_skills = get_all_skills()
-        assert len(all_skills) == 52
+        assert len(all_skills) == 54
         assert "heal" in all_skills
         assert "double_strike" in all_skills
+        assert "hex_strike" in all_skills
         assert "auto_attack_melee" in all_skills
         assert "auto_attack_ranged" in all_skills
         assert "fireball" in all_skills
@@ -246,7 +257,7 @@ class TestSkillLookups:
 
     def test_get_class_skills_hexblade(self, loaded_config: dict):
         skills = get_class_skills("hexblade")
-        assert skills == ["auto_attack_melee", "double_strike", "shadow_step", "wither", "ward"]
+        assert skills == ["auto_attack_melee", "hex_strike", "shadow_step", "wither", "ward"]
 
     def test_get_class_skills_unknown_class(self, loaded_config: dict):
         skills = get_class_skills("warlock")
@@ -579,11 +590,17 @@ class TestClassSkillMapping:
                 assert sid in valid_skills, f"class_skills['{class_id}'] references unknown skill '{sid}'"
 
     def test_all_skills_are_referenced_by_at_least_one_class(self, loaded_config: dict):
-        """Every defined skill should be used by at least one class."""
+        """Every defined skill with allowed_classes should be used by at least one class."""
+        # Legacy skills kept for backward compatibility but removed from active class loadouts
+        legacy_skills = {"soul_anchor"}
         all_referenced = set()
         for skill_list in loaded_config["class_skills"].values():
             all_referenced.update(skill_list)
-        for skill_id in loaded_config["skills"]:
+        for skill_id, skill_def in loaded_config["skills"].items():
+            if skill_id in legacy_skills:
+                continue
+            if not skill_def.get("allowed_classes"):
+                continue  # Skills with no allowed classes are exempt
             assert skill_id in all_referenced, f"Skill '{skill_id}' is not assigned to any class"
 
     def test_class_skills_within_max_slots(self, loaded_config: dict):
@@ -595,8 +612,15 @@ class TestClassSkillMapping:
             )
 
     def test_allowed_classes_consistent_with_class_skills(self, loaded_config: dict):
-        """If a skill lists a class in allowed_classes, that class should have the skill in class_skills."""
+        """If a skill lists a class in allowed_classes, that class should have the skill in class_skills.
+
+        Legacy skills that have been replaced but kept for backward compatibility are exempt.
+        """
+        # Skills kept for backward compatibility but removed from active class loadouts
+        legacy_skills = {"soul_anchor"}
         for skill_id, skill_def in loaded_config["skills"].items():
+            if skill_id in legacy_skills:
+                continue
             for cls in skill_def["allowed_classes"]:
                 class_skills = loaded_config["class_skills"].get(cls, [])
                 assert skill_id in class_skills, (

@@ -22,7 +22,7 @@ import {
   TEAM_COLORS,
 } from './renderConstants.js';
 import { isSpriteSheetLoaded, getSpriteKey, drawSprite } from './SpriteLoader.js';
-import { getSkillIconImage, isSkillIconSheetLoaded } from '../components/BottomBar/SkillIconMap.js';
+import { getSkillIconImage, isSkillIconSheetLoaded } from '../components/ActionBar/SkillIconMap.js';
 
 // ---------- Buff/Debuff Icon Sprites ----------
 // Sprite regions from the 64x64 skill-icons.png sheet (same sheet as SkillIconMap).
@@ -138,6 +138,25 @@ const COMPACT_BAR_HEIGHT = 5;         // slightly smaller bar
 const _plateExpandCache = new Map();
 const PLATE_EXPAND_DURATION = 150; // ms for full expand or collapse
 
+/**
+ * P-E: Purge stale entries from unit animation caches.
+ * Call after a match ends, floor change, or periodically during gameplay.
+ * @param {Set<string>|null} aliveUnitIds — Set of currently alive unit IDs. If null, clears all.
+ */
+export function cleanupUnitCaches(aliveUnitIds = null) {
+  if (!aliveUnitIds) {
+    _plateExpandCache.clear();
+    _hpAnimCache.clear();
+    return;
+  }
+  for (const id of _plateExpandCache.keys()) {
+    if (!aliveUnitIds.has(id)) _plateExpandCache.delete(id);
+  }
+  for (const id of _hpAnimCache.keys()) {
+    if (!aliveUnitIds.has(id)) _hpAnimCache.delete(id);
+  }
+}
+
 function _getExpandProgress(unitId, targetMode) {
   const target = targetMode === 'full' ? 1 : 0;
   const now = performance.now();
@@ -187,6 +206,30 @@ function _getCompactPlateRect(cx, ey, isBoss) {
 // Smooth HP bar lerp + flash on damage/heal per unit ID
 const _hpAnimCache = new Map();
 
+const _measureTextCache = new Map();
+
+/** Cached measureText: returns width for a given font + text combo. */
+function _cachedMeasureText(ctx, font, text) {
+  const key = font + '|' + text;
+  let w = _measureTextCache.get(key);
+  if (w === undefined) {
+    ctx.font = font;
+    w = ctx.measureText(text).width;
+    _measureTextCache.set(key, w);
+    // Cap cache size to prevent unbounded growth
+    if (_measureTextCache.size > 500) {
+      // Delete oldest quarter (Map iterates in insertion order)
+      const toDelete = 125;
+      let count = 0;
+      for (const k of _measureTextCache.keys()) {
+        if (count++ >= toDelete) break;
+        _measureTextCache.delete(k);
+      }
+    }
+  }
+  return w;
+}
+
 function _getAnimatedHp(unitId, currentHp, maxHp) {
   if (!unitId) return { displayHp: currentHp, flashColor: null, flashAlpha: 0 };
 
@@ -196,7 +239,7 @@ function _getAnimatedHp(unitId, currentHp, maxHp) {
   }
 
   const entry = _hpAnimCache.get(unitId);
-  const now = Date.now();
+  const now = performance.now();
 
   if (currentHp !== entry.targetHp) {
     entry.flashColor = currentHp < entry.targetHp ? 'rgba(255,60,60,0.6)' : 'rgba(100,255,100,0.5)';
@@ -229,12 +272,11 @@ function _getAnimatedHp(unitId, currentHp, maxHp) {
  */
 export function drawUnitShadow(ctx, x, y, isBoss = false) {
   const cx = x * TILE_SIZE + TILE_SIZE / 2;
-  // Shadow sits at the bottom portion of the tile (ground level)
   const shadowY = y * TILE_SIZE + TILE_SIZE * 0.72;
   const radiusX = isBoss ? TILE_SIZE * 0.34 : TILE_SIZE * 0.28;
+  // Shadow sits at the bottom portion of the tile (ground level)
   const radiusY = radiusX * 0.45; // flattened for ground-plane perspective
 
-  ctx.save();
   const gradient = ctx.createRadialGradient(cx, shadowY, 0, cx, shadowY, radiusX);
   gradient.addColorStop(0, `rgba(0, 0, 0, ${SHADOW_OPACITY})`);
   gradient.addColorStop(0.6, `rgba(0, 0, 0, ${SHADOW_OPACITY * 0.5})`);
@@ -243,7 +285,6 @@ export function drawUnitShadow(ctx, x, y, isBoss = false) {
   ctx.beginPath();
   ctx.ellipse(cx, shadowY, radiusX, radiusY, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.restore();
 }
 
 /**
@@ -634,12 +675,13 @@ export function drawPlayer(ctx, x, y, color = '#4af', label = '', hp = 100, maxH
     const fontWeight = monsterRarity === 'super_unique' ? '900' : 'bold';
     const maxTextWidth = plateWidth - 8;
 
-    ctx.font = `${fontWeight} ${fontSize}px Cinzel, Georgia, serif`;
+    const nameFont = `${fontWeight} ${fontSize}px Cinzel, Georgia, serif`;
+    ctx.font = nameFont;
 
-    // Truncate with ellipsis if name exceeds plate width
+    // P-E: Truncate with ellipsis using cached text measurement
     let renderLabel = displayLabel;
-    if (ctx.measureText(renderLabel).width > maxTextWidth) {
-      while (renderLabel.length > 1 && ctx.measureText(renderLabel + '\u2026').width > maxTextWidth) {
+    if (_cachedMeasureText(ctx, nameFont, renderLabel) > maxTextWidth) {
+      while (renderLabel.length > 1 && _cachedMeasureText(ctx, nameFont, renderLabel + '\u2026') > maxTextWidth) {
         renderLabel = renderLabel.slice(0, -1);
       }
       renderLabel += '\u2026';

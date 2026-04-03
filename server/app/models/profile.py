@@ -3,6 +3,8 @@ Pydantic models for persistent player profiles and heroes.
 
 Phase 4E-1: Data models for the Town system — hero hiring, roster management,
 and JSON-based persistence. No match integration (that's 4E-2).
+Phase 4E-4: Hiring Hall overhaul — removed stat variation, heroes now come with
+random starting gear that increases hire cost. Class identity shown on cards.
 """
 
 from __future__ import annotations
@@ -20,9 +22,10 @@ from app.models.items import Equipment, Inventory
 # ---------- Constants ----------
 
 STARTING_GOLD = 500
-STAT_VARIATION_PERCENT = 10  # ±10% stat variation on hire
-BASE_HIRE_COST = 30          # Minimum hiring cost
-HIRE_COST_PER_STAT_POINT = 0.15  # Gold per total stat point above minimum
+BASE_HIRE_COST = 30          # Base hiring cost (naked hero)
+GEAR_CHANCE_WEAPON = 0.55    # 55% chance hero comes with a weapon
+GEAR_CHANCE_ARMOR = 0.40     # 40% chance hero comes with armor
+GEAR_CHANCE_ACCESSORY = 0.20 # 20% chance hero comes with an accessory
 TAVERN_POOL_SIZE = None      # Dynamically set to class count (see get_tavern_pool_size())
 HERO_ROSTER_MAX = 20         # Maximum heroes a player can own at once
 BANK_MAX_CAPACITY = 20       # Maximum items in account-wide bank storage
@@ -98,16 +101,13 @@ class PlayerProfile(BaseModel):
 
 # ---------- Hero Generation ----------
 
-def _vary_stat(base: int, variation_pct: int = STAT_VARIATION_PERCENT) -> int:
-    """Apply random ±variation_pct% to a base stat. Minimum 1."""
-    if base <= 0:
-        return 0
-    delta = max(1, int(base * variation_pct / 100))
-    return max(1, base + random.randint(-delta, delta))
-
-
 def generate_hero(class_id: str, name: str, class_def: dict) -> Hero:
-    """Generate a hero with stat variation from class base stats.
+    """Generate a hero with flat base stats and random starting gear.
+
+    Heroes use exact class base stats (no variation). The tavern hire cost
+    is BASE_HIRE_COST + the sell value of any gear they come with.
+    Gear is rolled from the item generator using the class's allowed
+    weapon categories and preferred armor type.
 
     Args:
         class_id: The class identifier (e.g. "crusader")
@@ -115,34 +115,120 @@ def generate_hero(class_id: str, name: str, class_def: dict) -> Hero:
         class_def: Raw class definition dict from classes_config.json
 
     Returns:
-        A Hero instance with randomized stats and calculated hire cost.
+        A Hero instance with base stats and optional random starting gear.
     """
-    # Generate varied stats
-    hp = _vary_stat(class_def.get("base_hp", 100))
+    hp = class_def.get("base_hp", 100)
     stats = HeroStats(
         hp=hp,
         max_hp=hp,
-        attack_damage=_vary_stat(class_def.get("base_melee_damage", 15)),
-        ranged_damage=_vary_stat(class_def.get("base_ranged_damage", 10)),
-        armor=_vary_stat(class_def.get("base_armor", 2)),
-        vision_range=_vary_stat(class_def.get("base_vision_range", 7)),
-        ranged_range=class_def.get("ranged_range", 5),  # No variation on range
+        attack_damage=class_def.get("base_melee_damage", 15),
+        ranged_damage=class_def.get("base_ranged_damage", 10),
+        armor=class_def.get("base_armor", 2),
+        vision_range=class_def.get("base_vision_range", 7),
+        ranged_range=class_def.get("ranged_range", 5),
     )
 
-    # Calculate hire cost based on total stat power
-    total_stat_points = (
-        stats.max_hp + stats.attack_damage * 3 + stats.ranged_damage * 3
-        + stats.armor * 5 + stats.vision_range * 2
-    )
-    hire_cost = max(BASE_HIRE_COST, int(BASE_HIRE_COST + total_stat_points * HIRE_COST_PER_STAT_POINT))
+    # Roll random starting gear
+    equipment, gear_value = _roll_starting_gear(class_id, class_def)
+    hire_cost = BASE_HIRE_COST + gear_value
 
     return Hero(
         name=name,
         class_id=class_id,
         sprite_variant=random.randint(1, HERO_SPRITE_VARIANTS.get(class_id, HERO_SPRITE_VARIANTS_DEFAULT)),
         stats=stats,
+        equipment=equipment,
         hire_cost=hire_cost,
     )
+
+
+def _roll_starting_gear(class_id: str, class_def: dict) -> tuple[dict, int]:
+    """Roll random starting equipment for a tavern hero.
+
+    Each slot has an independent chance to have gear. Gear rarity is weighted
+    toward common/magic with a small chance of rare.
+
+    Args:
+        class_id: Class identifier for weapon/armor filtering.
+        class_def: Class definition dict with allowed_weapon_categories and preferred_armor.
+
+    Returns:
+        (equipment_dict, total_gear_sell_value) — serialized equipment and gold value.
+    """
+    from app.core.item_generator import generate_item, roll_rarity
+    from app.core.loot import load_items_config
+
+    items_config_raw = load_items_config()
+    equipment: dict = {}
+    total_value = 0
+    rng = random.Random()
+    allowed_weapons = class_def.get("allowed_weapon_categories", [])
+    preferred_armor = class_def.get("preferred_armor", "cloth")
+
+    # --- Weapon ---
+    if rng.random() < GEAR_CHANCE_WEAPON and allowed_weapons:
+        candidates = [
+            item_id for item_id, data in items_config_raw.items()
+            if data.get("equip_slot") == "weapon"
+            and data.get("item_type") != "consumable"
+            and data.get("weapon_category") in allowed_weapons
+        ]
+        if candidates:
+            base_id = rng.choice(candidates)
+            rarity = _tavern_rarity(rng)
+            item = generate_item(base_type_id=base_id, rarity=rarity, item_level=1, seed=rng.randint(0, 2**31))
+            if item:
+                equipment["weapon"] = item.model_dump(mode="json")
+                total_value += item.sell_value
+
+    # --- Armor ---
+    if rng.random() < GEAR_CHANCE_ARMOR:
+        # Prefer the class's preferred armor type, but allow any
+        armor_candidates = [
+            item_id for item_id, data in items_config_raw.items()
+            if data.get("equip_slot") == "armor"
+            and data.get("item_type") != "consumable"
+            and data.get("armor_category") == preferred_armor
+        ]
+        if not armor_candidates:
+            armor_candidates = [
+                item_id for item_id, data in items_config_raw.items()
+                if data.get("equip_slot") == "armor"
+                and data.get("item_type") != "consumable"
+            ]
+        if armor_candidates:
+            base_id = rng.choice(armor_candidates)
+            rarity = _tavern_rarity(rng)
+            item = generate_item(base_type_id=base_id, rarity=rarity, item_level=1, seed=rng.randint(0, 2**31))
+            if item:
+                equipment["armor"] = item.model_dump(mode="json")
+                total_value += item.sell_value
+
+    # --- Accessory ---
+    if rng.random() < GEAR_CHANCE_ACCESSORY:
+        acc_candidates = [
+            item_id for item_id, data in items_config_raw.items()
+            if data.get("equip_slot") == "accessory"
+            and data.get("item_type") != "consumable"
+        ]
+        if acc_candidates:
+            base_id = rng.choice(acc_candidates)
+            rarity = _tavern_rarity(rng)
+            item = generate_item(base_type_id=base_id, rarity=rarity, item_level=1, seed=rng.randint(0, 2**31))
+            if item:
+                equipment["accessory"] = item.model_dump(mode="json")
+                total_value += item.sell_value
+
+    return equipment, total_value
+
+
+def _tavern_rarity(rng: random.Random) -> str:
+    """Roll a rarity for tavern starting gear — weighted toward common/magic."""
+    return rng.choices(
+        ["common", "magic", "rare"],
+        weights=[60, 30, 10],
+        k=1,
+    )[0]
 
 
 def get_tavern_pool_size(classes_config: dict) -> int:

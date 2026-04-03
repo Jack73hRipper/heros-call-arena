@@ -413,8 +413,7 @@ def export_to_game_map(
                                         boss_entry["team"] = "pve"
                                     enemy_spawns.append(boss_entry)
                                 has_content = True
-                                if detected_purpose == "empty":
-                                    detected_purpose = "boss"
+                                detected_purpose = "boss"
                             elif tile == "S":
                                 has_content = True
                                 if detected_purpose == "empty":
@@ -452,6 +451,35 @@ def export_to_game_map(
                     },
                 }
 
+                # Compute tight floor bounds from actual non-wall tiles.
+                # Props use these instead of the full module bounds to
+                # avoid placing decorations on wall tiles in irregular rooms.
+                fb_x_min = start_c + MODULE_SIZE
+                fb_y_min = start_r + MODULE_SIZE
+                fb_x_max = start_c - 1
+                fb_y_max = start_r - 1
+                for _fb_r in range(MODULE_SIZE):
+                    for _fb_c in range(MODULE_SIZE):
+                        _fb_ry = start_r + _fb_r
+                        _fb_cx = start_c + _fb_c
+                        if _fb_ry < height and _fb_cx < width:
+                            if tiles[_fb_ry][_fb_cx] != "W":
+                                if _fb_cx < fb_x_min:
+                                    fb_x_min = _fb_cx
+                                if _fb_ry < fb_y_min:
+                                    fb_y_min = _fb_ry
+                                if _fb_cx > fb_x_max:
+                                    fb_x_max = _fb_cx
+                                if _fb_ry > fb_y_max:
+                                    fb_y_max = _fb_ry
+                if fb_x_max >= fb_x_min and fb_y_max >= fb_y_min:
+                    room["floor_bounds"] = {
+                        "x_min": fb_x_min,
+                        "y_min": fb_y_min,
+                        "x_max": fb_x_max,
+                        "y_max": fb_y_max,
+                    }
+
                 if enemy_spawns:
                     room["enemy_spawns"] = enemy_spawns
 
@@ -483,7 +511,7 @@ def export_to_game_map(
     boss_room_meta = None
     if pvpve_mode:
         for room in rooms:
-            if room.get("purpose") == "boss":
+            if room.get("purpose") == "boss" or room.get("archetype") == "boss":
                 boss_chests = [c for c in chests
                                if (room["bounds"]["x_min"] <= c["x"] <= room["bounds"]["x_max"]
                                    and room["bounds"]["y_min"] <= c["y"] <= room["bounds"]["y_max"])]

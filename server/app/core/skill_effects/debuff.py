@@ -75,6 +75,7 @@ def resolve_dot(
         )
 
     # Check for existing DoT of same type — refresh duration instead of failing
+    lifesteal_pct = effect.get("lifesteal_pct", 0.0)
     refreshed = False
     for buff in target.active_buffs:
         if buff.get("buff_id") == skill_id and buff.get("type") == "dot":
@@ -82,6 +83,7 @@ def resolve_dot(
             buff["damage_per_tick"] = damage_per_tick
             buff["source_id"] = player.player_id
             buff["magnitude"] = damage_per_tick
+            buff["lifesteal_pct"] = lifesteal_pct
             refreshed = True
             break
 
@@ -95,6 +97,7 @@ def resolve_dot(
             "turns_remaining": duration,
             "stat": None,
             "magnitude": damage_per_tick,
+            "lifesteal_pct": lifesteal_pct,
         }
         target.active_buffs.append(dot_entry)
 
@@ -193,11 +196,15 @@ def resolve_aoe_debuff(
     from app.core.combat import is_in_range
 
     skill_id = skill_def["skill_id"]
-    effect = skill_def["effects"][0]
-    radius = effect.get("radius", 2)
-    stat = effect["stat"]
-    magnitude = effect["magnitude"]
-    duration = effect["duration_turns"]
+    # Support multiple effects per skill (e.g., Enfeeble applies both
+    # damage_dealt_multiplier and armor debuffs).  Collect all aoe_debuff
+    # effects; fall back to single-effect path for backwards compatibility.
+    all_effects = [e for e in skill_def["effects"] if e.get("type") == "aoe_debuff"]
+    if not all_effects:
+        all_effects = [skill_def["effects"][0]]
+    # Use first effect for shared values (radius, etc.)
+    primary = all_effects[0]
+    radius = primary.get("radius", 2)
     skill_range = skill_def.get("range", 4)
     requires_los = skill_def.get("requires_line_of_sight", True)
 
@@ -235,17 +242,25 @@ def resolve_aoe_debuff(
             continue
         dist = max(abs(p.position.x - target_x), abs(p.position.y - target_y))
         if dist <= radius:
-            # Remove existing debuff from same skill (refresh, don't stack)
-            p.active_buffs = [b for b in p.active_buffs if b.get("buff_id") != skill_id]
+            # Apply each debuff effect with a unique buff_id per stat
+            for eff in all_effects:
+                stat = eff["stat"]
+                magnitude = eff["magnitude"]
+                duration = eff["duration_turns"]
+                buff_id = f"{skill_id}_{stat}" if len(all_effects) > 1 else skill_id
 
-            debuff_entry = {
-                "buff_id": skill_id,
-                "type": "debuff",
-                "stat": stat,
-                "magnitude": magnitude,
-                "turns_remaining": duration,
-            }
-            p.active_buffs.append(debuff_entry)
+                # Remove existing debuff from same source+stat (refresh, don't stack)
+                p.active_buffs = [b for b in p.active_buffs if b.get("buff_id") != buff_id]
+
+                debuff_entry = {
+                    "buff_id": buff_id,
+                    "type": "debuff",
+                    "stat": stat,
+                    "magnitude": magnitude,
+                    "turns_remaining": duration,
+                }
+                p.active_buffs.append(debuff_entry)
+
             debuffed_count += 1
             debuffed_names.append(p.username)
 
@@ -253,13 +268,30 @@ def resolve_aoe_debuff(
 
     if debuffed_count > 0:
         debuff_str = ", ".join(debuffed_names)
-        pct = int((magnitude - 1) * 100)
+        # Build description from all effects
+        effect_parts = []
+        for eff in all_effects:
+            stat = eff["stat"]
+            mag = eff["magnitude"]
+            dur = eff["duration_turns"]
+            if stat == "damage_taken_multiplier":
+                pct = int((mag - 1) * 100)
+                effect_parts.append(f"+{pct}% damage taken")
+            elif stat == "damage_dealt_multiplier":
+                pct = int((1 - mag) * 100)
+                effect_parts.append(f"-{pct}% damage dealt")
+            elif stat == "armor":
+                effect_parts.append(f"{int(mag)} armor")
+            else:
+                effect_parts.append(f"{stat}={mag}")
+        effects_desc = ", ".join(effect_parts)
+        duration = primary["duration_turns"]
         return ActionResult(
             player_id=player.player_id, username=player.username,
             action_type=ActionType.SKILL, skill_id=skill_id, success=True,
-            message=f"{player.username} used {skill_def['name']} — debuffed {debuffed_count} enemies (+{pct}% damage taken, {duration} turns): {debuff_str}",
+            message=f"{player.username} used {skill_def['name']} — debuffed {debuffed_count} enemies ({effects_desc}, {duration} turns): {debuff_str}",
             to_x=target_x, to_y=target_y,
-            buff_applied={"type": "aoe_debuff", "stat": stat, "magnitude": magnitude, "duration": duration, "debuffed_count": debuffed_count},
+            buff_applied={"type": "aoe_debuff", "stat": primary["stat"], "magnitude": primary["magnitude"], "duration": duration, "debuffed_count": debuffed_count},
         )
     else:
         return ActionResult(
@@ -543,3 +575,103 @@ def resolve_aoe_root(
             to_x=target_x, to_y=target_y,
             buff_applied={"type": "aoe_root", "rooted_count": 0, "duration": root_duration},
         )
+
+
+def resolve_ranged_root(
+    player: PlayerState,
+    target_x: int | None,
+    target_y: int | None,
+    skill_def: dict,
+    players: dict[str, PlayerState],
+    obstacles: set[tuple[int, int]],
+    target_id: str | None = None,
+) -> ActionResult:
+    """Resolve a single-target ranged root (Grasp of the Grave).
+
+    Roots the target enemy in place (cannot move, can still attack/cast).
+    HP-conditional: if caster is below the empowered HP threshold, root
+    duration is extended.
+
+    Phase 25R-B: Revenant rework — Grasp of the Grave.
+    """
+    skill_id = skill_def["skill_id"]
+    effect = skill_def["effects"][0]
+    root_duration = effect.get("root_duration", 1)
+    empowered_threshold = effect.get("empowered_hp_threshold", 0.50)
+    empowered_duration = effect.get("empowered_root_duration", 2)
+    skill_range = skill_def.get("range", 4)
+    requires_los = skill_def.get("requires_line_of_sight", True)
+
+    # HP-conditional empowerment check
+    hp_ratio = player.hp / player.max_hp if player.max_hp > 0 else 1.0
+    is_empowered = hp_ratio < empowered_threshold
+    actual_duration = empowered_duration if is_empowered else root_duration
+
+    # Entity-based target resolution (preferred)
+    target = _resolve_skill_entity_target(player, target_id, target_x, target_y, players, ally_target=False)
+
+    if target is None:
+        if target_x is None or target_y is None:
+            return ActionResult(
+                player_id=player.player_id, username=player.username,
+                action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+                message=f"{player.username} {skill_def['name']} failed — no target specified",
+            )
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — no enemy at target",
+        )
+
+    # Range check (Chebyshev)
+    dx = abs(player.position.x - target.position.x)
+    dy = abs(player.position.y - target.position.y)
+    if max(dx, dy) > skill_range:
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — target out of range",
+        )
+
+    # LOS check
+    if requires_los and not has_line_of_sight(
+        player.position.x, player.position.y, target.position.x, target.position.y, obstacles,
+    ):
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — no line of sight",
+        )
+
+    # CC immunity check (e.g. Fury state)
+    if any(b.get("cc_immune") for b in target.active_buffs):
+        _apply_skill_cooldown(player, skill_def)
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=True,
+            message=f"{player.username} used {skill_def['name']} on {target.username} — resisted (CC immune)!",
+            target_id=target.player_id, target_username=target.username,
+        )
+
+    # Refresh existing root (don't stack)
+    target.active_buffs = [b for b in target.active_buffs if b.get("stat") != "rooted"]
+
+    root_entry = {
+        "buff_id": skill_id,
+        "type": "ranged_root",
+        "stat": "rooted",
+        "source_id": player.player_id,
+        "turns_remaining": actual_duration,
+        "magnitude": 0,
+    }
+    target.active_buffs.append(root_entry)
+    _apply_skill_cooldown(player, skill_def)
+
+    empowered_str = " (EMPOWERED)" if is_empowered else ""
+    return ActionResult(
+        player_id=player.player_id, username=player.username,
+        action_type=ActionType.SKILL, skill_id=skill_id, success=True,
+        message=f"{player.username} used {skill_def['name']} on {target.username} — rooted for {actual_duration} turn(s)!{empowered_str}",
+        target_id=target.player_id, target_username=target.username,
+        buff_applied={"type": "ranged_root", "duration": actual_duration, "empowered": is_empowered},
+    )

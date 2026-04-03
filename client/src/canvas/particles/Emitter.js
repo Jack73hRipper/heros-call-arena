@@ -82,6 +82,14 @@ export class Emitter {
     this.active = false;
     this.finished = false;
     this._spawnAccum = 0; // fractional particle accumulator for continuous mode
+
+    // P-E: Pre-allocated forces object (reused every frame instead of creating new)
+    this._forces = {
+      gravityX: this.gravity.x,
+      gravityY: this.gravity.y,
+      friction: this.friction,
+      windX: this.wind.x || 0,
+    };
   }
 
   /** Move the emitter to a new position. */
@@ -161,13 +169,12 @@ export class Emitter {
       }
     }
 
-    // Update particles
-    const forces = {
-      gravityX: this.gravity.x,
-      gravityY: this.gravity.y,
-      friction: this.friction,
-      windX: this.wind.x || 0,
-    };
+    // Update particles (P-E: reuse pre-allocated forces object)
+    const forces = this._forces;
+    forces.gravityX = this.gravity.x;
+    forces.gravityY = this.gravity.y;
+    forces.friction = this.friction;
+    forces.windX = this.wind.x || 0;
 
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];

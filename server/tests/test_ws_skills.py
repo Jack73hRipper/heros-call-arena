@@ -262,7 +262,7 @@ class TestMatchStartClassSkills:
         assert {s["skill_id"] for s in cs["confessor"]} == {"auto_attack_melee", "heal", "shield_of_faith", "exorcism", "prayer"}
         assert {s["skill_id"] for s in cs["inquisitor"]} == {"auto_attack_ranged", "power_shot", "shadow_step", "seal_of_judgment", "rebuke"}
         assert {s["skill_id"] for s in cs["ranger"]} == {"auto_attack_ranged", "power_shot", "volley", "evasion", "crippling_shot"}
-        assert {s["skill_id"] for s in cs["hexblade"]} == {"auto_attack_melee", "double_strike", "shadow_step", "wither", "ward"}
+        assert {s["skill_id"] for s in cs["hexblade"]} == {"auto_attack_melee", "hex_strike", "shadow_step", "wither", "ward"}
 
     def test_class_skills_not_included_when_no_class(self):
         """If player has no class_id, class_skills is empty or absent."""

@@ -189,35 +189,43 @@ export function decorateRooms({ grid, variants, tileMap, seed = 42, settings = {
 
     const startR = room.gridRow * MODULE_SIZE;
     const startC = room.gridCol * MODULE_SIZE;
+    const roomTiles = room.variant.tiles || [];
 
     const placements = [];
-    const availableSlots = shuffle([...room.slots], rng);
+    // Sort slots by priority for the assigned role (A) with door-distance (D)
+    const availableSlots = sortSlotsForRole(room.slots, role, roomTiles, rng);
 
     switch (role) {
       case 'boss': {
-        // Place boss marker(s) at boss-eligible slots
-        const bossSlots = availableSlots.filter(s => s.types?.includes('boss'));
+        // Boss: sort boss-eligible slots with boss priority
+        const bossSlots = sortSlotsForRole(
+          availableSlots.filter(s => s.types?.includes('boss')),
+          'boss', roomTiles, rng,
+        );
         if (bossSlots.length > 0) {
-          // Place 1 boss marker (B) at first boss slot
           const bs = bossSlots[0];
           placeTile(decoratedMap, startR + bs.y, startC + bs.x, 'B');
           placements.push({ x: startC + bs.x, y: startR + bs.y, type: 'B' });
-          // Also place 1-2 enemy guards
-          const guardSlots = availableSlots.filter(s =>
-            s !== bs && s.types?.includes('enemy')
+          // Guard enemies — sorted by enemy priority (near doors)
+          const guardCandidates = sortSlotsForRole(
+            availableSlots.filter(s => s !== bs && s.types?.includes('enemy')),
+            'enemy', roomTiles, rng,
           );
-          const guardCount = Math.min(2, guardSlots.length);
+          const guardCount = Math.min(2, guardCandidates.length);
           for (let i = 0; i < guardCount; i++) {
-            placeTile(decoratedMap, startR + guardSlots[i].y, startC + guardSlots[i].x, 'E');
-            placements.push({ x: startC + guardSlots[i].x, y: startR + guardSlots[i].y, type: 'E' });
+            placeTile(decoratedMap, startR + guardCandidates[i].y, startC + guardCandidates[i].x, 'E');
+            placements.push({ x: startC + guardCandidates[i].x, y: startR + guardCandidates[i].y, type: 'E' });
           }
         }
         break;
       }
 
       case 'spawn': {
-        // Place spawn markers at spawn-eligible slots
-        const spawnSlots = availableSlots.filter(s => s.types?.includes('spawn'));
+        // Spawn markers — sorted by spawn priority (corners first)
+        const spawnSlots = sortSlotsForRole(
+          availableSlots.filter(s => s.types?.includes('spawn')),
+          'spawn', roomTiles, rng,
+        );
         const count = Math.min(4, spawnSlots.length);
         for (let i = 0; i < count; i++) {
           placeTile(decoratedMap, startR + spawnSlots[i].y, startC + spawnSlots[i].x, 'S');
@@ -227,45 +235,56 @@ export function decorateRooms({ grid, variants, tileMap, seed = 42, settings = {
       }
 
       case 'enemy': {
-        // Place enemies at enemy-eligible slots (up to maxEnemies)
-        const enemySlots = availableSlots.filter(s => s.types?.includes('enemy'));
+        // Enemies sorted by enemy priority (center/interior, near doors)
+        const enemySlots = sortSlotsForRole(
+          availableSlots.filter(s => s.types?.includes('enemy')),
+          'enemy', roomTiles, rng,
+        );
         const count = Math.min(room.maxEnemies, enemySlots.length);
-        // Randomize how many (at least 1)
         const actualCount = Math.max(1, Math.floor(rng() * count) + 1);
         for (let i = 0; i < Math.min(actualCount, enemySlots.length); i++) {
           placeTile(decoratedMap, startR + enemySlots[i].y, startC + enemySlots[i].x, 'E');
           placements.push({ x: startC + enemySlots[i].x, y: startR + enemySlots[i].y, type: 'E' });
         }
-        // Scatter bonus chest
+        // Scatter bonus chest — placed far from enemies (loot priority)
         if (config.scatterChests && rng() < 0.3) {
-          const chestSlots = availableSlots.filter(s =>
-            s.types?.includes('loot') && !placements.some(p => p.x === startC + s.x && p.y === startR + s.y)
+          const placedPositions = new Set(placements.map(p => `${p.x},${p.y}`));
+          const chestCandidates = sortSlotsForRole(
+            availableSlots.filter(s =>
+              s.types?.includes('loot') && !placedPositions.has(`${startC + s.x},${startR + s.y}`)
+            ),
+            'loot', roomTiles, rng,
           );
-          if (chestSlots.length > 0) {
-            placeTile(decoratedMap, startR + chestSlots[0].y, startC + chestSlots[0].x, 'X');
-            placements.push({ x: startC + chestSlots[0].x, y: startR + chestSlots[0].y, type: 'X' });
+          if (chestCandidates.length > 0) {
+            placeTile(decoratedMap, startR + chestCandidates[0].y, startC + chestCandidates[0].x, 'X');
+            placements.push({ x: startC + chestCandidates[0].x, y: startR + chestCandidates[0].y, type: 'X' });
           }
         }
         break;
       }
 
       case 'loot': {
-        // Place chests at loot-eligible slots (up to maxChests)
-        const lootSlots = availableSlots.filter(s => s.types?.includes('loot'));
+        // (B) Chest clustering: group chests near a wall away from doors
+        const lootEligible = availableSlots.filter(s => s.types?.includes('loot'));
+        const lootSlots = clusterLootSlots(lootEligible, roomTiles, rng);
         const count = Math.min(room.maxChests, lootSlots.length);
         const actualCount = Math.max(1, Math.floor(rng() * count) + 1);
         for (let i = 0; i < Math.min(actualCount, lootSlots.length); i++) {
           placeTile(decoratedMap, startR + lootSlots[i].y, startC + lootSlots[i].x, 'X');
           placements.push({ x: startC + lootSlots[i].x, y: startR + lootSlots[i].y, type: 'X' });
         }
-        // Scatter a guard enemy
+        // Scatter guard enemy — placed near door (enemy priority)
         if (config.scatterEnemies && rng() < 0.35) {
-          const enemySlots = availableSlots.filter(s =>
-            s.types?.includes('enemy') && !placements.some(p => p.x === startC + s.x && p.y === startR + s.y)
+          const placedPositions = new Set(placements.map(p => `${p.x},${p.y}`));
+          const guardCandidates = sortSlotsForRole(
+            availableSlots.filter(s =>
+              s.types?.includes('enemy') && !placedPositions.has(`${startC + s.x},${startR + s.y}`)
+            ),
+            'enemy', roomTiles, rng,
           );
-          if (enemySlots.length > 0) {
-            placeTile(decoratedMap, startR + enemySlots[0].y, startC + enemySlots[0].x, 'E');
-            placements.push({ x: startC + enemySlots[0].x, y: startR + enemySlots[0].y, type: 'E' });
+          if (guardCandidates.length > 0) {
+            placeTile(decoratedMap, startR + guardCandidates[0].y, startC + guardCandidates[0].x, 'E');
+            placements.push({ x: startC + guardCandidates[0].x, y: startR + guardCandidates[0].y, type: 'E' });
           }
         }
         break;
@@ -273,15 +292,22 @@ export function decorateRooms({ grid, variants, tileMap, seed = 42, settings = {
 
       case 'empty':
       default: {
-        // Atmospheric — maybe scatter a lone enemy or chest
+        // Atmospheric — scatter enemy sorted by enemy priority
         if (config.scatterEnemies && rng() < 0.15) {
-          const enemySlots = availableSlots.filter(s => s.types?.includes('enemy'));
+          const enemySlots = sortSlotsForRole(
+            availableSlots.filter(s => s.types?.includes('enemy')),
+            'enemy', roomTiles, rng,
+          );
           if (enemySlots.length > 0) {
             placeTile(decoratedMap, startR + enemySlots[0].y, startC + enemySlots[0].x, 'E');
             placements.push({ x: startC + enemySlots[0].x, y: startR + enemySlots[0].y, type: 'E' });
           }
         } else if (config.scatterChests && rng() < 0.1) {
-          const lootSlots = availableSlots.filter(s => s.types?.includes('loot'));
+          // Empty room scatter chest — placed in corner (loot priority)
+          const lootSlots = sortSlotsForRole(
+            availableSlots.filter(s => s.types?.includes('loot')),
+            'loot', roomTiles, rng,
+          );
           if (lootSlots.length > 0) {
             placeTile(decoratedMap, startR + lootSlots[0].y, startC + lootSlots[0].x, 'X');
             placements.push({ x: startC + lootSlots[0].x, y: startR + lootSlots[0].y, type: 'X' });
@@ -351,9 +377,148 @@ function inferContentRole(variant) {
   return 'flexible';
 }
 
+// ─── Slot Classification & Priority Sorting ───────────────────────────
+
+/**
+ * Classify a slot position as 'center', 'corner', 'wall', or 'interior'.
+ */
+function classifySlot(x, y, tiles) {
+  const h = tiles.length;
+  const w = (tiles[0] || []).length;
+  let adjWall = 0;
+  for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+    const nx = x + dx, ny = y + dy;
+    if (nx < 0 || nx >= w || ny < 0 || ny >= h) adjWall++;
+    else if (tiles[ny][nx] === 'W') adjWall++;
+  }
+  const isCorner = (x <= 2 && y <= 2) || (x >= 5 && y <= 2) || (x <= 2 && y >= 5) || (x >= 5 && y >= 5);
+  const isCenter = x >= 3 && x <= 4 && y >= 3 && y <= 4;
+  if (isCenter) return 'center';
+  if (isCorner && adjWall >= 1) return 'corner';
+  if (adjWall >= 1 && !isCorner) return 'wall';
+  if (isCorner) return 'corner';
+  return 'interior';
+}
+
+/** Default priority values for each hint type per role. */
+const HINT_PRIORITIES = {
+  center:   { loot: 0.3, enemy: 0.9, boss: 1.0, spawn: 0.3 },
+  corner:   { loot: 0.8, enemy: 0.5, boss: 0.7, spawn: 0.9 },
+  wall:     { loot: 1.0, enemy: 0.6, boss: 0.6, spawn: 0.7 },
+  interior: { loot: 0.5, enemy: 0.8, boss: 0.5, spawn: 0.5 },
+};
+
+/**
+ * Return the priority score for a slot when used for a given role.
+ */
+function getSlotPriority(slot, role) {
+  if (slot.priority && slot.priority[role] != null) return slot.priority[role];
+  const hint = slot.placement_hint || 'interior';
+  return (HINT_PRIORITIES[hint] || HINT_PRIORITIES.interior)[role] ?? 0.5;
+}
+
+/**
+ * Find door tiles and edge openings in a module's tile grid.
+ */
+function findDoorPositions(tiles) {
+  const doors = [];
+  const h = tiles.length;
+  const w = (tiles[0] || []).length;
+  for (let r = 0; r < h; r++) {
+    for (let c = 0; c < w; c++) {
+      const t = tiles[r][c];
+      if (t === 'D') {
+        doors.push([c, r]);
+      } else if ((t === 'F' || t === 'C') && (r === 0 || r === h - 1 || c === 0 || c === w - 1)) {
+        doors.push([c, r]);
+      }
+    }
+  }
+  return doors;
+}
+
+/**
+ * Manhattan distance from a slot to the nearest door/opening.
+ */
+function slotDoorDistance(slot, doorPositions) {
+  if (!doorPositions.length) return 0;
+  let min = Infinity;
+  for (const [dx, dy] of doorPositions) {
+    const d = Math.abs(slot.x - dx) + Math.abs(slot.y - dy);
+    if (d < min) min = d;
+  }
+  return min;
+}
+
+/**
+ * Sort slots by priority for a given role, with door-distance as tiebreaker.
+ * Loot/boss prefer far from doors; enemies prefer near doors.
+ */
+function sortSlotsForRole(slots, role, tiles, rng, reverse = false) {
+  const doorPositions = findDoorPositions(tiles);
+  const sorted = [...slots];
+  const doorSign = role === 'enemy' ? -1.0 : 1.0;
+
+  sorted.sort((a, b) => {
+    const pa = getSlotPriority(a, role);
+    const pb = getSlotPriority(b, role);
+    const da = slotDoorDistance(a, doorPositions) / 14.0;
+    const db = slotDoorDistance(b, doorPositions) / 14.0;
+    const ja = rng() * 0.15;
+    const jb = rng() * 0.15;
+    const ka = -(pa + doorSign * da * 0.3 + ja);
+    const kb = -(pb + doorSign * db * 0.3 + jb);
+    return ka - kb;
+  });
+  if (reverse) sorted.reverse();
+  return sorted;
+}
+
+/**
+ * Sort loot slots to cluster chests near a chosen wall region ("treasure nook").
+ * Picks a focal wall away from doors, then sorts by proximity to that wall.
+ */
+function clusterLootSlots(slots, tiles, rng) {
+  if (slots.length <= 1) return slots;
+  const h = tiles.length;
+  const w = (tiles[0] || []).length;
+
+  const doorPositions = findDoorPositions(tiles);
+  const wallHasOpening = { top: false, bottom: false, left: false, right: false };
+  for (const [dx, dy] of doorPositions) {
+    if (dy === 0) wallHasOpening.top = true;
+    if (dy === h - 1) wallHasOpening.bottom = true;
+    if (dx === 0) wallHasOpening.left = true;
+    if (dx === w - 1) wallHasOpening.right = true;
+  }
+
+  let closedWalls = Object.keys(wallHasOpening).filter(k => !wallHasOpening[k]);
+  if (!closedWalls.length) closedWalls = Object.keys(wallHasOpening);
+
+  const focalWall = closedWalls[Math.floor(rng() * closedWalls.length) % closedWalls.length];
+
+  function wallDistance(s) {
+    if (focalWall === 'top') return s.y;
+    if (focalWall === 'bottom') return (h - 1) - s.y;
+    if (focalWall === 'left') return s.x;
+    return (w - 1) - s.x; // right
+  }
+
+  const result = [...slots];
+  result.sort((a, b) => {
+    const da = wallDistance(a);
+    const db = wallDistance(b);
+    if (da !== db) return da - db;
+    const ca = Math.abs(a.x - Math.floor(w / 2)) + Math.abs(a.y - Math.floor(h / 2));
+    const cb = Math.abs(b.x - Math.floor(w / 2)) + Math.abs(b.y - Math.floor(h / 2));
+    return ca - cb;
+  });
+  return result;
+}
+
 /**
  * Derive floor slots from a tile grid (fallback when spawnSlots is empty).
- * Returns interior floor tiles as spawn slot candidates.
+ * Includes placement_hint and priority for each derived slot.
  */
 function deriveFloorSlots(tiles) {
   const slots = [];
@@ -363,7 +528,9 @@ function deriveFloorSlots(tiles) {
   for (let r = 1; r < h - 1; r++) {
     for (let c = 1; c < w - 1; c++) {
       if (tiles[r][c] === 'F') {
-        slots.push({ x: c, y: r, types: ['enemy', 'loot', 'spawn', 'boss'] });
+        const hint = classifySlot(c, r, tiles);
+        const priority = { ...(HINT_PRIORITIES[hint] || HINT_PRIORITIES.interior) };
+        slots.push({ x: c, y: r, types: ['enemy', 'loot', 'spawn', 'boss'], placement_hint: hint, priority });
       }
     }
   }

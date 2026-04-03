@@ -605,6 +605,7 @@ def generate_item(
     item_type = raw.get("item_type", "weapon")
     equip_slot = raw.get("equip_slot")
     weapon_category = raw.get("weapon_category", "")  # Phase 16: class-lock category
+    weapon_type = raw.get("weapon_type", "")            # Phase 22A: weapon type proficiency
     armor_category = raw.get("armor_category", "")    # Phase 21A: armor category
     raw_bonuses = raw.get("stat_bonuses", {})
     base_stats = StatBonuses(**raw_bonuses)
@@ -634,6 +635,7 @@ def generate_item(
             affixes=[],
             item_level=item_level,
             weapon_category=weapon_category,
+            weapon_type=weapon_type,
         )
 
     # Roll affixes (only for equippable items)
@@ -685,6 +687,7 @@ def generate_item(
         affixes=affixes,
         item_level=item_level,
         weapon_category=weapon_category,
+        weapon_type=weapon_type,
         armor_category=armor_category,
     )
 
@@ -887,6 +890,7 @@ def generate_unique(
     stat_bonuses = StatBonuses(**raw.get("stat_bonuses", {}))
     equip_slot = raw.get("equip_slot")
     weapon_category = raw.get("weapon_category", "")  # Phase 16: class-lock category
+    weapon_type = raw.get("weapon_type", "")            # Phase 22A: weapon type proficiency
     armor_category = raw.get("armor_category", "")    # Phase 21A: armor category
 
     # Build special effect metadata stored in affixes list for transport
@@ -921,6 +925,7 @@ def generate_unique(
         affixes=affixes_data,
         item_level=raw.get("item_level", 14),
         weapon_category=weapon_category,
+        weapon_type=weapon_type,
         armor_category=armor_category,
     )
 
@@ -1131,6 +1136,7 @@ def generate_set_piece(
     equip_slot = piece_def.get("equip_slot")
     item_type = piece_def.get("item_type", equip_slot or "weapon")
     weapon_category = piece_def.get("weapon_category", "")  # Phase 16: class-lock category
+    weapon_type = piece_def.get("weapon_type", "")            # Phase 22A: weapon type proficiency
     armor_category = piece_def.get("armor_category", "")    # Phase 21A: armor category
 
     # Set item affixes carry set metadata for client display
@@ -1161,6 +1167,7 @@ def generate_set_piece(
         affixes=affixes_data,
         item_level=piece_def.get("item_level", 14),
         weapon_category=weapon_category,
+        weapon_type=weapon_type,
         armor_category=armor_category,
     )
 

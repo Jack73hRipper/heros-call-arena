@@ -22,8 +22,16 @@ Arena/
 ├── start-item-forge.bat    # Launch Item Forge tool
 ├── start-enemy-forge.bat   # Launch Enemy Forge tool
 ├── start-arena-analyst.bat # Launch Arena Analyst tool
+├── start-pvpve-analyst.bat # Launch PvPvE Analyst tool
 ├── start-launcher.bat      # Launch game launcher (dev mode)
 ├── start-publish.bat       # Build + publish game update
+├── start-batch-pvp.bat     # Run batch PvP simulations
+├── start-batch-pvpve.bat   # Run batch PvPvE simulations
+├── start-pvpve-agent.bat   # Launch PvPvE agent
+├── start-server-online.bat # Start online server
+├── start-test-manifest.bat # Run test manifest
+├── stop-server-online.bat  # Stop online server
+├── copy-sprites.bat        # Copy sprite assets
 │
 ├── docs/                   # Project documentation
 │   ├── DOCS-ARCHITECTURE.md        # ★ Master index — start here to find any doc
@@ -33,7 +41,15 @@ Arena/
 │   ├── bug-log.md                  # Bug tracking log
 │   ├── websocket-protocol.md       # All WS message types and data shapes
 │   ├── project-audit-march-2026.md # Current project health audit
-│   ├── Phase Docs/                 # Design specs per phase (57 files)
+│   ├── ai-hero-dungeon-behavior-audit.md  # AI hero behavior analysis
+│   ├── ai-hero-stalling-analysis.md       # AI stalling diagnosis
+│   ├── known-test-failures.md             # Known test failure tracking
+│   ├── launcher-pipeline.md               # Launcher build pipeline docs
+│   ├── new-class-implementation-template.md # Template for adding new classes
+│   ├── pending-changes.md                 # Pending change tracking
+│   ├── publish-workflow.md                # Publish workflow documentation
+│   ├── pvp-batch-analysis-2026-04-02.md   # PvP batch analysis results
+│   ├── Phase Docs/                 # Design specs per phase (68 files)
 │   │   ├── phase1-design-document-updated.md
 │   │   ├── phase2-arena-plus-v2.md
 │   │   ├── phase3-arena-refined.md
@@ -64,16 +80,50 @@ Arena/
 │   │   ├── phase18J-enemy-forge-skill-integration.md
 │   │   ├── phase19-inventory-panel-overhaul.md
 │   │   ├── phase20-turn-resolver-split.md
+│   │   ├── phase21-armor-affinity-and-tooltip-overhaul.md
+│   │   ├── phase21-bard-class.md
+│   │   ├── phase21-dungeon-visual-variety.md
+│   │   ├── phase21G-party-tooltip-upgrades.md
+│   │   ├── phase22-blood-knight-class.md
+│   │   ├── phase23-plague-doctor-class.md
+│   │   ├── phase24-tooltip-revamp.md
+│   │   ├── phase25-revenant-class.md
+│   │   ├── phase25-revenant-rework.md
+│   │   ├── phase26-shaman-class.md
+│   │   ├── phase27-pvpve-ai-team-spawn-log.md
+│   │   ├── phase27-pvpve-dungeon-map.md
+│   │   ├── phase28-enemy-ai-equipment.md
+│   │   ├── phase28-hero-equipment-qol.md
+│   │   ├── phase-render-performance.md
+│   │   ├── phase-strategic-exploration.md
 │   │   ├── enemy-hp-rebalance-and-identity.md
 │   │   ├── enemy-roster-system.md
 │   │   ├── loot-system-overhaul.md
 │   │   ├── party-control-system.md
-│   │   └── wfc-in-game-integration-plan.md
+│   │   ├── wfc-in-game-integration-plan.md
+│   │   ├── bard-balance-changelog.md
+│   │   ├── hexblade-balance-changelog.md
+│   │   ├── inquisitor-balance-changelog.md
+│   │   ├── shaman-balance-changelog.md
+│   │   ├── friendly-swap-movement.md
+│   │   ├── launcher-implementation-plan.md
+│   │   ├── loot-rarity-rebalance-proposal.md
+│   │   ├── match-lobby-redesign.md
+│   │   ├── match-manager-split-plan.md
+│   │   ├── nameplate-declutter-system.md
+│   │   ├── playtest-distribution-system.md
+│   │   ├── progression-systems-brainstorm.md
+│   │   ├── project-cleanup-plan.md
+│   │   ├── pvpve-dungeon-preview-plan.md
+│   │   ├── spawn-distribution-overhaul.md
+│   │   ├── stance-system-overhaul.md
+│   │   └── wfc-dungeon-tile-size-update.md
 │   ├── Systems/                    # System design docs
 │   │   ├── action-intent-system.md
 │   │   ├── affix-system.md
 │   │   ├── audio-system.md
 │   │   ├── audio-workbench.md
+│   │   ├── batch-pvp-simulator.md
 │   │   ├── buff-particle-overhaul.md
 │   │   ├── combat-meter.md
 │   │   ├── combat-system-overview.md
@@ -94,7 +144,9 @@ Arena/
 │   │   ├── audio-workbench.md
 │   │   ├── item-forge.md
 │   │   ├── enemy-forge.md
-│   │   └── arena-analyst.md
+│   │   ├── arena-analyst.md
+│   │   ├── dev-overlay.md
+│   │   └── pvpve-analyst.md
 │   ├── Game stats references/
 │   │   └── game-balance-reference.md
 │   └── Achieve/                    # Archived docs (completed/superseded)
@@ -137,6 +189,15 @@ Arena/
 │   │   │   ├── map_loader.py          # JSON map loading + spawn points
 │   │   │   ├── fov.py                 # Recursive shadowcasting + LOS
 │   │   │   ├── skills.py              # Skills config loader + validation
+│   │   │   ├── skill_effects/         # Skill effect handlers (split by category)
+│   │   │   │   ├── buff.py                # Buff skill effects
+│   │   │   │   ├── damage.py              # Damage skill effects
+│   │   │   │   ├── debuff.py              # Debuff skill effects
+│   │   │   │   ├── heal.py                # Heal skill effects
+│   │   │   │   ├── movement.py            # Movement skill effects
+│   │   │   │   ├── summon.py              # Summon skill effects
+│   │   │   │   ├── utility.py             # Utility skill effects
+│   │   │   │   └── _helpers.py            # Shared skill effect helpers
 │   │   │   ├── loot.py                # Loot generation (roll_enemy_loot, roll_chest_loot, rarity-scaled drops)
 │   │   │   ├── spawn.py               # Spawn point logic
 │   │   │   ├── ai_behavior.py         # AI decision hub (dispatches to modules below) + teleporter auto-cast
@@ -145,6 +206,7 @@ Arena/
 │   │   │   ├── ai_stances.py          # Stance-based AI (follow, aggressive, defensive, hold)
 │   │   │   ├── ai_memory.py           # Enemy memory, target tracking, ally reinforcement
 │   │   │   ├── ai_patrol.py           # Patrol waypoints & random movement
+│   │   │   ├── ai_exploration.py      # AI dungeon exploration behavior
 │   │   │   ├── wave_spawner.py        # Wave state, spawn logic, wave-clear checks, rarity support
 │   │   │   ├── equipment_manager.py   # Equip/unequip items, stat bonuses, inventory transfer
 │   │   │   ├── item_generator.py      # Procedural item generation (affixes, uniques, sets)
@@ -158,6 +220,7 @@ Arena/
 │   │   │       ├── dungeon_generator.py   # High-level dungeon assembly from WFC output + style integration
 │   │   │       ├── dungeon_styles.py      # 5 dungeon style templates (weight overrides + decorator defaults)
 │   │   │       ├── room_decorator.py      # Room content placement (enemies, chests, doors)
+│   │   │       ├── door_placer.py         # Door placement logic for room boundaries
 │   │   │       ├── connectivity.py        # Graph connectivity validation for generated layouts
 │   │   │       ├── map_exporter.py        # Export WFC result to game map JSON format + rarity rolling
 │   │   │       ├── module_utils.py        # Module loading, rotation, socket helpers
@@ -175,7 +238,7 @@ Arena/
 │   │       ├── match.py               # Match REST routes
 │   │       └── town.py                # Town hub REST (profile, tavern, hire, merchant, gear)
 │   ├── configs/
-│   │   ├── themes/                     # Dungeon theme configs (8 biomes)
+│   │   ├── themes/                     # Dungeon theme configs (11 biomes)
 │   │   ├── combat_config.json
 │   │   ├── classes_config.json
 │   │   ├── enemies_config.json
@@ -190,7 +253,7 @@ Arena/
 │   │   ├── merchant_config.json
 │   │   ├── monster_rarity_config.json  # Monster rarity tiers, champion types, 15 affixes, spawn rules
 │   │   ├── names_config.json
-│   │   ├── maps/                      # 15 map definitions
+│   │   ├── maps/                      # 16 map definitions
 │   │   │   ├── arena_classic.json
 │   │   │   ├── open_arena.json
 │   │   │   ├── open_arena_small.json
@@ -201,6 +264,7 @@ Arena/
 │   │   │   ├── islands_large.json
 │   │   │   ├── dungeon_test.json
 │   │   │   ├── open_catacombs.json
+│   │   │   ├── the_crucible.json
 │   │   │   ├── training_room.json
 │   │   │   ├── wave_arena.json
 │   │   │   ├── test_xl.json
@@ -210,8 +274,9 @@ Arena/
 │   │   │   └── library.json           # Canonical shared module library (49 modules, v2 format)
 │   │   └── wfc-rulesets/              # WFC generation rulesets
 │   ├── data/
-│   │   └── players/                   # Persisted player profiles (JSON)
-│   └── tests/                         # 60 test files, 2933 tests
+│   │   ├── players/                   # Persisted player profiles (JSON)
+│   │   └── match_history/             # Match history records
+│   └── tests/                         # 101 test files, 3987 tests
 │
 ├── client/                 # React frontend (Vite)
 │   ├── package.json
@@ -249,20 +314,24 @@ Arena/
 │       ├── App.jsx                # Screen router (lobby → town → arena → postmatch)
 │       ├── index.jsx
 │       ├── components/            # UI components (organized by feature)
+│       │   ├── ActionBar/         # Skill bar, action buttons, hotkeys, cooldowns
 │       │   ├── Arena/             # Main game canvas container
-│       │   ├── BottomBar/         # Skill bar, action buttons, tooltips
 │       │   ├── CombatLog/         # Scrollable combat event log
 │       │   ├── CombatMeter/       # Live combat stats panel + per-skill breakdown
+│       │   ├── DevOverlay/        # Developer debug overlay
 │       │   ├── EnemyPanel/        # Targeted enemy info display
+│       │   ├── EscapeMenu/        # In-game escape/pause menu
 │       │   ├── HeaderBar/         # Turn counter, timer, HP, buffs
 │       │   ├── HUD/               # Heads-up display overlay
+│       │   ├── Intro/             # Game intro/splash screen
 │       │   ├── Inventory/         # Equipment slots + bag grid
 │       │   ├── Lobby/             # Match creation & joining
+│       │   ├── MatchLobby/        # In-match lobby / team setup
 │       │   ├── MinimapPanel/      # Minimap overlay panel
 │       │   ├── PartyPanel/        # Party list, stances, multi-select
+│       │   ├── PlayerVitals/      # Player vitals display
 │       │   ├── PostMatch/         # Post-match results screen
 │       │   ├── TownHub/           # Town hub (merchant, hiring hall, hero roster, bank)
-│       │   ├── EscapeMenu/        # In-game escape/pause menu
 │       │   ├── VolumeSettings/    # Audio volume controls
 │       │   └── WaitingRoom/       # Pre-match waiting room
 │       ├── canvas/                # Canvas rendering pipeline
@@ -274,6 +343,13 @@ Arena/
 │       │   ├── dungeonRenderer.js     # Dungeon tiles (walls, doors, chests) + fog of war
 │       │   ├── unitRenderer.js        # Unit drawing (sprites/shapes, stances, targets)
 │       │   ├── overlayRenderer.js     # Highlights, hover paths, loot, damage floaters
+│       │   ├── chestRenderer.js       # Chest rendering
+│       │   ├── devRenderer.js         # Developer debug rendering
+│       │   ├── PerfTracker.js         # Performance tracking overlay
+│       │   ├── PropLighting.js        # Prop-based dynamic lighting (torches, braziers)
+│       │   ├── RoomOverlays.js        # Room overlay rendering
+│       │   ├── TileProps.js           # Tile prop placement and rendering
+│       │   ├── WaterAnimation.js      # Water tile animation
 │       │   ├── SpriteLoader.js        # Sprite sheet loading + drawing
 │       │   ├── TileLoader.js          # Tile sheet loading + drawing
 │       │   ├── pathfinding.js         # Client-side A* pathfinding
@@ -290,7 +366,8 @@ Arena/
 │       │   ├── useHighlights.js           # Tile highlight computations
 │       │   ├── useCanvasInput.js          # Canvas click, right-click, hover handlers
 │       │   ├── useKeyboardShortcuts.js    # Keyboard shortcuts (Ctrl+A, F1-F4, etc.)
-│       │   └── useWASDMovement.js         # WASD movement input
+│       │   ├── useWASDMovement.js         # WASD movement input
+│       │   └── useDevOverlay.js           # Dev overlay toggle and state
 │       ├── audio/                 # Audio system
 │       │   ├── AudioContext.jsx        # React audio context provider
 │       │   ├── AudioManager.js         # Audio playback manager (SFX, music, categories)
@@ -308,8 +385,12 @@ Arena/
 │       │       └── inventoryReducer.js    # In-match inventory & equipment
 │       ├── utils/                 # Shared utility functions
 │       │   ├── skillUtils.js          # isInSkillRange() — shared skill range helper
-│       │   └── itemUtils.js           # formatStatBonuses() — shared item display helper
-│       └── styles/                # CSS (split from 7,197-line monolith → 29 partials)
+│       │   ├── itemUtils.js           # formatStatBonuses() — shared item display helper
+│       │   ├── chestUtils.js          # Chest interaction utilities
+│       │   ├── combatLogBuilder.js    # Combat log message formatting
+│       │   ├── fetchWithRetry.js      # HTTP fetch with retry logic
+│       │   └── serverUrl.js           # Server URL configuration
+│       └── styles/                # CSS (split into partials by feature)
 │           ├── main.css               # Barrel file (29 @import statements)
 │           ├── base/
 │           │   ├── _variables.css     # CSS custom properties (:root)
@@ -323,10 +404,11 @@ Arena/
 │           │   ├── _arena.css         # Arena grid + responsive viewport
 │           │   └── _minimap.css       # Minimap overlay
 │           ├── components/
+│           │   ├── _action-bar.css    # Action bar, skill slots, hotkeys, cooldowns
 │           │   ├── _lobby.css         # Lobby screens (username, match list, config, class select)
+│           │   ├── _match-lobby.css   # Match lobby UI
 │           │   ├── _waiting-room.css  # Waiting room + AI badge
 │           │   ├── _header-bar.css    # In-match header (turn counter, HP, buffs)
-│           │   ├── _bottom-bar.css    # Action bar, skill slots, hotkeys, cooldowns
 │           │   ├── _hud.css           # HUD overlay
 │           │   ├── _combat-log.css    # Combat log
 │           │   ├── _party-panel.css   # Party list, stances, multi-select
@@ -334,6 +416,8 @@ Arena/
 │           │   ├── _inventory.css     # Inventory/loot UI + dungeon transfer
 │           │   ├── _combat-meter.css  # Combat stats, meter bars, skill breakdown
 │           │   ├── _overlays.css      # Match end, death banner, auto-target, action intent
+│           │   ├── _player-vitals.css # Player vitals display
+│           │   ├── _dev-overlay.css   # Developer overlay styles
 │           │   ├── _volume-settings.css # Volume settings panel
 │           │   └── _escape-menu.css   # Escape menu overlay
 │           ├── town/
@@ -344,6 +428,7 @@ Arena/
 │           │   ├── _gear-management.css # Gear management (equip/unequip/compare)
 │           │   └── _bank.css          # Bank / shared stash
 │           └── screens/
+│               ├── _intro.css         # Intro/splash screen
 │               └── _post-match.css    # Post-match results screen
 │
 ├── tools/                  # Standalone dev tools
@@ -358,6 +443,7 @@ Arena/
 │   ├── item-forge/         # Item Forge — item/equipment creation, balancing & simulation
 │   ├── enemy-forge/        # Enemy Forge — monster rarity, affixes, champion types, TTK simulation
 │   ├── arena-analyst/      # Arena Analyst — match tracker, balance analysis & trend visualization
+│   ├── pvpve-analyst/      # PvPvE Analyst — PvPvE match analysis & visualization
 │   └── Thought-Mapper/     # Thought Mapper — planning tool
 │
 ├── Assets/                 # Art assets (XCF source files, sprite sheets, maps, audio)
@@ -367,7 +453,35 @@ Arena/
 │   ├── Sprites/
 │   └── Walls and Objects/
 │
-└── README.md
+├── scripts/                # Build & publish scripts
+│   ├── arena-server.spec       # PyInstaller spec for server packaging
+│   ├── build-game-package.bat  # Build game distribution package
+│   ├── bump-version.bat        # Version bump utility
+│   ├── publish-config.json     # Publish configuration
+│   ├── publish-update.bat      # Publish game update
+│   └── write-patch-notes.bat   # Generate patch notes
+│
+├── build/                  # Build artifacts & packaging
+│   ├── patch-notes.md          # Current patch notes
+│   ├── electron/               # Electron build output
+│   ├── gh-pages-temp/          # GitHub Pages staging
+│   ├── launcher/               # Launcher build output
+│   ├── publish/                # Published release artifacts
+│   └── pyinstaller/            # PyInstaller build output
+│
+├── launcher/               # Electron game launcher
+│   ├── index.html
+│   ├── main.js
+│   ├── package.json
+│   ├── preload.js
+│   ├── renderer.js
+│   ├── styles.css
+│   ├── assets/
+│   ├── lib/
+│   └── test-manifest/
+│
+├── GITHUB FRONT PAGE.md    # GitHub README
+└── Project-Overview.md
 ```
 
 ## Quick Start
@@ -423,6 +537,8 @@ start-theme-designer.bat    # Dungeon Theme Designer
 start-audio-workbench.bat   # Audio Workbench
 start-item-forge.bat        # Item Forge
 start-enemy-forge.bat       # Enemy Forge
+start-arena-analyst.bat     # Arena Analyst
+start-pvpve-analyst.bat     # PvPvE Analyst
 ```
 
 ## Features
@@ -431,8 +547,8 @@ start-enemy-forge.bat       # Enemy Forge
 |---------|-------------|
 | **FOV / Fog of War** | Server-side recursive shadowcasting; shared team vision (7-tile range) |
 | **Combat System** | Melee + ranged attacks, LOS checks, cooldowns, armor, per-class stats |
-| **6 Playable Classes** | Crusader, Confessor, Inquisitor, Ranger, Hexblade, Mage — unique stats, shapes, skills |
-| **Skills & Spells** | 5 class skills (Heal, Double Strike, Power Shot, War Cry, Shadow Step) with buff system |
+| **11 Playable Classes** | Crusader, Confessor, Inquisitor, Ranger, Hexblade, Mage, Bard, Blood Knight, Plague Doctor, Revenant, Shaman — unique stats, skills, identity |
+| **Skills & Spells** | 40+ skills across all classes including heals, buffs, AoE, DoTs, summons, auras, and crowd control |
 | **AI System** | A* pathfinding, stance-based behavior (follow/aggressive/defensive/hold), potion usage, retreat/kiting |
 | **Dungeon Crawler** | Grimdark dungeons with rooms, doors, chests, enemy types, loot drops |
 | **Loot & Items** | Equipment (weapon/armor/accessory), consumables, ground items, rarity system |
@@ -448,12 +564,14 @@ start-enemy-forge.bat       # Enemy Forge
 | **WFC Dungeons** | Procedural dungeon generation via Wave Function Collapse |
 | **Module Decorator** | Visual sprite painting tool for WFC dungeon modules |
 | **Cave Automata** | Organic cave/cavern generation via Cellular Automata |
-| **Theme Designer** | Procedural grimdark dungeon tile preview tool (8 biomes) |
+| **Theme Designer** | Procedural grimdark dungeon tile preview tool (11 biomes) |
 | **Audio Workbench** | Sound preview, A/B comparison, category management & config editor |
 | **Item Forge** | Item/equipment creation, affix editing, set design, balance simulation & drop rate calculator |
 | **Enemy Forge** | Monster rarity editing, affix tuning, champion types, floor roster viewer, TTK simulator, spawn preview, super uniques |
 | **Monster Rarity** | D2-inspired Normal/Champion/Rare/Super Unique tiers, 5 champion types, 15 affixes, pack spawning, combat effects (auras, on-hit, on-death) |
 | **Electron App** | Desktop wrapper with native window chrome |
+| **PvPvE Mode** | Mixed PvP and PvE in dungeon environments with AI teams |
+| **Batch PvP/PvPvE** | Automated match simulation for balance testing |
 
 ## Maps
 
@@ -473,6 +591,7 @@ start-enemy-forge.bat       # Enemy Forge
 | Open Catacombs | — | Dungeon | Catacomb-themed dungeon |
 | Training Room | — | Dungeon | Practice environment |
 | WFC Dungeon | — | Dungeon | Procedurally generated via WFC |
+| The Crucible | — | Arena | Challenge arena map |
 
 ## Decisions Locked In
 

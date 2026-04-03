@@ -151,17 +151,7 @@ function _drawLootOverlay(ctx, opts) {
   ctx.fillStyle = hexAlpha(pal.highlight, 0.03);
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
-  // 2. Wall alcoves along left and right walls
-  const alcoveColor = shiftColor(pal.primary, -5);
-  const alcoveHighlight = shiftColor(pal.secondary, 8);
-  for (let y = bounds.y_min + 1; y < bounds.y_max; y++) {
-    const lx = ox + bounds.x_min * s, ly = oy + y * s;
-    ctx.fillStyle = alcoveColor; ctx.fillRect(lx + 2, ly + 6, 6, s - 12);
-    ctx.strokeStyle = alcoveHighlight; ctx.lineWidth = 0.5; ctx.strokeRect(lx + 2, ly + 6, 6, s - 12);
-    const rx = ox + bounds.x_max * s;
-    ctx.fillStyle = alcoveColor; ctx.fillRect(rx + s - 8, ly + 6, 6, s - 12);
-    ctx.strokeStyle = alcoveHighlight; ctx.strokeRect(rx + s - 8, ly + 6, 6, s - 12);
-  }
+  // 2. (Wall alcoves removed — looked out of place)
 
   // 3. Corner filigree ornaments
   const fCorners = [
@@ -218,15 +208,7 @@ function _drawSpawnOverlay(ctx, opts) {
     }
   }
 
-  // 3. Arrival circle at room center
-  const cx = ox + ((bounds.x_min + bounds.x_max + 1) / 2) * s;
-  const cy = oy + ((bounds.y_min + bounds.y_max + 1) / 2) * s;
-  ctx.fillStyle = hexAlpha(pal.highlight, 0.04);
-  ctx.beginPath(); ctx.arc(cx, cy, s * 1.5, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = hexAlpha(pal.highlight, 0.18); ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(cx, cy, s * 0.8, 0, Math.PI * 2); ctx.stroke();
-  ctx.fillStyle = hexAlpha(pal.highlight, 0.15);
-  ctx.beginPath(); ctx.arc(cx, cy, 3, 0, Math.PI * 2); ctx.fill();
+  // 3. (Arrival circle removed)
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -267,18 +249,19 @@ function _drawStairsOverlay(ctx, opts) {
   const innerW = (bounds.x_max - bounds.x_min + 1) * s;
   const innerH = (bounds.y_max - bounds.y_min + 1) * s;
 
-  // 1. Wall streaks suggesting depth
+  // 1. Wall streaks suggesting depth — shifted onto the visible side-plate face
   const streakColor = hexAlpha(pal.accent, 0.10);
+  const plateOffset = Math.round(s * 0.65);
   ctx.fillStyle = streakColor;
   for (let i = 0; i < 3; i++) {
     const y = bounds.y_min + 1 + i * Math.floor((bounds.y_max - bounds.y_min - 1) / 3);
-    const px = ox + (bounds.x_min - 1) * s, py = oy + y * s;
+    const px = ox + (bounds.x_min - 1) * s + plateOffset, py = oy + y * s;
     ctx.fillRect(px + s * 0.4, py + 2, 2, s - 4);
     ctx.fillRect(px + s * 0.6, py + 4, 2, s - 8);
   }
   for (let i = 0; i < 3; i++) {
     const y = bounds.y_min + 1 + i * Math.floor((bounds.y_max - bounds.y_min - 1) / 3);
-    const px = ox + (bounds.x_max + 1) * s, py = oy + y * s;
+    const px = ox + (bounds.x_max + 1) * s - plateOffset, py = oy + y * s;
     ctx.fillRect(px + s * 0.3, py + 2, 2, s - 4);
     ctx.fillRect(px + s * 0.5, py + 4, 2, s - 8);
   }
@@ -332,20 +315,14 @@ function _drawLibraryOverlay(ctx, opts) {
   ctx.fillStyle = hexAlpha(pal.highlight, 0.02);
   ctx.fillRect(innerX, innerY, innerW, innerH);
 
-  // 2. Bookshelves along walls
+  // 2. Bookshelves along top/bottom walls (every 3rd tile — left/right handled by prop system)
   const shelfColor = shiftColor(pal.furniture || pal.secondary, 5);
   const shelfBorder = shiftColor(pal.furniture || pal.secondary, -8);
-  for (let tx = bounds.x_min; tx <= bounds.x_max; tx += 2) {
+  for (let tx = bounds.x_min; tx <= bounds.x_max; tx += 3) {
     _drawWallBookshelf(ctx, ox + tx * s, oy + bounds.y_min * s, s, seed + tx, pal, shelfColor, shelfBorder);
   }
-  for (let tx = bounds.x_min; tx <= bounds.x_max; tx += 2) {
+  for (let tx = bounds.x_min; tx <= bounds.x_max; tx += 3) {
     _drawWallBookshelf(ctx, ox + tx * s, oy + bounds.y_max * s, s, seed + tx + 100, pal, shelfColor, shelfBorder);
-  }
-  for (let ty = bounds.y_min + 1; ty < bounds.y_max; ty += 2) {
-    _drawWallBookshelf(ctx, ox + bounds.x_min * s, oy + ty * s, s, seed + ty + 200, pal, shelfColor, shelfBorder);
-  }
-  for (let ty = bounds.y_min + 1; ty < bounds.y_max; ty += 2) {
-    _drawWallBookshelf(ctx, ox + bounds.x_max * s, oy + ty * s, s, seed + ty + 300, pal, shelfColor, shelfBorder);
   }
 
   // 3. Dust motes near center

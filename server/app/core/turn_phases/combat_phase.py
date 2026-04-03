@@ -20,6 +20,7 @@ from app.core.combat import (
     apply_ranged_cooldown,
     are_allies,
     apply_affix_on_hit_effects,
+    try_split_spirit_link,
 )
 from app.core.skills import is_stunned, trigger_evasion_dodge
 from app.core.turn_phases.portal_phase import _is_channeling
@@ -230,7 +231,33 @@ def _resolve_ranged(
             ))
             continue
 
-        killed = apply_damage(target, damage)
+        # Phase 26G: Spirit Link — split damage with linked Shaman
+        target_dmg, linked_shaman, shared_dmg = try_split_spirit_link(target, damage, players)
+        if linked_shaman and shared_dmg > 0:
+            shaman_killed = apply_damage(linked_shaman, shared_dmg)
+            results.append(ActionResult(
+                player_id=linked_shaman.player_id,
+                username=linked_shaman.username,
+                action_type=ActionType.SKILL,
+                skill_id="spirit_link",
+                success=True,
+                message=f"Spirit Link redirects {shared_dmg} damage to {linked_shaman.username}"
+                        + (f" — {linked_shaman.username} was killed!" if shaman_killed else ""),
+                damage_dealt=shared_dmg,
+                target_id=linked_shaman.player_id,
+                target_username=linked_shaman.username,
+                target_hp_remaining=linked_shaman.hp,
+                killed=shaman_killed,
+                is_tick=True,
+            ))
+            if shaman_killed:
+                if linked_shaman.player_id not in deaths:
+                    deaths.append(linked_shaman.player_id)
+                # Break all spirit links from this Shaman
+                for p in players.values():
+                    p.active_buffs = [b for b in p.active_buffs if not (b.get("stat") == "spirit_link" and b.get("caster_id") == linked_shaman.player_id)]
+
+        killed = apply_damage(target, target_dmg)
 
         # Phase 16A: Build enhanced combat message
         crit_tag = " (CRIT!)" if combat_info["is_crit"] else ""
@@ -352,6 +379,36 @@ def _resolve_ranged(
             ))
             if thorns_killed:
                 deaths.append(player.player_id)
+
+        # Phase 25R-C: Heal-on-hit-taken message (Death's Embrace)
+        if combat_info.get("heal_on_hit_taken_healed", 0) > 0:
+            results.append(ActionResult(
+                player_id=target.player_id,
+                username=target.username,
+                action_type=ActionType.RANGED_ATTACK,
+                success=True,
+                message=f"{target.username}'s Death's Embrace healed {combat_info['heal_on_hit_taken_healed']} HP on hit taken",
+                heal_amount=combat_info["heal_on_hit_taken_healed"],
+                target_id=target.player_id,
+                target_username=target.username,
+                target_hp_remaining=target.hp,
+                is_tick=True,
+            ))
+
+        # Phase 25R-C: Fury lifesteal message (Undying Fury)
+        if combat_info.get("fury_lifesteal_healed", 0) > 0:
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.RANGED_ATTACK,
+                success=True,
+                message=f"{player.username}'s Fury healed {combat_info['fury_lifesteal_healed']} HP from lifesteal",
+                heal_amount=combat_info["fury_lifesteal_healed"],
+                target_id=player.player_id,
+                target_username=player.username,
+                target_hp_remaining=player.hp,
+                is_tick=True,
+            ))
 
         # Phase 11: Ward reflect on ranged hits too
         if target.is_alive or not killed:
@@ -504,7 +561,33 @@ def _resolve_melee(
             ))
             continue
 
-        killed = apply_damage(target, damage)
+        # Phase 26G: Spirit Link — split damage with linked Shaman
+        target_dmg, linked_shaman, shared_dmg = try_split_spirit_link(target, damage, players)
+        if linked_shaman and shared_dmg > 0:
+            shaman_killed = apply_damage(linked_shaman, shared_dmg)
+            results.append(ActionResult(
+                player_id=linked_shaman.player_id,
+                username=linked_shaman.username,
+                action_type=ActionType.SKILL,
+                skill_id="spirit_link",
+                success=True,
+                message=f"Spirit Link redirects {shared_dmg} damage to {linked_shaman.username}"
+                        + (f" — {linked_shaman.username} was killed!" if shaman_killed else ""),
+                damage_dealt=shared_dmg,
+                target_id=linked_shaman.player_id,
+                target_username=linked_shaman.username,
+                target_hp_remaining=linked_shaman.hp,
+                killed=shaman_killed,
+                is_tick=True,
+            ))
+            if shaman_killed:
+                if linked_shaman.player_id not in deaths:
+                    deaths.append(linked_shaman.player_id)
+                # Break all spirit links from this Shaman
+                for p in players.values():
+                    p.active_buffs = [b for b in p.active_buffs if not (b.get("stat") == "spirit_link" and b.get("caster_id") == linked_shaman.player_id)]
+
+        killed = apply_damage(target, target_dmg)
 
         # Phase 18D: Affix on-hit effects (Cursed, Cold Enchanted, Mana Burn, Spectral Hit)
         if damage > 0 and getattr(player, 'affixes', None):
@@ -663,6 +746,36 @@ def _resolve_melee(
             ))
             if thorns_killed:
                 deaths.append(player.player_id)
+
+        # Phase 25R-C: Heal-on-hit-taken message (Death's Embrace)
+        if combat_info.get("heal_on_hit_taken_healed", 0) > 0:
+            results.append(ActionResult(
+                player_id=target.player_id,
+                username=target.username,
+                action_type=ActionType.ATTACK,
+                success=True,
+                message=f"{target.username}'s Death's Embrace healed {combat_info['heal_on_hit_taken_healed']} HP on hit taken",
+                heal_amount=combat_info["heal_on_hit_taken_healed"],
+                target_id=target.player_id,
+                target_username=target.username,
+                target_hp_remaining=target.hp,
+                is_tick=True,
+            ))
+
+        # Phase 25R-C: Fury lifesteal message (Undying Fury)
+        if combat_info.get("fury_lifesteal_healed", 0) > 0:
+            results.append(ActionResult(
+                player_id=player.player_id,
+                username=player.username,
+                action_type=ActionType.ATTACK,
+                success=True,
+                message=f"{player.username}'s Fury healed {combat_info['fury_lifesteal_healed']} HP from lifesteal",
+                heal_amount=combat_info["fury_lifesteal_healed"],
+                target_id=player.player_id,
+                target_username=player.username,
+                target_hp_remaining=player.hp,
+                is_tick=True,
+            ))
 
         # Phase 11: Ward reflect — if target has Ward, reflect damage back to attacker
         if target.is_alive or not killed:

@@ -43,7 +43,8 @@ def _resolve_deaths(
     Returns:
         hero_deaths: List of hero permadeath event dicts.
     """
-    # Phase 25C: Cheat death pre-pass — revive units with cheat_death buff
+    # Phase 25C / 25R-C: Cheat death pre-pass — revive units with cheat_death buff
+    # Phase 25R-C: Undying Fury triggers apply fury_state buff on revive.
     revived_ids: list[str] = []
     for death_pid in deaths:
         dead_unit = players.get(death_pid)
@@ -62,14 +63,35 @@ def _resolve_deaths(
             dead_unit.active_buffs = [
                 b for b in dead_unit.active_buffs if b.get("stat") != "cheat_death"
             ]
+
+            # Phase 25R-C: If this was an Undying Fury buff, apply fury_state
+            is_fury = cheat_death_buff.get("type") == "undying_fury"
+            if is_fury:
+                fury_duration = cheat_death_buff.get("fury_duration", 3)
+                fury_damage_mult = cheat_death_buff.get("fury_damage_multiplier", 1.5)
+                fury_cc_immune = cheat_death_buff.get("fury_cc_immune", True)
+                fury_lifesteal_pct = cheat_death_buff.get("fury_lifesteal_pct", 0.25)
+                fury_state_entry = {
+                    "buff_id": "fury_state",
+                    "type": "fury_state",
+                    "stat": "melee_damage_multiplier",
+                    "magnitude": fury_damage_mult,
+                    "cc_immune": fury_cc_immune,
+                    "fury_lifesteal_pct": fury_lifesteal_pct,
+                    "turns_remaining": fury_duration,
+                }
+                dead_unit.active_buffs.append(fury_state_entry)
+
             revived_ids.append(death_pid)
+            skill_id = "undying_fury" if is_fury else "undying_will"
+            fury_msg = f" FURY ACTIVATED ({cheat_death_buff.get('fury_duration', 3)} turns)!" if is_fury else ""
             results.append(ActionResult(
                 player_id=death_pid,
                 username=dead_unit.username,
                 action_type=ActionType.SKILL,
-                skill_id="undying_will",
+                skill_id=skill_id,
                 success=True,
-                message=f"{dead_unit.username} defies death! Revives with {revive_hp} HP!",
+                message=f"{dead_unit.username} defies death! Revives with {revive_hp} HP!{fury_msg}",
                 target_id=death_pid,
                 target_username=dead_unit.username,
                 target_hp_remaining=revive_hp,

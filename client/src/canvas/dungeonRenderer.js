@@ -19,6 +19,37 @@ import { drawChestIcon } from './chestRenderer.js';
 import { drawRoomOverlay } from './RoomOverlays.js';
 import { drawPropGlowPass, getFogLightMap } from './PropLighting.js';
 
+// P-E: Walkable tile set cache — rebuilt only when dungeon tiles change, not every frame
+let _walkableCache = null;
+let _walkableCacheKey = null;
+
+function _getWalkableTiles(tiles, tileLegend) {
+  const height = tiles.length;
+  // Use a fast fingerprint: height + first row length + tileLegend keys count
+  const key = `${height}_${tiles[0]?.length || 0}_${Object.keys(tileLegend).length}`;
+  if (_walkableCacheKey === key && _walkableCache) return _walkableCache;
+
+  const set = new Set();
+  for (let wy = 0; wy < height; wy++) {
+    const row = tiles[wy];
+    for (let wx = 0; wx < row.length; wx++) {
+      const wType = tileLegend[row[wx]] || 'wall';
+      if (wType === 'floor' || wType === 'corridor') {
+        set.add(`${wx},${wy}`);
+      }
+    }
+  }
+  _walkableCache = set;
+  _walkableCacheKey = key;
+  return set;
+}
+
+/** Clear walkable tile cache (call on floor/dungeon change). */
+export function clearWalkableCache() {
+  _walkableCache = null;
+  _walkableCacheKey = null;
+}
+
 /**
  * Draw the full dungeon tile grid using the tiles array and tile_legend.
  * Replaces the generic obstacle + grid rendering for dungeon maps.
@@ -49,6 +80,23 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
 
       // ── ThemeEngine path (procedural grimdark tiles) ──
       if (useTheme) {
+        // Faux 3/4 perspective: walls use neighbor-aware rendering
+        if (tileType === 'wall') {
+          const floorBelow = _type(x, y + 1) !== 'wall';
+          const floorAbove = _type(x, y - 1) !== 'wall';
+          const floorLeft  = _type(x - 1, y) !== 'wall';
+          const floorRight = _type(x + 1, y) !== 'wall';
+          if (themeEngine.drawWallPerspective(ctx, px, py, x, y, floorBelow, floorAbove, floorLeft, floorRight)) continue;
+        }
+        // Faux 3/4 perspective: doors use neighbor-aware orientation
+        if (tileType === 'door') {
+          const isOpen = doorStates[doorKey] === 'open';
+          const wallN = _type(x, y - 1) === 'wall';
+          const wallS = _type(x, y + 1) === 'wall';
+          const wallE = _type(x + 1, y) === 'wall';
+          const wallW = _type(x - 1, y) === 'wall';
+          if (themeEngine.drawDoorPerspective(ctx, px, py, x, y, wallN, wallS, wallE, wallW, isOpen)) continue;
+        }
         const extra = {};
         if (tileType === 'door') extra.doorOpen = doorStates[doorKey] === 'open';
         if (tileType === 'chest') {
@@ -107,6 +155,10 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
 
         case 'door': {
           const isOpen = doorStates[doorKey] === 'open';
+          // Detect orientation from neighbors
+          const dWallN = _type(x, y - 1) === 'wall';
+          const dWallS = _type(x, y + 1) === 'wall';
+          const isEW = dWallN && dWallS;  // EW passage (walls N+S)
           // Floor background — use tile sprite if available
           if (isTileSheetLoaded()) {
             drawFloorTile(ctx, px, py, TILE_SIZE, x, y, 'cobble');
@@ -116,27 +168,44 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
           }
 
           if (isOpen) {
-            // Open door — brown outline only
             ctx.strokeStyle = DUNGEON_COLORS.doorOpen;
             ctx.lineWidth = 2;
-            ctx.strokeRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-            // Small "open" indicator
-            ctx.fillStyle = DUNGEON_COLORS.doorOpen;
-            ctx.font = '10px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('○', px + TILE_SIZE / 2, py + TILE_SIZE / 2 + 4);
+            if (isEW) {
+              // EW open: panel flat against north wall, thin strip at top
+              ctx.strokeRect(px + 4, py + 4, TILE_SIZE - 8, Math.round(TILE_SIZE * 0.18));
+            } else {
+              // NS open: two panels swung inward
+              const panelW = Math.round(TILE_SIZE * 0.22);
+              ctx.strokeRect(px + 4, py + 4, panelW, TILE_SIZE - 8);
+              ctx.strokeRect(px + TILE_SIZE - 4 - panelW, py + 4, panelW, TILE_SIZE - 8);
+            }
           } else {
-            // Closed door — solid brown square
             ctx.fillStyle = DUNGEON_COLORS.doorClosed;
-            ctx.fillRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-            ctx.strokeStyle = '#5C3310';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
-            // Door handle
-            ctx.fillStyle = '#DAA520';
-            ctx.beginPath();
-            ctx.arc(px + TILE_SIZE / 2 + 6, py + TILE_SIZE / 2, 2, 0, Math.PI * 2);
-            ctx.fill();
+            if (isEW) {
+              // EW closed: narrow vertical panel centered
+              const panelW = Math.round(TILE_SIZE * 0.45);
+              const panelX = px + Math.round((TILE_SIZE - panelW) / 2);
+              ctx.fillRect(panelX, py + 4, panelW, TILE_SIZE - 8);
+              ctx.strokeStyle = '#5C3310'; ctx.lineWidth = 1;
+              ctx.strokeRect(panelX, py + 4, panelW, TILE_SIZE - 8);
+              ctx.fillStyle = '#DAA520';
+              ctx.beginPath();
+              ctx.arc(panelX + panelW * 0.55, py + TILE_SIZE / 2, 2, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              // NS closed: wider horizontal panel with top edge
+              const topH = Math.round(TILE_SIZE * 0.14);
+              ctx.fillStyle = DUNGEON_COLORS.doorOpen; // lighter top edge
+              ctx.fillRect(px + 4, py + 4, TILE_SIZE - 8, topH);
+              ctx.fillStyle = DUNGEON_COLORS.doorClosed;
+              ctx.fillRect(px + 4, py + 4 + topH, TILE_SIZE - 8, TILE_SIZE - 8 - topH);
+              ctx.strokeStyle = '#5C3310'; ctx.lineWidth = 1;
+              ctx.strokeRect(px + 4, py + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+              ctx.fillStyle = '#DAA520';
+              ctx.beginPath();
+              ctx.arc(px + TILE_SIZE / 2, py + TILE_SIZE / 2 + 4, 2, 0, Math.PI * 2);
+              ctx.fill();
+            }
           }
           break;
         }
@@ -218,6 +287,10 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
         };
         if (neighbors.top || neighbors.bottom || neighbors.left || neighbors.right) {
           themeEngine.drawEdge(ctx, (x - offsetX) * TILE_SIZE, (y - offsetY) * TILE_SIZE, x, y, neighbors);
+          // Overhang shadow: south-facing wall casts shadow onto floor below it
+          if (neighbors.top) {
+            themeEngine.drawOverhangShadow(ctx, (x - offsetX) * TILE_SIZE, (y - offsetY) * TILE_SIZE);
+          }
         }
       }
     }
@@ -229,12 +302,15 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
     if (dungeonRooms && dungeonRooms.length > 0 && themeEngine.theme) {
       const gridOffsetX = -offsetX * TILE_SIZE;
       const gridOffsetY = -offsetY * TILE_SIZE;
+      // P-E: Use cached walkable tile set (rebuilt only on dungeon change)
+      const walkableTiles = _getWalkableTiles(tiles, tileLegend);
       for (const room of dungeonRooms) {
         const b = room.bounds;
         if (!b) continue;
-        // Inset bounds by 1 to exclude the wall ring — server bounds cover
-        // the full 8×8 module including walls; props must only land on floor.
-        const inner = {
+        // Use tight floor bounds from server when available — these are
+        // computed from actual non-wall tiles and handle irregular rooms.
+        // Fallback: inset module bounds by 1 to exclude the wall ring.
+        const inner = room.floor_bounds || {
           x_min: b.x_min + 1,
           y_min: b.y_min + 1,
           x_max: b.x_max - 1,
@@ -247,6 +323,7 @@ export function drawDungeonTiles(ctx, tiles, tileLegend, doorStates, chestStates
           roomOffsetX: gridOffsetX,
           roomOffsetY: gridOffsetY,
           bounds: inner,
+          walkableTiles,
           doorPositions: [],   // per-room door data not available from server
           seed: ((b.x_min * 7919) + (b.y_min * 6271)) & 0x7FFFFFFF,
         });

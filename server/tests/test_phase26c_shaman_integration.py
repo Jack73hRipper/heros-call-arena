@@ -169,8 +169,8 @@ def _make_healing_totem(
     x: int = 6,
     y: int = 6,
     team: str = "team_1",
-    hp: int = 20,
-    heal_per_turn: int = 8,
+    hp: int = 30,
+    heal_per_turn: int = 10,
     effect_radius: int = 2,
     duration_remaining: int = 4,
 ) -> dict:
@@ -182,7 +182,7 @@ def _make_healing_totem(
         "x": x,
         "y": y,
         "hp": hp,
-        "max_hp": 20,
+        "max_hp": 30,
         "heal_per_turn": heal_per_turn,
         "damage_per_turn": 0,
         "effect_radius": effect_radius,
@@ -196,8 +196,8 @@ def _make_searing_totem(
     x: int = 8,
     y: int = 6,
     team: str = "team_1",
-    hp: int = 20,
-    damage_per_turn: int = 4,
+    hp: int = 30,
+    damage_per_turn: int = 5,
     effect_radius: int = 2,
     duration_remaining: int = 4,
 ) -> dict:
@@ -209,7 +209,7 @@ def _make_searing_totem(
         "x": x,
         "y": y,
         "hp": hp,
-        "max_hp": 20,
+        "max_hp": 30,
         "heal_per_turn": 0,
         "damage_per_turn": damage_per_turn,
         "effect_radius": effect_radius,
@@ -237,7 +237,7 @@ class TestHealingTotemTick:
 
         _resolve_cooldowns_and_buffs(players, results, deaths, match_state=match_state)
 
-        assert ally.hp == 108  # 100 + 8 heal
+        assert ally.hp == 110  # 100 + 10 heal
         assert any("Healing Totem" in r.message and "restores" in r.message for r in results)
 
     def test_healing_totem_does_not_heal_enemies(self, loaded_skills):
@@ -297,7 +297,7 @@ class TestHealingTotemTick:
         _resolve_cooldowns_and_buffs(players, results, deaths, match_state=match_state)
 
         # Totem should have ticked (healed) and then been removed (duration_remaining went to 0)
-        assert ally.hp == 108  # Still heals on its last tick
+        assert ally.hp == 110  # Still heals on its last tick
         assert len(match_state.totems) == 0  # Removed after duration hit 0
 
     def test_destroyed_healing_totem_removed(self, loaded_skills):
@@ -326,8 +326,8 @@ class TestHealingTotemTick:
 
         _resolve_cooldowns_and_buffs(players, results, deaths, match_state=match_state)
 
-        assert ally1.hp == 108
-        assert ally2.hp == 88
+        assert ally1.hp == 110
+        assert ally2.hp == 90
         heal_results = [r for r in results if "restores" in r.message]
         assert len(heal_results) == 2
 
@@ -364,7 +364,7 @@ class TestSearingTotemTick:
 
         _resolve_cooldowns_and_buffs(players, results, deaths, match_state=match_state)
 
-        assert enemy.hp == 78  # 80 - max(1, 4-2) = 78 (armor reduces damage)
+        assert enemy.hp == 76  # 80 - max(1, 5-1) = 76 (half armor reduction)
         assert any("Searing Totem" in r.message and "damage" in r.message for r in results)
 
     def test_searing_totem_does_not_damage_allies(self, loaded_skills):
@@ -393,7 +393,7 @@ class TestSearingTotemTick:
 
         _resolve_cooldowns_and_buffs(players, results, deaths, match_state=match_state)
 
-        assert enemy.hp == 79  # max(1, 4-10) = 1 damage (min 1)
+        assert enemy.hp == 79  # max(1, 4-5) = 1 damage (min 1)
 
     def test_searing_totem_expires_after_duration(self, loaded_skills):
         """Searing Totem expires after duration ticks to 0."""
@@ -406,7 +406,7 @@ class TestSearingTotemTick:
 
         _resolve_cooldowns_and_buffs(players, results, deaths, match_state=match_state)
 
-        assert enemy.hp == 78  # 80 - max(1, 4-2) = 78 (armor reduces damage)
+        assert enemy.hp == 76  # 80 - max(1, 5-1) = 76 (half armor reduction)
         assert len(match_state.totems) == 0  # Removed after expiry
 
     def test_searing_totem_can_kill_enemy(self, loaded_skills):
@@ -436,8 +436,8 @@ class TestSearingTotemTick:
 
         _resolve_cooldowns_and_buffs(players, results, deaths, match_state=match_state)
 
-        assert enemy1.hp == 78  # 80 - max(1, 4-2) = 78
-        assert enemy2.hp == 58  # 60 - max(1, 4-2) = 58
+        assert enemy1.hp == 76  # 80 - max(1, 5-1) = 76
+        assert enemy2.hp == 56  # 60 - max(1, 5-1) = 56
         damage_results = [r for r in results if "Searing Totem" in r.message]
         assert len(damage_results) == 2
 
@@ -490,8 +490,8 @@ class TestDualTotemCoexistence:
 
         _resolve_cooldowns_and_buffs(players, results, deaths, match_state=match_state)
 
-        assert ally.hp == 108  # Healed 8
-        assert enemy.hp == 78  # 80 - max(1, 4-2) = 78 (armor reduces damage)
+        assert ally.hp == 110  # Healed 10
+        assert enemy.hp == 76  # 80 - max(1, 5-1) = 76 (half armor reduction)
         assert len(match_state.totems) == 2  # Both still active
 
     def test_replacing_one_type_does_not_affect_other(self, loaded_skills):

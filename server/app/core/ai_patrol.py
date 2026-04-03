@@ -141,27 +141,55 @@ def _patrol_action(
         obstacles, occupied, door_tiles,
     )
 
-    # --- Option B: Reject back-step to previous tile ---
-    # If the next step would take us back to the tile we just came from,
-    # discard the current waypoint and pick a new one to break the oscillation.
-    if next_step and len(history) >= 2 and next_step == history[-2]:
-        _patrol_targets.pop(ai_id, None)
-        new_target = _pick_patrol_waypoint(
-            ai_id, ai_pos, grid_width, grid_height, obstacles, occupied,
-            min_distance=_STALE_FORCE_MIN_DIST if force_distant else 5,
+    # --- Phase 33: Unified oscillation check ---
+    # Instead of doing our own history[-2] comparison, delegate to the
+    # unified check_oscillation() which can REDIRECT to an alternative
+    # tile instead of always discarding the waypoint.
+    if next_step:
+        from app.core.ai_behavior import check_oscillation
+        _osc_disp, _osc_redir = check_oscillation(
+            ai_id=ai_id,
+            target=next_step,
+            ai_pos=ai_pos,
+            grid_width=grid_width,
+            grid_height=grid_height,
+            obstacles=obstacles,
+            occupied=occupied,
+            all_units=None,  # patrol has no combat context
+            is_leader=False,
+            move_goal=current_target,
         )
-        if new_target:
-            _patrol_targets[ai_id] = new_target
-            next_step = get_next_step_toward(
-                ai_pos, new_target,
-                grid_width, grid_height,
-                obstacles, occupied, door_tiles,
+        if _osc_disp == "redirect":
+            _patrol_targets.pop(ai_id, None)
+            from app.core.ai_stances import _maybe_interact_door
+            door_action = _maybe_interact_door(ai, _osc_redir, door_tiles)
+            if door_action:
+                return door_action
+            return PlayerAction(
+                player_id=ai_id,
+                action_type=ActionType.MOVE,
+                target_x=_osc_redir[0],
+                target_y=_osc_redir[1],
+                reason="patrol_redirect",
             )
-            # If the new waypoint ALSO back-steps, fall back to directed/random move
-            if next_step and len(history) >= 2 and next_step == history[-2]:
+        elif _osc_disp == "wait":
+            # No redirect tile available — pick a completely new waypoint
+            _patrol_targets.pop(ai_id, None)
+            new_target = _pick_patrol_waypoint(
+                ai_id, ai_pos, grid_width, grid_height, obstacles, occupied,
+                min_distance=_STALE_FORCE_MIN_DIST if force_distant else 5,
+            )
+            if new_target:
+                _patrol_targets[ai_id] = new_target
+                next_step = get_next_step_toward(
+                    ai_pos, new_target,
+                    grid_width, grid_height,
+                    obstacles, occupied, door_tiles,
+                )
+                if not next_step:
+                    return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied, exploration_hint)
+            else:
                 return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied, exploration_hint)
-        else:
-            return _random_adjacent_move(ai, grid_width, grid_height, obstacles, occupied, exploration_hint)
     # ---------------------------------------------------
 
     if next_step:

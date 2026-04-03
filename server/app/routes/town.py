@@ -87,6 +87,8 @@ def _get_classes_dict() -> dict:
             "base_armor": c.base_armor,
             "base_vision_range": c.base_vision_range,
             "ranged_range": c.ranged_range,
+            "allowed_weapon_categories": c.allowed_weapon_categories,
+            "preferred_armor": c.preferred_armor,
         }
         for cid, c in classes.items()
     }
@@ -598,16 +600,25 @@ async def equip_item(request: EquipRequest):
 
     # Phase 16: Weapon class-lock — reject weapons incompatible with hero's class
     if item_data.get("equip_slot") == "weapon" and hero.class_id:
+        from app.models.player import get_class_definition
+        class_def = get_class_definition(hero.class_id)
+
         weapon_cat = item_data.get("weapon_category", "")
-        if weapon_cat:
-            from app.models.player import get_class_definition
-            class_def = get_class_definition(hero.class_id)
-            if class_def and class_def.allowed_weapon_categories:
-                if weapon_cat not in class_def.allowed_weapon_categories:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=f"This class cannot equip {weapon_cat} weapons"
-                    )
+        if weapon_cat and class_def and class_def.allowed_weapon_categories:
+            if weapon_cat not in class_def.allowed_weapon_categories:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"This class cannot equip {weapon_cat} weapons"
+                )
+
+        # Phase 22A: Weapon type proficiency — reject weapon types not in class proficiency
+        weapon_type = item_data.get("weapon_type", "")
+        if weapon_type and class_def and class_def.allowed_weapon_types:
+            if weapon_type not in class_def.allowed_weapon_types:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"This class is not proficient with {weapon_type} weapons"
+                )
 
     # Hydrate into typed models
     equipment = _hydrate_equipment(hero.equipment or {})

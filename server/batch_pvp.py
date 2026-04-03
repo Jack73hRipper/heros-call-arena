@@ -228,6 +228,8 @@ def run_headless_match(
             door_tiles=door_tiles,
             portal=match.portal,
             match_state=match,
+            ground_items=ground_items,
+            chest_states=chest_states,
         )
 
         # Step 3: No human actions to pop (all AI match)

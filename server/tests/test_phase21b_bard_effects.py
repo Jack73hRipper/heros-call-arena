@@ -4,9 +4,9 @@ Tests for Phase 21B: Bard Effect Handlers (Core Mechanics).
 Covers:
 - resolve_aoe_buff() — Ballad of Might (AoE ally damage buff)
 - resolve_aoe_debuff() — Dirge of Weakness (AoE enemy debuff)
-- resolve_cooldown_reduction() — Verse of Haste (ally cooldown reduction)
+- resolve_aoe_hot() — War Hymn (AoE heal-over-time)
 - resolve_skill_action() dispatcher — routes new effect types correctly
-- Cacophony — Bard's aoe_damage_slow deals 10 damage (not 12 like Frost Nova)
+- Cacophony — Bard's aoe_damage_slow deals 11 damage (not 12 like Frost Nova)
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from app.core.skills import (
     get_skill,
     resolve_aoe_buff,
     resolve_aoe_debuff,
-    resolve_cooldown_reduction,
+    resolve_aoe_hot,
     resolve_skill_action,
     resolve_aoe_damage_slow,
 )
@@ -138,10 +138,10 @@ class TestBalladOfMight:
         assert len(dead_ally.active_buffs) == 0
 
     def test_buff_does_not_apply_outside_radius(self, ballad_skill):
-        """Allies at distance 4+ should NOT receive the buff (radius is 3)."""
+        """Allies at distance 5+ should NOT receive the buff (radius is 4)."""
         bard = _make_player(player_id="bard1", x=5, y=5)
         far_ally = _make_player(player_id="ally1", username="FarAlly", class_id="ranger",
-                                hp=80, max_hp=80, x=9, y=5)  # distance 4
+                                hp=80, max_hp=80, x=10, y=5)  # distance 5
         players = {p.player_id: p for p in [bard, far_ally]}
 
         resolve_aoe_buff(bard, ballad_skill, players)
@@ -236,10 +236,10 @@ class TestBalladOfMight:
         assert len(bard.active_buffs) == 1
 
     def test_ally_at_exact_radius_boundary(self, ballad_skill):
-        """Ally at exactly radius 3 (Chebyshev) should receive the buff."""
+        """Ally at exactly radius 4 (Chebyshev) should receive the buff."""
         bard = _make_player(player_id="bard1", x=5, y=5)
         edge_ally = _make_player(player_id="ally1", username="EdgeAlly", class_id="ranger",
-                                 hp=80, max_hp=80, x=8, y=8)  # distance 3 (Chebyshev)
+                                 hp=80, max_hp=80, x=9, y=9)  # distance 4 (Chebyshev)
         players = {p.player_id: p for p in [bard, edge_ally]}
 
         resolve_aoe_buff(bard, ballad_skill, players)
@@ -414,151 +414,122 @@ class TestDirgeOfWeakness:
 
 
 # ============================================================
-# 3. Verse of Haste — resolve_cooldown_reduction()
+# 3. War Hymn — resolve_aoe_hot()
 # ============================================================
 
-class TestVerseOfHaste:
-    """Tests for the cooldown reduction handler (Verse of Haste)."""
+class TestWarHymn:
+    """Tests for the AoE heal-over-time handler (War Hymn)."""
 
     @pytest.fixture
-    def verse_skill(self, loaded_skills):
-        return get_skill("verse_of_haste")
+    def war_hymn_skill(self, loaded_skills):
+        return get_skill("war_hymn")
 
-    def test_reduces_all_active_cooldowns_on_target(self, verse_skill):
-        """Should reduce all active cooldowns on the target ally by 2."""
-        bard = _make_player(player_id="bard1", x=5, y=5)
-        ally = _make_player(player_id="ally1", username="Mage", class_id="mage",
-                            hp=70, max_hp=70, x=7, y=5,
-                            cooldowns={"fireball": 5, "frost_nova": 3, "blink": 0})
-        players = {p.player_id: p for p in [bard, ally]}
+    def test_hot_applies_to_allies_in_radius(self, war_hymn_skill):
+        """All alive allies within radius 4 should receive the HoT."""
+        bard = _make_player(player_id="bard1", username="Bard", x=5, y=5, hp=80, max_hp=110)
+        ally1 = _make_player(player_id="ally1", username="Crusader", class_id="crusader",
+                             hp=100, max_hp=150, x=6, y=5)
+        ally2 = _make_player(player_id="ally2", username="Ranger", class_id="ranger",
+                             hp=60, max_hp=80, x=5, y=8)  # distance 3
+        players = {p.player_id: p for p in [bard, ally1, ally2]}
 
-        result = resolve_cooldown_reduction(bard, verse_skill, players,
-                                            target_x=7, target_y=5, target_id="ally1")
-
-        assert result.success is True
-        assert ally.cooldowns["fireball"] == 3   # 5 - 2
-        assert ally.cooldowns["frost_nova"] == 1  # 3 - 2
-        assert ally.cooldowns["blink"] == 0       # was 0, stays 0
-
-    def test_cooldowns_dont_go_below_zero(self, verse_skill):
-        """Cooldown reduction should never go below 0."""
-        bard = _make_player(player_id="bard1", x=5, y=5)
-        ally = _make_player(player_id="ally1", username="Ally", class_id="ranger",
-                            hp=80, max_hp=80, x=7, y=5,
-                            cooldowns={"power_shot": 1})
-        players = {p.player_id: p for p in [bard, ally]}
-
-        resolve_cooldown_reduction(bard, verse_skill, players,
-                                   target_x=7, target_y=5, target_id="ally1")
-
-        assert ally.cooldowns["power_shot"] == 0  # 1 - 2 = 0, clamped
-
-    def test_works_on_self(self, verse_skill):
-        """Bard should be able to reduce their own cooldowns."""
-        bard = _make_player(player_id="bard1", x=5, y=5,
-                            cooldowns={"ballad_of_might": 4, "cacophony": 2})
-        players = {"bard1": bard}
-
-        result = resolve_cooldown_reduction(bard, verse_skill, players,
-                                            target_x=5, target_y=5, target_id="bard1")
+        result = resolve_aoe_hot(bard, war_hymn_skill, players)
 
         assert result.success is True
-        assert bard.cooldowns["ballad_of_might"] == 2   # 4 - 2
-        assert bard.cooldowns["cacophony"] == 0          # 2 - 2
+        for p in [bard, ally1, ally2]:
+            hots = [b for b in p.active_buffs if b["buff_id"] == "war_hymn"]
+            assert len(hots) == 1, f"{p.username} should have exactly 1 war_hymn HoT"
+            assert hots[0]["type"] == "hot"
+            assert hots[0]["heal_per_tick"] == 7
+            assert hots[0]["turns_remaining"] == 3
 
-    def test_works_on_ally_within_range(self, verse_skill):
-        """Should work on an ally within range 3."""
+    def test_hot_does_not_apply_to_enemies(self, war_hymn_skill):
+        """Enemies should NOT receive the HoT."""
         bard = _make_player(player_id="bard1", x=5, y=5)
-        ally = _make_player(player_id="ally1", username="Confessor", class_id="confessor",
-                            hp=100, max_hp=100, x=8, y=5,  # distance 3
-                            cooldowns={"heal": 4})
-        players = {p.player_id: p for p in [bard, ally]}
+        enemy = _make_player(player_id="enemy1", username="Skeleton", class_id="crusader",
+                             hp=100, max_hp=100, x=6, y=5, team="team_2")
+        players = {p.player_id: p for p in [bard, enemy]}
 
-        result = resolve_cooldown_reduction(bard, verse_skill, players,
-                                            target_x=8, target_y=5, target_id="ally1")
+        resolve_aoe_hot(bard, war_hymn_skill, players)
 
-        assert result.success is True
-        assert ally.cooldowns["heal"] == 2
+        assert len(enemy.active_buffs) == 0
 
-    def test_fails_if_target_out_of_range(self, verse_skill):
-        """Should fail if target ally is beyond range 4."""
+    def test_hot_does_not_apply_to_dead_allies(self, war_hymn_skill):
+        """Dead allies should NOT receive the HoT."""
+        bard = _make_player(player_id="bard1", x=5, y=5)
+        dead_ally = _make_player(player_id="ally1", username="DeadGuy", class_id="crusader",
+                                 hp=0, alive=False, x=6, y=5)
+        players = {p.player_id: p for p in [bard, dead_ally]}
+
+        resolve_aoe_hot(bard, war_hymn_skill, players)
+
+        assert len(dead_ally.active_buffs) == 0
+
+    def test_hot_does_not_apply_outside_radius(self, war_hymn_skill):
+        """Allies at distance 5+ should NOT receive the HoT (radius is 4)."""
         bard = _make_player(player_id="bard1", x=5, y=5)
         far_ally = _make_player(player_id="ally1", username="FarAlly", class_id="ranger",
-                                hp=80, max_hp=80, x=10, y=5,  # distance 5
-                                cooldowns={"power_shot": 5})
+                                hp=60, max_hp=80, x=10, y=5)  # distance 5
         players = {p.player_id: p for p in [bard, far_ally]}
 
-        result = resolve_cooldown_reduction(bard, verse_skill, players,
-                                            target_x=10, target_y=5, target_id="ally1")
+        resolve_aoe_hot(bard, war_hymn_skill, players)
 
-        assert result.success is False
-        assert "range" in result.message.lower()
-        assert far_ally.cooldowns["power_shot"] == 5  # unchanged
+        assert len(far_ally.active_buffs) == 0
 
-    def test_no_active_cooldowns_still_succeeds(self, verse_skill):
-        """If the target has no active cooldowns, the skill still succeeds."""
+    def test_bard_receives_own_hot(self, war_hymn_skill):
+        """The Bard should receive their own HoT."""
+        bard = _make_player(player_id="bard1", x=5, y=5, hp=80, max_hp=110)
+        players = {"bard1": bard}
+
+        resolve_aoe_hot(bard, war_hymn_skill, players)
+
+        hots = [b for b in bard.active_buffs if b["buff_id"] == "war_hymn"]
+        assert len(hots) == 1
+
+    def test_hot_refreshes_not_stacks(self, war_hymn_skill):
+        """Casting War Hymn again should refresh the HoT, not stack it."""
+        bard = _make_player(player_id="bard1", x=5, y=5, hp=80, max_hp=110)
+        players = {"bard1": bard}
+
+        resolve_aoe_hot(bard, war_hymn_skill, players)
+        # Reset cooldown to simulate another cast
+        bard.cooldowns["war_hymn"] = 0
+        resolve_aoe_hot(bard, war_hymn_skill, players)
+
+        hots = [b for b in bard.active_buffs if b["buff_id"] == "war_hymn"]
+        assert len(hots) == 1  # refreshed, not stacked
+
+    def test_cooldown_applied_to_caster(self, war_hymn_skill):
+        """Bard should go on cooldown after using War Hymn."""
+        bard = _make_player(player_id="bard1", x=5, y=5, hp=80, max_hp=110)
+        players = {"bard1": bard}
+
+        resolve_aoe_hot(bard, war_hymn_skill, players)
+
+        assert bard.cooldowns.get("war_hymn", 0) > 0
+
+    def test_ally_at_exact_radius_boundary(self, war_hymn_skill):
+        """Ally at exactly radius 4 (Chebyshev) should receive the HoT."""
         bard = _make_player(player_id="bard1", x=5, y=5)
-        ally = _make_player(player_id="ally1", username="Ally", class_id="crusader",
-                            hp=150, max_hp=150, x=6, y=5, cooldowns={})
-        players = {p.player_id: p for p in [bard, ally]}
+        edge_ally = _make_player(player_id="ally1", username="EdgeAlly", class_id="ranger",
+                                 hp=60, max_hp=80, x=9, y=9)  # distance 4 (Chebyshev)
+        players = {p.player_id: p for p in [bard, edge_ally]}
 
-        result = resolve_cooldown_reduction(bard, verse_skill, players,
-                                            target_x=6, target_y=5, target_id="ally1")
+        resolve_aoe_hot(bard, war_hymn_skill, players)
+
+        assert len(edge_ally.active_buffs) == 1
+
+    def test_no_allies_in_range_still_succeeds(self, war_hymn_skill):
+        """If only enemies are nearby, bard buffs self and succeeds."""
+        bard = _make_player(player_id="bard1", x=5, y=5, hp=80, max_hp=110)
+        enemy = _make_player(player_id="enemy1", username="Skeleton", class_id="crusader",
+                             hp=100, max_hp=100, x=6, y=5, team="team_2")
+        players = {p.player_id: p for p in [bard, enemy]}
+
+        result = resolve_aoe_hot(bard, war_hymn_skill, players)
 
         assert result.success is True
-        assert "0 cooldown" in result.message
-
-    def test_cooldown_applied_to_caster(self, verse_skill):
-        """Bard should go on cooldown after using Verse of Haste."""
-        bard = _make_player(player_id="bard1", x=5, y=5)
-        ally = _make_player(player_id="ally1", username="Ally", class_id="crusader",
-                            hp=150, max_hp=150, x=6, y=5, cooldowns={"taunt": 4})
-        players = {p.player_id: p for p in [bard, ally]}
-
-        resolve_cooldown_reduction(bard, verse_skill, players,
-                                   target_x=6, target_y=5, target_id="ally1")
-
-        assert bard.cooldowns.get("verse_of_haste", 0) > 0
-
-    def test_result_reports_reduced_count(self, verse_skill):
-        """Result message should include how many cooldowns were reduced."""
-        bard = _make_player(player_id="bard1", x=5, y=5)
-        ally = _make_player(player_id="ally1", username="Mage", class_id="mage",
-                            hp=70, max_hp=70, x=6, y=5,
-                            cooldowns={"fireball": 5, "frost_nova": 3})
-        players = {p.player_id: p for p in [bard, ally]}
-
-        result = resolve_cooldown_reduction(bard, verse_skill, players,
-                                            target_x=6, target_y=5, target_id="ally1")
-
-        assert result.success is True
-        assert "2 cooldown" in result.message
-
-    def test_tile_based_targeting_fallback(self, verse_skill):
-        """Should work with tile-based targeting when target_id is not provided."""
-        bard = _make_player(player_id="bard1", x=5, y=5)
-        ally = _make_player(player_id="ally1", username="Ally", class_id="crusader",
-                            hp=150, max_hp=150, x=6, y=5, cooldowns={"taunt": 4})
-        players = {p.player_id: p for p in [bard, ally]}
-
-        result = resolve_cooldown_reduction(bard, verse_skill, players,
-                                            target_x=6, target_y=5)
-
-        assert result.success is True
-        assert ally.cooldowns["taunt"] == 2
-
-    def test_only_reduces_positive_cooldowns(self, verse_skill):
-        """Only cooldowns that are > 0 should be counted as reduced."""
-        bard = _make_player(player_id="bard1", x=5, y=5)
-        ally = _make_player(player_id="ally1", username="Ally", class_id="crusader",
-                            hp=150, max_hp=150, x=6, y=5,
-                            cooldowns={"taunt": 4, "shield_bash": 0, "war_cry": 0})
-        players = {p.player_id: p for p in [bard, ally]}
-
-        result = resolve_cooldown_reduction(bard, verse_skill, players,
-                                            target_x=6, target_y=5, target_id="ally1")
-
-        assert "1 cooldown" in result.message  # only taunt was reduced
+        assert len(bard.active_buffs) == 1  # self-HoT
 
 
 # ============================================================
@@ -596,20 +567,21 @@ class TestSkillActionDispatcher:
         assert result.success is True
         assert len(enemy.active_buffs) > 0
 
-    def test_cooldown_reduction_dispatched_correctly(self, loaded_skills):
-        """cooldown_reduction effect type should be routed to resolve_cooldown_reduction."""
-        bard = _make_player(player_id="bard1", x=5, y=5)
-        ally = _make_player(player_id="ally1", username="Mage", class_id="mage",
-                            hp=70, max_hp=70, x=6, y=5,
-                            cooldowns={"fireball": 5})
+    def test_aoe_hot_dispatched_correctly(self, loaded_skills):
+        """aoe_hot effect type should be routed to resolve_aoe_hot."""
+        bard = _make_player(player_id="bard1", x=5, y=5, hp=80, max_hp=110)
+        ally = _make_player(player_id="ally1", username="Crusader", class_id="crusader",
+                            hp=100, max_hp=150, x=6, y=5)
         players = {p.player_id: p for p in [bard, ally]}
-        action = _make_action(target_x=6, target_y=5, target_id="ally1")
-        skill = get_skill("verse_of_haste")
+        action = _make_action(target_x=5, target_y=5)
+        skill = get_skill("war_hymn")
 
         result = resolve_skill_action(bard, action, skill, players, set())
 
         assert result.success is True
-        assert ally.cooldowns["fireball"] == 3
+        # Both bard and ally should have HoT
+        assert any(b.get("buff_id") == "war_hymn" for b in bard.active_buffs)
+        assert any(b.get("buff_id") == "war_hymn" for b in ally.active_buffs)
 
     def test_cacophony_dispatches_to_aoe_damage_slow(self, loaded_skills):
         """Cacophony (aoe_damage_slow) should reuse the existing Frost Nova handler."""

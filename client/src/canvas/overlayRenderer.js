@@ -470,11 +470,32 @@ export function drawLootHighlight(ctx, x, y, offsetX = 0, offsetY = 0) {
 }
 
 /**
+ * Darken a hex color by a factor (0–1, where 0 = black, 1 = unchanged).
+ * Used for color-matched drop shadows on floaters.
+ */
+function darkenColor(hex, factor) {
+  const c = hex.replace('#', '');
+  const r = Math.round(parseInt(c.substring(0, 2), 16) * factor);
+  const g = Math.round(parseInt(c.substring(2, 4), 16) * factor);
+  const b = Math.round(parseInt(c.substring(4, 6), 16) * factor);
+  return `rgb(${r},${g},${b})`;
+}
+
+/**
  * Draw floating damage numbers on the canvas.
  *
  * Phase 14C: Tick floaters (DoT/HoT) render smaller (12px) with a gentler
  * upward drift so the player can visually distinguish periodic ticks from
  * direct skill casts (14px bold).
+ *
+ * Visual polish:
+ *  - Ease-out motion curve (burst up, decelerate)
+ *  - Pop-in scale punch (1.3x → 1.0x in first 150ms)
+ *  - Random X spread per floater (±8px) to stagger overlapping hits
+ *  - Hold-then-fade alpha (full opacity for 40%, then quick fade)
+ *  - Pulsing glow on big hits (31+ damage) and kills
+ *  - Gentle sine-wave bob on heal floaters
+ *  - Color-matched dark stroke outlines instead of flat black
  */
 export function drawDamageFloaters(ctx, floaters = [], offsetX = 0, offsetY = 0) {
   const now = Date.now();
@@ -483,67 +504,111 @@ export function drawDamageFloaters(ctx, floaters = [], offsetX = 0, offsetY = 0)
     if (age > 1500) continue; // Expire after 1.5s
 
     const progress = age / 1500;
-    const alpha = 1 - progress;
+
+    // ── Non-linear fade: hold full opacity for 40% of lifetime, then fade quickly ──
+    const alpha = progress < 0.4 ? 1 : 1 - ((progress - 0.4) / 0.6);
+
+    // ── Ease-out curve: fast burst then decelerate ──
+    const easedProgress = 1 - (1 - progress) * (1 - progress);
 
     // Phase 14D: Status floaters (MISS, DODGE, STUNNED, SLOWED, REFLECT) use distinct styling
     const isStatus = !!f.isStatus;
     // Tick floaters drift slower and are smaller
     const isTick = !!f.isTick;
+    // Detect heal floaters by color (green family) or text starting with +
+    const isHeal = f.text && f.text.startsWith('+');
 
     // Phase 14F: Scale font size by damage magnitude for impactful big hits
-    let fontSize;
-    let yOffset;
+    let baseFontSize;
+    let driftDistance;
     let displayText = f.text;
     let shakeX = 0;
+    let isBigHit = false;
     if (isStatus) {
-      fontSize = 11;
-      yOffset = -progress * 25;
+      baseFontSize = 11;
+      driftDistance = 25;
     } else if (isTick) {
-      fontSize = 12;
-      yOffset = -progress * 20;
+      baseFontSize = 12;
+      driftDistance = 20;
     } else if (f.damageAmount) {
       // Phase 14F: Scaled font from damage magnitude
       const dmg = f.damageAmount;
       if (f.isKill) {
-        fontSize = 16;
+        baseFontSize = 16;
         displayText = `☠ ${f.text}`;
-        yOffset = -progress * 35;
+        driftDistance = 35;
+        isBigHit = true;
       } else if (dmg >= 31) {
-        fontSize = 18;
+        baseFontSize = 18;
         // Slight horizontal shake for massive hits
         shakeX = Math.sin(age * 0.03) * 2 * (1 - progress);
-        yOffset = -progress * 35;
+        driftDistance = 35;
+        isBigHit = true;
       } else if (dmg >= 21) {
-        fontSize = 16;
-        yOffset = -progress * 32;
+        baseFontSize = 16;
+        driftDistance = 32;
       } else if (dmg >= 11) {
-        fontSize = 14;
-        yOffset = -progress * 30;
+        baseFontSize = 14;
+        driftDistance = 30;
       } else {
-        fontSize = 12;
-        yOffset = -progress * 28;
+        baseFontSize = 12;
+        driftDistance = 28;
       }
     } else {
-      fontSize = 14;
-      yOffset = -progress * 30;
+      baseFontSize = 14;
+      driftDistance = 30;
     }
 
-    const cx = (f.x - offsetX) * TILE_SIZE + TILE_SIZE / 2 + shakeX;
+    // ── Ease-out Y drift ──
+    let yOffset = -easedProgress * driftDistance;
+
+    // ── Heal bob: gentle sine wave overlaid on the upward drift ──
+    if (isHeal) {
+      yOffset += Math.sin(age * 0.008) * 3;
+    }
+
+    // ── Pop-in scale punch: start at 1.3x, settle to 1.0x over first 150ms ──
+    const punchDuration = 150; // ms
+    let scaleFactor = 1;
+    if (age < punchDuration) {
+      const punchProgress = age / punchDuration;
+      // Ease-out from 1.3 → 1.0
+      scaleFactor = 1.3 - 0.3 * (1 - (1 - punchProgress) * (1 - punchProgress));
+    }
+    const fontSize = Math.round(baseFontSize * scaleFactor);
+
+    // ── Random X spread (set at floater creation) + shake ──
+    const spreadX = f.randX || 0;
+    const cx = (f.x - offsetX) * TILE_SIZE + TILE_SIZE / 2 + shakeX + spreadX;
     const cy = (f.y - offsetY) * TILE_SIZE + yOffset;
 
-    ctx.globalAlpha = alpha;
+    ctx.globalAlpha = Math.max(0, alpha);
 
-    // Phase 14F+: ALL floaters get black stroke outline for readability
-    // lineWidth scales with font size — subtle on small text, bold on big hits
+    // ── Big-hit glow: pulsing colored shadow behind 31+ damage and kills ──
+    if (isBigHit) {
+      const glowPulse = 0.6 + 0.4 * Math.sin(age * 0.012);
+      ctx.shadowColor = f.color || '#ff4444';
+      ctx.shadowBlur = 10 * glowPulse * (1 - progress);
+    }
+
+    const fillColor = f.color || '#f44';
+
+    // ── Color-matched stroke: darker shade of the floater's own color ──
     ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.textAlign = 'center';
-    ctx.strokeStyle = '#000000';
+    ctx.strokeStyle = darkenColor(fillColor, 0.3);
     ctx.lineWidth = fontSize >= 16 ? 3 : (fontSize >= 14 ? 2.5 : 2);
     ctx.lineJoin = 'round';
     ctx.strokeText(displayText, cx, cy);
 
-    ctx.fillStyle = f.color || '#f44';
+    ctx.fillStyle = fillColor;
     ctx.fillText(displayText, cx, cy);
+
+    // Reset shadow so it doesn't bleed into other draws
+    if (isBigHit) {
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+    }
     ctx.globalAlpha = 1;
   }
 }

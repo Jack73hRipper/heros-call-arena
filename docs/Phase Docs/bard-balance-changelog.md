@@ -1,5 +1,51 @@
 # Bard Balance Changelog
 
+## 2026-06 — War Hymn Replaces Verse of Haste + Ballad Radius Increase
+
+### Problem
+Verse of Haste (cooldown reduction for a single ally) felt weak and unimpactful. The Bard's identity as a support class lacked sustain — Confessor burst-heals, Shaman has totem healing, but Bard had no healing at all. Additionally, Ballad of Might's radius of 3 was too small for frontline allies to consistently receive the buff.
+
+### Changes
+
+#### skills_config.json
+- **Removed Verse of Haste** — Cooldown reduction skill deleted entirely.
+- **Added War Hymn (AoE HoT)** — New skill: self-centered AoE, radius 4, heals all allies within range for 7 HP/turn for 3 turns (21 total per ally). CD 5. Refreshes on recast (no stacking).
+- **Ballad of Might radius: 3 → 4** — Larger radius ensures frontline tanks can receive the damage buff more consistently.
+
+#### skill_effects/buff.py
+- **New `resolve_aoe_hot()` handler** — Applies HoT buff entries to all alive allies within Chebyshev radius. Uses existing `active_buffs` / `tick_buffs` system.
+
+#### skills.py
+- Wired `"aoe_hot"` effect type to `resolve_aoe_hot` in the skill dispatcher.
+
+#### ai_skills.py
+- **Replaced Verse of Haste AI logic with War Hymn logic** — Priority 3 now checks if self or any ally in radius 4 is below 85% HP. Also avoids re-casting if all allies already have HoT active.
+
+#### Client Updates
+- `soundMap.js` — `SKILL_WAR_HYMN` key replaces `SKILL_VERSE_OF_HASTE`.
+- `Inventory.jsx` — Display name: `war_hymn: 'War Hymn'`.
+- `SkillTooltip.jsx` — Added `case 'aoe_hot':` tooltip handler.
+- `particle-effects.json` — War Hymn particle effect (self-centered pulse pattern).
+- `audio-effects.json` — War Hymn audio effect entry.
+
+#### Tests Updated
+- `test_phase21a_bard_config.py` — Ballad radius 4, war_hymn config/definition/effect tests.
+- `test_phase21b_bard_effects.py` — TestWarHymn class (10 tests), ballad radius boundary tests updated.
+- `test_phase21d_bard_ai.py` — TestWarHymn AI tests, all cooldown dicts updated.
+- `test_phase22a`, `test_phase23a`, `test_phase25a`, `test_phase26a`, `test_skills.py` — Bard skill list assertions updated.
+
+#### Documentation Updated
+- `class-overview.md` — Bard skill table, identity text, comparison table.
+- `phase21-bard-class.md` — Config snippets, AI pseudocode, client code.
+- `phase24-tooltip-revamp.md` — Tooltip table entry.
+
+### Design Rationale
+- **War Hymn fills a sustain gap** — 7 HP/turn × 3 turns = 21 HP/ally. Moderate healing that doesn't step on Confessor's 30 HP burst heal or Shaman's totem-based healing.
+- **Radius 4 supports frontline** — Bard kites at distance 2-3 from enemies. Radius 4 means tanks at the front still get buffed/healed.
+- **AoE HoT is thematically appropriate** — A restorative battle hymn that mends the party fits the Bard's identity as a war-poet.
+
+---
+
 ## 2026-03-09 — Stats, Skills & AI Tuning Pass (Batch PvP Underperformance Fix #2)
 
 ### Problem

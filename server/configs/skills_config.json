@@ -61,7 +61,23 @@
       "effects": [
         { "type": "melee_damage", "hits": 2, "damage_multiplier": 0.7 }
       ],
-      "allowed_classes": ["hexblade", "werewolf", "ghoul", "demon_lord"],
+      "allowed_classes": ["werewolf", "ghoul", "demon_lord"],
+      "requires_line_of_sight": false
+    },
+    "hex_strike": {
+      "skill_id": "hex_strike",
+      "name": "Hex Strike",
+      "description": "Cursed melee strike at 1.4× damage. If target has Wither, deals bonus damage equal to one Wither tick.",
+      "flavor": "The cursed blade feeds on its own afflictions.",
+      "icon": "⚔️🩸",
+      "targeting": "enemy_adjacent",
+      "range": 1,
+      "cooldown_turns": 3,
+      "mana_cost": 0,
+      "effects": [
+        { "type": "hex_strike", "damage_multiplier": 1.4, "wither_bonus_skill": "wither" }
+      ],
+      "allowed_classes": ["hexblade"],
       "requires_line_of_sight": false
     },
     "power_shot": {
@@ -114,15 +130,15 @@
     "wither": {
       "skill_id": "wither",
       "name": "Wither",
-      "description": "8 damage/turn for 4 turns. Recasting refreshes duration.",
-      "flavor": "A creeping curse that rots the flesh.",
+      "description": "8 damage/turn for 4 turns. Heals caster for 50% of tick damage. Recasting refreshes duration.",
+      "flavor": "A creeping curse that rots the flesh and feeds the caster.",
       "icon": "🩸",
       "targeting": "enemy_ranged",
       "range": 4,
       "cooldown_turns": 5,
       "mana_cost": 0,
       "effects": [
-        { "type": "dot", "damage_per_tick": 8, "duration_turns": 4 }
+        { "type": "dot", "damage_per_tick": 8, "duration_turns": 4, "lifesteal_pct": 0.5 }
       ],
       "allowed_classes": ["hexblade", "wraith", "reaper", "necromancer", "undead_caster", "horror"],
       "requires_line_of_sight": true
@@ -367,7 +383,7 @@
     "fireball": {
       "skill_id": "fireball",
       "name": "Fireball",
-      "description": "2.0× magic damage to target enemy.",
+      "description": "Hurl a fireball at a distant enemy, dealing heavy magic damage.",
       "flavor": "The Mage's bread-and-butter nuke.",
       "icon": "🔥",
       "targeting": "enemy_ranged",
@@ -383,7 +399,7 @@
     "frost_nova": {
       "skill_id": "frost_nova",
       "name": "Frost Nova",
-      "description": "12 damage + slow to all enemies within 2 tiles for 2 turns.",
+      "description": "Blast all nearby enemies with freezing energy, dealing damage and slowing their movement.",
       "flavor": "A blast of freezing air erupts from the caster.",
       "icon": "❄️",
       "targeting": "self",
@@ -399,7 +415,7 @@
     "arcane_barrage": {
       "skill_id": "arcane_barrage",
       "name": "Arcane Barrage",
-      "description": "1.0× magic damage to all enemies within 1 tile of target.",
+      "description": "Rain arcane missiles on a targeted area, damaging all enemies caught in the blast.",
       "flavor": "Arcane missiles rain from the sky.",
       "icon": "✨",
       "targeting": "ground_aoe",
@@ -415,7 +431,7 @@
     "blink": {
       "skill_id": "blink",
       "name": "Blink",
-      "description": "Teleport to an unoccupied tile within 4 range.",
+      "description": "Instantly teleport to a nearby empty tile — your primary escape tool.",
       "flavor": "Essential escape tool for the fragile Mage.",
       "icon": "💫",
       "targeting": "empty_tile",
@@ -511,7 +527,7 @@
     "ballad_of_might": {
       "skill_id": "ballad_of_might",
       "name": "Ballad of Might",
-      "description": "+40% damage to all allies within 3 tiles for 3 turns.",
+      "description": "+40% damage to all allies within 4 tiles for 3 turns.",
       "flavor": "A hymn of war that stirs the blood.",
       "icon": "🎵",
       "targeting": "self",
@@ -519,7 +535,7 @@
       "cooldown_turns": 5,
       "mana_cost": 0,
       "effects": [
-        { "type": "aoe_buff", "radius": 3, "stat": "all_damage_multiplier", "magnitude": 1.4, "duration_turns": 3 }
+        { "type": "aoe_buff", "radius": 4, "stat": "all_damage_multiplier", "magnitude": 1.4, "duration_turns": 3 }
       ],
       "allowed_classes": ["bard"],
       "requires_line_of_sight": false
@@ -540,18 +556,18 @@
       "allowed_classes": ["bard"],
       "requires_line_of_sight": true
     },
-    "verse_of_haste": {
-      "skill_id": "verse_of_haste",
-      "name": "Verse of Haste",
-      "description": "Reduce all skill cooldowns by 2 turns for target ally or self.",
-      "flavor": "Time itself bends to the melody.",
-      "icon": "⏩",
-      "targeting": "ally_or_self",
-      "range": 4,
+    "war_hymn": {
+      "skill_id": "war_hymn",
+      "name": "War Hymn",
+      "description": "Heal allies within 4 tiles for 7 HP/turn for 3 turns.",
+      "flavor": "A droning chant that mends flesh and steels resolve.",
+      "icon": "🎶",
+      "targeting": "self",
+      "range": 0,
       "cooldown_turns": 5,
       "mana_cost": 0,
       "effects": [
-        { "type": "cooldown_reduction", "reduction": 2 }
+        { "type": "aoe_hot", "radius": 4, "heal_per_turn": 7, "duration_turns": 3 }
       ],
       "allowed_classes": ["bard"],
       "requires_line_of_sight": false
@@ -575,10 +591,10 @@
     "blood_strike": {
       "skill_id": "blood_strike",
       "name": "Blood Strike",
-      "description": "1.4× melee damage + heal 40% of damage dealt.",
+      "description": "A vicious strike that heals you based on damage dealt.",
       "flavor": "Drink deep of the enemy's lifeblood.",
       "icon": "🩸",
-      "targeting": "entity",
+      "targeting": "enemy_adjacent",
       "range": 1,
       "cooldown_turns": 4,
       "mana_cost": 0,
@@ -591,7 +607,7 @@
     "crimson_veil": {
       "skill_id": "crimson_veil",
       "name": "Crimson Veil",
-      "description": "+30% melee damage + 6 HP/turn for 3 turns.",
+      "description": "Envelop yourself in blood magic, boosting melee damage and regenerating health over time.",
       "flavor": "Stolen vitality cloaks the Blood Knight in crimson mist.",
       "icon": "🌑",
       "targeting": "self",
@@ -608,7 +624,7 @@
     "sanguine_burst": {
       "skill_id": "sanguine_burst",
       "name": "Sanguine Burst",
-      "description": "0.7× melee damage to enemies within 1 tile + heal 50% of total.",
+      "description": "Unleash a burst of blood magic around you, damaging all nearby enemies and healing for half the total damage dealt.",
       "flavor": "A fountain of stolen blood erupts.",
       "icon": "💉",
       "targeting": "self",
@@ -624,7 +640,7 @@
     "blood_frenzy": {
       "skill_id": "blood_frenzy",
       "name": "Blood Frenzy",
-      "description": "If below 40% HP: heal 15 HP + 50% melee damage for 3 turns.",
+      "description": "Embrace the bloodlust when near death — instantly recover health and surge with increased melee power.",
       "flavor": "Pain becomes power. Wounds become wrath.",
       "icon": "🔥",
       "targeting": "self",
@@ -640,7 +656,7 @@
     "miasma": {
       "skill_id": "miasma",
       "name": "Miasma",
-      "description": "10 damage + slow to all enemies within 2 tiles of target for 2 turns.",
+      "description": "15 damage + slow to all enemies within 2 tiles of target for 2 turns.",
       "flavor": "A noxious cloud of plague and misery.",
       "icon": "☁️",
       "targeting": "ground_aoe",
@@ -648,7 +664,7 @@
       "cooldown_turns": 6,
       "mana_cost": 0,
       "effects": [
-        { "type": "aoe_damage_slow_targeted", "radius": 2, "base_damage": 10, "slow_duration": 2 }
+        { "type": "aoe_damage_slow_targeted", "radius": 2, "base_damage": 15, "slow_duration": 2 }
       ],
       "allowed_classes": ["plague_doctor"],
       "requires_line_of_sight": true
@@ -656,7 +672,7 @@
     "plague_flask": {
       "skill_id": "plague_flask",
       "name": "Plague Flask",
-      "description": "8 damage/turn for 4 turns (32 total). Recasting refreshes.",
+      "description": "10 damage/turn for 4 turns (40 total). Recasting refreshes.",
       "flavor": "A vial of concentrated pestilence shatters on impact.",
       "icon": "🧪",
       "targeting": "enemy_ranged",
@@ -664,7 +680,7 @@
       "cooldown_turns": 4,
       "mana_cost": 0,
       "effects": [
-        { "type": "dot", "damage_per_tick": 8, "duration_turns": 4 }
+        { "type": "dot", "damage_per_tick": 10, "duration_turns": 4 }
       ],
       "allowed_classes": ["plague_doctor"],
       "requires_line_of_sight": true
@@ -672,15 +688,16 @@
     "enfeeble": {
       "skill_id": "enfeeble",
       "name": "Enfeeble",
-      "description": "-25% damage dealt by enemies within 2 tiles of target for 4 turns.",
+      "description": "-25% damage dealt and -2 armor to enemies within 2 tiles of target for 4 turns.",
       "flavor": "Toxic fumes sap the will to fight.",
       "icon": "💀",
       "targeting": "ground_aoe",
       "range": 4,
-      "cooldown_turns": 5,
+      "cooldown_turns": 4,
       "mana_cost": 0,
       "effects": [
-        { "type": "aoe_debuff", "radius": 2, "stat": "damage_dealt_multiplier", "magnitude": 0.75, "duration_turns": 4 }
+        { "type": "aoe_debuff", "radius": 2, "stat": "damage_dealt_multiplier", "magnitude": 0.75, "duration_turns": 4 },
+        { "type": "aoe_debuff", "radius": 2, "stat": "armor", "magnitude": -2, "duration_turns": 4 }
       ],
       "allowed_classes": ["plague_doctor"],
       "requires_line_of_sight": true
@@ -701,50 +718,34 @@
       "allowed_classes": ["plague_doctor"],
       "requires_line_of_sight": false
     },
-    "grave_thorns": {
-      "skill_id": "grave_thorns",
-      "name": "Grave Thorns",
-      "description": "Reflect 12 damage per hit received for 4 turns.",
-      "flavor": "Bone shards erupt from dead flesh — every blow draws blood from the attacker.",
+    "grasp_of_the_grave": {
+      "skill_id": "grasp_of_the_grave",
+      "name": "Grasp of the Grave",
+      "description": "Root enemy for 1 turn. Below 50% HP: root for 2 turns instead.",
+      "flavor": "Spectral chains erupt from hallowed ground — the grave will not release its grip.",
+      "icon": "⛓️",
+      "targeting": "enemy_ranged",
+      "range": 4,
+      "cooldown_turns": 4,
+      "mana_cost": 0,
+      "effects": [
+        { "type": "ranged_root", "root_duration": 1, "empowered_hp_threshold": 0.50, "empowered_root_duration": 2 }
+      ],
+      "allowed_classes": ["revenant"],
+      "requires_line_of_sight": true
+    },
+    "deaths_embrace": {
+      "skill_id": "deaths_embrace",
+      "name": "Death's Embrace",
+      "description": "Thorns aura: reflect 8 dmg/hit + gain +2 armor + heal 3 HP when hit. Lasts 4 turns.",
+      "flavor": "Bone shards erupt from dead flesh — every blow feeds the hunger within.",
       "icon": "🦴",
       "targeting": "self",
       "range": 0,
       "cooldown_turns": 5,
       "mana_cost": 0,
       "effects": [
-        { "type": "thorns_buff", "thorns_damage": 12, "duration_turns": 4 }
-      ],
-      "allowed_classes": ["revenant"],
-      "requires_line_of_sight": false
-    },
-    "grave_chains": {
-      "skill_id": "grave_chains",
-      "name": "Grave Chains",
-      "description": "Taunt an enemy for 3 turns — spectral chains force them to attack you.",
-      "flavor": "Chains erupt from hallowed ground, dragging at the enemy's will — the grave demands their attention.",
-      "icon": "⛓️",
-      "targeting": "enemy_ranged",
-      "range": 4,
-      "cooldown_turns": 5,
-      "mana_cost": 0,
-      "effects": [
-        { "type": "ranged_taunt", "taunt_duration": 3 }
-      ],
-      "allowed_classes": ["revenant"],
-      "requires_line_of_sight": true
-    },
-    "undying_will": {
-      "skill_id": "undying_will",
-      "name": "Undying Will",
-      "description": "If you would die within 5 turns, revive at 30% HP instead.",
-      "flavor": "Death is a door — and the Revenant holds the key.",
-      "icon": "💀",
-      "targeting": "self",
-      "range": 0,
-      "cooldown_turns": 8,
-      "mana_cost": 0,
-      "effects": [
-        { "type": "cheat_death", "revive_hp_pct": 0.30, "duration_turns": 5 }
+        { "type": "deaths_embrace_buff", "thorns_damage": 8, "armor_bonus": 2, "heal_on_hit_taken": 3, "duration_turns": 4 }
       ],
       "allowed_classes": ["revenant"],
       "requires_line_of_sight": false
@@ -752,15 +753,31 @@
     "soul_rend": {
       "skill_id": "soul_rend",
       "name": "Soul Rend",
-      "description": "1.5× melee damage + slow for 2 turns.",
-      "flavor": "A cursed blade tears at the soul, crippling the victim's will to flee.",
+      "description": "1.3× melee damage. Below 50% HP: 1.8× damage + bleed (5/turn for 3 turns).",
+      "flavor": "A cursed blade tears at the soul — and a wounded Revenant strikes with the fury of the damned.",
       "icon": "⚔️",
       "targeting": "enemy_adjacent",
       "range": 1,
-      "cooldown_turns": 4,
+      "cooldown_turns": 3,
       "mana_cost": 0,
       "effects": [
-        { "type": "melee_damage_slow", "damage_multiplier": 1.5, "slow_duration": 2 }
+        { "type": "melee_damage_conditional_bleed", "damage_multiplier": 1.3, "empowered_hp_threshold": 0.50, "empowered_damage_multiplier": 1.8, "bleed_damage_per_turn": 5, "bleed_duration": 3 }
+      ],
+      "allowed_classes": ["revenant"],
+      "requires_line_of_sight": false
+    },
+    "undying_fury": {
+      "skill_id": "undying_fury",
+      "name": "Undying Fury",
+      "description": "If you die within 5 turns: revive at 25% HP + enter Fury (3 turns: +50% damage, CC immune, autos heal 25%).",
+      "flavor": "Death is a door — and the Revenant kicks it down. What returns is far worse than what fell.",
+      "icon": "💀",
+      "targeting": "self",
+      "range": 0,
+      "cooldown_turns": 12,
+      "mana_cost": 0,
+      "effects": [
+        { "type": "undying_fury", "activation_window": 5, "revive_hp_pct": 0.25, "fury_duration": 3, "fury_damage_multiplier": 1.5, "fury_cc_immune": true, "fury_lifesteal_pct": 0.25 }
       ],
       "allowed_classes": ["revenant"],
       "requires_line_of_sight": false
@@ -768,7 +785,7 @@
     "healing_totem": {
       "skill_id": "healing_totem",
       "name": "Healing Totem",
-      "description": "Place a totem that heals allies within 2 tiles for 8 HP/turn for 4 turns. Totem has 20 HP. Max 1 active.",
+      "description": "Place a totem that heals allies within 2 tiles for 10 HP/turn for 4 turns. Totem has 30 HP. Max 1 active.",
       "flavor": "Bone and spirit fused — the dead mend the living.",
       "icon": "🪵",
       "targeting": "ground_aoe",
@@ -776,7 +793,7 @@
       "cooldown_turns": 6,
       "mana_cost": 0,
       "effects": [
-        { "type": "place_totem", "totem_type": "healing", "totem_hp": 20, "heal_per_turn": 8, "effect_radius": 2, "duration_turns": 4 }
+        { "type": "place_totem", "totem_type": "healing", "totem_hp": 30, "heal_per_turn": 10, "effect_radius": 2, "duration_turns": 4 }
       ],
       "allowed_classes": ["shaman"],
       "requires_line_of_sight": true
@@ -784,7 +801,7 @@
     "searing_totem": {
       "skill_id": "searing_totem",
       "name": "Searing Totem",
-      "description": "Place a totem that deals 4 damage/turn to enemies within 2 tiles for 4 turns (reduced by armor). Totem has 20 HP. Max 1 active.",
+      "description": "Place a totem that deals 5 damage/turn to enemies within 2 tiles for 4 turns (half armor reduction). Totem has 30 HP. Max 1 active.",
       "flavor": "A totem of blackened bone that crackles with ancestral fury — the spirits punish those who trespass.",
       "icon": "🔥",
       "targeting": "ground_aoe",
@@ -792,7 +809,7 @@
       "cooldown_turns": 6,
       "mana_cost": 0,
       "effects": [
-        { "type": "place_totem", "totem_type": "searing", "totem_hp": 20, "damage_per_turn": 4, "effect_radius": 2, "duration_turns": 4 }
+        { "type": "place_totem", "totem_type": "searing", "totem_hp": 30, "damage_per_turn": 5, "effect_radius": 2, "duration_turns": 4 }
       ],
       "allowed_classes": ["shaman"],
       "requires_line_of_sight": true
@@ -813,6 +830,22 @@
       "allowed_classes": ["shaman"],
       "requires_line_of_sight": false
     },
+    "spirit_link": {
+      "skill_id": "spirit_link",
+      "name": "Spirit Link",
+      "description": "Link your spirit to an ally — damage they take is split 50/50 between you for 4 turns. Link breaks if either party dies.",
+      "flavor": "The spirits bind two souls as one — hurt the warrior and the shaman bleeds.",
+      "icon": "🔗",
+      "targeting": "ally_or_self",
+      "range": 4,
+      "cooldown_turns": 5,
+      "mana_cost": 0,
+      "effects": [
+        { "type": "spirit_link", "damage_share": 0.5, "duration_turns": 4 }
+      ],
+      "allowed_classes": ["shaman"],
+      "requires_line_of_sight": false
+    },
     "earthgrasp": {
       "skill_id": "earthgrasp",
       "name": "Earthgrasp Totem",
@@ -824,7 +857,7 @@
       "cooldown_turns": 7,
       "mana_cost": 0,
       "effects": [
-        { "type": "place_totem", "totem_type": "earthgrasp", "totem_hp": 20, "root_duration": 1, "effect_radius": 2, "duration_turns": 4 }
+        { "type": "place_totem", "totem_type": "earthgrasp", "totem_hp": 30, "root_duration": 1, "effect_radius": 2, "duration_turns": 4 }
       ],
       "allowed_classes": ["shaman"],
       "requires_line_of_sight": true
@@ -835,13 +868,13 @@
     "confessor":  ["auto_attack_melee", "heal", "shield_of_faith", "exorcism", "prayer"],
     "inquisitor": ["auto_attack_ranged", "power_shot", "shadow_step", "seal_of_judgment", "rebuke"],
     "ranger":     ["auto_attack_ranged", "power_shot", "volley", "evasion", "crippling_shot"],
-    "hexblade":   ["auto_attack_melee", "double_strike", "shadow_step", "wither", "ward"],
+    "hexblade":   ["auto_attack_melee", "hex_strike", "shadow_step", "wither", "ward"],
     "mage":       ["auto_attack_ranged", "fireball", "frost_nova", "arcane_barrage", "blink"],
-    "bard":       ["auto_attack_ranged", "ballad_of_might", "dirge_of_weakness", "verse_of_haste", "cacophony"],
+    "bard":       ["auto_attack_ranged", "ballad_of_might", "dirge_of_weakness", "war_hymn", "cacophony"],
     "blood_knight": ["auto_attack_melee", "blood_strike", "crimson_veil", "sanguine_burst", "blood_frenzy"],
     "plague_doctor": ["auto_attack_ranged", "miasma", "plague_flask", "enfeeble", "inoculate"],
-    "revenant":      ["auto_attack_melee", "grave_thorns", "grave_chains", "undying_will", "soul_rend"],
-    "shaman":        ["auto_attack_ranged", "healing_totem", "searing_totem", "soul_anchor", "earthgrasp"],
+    "revenant":      ["auto_attack_melee", "grasp_of_the_grave", "deaths_embrace", "soul_rend", "undying_fury"],
+    "shaman":        ["auto_attack_ranged", "healing_totem", "searing_totem", "spirit_link", "earthgrasp"],
     "wraith":             ["wither", "shadow_step"],
     "medusa":             ["venom_gaze", "power_shot"],
     "acolyte":            ["heal", "profane_ward"],

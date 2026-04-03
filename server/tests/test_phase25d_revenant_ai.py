@@ -3,15 +3,15 @@ Tests for Phase 25D: Revenant AI Behavior (retaliation_tank role).
 
 Covers:
 - Role mapping: revenant maps to "retaliation_tank"
-- _retaliation_tank_skill_logic() — full priority chain
-  - Undying Will: uses when HP < 40% and no cheat_death buff, skips otherwise
-  - Grave Thorns: uses when 2+ enemies within 2 tiles and no thorns active
-  - Grave Chains: taunts ranged/squishy enemy within 3 tiles (not adjacent)
-  - Soul Rend: uses on adjacent enemy (slow)
+- _retaliation_tank_skill_logic() — full priority chain (Phase 25R rework)
+  - Undying Fury: uses when HP < 35% and no undying_fury/fury_state buff, skips otherwise
+  - Soul Rend: uses on adjacent enemy (empowered below 50% HP: 1.8× + bleed)
+  - Death's Embrace: thorns + armor + heal-on-hit aura when enemies within 2 tiles
+  - Grasp of the Grave: roots ranged/kiting enemy within 4 tiles (not adjacent)
   - Fallback: returns None when all skills on cooldown
 - _decide_skill_usage() dispatches revenant to retaliation_tank handler
-- Priority ordering: Undying Will > Grave Thorns > Grave Chains > Soul Rend
-- Smart targeting: prefers squishier classes for Grave Chains
+- Priority ordering: Undying Fury > Soul Rend > Death's Embrace > Grasp of the Grave
+- Smart targeting: prefers squishier/ranged classes for Grasp of the Grave
 """
 
 from __future__ import annotations
@@ -152,12 +152,12 @@ class TestRevenantRoleMapping:
 # 2. Undying Will — Cheat Death When Low HP
 # ===========================================================================
 
-class TestUndyingWillAI:
-    """Revenant AI casts Undying Will when HP < 40% and no cheat_death buff."""
+class TestUndyingFuryAI:
+    """Revenant AI casts Undying Fury when HP < 35% and no undying_fury/fury_state buff."""
 
-    def test_uses_undying_will_when_low_hp(self):
-        """Undying Will fires when HP is below 40% threshold and no buff active."""
-        rev = _make_revenant(hp=50, max_hp=130)  # ~38% HP
+    def test_uses_undying_fury_when_low_hp(self):
+        """Undying Fury fires when HP is below 35% threshold and no buff active."""
+        rev = _make_revenant(hp=44, max_hp=130)  # ~33.8% HP — below 35%
         enemy = _make_enemy(x=6, y=5)  # adjacent
         all_units = _build_units(rev, enemy)
 
@@ -166,10 +166,10 @@ class TestUndyingWillAI:
         )
         assert result is not None
         assert result.action_type == ActionType.SKILL
-        assert result.skill_id == "undying_will"
+        assert result.skill_id == "undying_fury"
 
-    def test_skips_undying_will_when_hp_above_threshold(self):
-        """Undying Will does NOT fire when HP >= 40%."""
+    def test_skips_undying_fury_when_hp_above_threshold(self):
+        """Undying Fury does NOT fire when HP >= 35%."""
         rev = _make_revenant(hp=60, max_hp=130)  # ~46% HP — above threshold
         enemy = _make_enemy(x=6, y=5)
         all_units = _build_units(rev, enemy)
@@ -177,15 +177,15 @@ class TestUndyingWillAI:
         result = _retaliation_tank_skill_logic(
             rev, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
-        # Should NOT be undying_will
+        # Should NOT be undying_fury
         if result is not None:
-            assert result.skill_id != "undying_will"
+            assert result.skill_id != "undying_fury"
 
-    def test_skips_undying_will_when_buff_already_active(self):
-        """Undying Will does NOT fire when cheat_death buff is already active."""
+    def test_skips_undying_fury_when_buff_already_active(self):
+        """Undying Fury does NOT fire when undying_fury/cheat_death buff is already active."""
         rev = _make_revenant(
             hp=40, max_hp=130,  # ~31% HP — below threshold
-            active_buffs=[{"stat": "cheat_death", "revive_hp_pct": 0.30, "duration_turns": 4}],
+            active_buffs=[{"type": "undying_fury", "stat": "cheat_death", "revive_hp_pct": 0.25, "duration_turns": 4}],
         )
         enemy = _make_enemy(x=6, y=5)
         all_units = _build_units(rev, enemy)
@@ -193,13 +193,13 @@ class TestUndyingWillAI:
         result = _retaliation_tank_skill_logic(
             rev, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
-        # Should NOT be undying_will — buff already active
+        # Should NOT be undying_fury — buff already active
         if result is not None:
-            assert result.skill_id != "undying_will"
+            assert result.skill_id != "undying_fury"
 
-    def test_skips_undying_will_on_cooldown(self):
-        """Undying Will on cooldown → skipped even at low HP."""
-        rev = _make_revenant(hp=40, max_hp=130, cooldowns={"undying_will": 8})
+    def test_skips_undying_fury_on_cooldown(self):
+        """Undying Fury on cooldown → skipped even at low HP."""
+        rev = _make_revenant(hp=40, max_hp=130, cooldowns={"undying_fury": 12})
         enemy = _make_enemy(x=6, y=5)
         all_units = _build_units(rev, enemy)
 
@@ -207,10 +207,10 @@ class TestUndyingWillAI:
             rev, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         if result is not None:
-            assert result.skill_id != "undying_will"
+            assert result.skill_id != "undying_fury"
 
-    def test_undying_will_prioritized_over_other_skills(self):
-        """Undying Will takes priority over Grave Thorns, Grave Chains, and Soul Rend."""
+    def test_undying_fury_prioritized_over_other_skills(self):
+        """Undying Fury takes priority over Soul Rend, Death's Embrace, and Grasp of the Grave."""
         rev = _make_revenant(hp=40, max_hp=130)  # ~31% HP — all skills available
         enemy1 = _make_enemy(player_id="enemy1", x=6, y=5)  # adjacent
         enemy2 = _make_enemy(player_id="enemy2", x=5, y=6)  # adjacent
@@ -220,19 +220,19 @@ class TestUndyingWillAI:
             rev, [enemy1, enemy2], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         assert result is not None
-        assert result.skill_id == "undying_will"
+        assert result.skill_id == "undying_fury"
 
 
 # ===========================================================================
 # 3. Grave Thorns — Self-Buff When Surrounded
 # ===========================================================================
 
-class TestGraveThornsAI:
-    """Revenant AI casts Grave Thorns when 2+ enemies nearby and no thorns active."""
+class TestDeathsEmbraceAI:
+    """Revenant AI casts Death's Embrace when enemies nearby and no embrace buff active."""
 
-    def test_uses_grave_thorns_when_two_enemies_nearby(self):
-        """Grave Thorns fires when 2+ enemies within 2 tiles, soul_rend on CD, and no thorns buff."""
-        rev = _make_revenant(hp=130, max_hp=130, cooldowns={"undying_will": 8, "soul_rend": 3})
+    def test_uses_deaths_embrace_when_two_enemies_nearby(self):
+        """Death's Embrace fires when 2+ enemies within 2 tiles, soul_rend on CD, and no embrace buff."""
+        rev = _make_revenant(hp=130, max_hp=130, cooldowns={"undying_fury": 12, "soul_rend": 3})
         enemy1 = _make_enemy(player_id="enemy1", x=6, y=5)  # adjacent (dist 1)
         enemy2 = _make_enemy(player_id="enemy2", x=5, y=6)  # adjacent (dist 1)
         all_units = _build_units(rev, enemy1, enemy2)
@@ -242,28 +242,27 @@ class TestGraveThornsAI:
         )
         assert result is not None
         assert result.action_type == ActionType.SKILL
-        assert result.skill_id == "grave_thorns"
+        assert result.skill_id == "deaths_embrace"
 
-    def test_uses_grave_thorns_with_one_enemy_nearby(self):
-        """Grave Thorns fires even with only 1 enemy nearby (soul_rend on CD)."""
-        rev = _make_revenant(hp=130, max_hp=130, cooldowns={"undying_will": 8, "soul_rend": 3})
+    def test_uses_deaths_embrace_with_one_enemy_nearby(self):
+        """Death's Embrace fires even with only 1 enemy within 2 tiles (soul_rend on CD)."""
+        rev = _make_revenant(hp=130, max_hp=130, cooldowns={"undying_fury": 12, "soul_rend": 3})
         enemy = _make_enemy(x=6, y=5)  # only 1 adjacent
         all_units = _build_units(rev, enemy)
 
         result = _retaliation_tank_skill_logic(
             rev, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
-        # Thorns should activate even against a single enemy — it's the Rev's core identity
         assert result is not None
         assert result.action_type == ActionType.SKILL
-        assert result.skill_id == "grave_thorns"
+        assert result.skill_id == "deaths_embrace"
 
-    def test_skips_grave_thorns_when_buff_already_active(self):
-        """Grave Thorns does NOT fire when thorns_damage buff is already active."""
+    def test_skips_deaths_embrace_when_buff_already_active(self):
+        """Death's Embrace does NOT fire when embrace buff is already active."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8},
-            active_buffs=[{"stat": "thorns_damage", "magnitude": 10, "duration_turns": 2}],
+            cooldowns={"undying_fury": 12, "soul_rend": 3},
+            active_buffs=[{"type": "deaths_embrace_buff", "buff_id": "deaths_embrace", "magnitude": 8, "duration_turns": 2}],
         )
         enemy1 = _make_enemy(player_id="enemy1", x=6, y=5)
         enemy2 = _make_enemy(player_id="enemy2", x=5, y=6)
@@ -273,13 +272,13 @@ class TestGraveThornsAI:
             rev, [enemy1, enemy2], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         if result is not None:
-            assert result.skill_id != "grave_thorns"
+            assert result.skill_id != "deaths_embrace"
 
-    def test_skips_grave_thorns_on_cooldown(self):
-        """Grave Thorns on cooldown → skipped even with 2+ enemies nearby."""
+    def test_skips_deaths_embrace_on_cooldown(self):
+        """Death's Embrace on cooldown → skipped even with 2+ enemies nearby."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4},
+            cooldowns={"undying_fury": 12, "soul_rend": 3, "deaths_embrace": 5},
         )
         enemy1 = _make_enemy(player_id="enemy1", x=6, y=5)
         enemy2 = _make_enemy(player_id="enemy2", x=5, y=6)
@@ -289,23 +288,23 @@ class TestGraveThornsAI:
             rev, [enemy1, enemy2], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         if result is not None:
-            assert result.skill_id != "grave_thorns"
+            assert result.skill_id != "deaths_embrace"
 
 
 # ===========================================================================
 # 4. Grave Chains — Ranged Taunt on Squishy/Ranged Enemies
 # ===========================================================================
 
-class TestGraveChainsAI:
-    """Revenant AI taunts squishy/ranged enemies at range with Grave Chains."""
+class TestGraspOfTheGraveAI:
+    """Revenant AI roots ranged/kiting enemies at range with Grasp of the Grave."""
 
-    def test_uses_grave_chains_on_ranged_enemy(self):
-        """Grave Chains fires on a ranged enemy within 3 tiles, not adjacent."""
+    def test_uses_grasp_of_the_grave_on_ranged_enemy(self):
+        """Grasp of the Grave fires on a ranged enemy within 4 tiles, not adjacent."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4},
+            cooldowns={"undying_fury": 12, "deaths_embrace": 5},
         )
-        # Ranged enemy at distance 3 — perfect taunt target
+        # Ranged enemy at distance 3 — perfect root target
         ranged_enemy = _make_enemy(
             player_id="ranged1", x=8, y=5, class_id="ranger", ranged_range=6,
         )
@@ -316,16 +315,16 @@ class TestGraveChainsAI:
         )
         assert result is not None
         assert result.action_type == ActionType.SKILL
-        assert result.skill_id == "grave_chains"
+        assert result.skill_id == "grasp_of_the_grave"
         assert result.target_id == "ranged1"
 
     def test_prefers_squishier_targets(self):
-        """Grave Chains prefers Mage (squishy priority 5) over Crusader (no priority)."""
+        """Grasp of the Grave prefers Mage (squishy priority + ranged bonus) over Crusader."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4},
+            cooldowns={"undying_fury": 12, "deaths_embrace": 5},
         )
-        # Two enemies at distance 2-3 — both valid taunt targets
+        # Two enemies at distance 2 — both valid root targets (not adjacent)
         mage_enemy = _make_enemy(
             player_id="mage1", x=7, y=5, class_id="mage", ranged_range=5,
         )
@@ -338,33 +337,33 @@ class TestGraveChainsAI:
             rev, [mage_enemy, crusader_enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         assert result is not None
-        assert result.skill_id == "grave_chains"
-        assert result.target_id == "mage1"  # Mage has higher squishy priority
+        assert result.skill_id == "grasp_of_the_grave"
+        assert result.target_id == "mage1"  # Mage has higher squishy + ranged priority
 
-    def test_skips_grave_chains_on_adjacent_enemy(self):
-        """Grave Chains does NOT target adjacent enemies (already in melee)."""
+    def test_skips_grasp_on_adjacent_enemy(self):
+        """Grasp of the Grave does NOT target adjacent enemies (already in melee)."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4},
+            cooldowns={"undying_fury": 12, "deaths_embrace": 5},
         )
-        # Only enemy is adjacent — should skip Grave Chains, use Soul Rend instead
+        # Only enemy is adjacent — should skip Grasp, use Soul Rend instead
         adjacent_enemy = _make_enemy(player_id="adj1", x=6, y=5, class_id="mage")
         all_units = _build_units(rev, adjacent_enemy)
 
         result = _retaliation_tank_skill_logic(
             rev, [adjacent_enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
-        # Should NOT be grave_chains — enemy is adjacent
+        # Should NOT be grasp_of_the_grave — enemy is adjacent
         if result is not None:
-            assert result.skill_id != "grave_chains"
+            assert result.skill_id != "grasp_of_the_grave"
 
-    def test_skips_grave_chains_on_out_of_range_enemy(self):
-        """Grave Chains does NOT target enemies beyond range 4."""
+    def test_skips_grasp_on_out_of_range_enemy(self):
+        """Grasp of the Grave does NOT target enemies beyond range 4."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4},
+            cooldowns={"undying_fury": 12, "deaths_embrace": 5},
         )
-        # Enemy at distance 5 — beyond Grave Chains range
+        # Enemy at distance 5 — beyond Grasp range
         far_enemy = _make_enemy(player_id="far1", x=10, y=5, class_id="ranger", ranged_range=6)
         all_units = _build_units(rev, far_enemy)
 
@@ -374,11 +373,11 @@ class TestGraveChainsAI:
         # Should be None — no skill usable (no adjacent enemy for Soul Rend either)
         assert result is None
 
-    def test_skips_grave_chains_on_cooldown(self):
-        """Grave Chains on cooldown → skipped."""
+    def test_skips_grasp_on_cooldown(self):
+        """Grasp of the Grave on cooldown → skipped."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4, "grave_chains": 3},
+            cooldowns={"undying_fury": 12, "deaths_embrace": 5, "grasp_of_the_grave": 4},
         )
         ranged_enemy = _make_enemy(
             player_id="ranged1", x=8, y=5, class_id="ranger", ranged_range=6,
@@ -389,24 +388,24 @@ class TestGraveChainsAI:
             rev, [ranged_enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         if result is not None:
-            assert result.skill_id != "grave_chains"
+            assert result.skill_id != "grasp_of_the_grave"
 
-    def test_skips_already_taunted_enemy(self):
-        """Grave Chains skips enemies that already have a forced_target buff."""
+    def test_skips_already_rooted_enemy(self):
+        """Grasp of the Grave skips enemies that already have a rooted debuff."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4},
+            cooldowns={"undying_fury": 12, "deaths_embrace": 5},
         )
-        taunted_enemy = _make_enemy(
-            player_id="taunted1", x=7, y=5, class_id="mage", ranged_range=5,
-            active_buffs=[{"stat": "forced_target", "target_id": "rev1", "duration_turns": 2}],
+        rooted_enemy = _make_enemy(
+            player_id="rooted1", x=7, y=5, class_id="mage", ranged_range=5,
+            active_buffs=[{"stat": "rooted", "source_id": "rev1", "turns_remaining": 2}],
         )
-        all_units = _build_units(rev, taunted_enemy)
+        all_units = _build_units(rev, rooted_enemy)
 
         result = _retaliation_tank_skill_logic(
-            rev, [taunted_enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
+            rev, [rooted_enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
-        # Should skip — enemy already taunted; no adjacent enemy so returns None
+        # Should skip — enemy already rooted; no adjacent enemy so returns None
         assert result is None
 
 
@@ -418,10 +417,10 @@ class TestSoulRendAI:
     """Revenant AI uses Soul Rend on adjacent enemies."""
 
     def test_uses_soul_rend_on_adjacent_enemy(self):
-        """Soul Rend fires when an enemy is adjacent and higher-priority skills exhausted."""
+        """Soul Rend fires when an enemy is adjacent (priority 2 after Undying Fury)."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4, "grave_chains": 3},
+            cooldowns={"undying_fury": 12},
         )
         enemy = _make_enemy(x=6, y=5)  # adjacent
         all_units = _build_units(rev, enemy)
@@ -437,7 +436,7 @@ class TestSoulRendAI:
         """Soul Rend targets the adjacent enemy with the lowest HP."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4, "grave_chains": 3},
+            cooldowns={"undying_fury": 12},
         )
         enemy_high = _make_enemy(player_id="enemy_high", x=6, y=5, hp=80)
         enemy_low = _make_enemy(player_id="enemy_low", x=4, y=5, hp=20)
@@ -454,7 +453,7 @@ class TestSoulRendAI:
         """Soul Rend does NOT fire when no enemies are adjacent."""
         rev = _make_revenant(
             hp=130, max_hp=130,
-            cooldowns={"undying_will": 8, "grave_thorns": 4, "grave_chains": 3},
+            cooldowns={"undying_fury": 12, "deaths_embrace": 5, "grasp_of_the_grave": 4},
         )
         enemy = _make_enemy(x=15, y=15)  # far away
         all_units = _build_units(rev, enemy)
@@ -469,10 +468,10 @@ class TestSoulRendAI:
         rev = _make_revenant(
             hp=130, max_hp=130,
             cooldowns={
-                "undying_will": 8,
-                "grave_thorns": 4,
-                "grave_chains": 3,
-                "soul_rend": 2,
+                "undying_fury": 12,
+                "soul_rend": 3,
+                "deaths_embrace": 5,
+                "grasp_of_the_grave": 4,
             },
         )
         enemy = _make_enemy(x=6, y=5)
@@ -496,10 +495,10 @@ class TestRetalTankFallback:
         rev = _make_revenant(
             hp=40, max_hp=130,
             cooldowns={
-                "undying_will": 8,
-                "grave_thorns": 4,
-                "grave_chains": 3,
-                "soul_rend": 2,
+                "undying_fury": 12,
+                "soul_rend": 3,
+                "deaths_embrace": 5,
+                "grasp_of_the_grave": 4,
             },
         )
         enemy = _make_enemy(x=6, y=5)
@@ -529,21 +528,21 @@ class TestRetalTankDispatcher:
 
     def test_decide_skill_dispatches_revenant(self):
         """_decide_skill_usage routes revenant to _retaliation_tank_skill_logic."""
-        rev = _make_revenant(hp=50, max_hp=130)  # ~38% HP
+        rev = _make_revenant(hp=44, max_hp=130)  # ~33.8% HP — below 35%
         enemy = _make_enemy(x=6, y=5)  # adjacent
         all_units = _build_units(rev, enemy)
 
         result = _decide_skill_usage(
             rev, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
-        # Should return Undying Will (priority 1 — HP below 40%)
+        # Should return Undying Fury (priority 1 — HP below 35%)
         assert result is not None
         assert result.action_type == ActionType.SKILL
-        assert result.skill_id == "undying_will"
+        assert result.skill_id == "undying_fury"
 
-    def test_decide_skill_revenant_thorns_when_surrounded(self):
-        """Dispatcher correctly routes Revenant Grave Thorns when surrounded (soul_rend on CD)."""
-        rev = _make_revenant(hp=130, max_hp=130, cooldowns={"undying_will": 8, "soul_rend": 3})
+    def test_decide_skill_revenant_embrace_when_surrounded(self):
+        """Dispatcher correctly routes Revenant Death's Embrace when surrounded (soul_rend on CD)."""
+        rev = _make_revenant(hp=130, max_hp=130, cooldowns={"undying_fury": 12, "soul_rend": 3})
         enemy1 = _make_enemy(player_id="enemy1", x=6, y=5)
         enemy2 = _make_enemy(player_id="enemy2", x=5, y=6)
         all_units = _build_units(rev, enemy1, enemy2)
@@ -552,4 +551,4 @@ class TestRetalTankDispatcher:
             rev, [enemy1, enemy2], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         assert result is not None
-        assert result.skill_id == "grave_thorns"
+        assert result.skill_id == "deaths_embrace"

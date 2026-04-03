@@ -11,11 +11,12 @@ Covers:
   - Searing Totem: prefers placement near rooted enemies (combo awareness)
   - Earthgrasp: uses when 2+ enemies in range, esp. near active searing totem
   - Earthgrasp: roots melee enemies approaching party
-  - Soul Anchor: uses on low-HP frontline ally (below 30% HP)
-  - Soul Anchor: does not waste when no ally endangered
+  - Spirit Link: uses on frontline ally to share damage (proactive)
+  - Spirit Link: prefers tanks over squishies
+  - Spirit Link: skips when active link already exists
   - Fallback: returns None when all skills on cooldown
 - _decide_skill_usage() dispatches shaman to totemic_support handler
-- Priority ordering: Healing Totem > Searing Totem > Earthgrasp > Soul Anchor
+- Priority ordering: Healing Totem > Spirit Link > Searing Totem > Earthgrasp
 - Shaman AI stays behind frontline (support positioning via existing stance system)
 """
 
@@ -483,21 +484,21 @@ class TestEarthgraspAI:
 
 
 # ===========================================================================
-# 5. Soul Anchor — Cheat Death on Endangered Frontline Ally
+# 5. Spirit Link — Proactive Damage Sharing with Frontline Ally
 # ===========================================================================
 
-class TestSoulAnchorAI:
-    """Shaman AI uses Soul Anchor on low-HP frontline allies."""
+class TestSpiritLinkAI:
+    """Shaman AI uses Spirit Link to share damage with frontline allies."""
 
-    def test_uses_soul_anchor_on_low_hp_tank(self):
-        """Soul Anchor fires on a Crusader below 30% HP."""
+    def test_uses_spirit_link_on_frontline_tank(self):
+        """Spirit Link fires on a nearby Crusader (tank) when no active link."""
         sham = _make_shaman(cooldowns={
             "healing_totem": 5, "searing_totem": 4, "earthgrasp": 6,
         })
         tank = _make_ally(
-            player_id="tank1", x=6, y=5, hp=25, max_hp=150,
+            player_id="tank1", x=6, y=5, hp=120, max_hp=150,
             class_id="crusader",
-        )  # ~17% HP — well below 30%
+        )
         enemy = _make_enemy(x=8, y=5)
         all_units = _build_units(sham, tank, enemy)
         ms = _FakeMatchState()
@@ -507,40 +508,22 @@ class TestSoulAnchorAI:
         )
         assert result is not None
         assert result.action_type == ActionType.SKILL
-        assert result.skill_id == "soul_anchor"
+        assert result.skill_id == "spirit_link"
         assert result.target_id == "tank1"
 
-    def test_does_not_waste_soul_anchor_when_no_ally_endangered(self):
-        """Soul Anchor does NOT fire when no ally is below 30% HP."""
-        sham = _make_shaman(cooldowns={
-            "healing_totem": 5, "searing_totem": 4, "earthgrasp": 6,
-        })
-        healthy_ally = _make_ally(
-            player_id="ally1", x=6, y=5, hp=80, max_hp=100,
-        )  # 80% HP — well above 30%
-        enemy = _make_enemy(x=8, y=5)
-        all_units = _build_units(sham, healthy_ally, enemy)
-        ms = _FakeMatchState()
-
-        result = _totemic_support_skill_logic(
-            sham, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES, match_state=ms,
-        )
-        if result is not None:
-            assert result.skill_id != "soul_anchor"
-
-    def test_soul_anchor_prefers_tanks(self):
-        """Soul Anchor prefers Crusader (tank) over Mage (squishy) at similar HP%."""
+    def test_spirit_link_prefers_tanks_over_squishies(self):
+        """Spirit Link prefers Crusader (tank) over Mage (squishy)."""
         sham = _make_shaman(cooldowns={
             "healing_totem": 5, "searing_totem": 4, "earthgrasp": 6,
         })
         tank = _make_ally(
-            player_id="tank1", x=6, y=5, hp=20, max_hp=150,
+            player_id="tank1", x=6, y=5, hp=100, max_hp=150,
             class_id="crusader",
-        )  # ~13% HP
+        )
         mage = _make_ally(
-            player_id="mage1", x=4, y=5, hp=15, max_hp=70,
+            player_id="mage1", x=4, y=5, hp=40, max_hp=70,
             class_id="mage",
-        )  # ~21% HP
+        )
         enemy = _make_enemy(x=8, y=5)
         all_units = _build_units(sham, tank, mage, enemy)
         ms = _FakeMatchState()
@@ -549,41 +532,41 @@ class TestSoulAnchorAI:
             sham, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES, match_state=ms,
         )
         assert result is not None
-        assert result.skill_id == "soul_anchor"
+        assert result.skill_id == "spirit_link"
         assert result.target_id == "tank1"  # Tanks are prioritized
 
-    def test_soul_anchor_skips_already_anchored_ally(self):
-        """Soul Anchor does NOT fire if the Shaman already has an active anchor on someone."""
+    def test_spirit_link_skips_when_active_link_exists(self):
+        """Spirit Link does NOT fire if the Shaman already has an active link on someone."""
         sham = _make_shaman(cooldowns={
             "healing_totem": 5, "searing_totem": 4, "earthgrasp": 6,
         })
-        anchored_tank = _make_ally(
-            player_id="tank1", x=6, y=5, hp=20, max_hp=150,
+        linked_tank = _make_ally(
+            player_id="tank1", x=6, y=5, hp=100, max_hp=150,
             class_id="crusader",
-            active_buffs=[{"stat": "soul_anchor", "caster_id": "sham1", "turns_remaining": 3}],
+            active_buffs=[{"stat": "spirit_link", "caster_id": "sham1", "turns_remaining": 3}],
         )
         other_ally = _make_ally(
-            player_id="ally2", x=4, y=5, hp=20, max_hp=100,
+            player_id="ally2", x=4, y=5, hp=60, max_hp=100,
             class_id="ranger",
-        )  # 20% HP — below threshold, but anchor already active
+        )
         enemy = _make_enemy(x=8, y=5)
-        all_units = _build_units(sham, anchored_tank, other_ally, enemy)
+        all_units = _build_units(sham, linked_tank, other_ally, enemy)
         ms = _FakeMatchState()
 
         result = _totemic_support_skill_logic(
             sham, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES, match_state=ms,
         )
-        # Should skip soul_anchor — one is already active from this Shaman
+        # Should skip spirit_link — one is already active from this Shaman
         if result is not None:
-            assert result.skill_id != "soul_anchor"
+            assert result.skill_id != "spirit_link"
 
-    def test_soul_anchor_on_cooldown_skipped(self):
-        """Soul Anchor on cooldown → skipped."""
+    def test_spirit_link_on_cooldown_skipped(self):
+        """Spirit Link on cooldown → skipped."""
         sham = _make_shaman(cooldowns={
-            "healing_totem": 5, "searing_totem": 4, "earthgrasp": 6, "soul_anchor": 9,
+            "healing_totem": 5, "searing_totem": 4, "earthgrasp": 6, "spirit_link": 5,
         })
         tank = _make_ally(
-            player_id="tank1", x=6, y=5, hp=20, max_hp=150,
+            player_id="tank1", x=6, y=5, hp=100, max_hp=150,
             class_id="crusader",
         )
         enemy = _make_enemy(x=8, y=5)
@@ -594,15 +577,15 @@ class TestSoulAnchorAI:
             sham, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES, match_state=ms,
         )
         if result is not None:
-            assert result.skill_id != "soul_anchor"
+            assert result.skill_id != "spirit_link"
 
-    def test_soul_anchor_out_of_range_skipped(self):
-        """Soul Anchor does NOT fire on allies beyond range 4."""
+    def test_spirit_link_out_of_range_skipped(self):
+        """Spirit Link does NOT fire on allies beyond range 4."""
         sham = _make_shaman(cooldowns={
             "healing_totem": 5, "searing_totem": 4, "earthgrasp": 6,
         })
         far_tank = _make_ally(
-            player_id="tank1", x=15, y=15, hp=20, max_hp=150,
+            player_id="tank1", x=15, y=15, hp=100, max_hp=150,
             class_id="crusader",
         )  # Way out of range
         enemy = _make_enemy(x=8, y=5)
@@ -613,7 +596,23 @@ class TestSoulAnchorAI:
             sham, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES, match_state=ms,
         )
         if result is not None:
-            assert result.skill_id != "soul_anchor"
+            assert result.skill_id != "spirit_link"
+
+    def test_spirit_link_does_not_target_self(self):
+        """Spirit Link does NOT target the Shaman itself."""
+        sham = _make_shaman(cooldowns={
+            "healing_totem": 5, "searing_totem": 4, "earthgrasp": 6,
+        })
+        # No allies — only the Shaman
+        enemy = _make_enemy(x=8, y=5)
+        all_units = _build_units(sham, enemy)
+        ms = _FakeMatchState()
+
+        result = _totemic_support_skill_logic(
+            sham, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES, match_state=ms,
+        )
+        if result is not None:
+            assert result.skill_id != "spirit_link"
 
 
 # ===========================================================================
@@ -627,7 +626,7 @@ class TestTotemicSupportFallback:
         """All skills on cooldown → returns None for fallback to basic attack."""
         sham = _make_shaman(cooldowns={
             "healing_totem": 5, "searing_totem": 4,
-            "earthgrasp": 6, "soul_anchor": 9,
+            "earthgrasp": 6, "spirit_link": 5,
         })
         enemy = _make_enemy(x=7, y=5)
         ally = _make_ally(player_id="ally1", x=4, y=5, hp=30, max_hp=100)
@@ -731,13 +730,33 @@ class TestTotemicSupportPriority:
         assert result is not None
         assert result.skill_id == "searing_totem"
 
-    def test_earthgrasp_prioritized_over_soul_anchor(self):
-        """When totems are on CD but Earthgrasp and Soul Anchor ready, favors Earthgrasp."""
+    def test_spirit_link_prioritized_over_earthgrasp(self):
+        """When totems are on CD but Spirit Link and Earthgrasp ready, favors Spirit Link."""
         sham = _make_shaman(cooldowns={"healing_totem": 5, "searing_totem": 4})
         tank = _make_ally(
-            player_id="tank1", x=6, y=5, hp=20, max_hp=150,
+            player_id="tank1", x=6, y=5, hp=100, max_hp=150,
             class_id="crusader",
-        )  # Also qualifies for Soul Anchor
+        )
+        enemy1 = _make_enemy(player_id="enemy1", x=7, y=5)
+        enemy2 = _make_enemy(player_id="enemy2", x=7, y=6)
+        all_units = _build_units(sham, tank, enemy1, enemy2)
+        ms = _FakeMatchState()
+
+        result = _totemic_support_skill_logic(
+            sham, [enemy1, enemy2], all_units, GRID_W, GRID_H, NO_OBSTACLES, match_state=ms,
+        )
+        assert result is not None
+        assert result.skill_id == "spirit_link"
+
+    def test_earthgrasp_used_when_spirit_link_on_cooldown(self):
+        """When Spirit Link on CD but Earthgrasp ready with enemies clustered, uses Earthgrasp."""
+        sham = _make_shaman(cooldowns={
+            "healing_totem": 5, "searing_totem": 4, "spirit_link": 5,
+        })
+        tank = _make_ally(
+            player_id="tank1", x=6, y=5, hp=100, max_hp=150,
+            class_id="crusader",
+        )
         enemy1 = _make_enemy(player_id="enemy1", x=7, y=5)
         enemy2 = _make_enemy(player_id="enemy2", x=7, y=6)
         all_units = _build_units(sham, tank, enemy1, enemy2)

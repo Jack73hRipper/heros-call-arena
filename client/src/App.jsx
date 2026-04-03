@@ -11,6 +11,7 @@ import MatchLobby from './components/MatchLobby/MatchLobby';
 import Arena from './components/Arena/Arena';
 import TownHub from './components/TownHub/TownHub';
 import PostMatchScreen from './components/PostMatch/PostMatchScreen';
+import IntroSequence from './components/Intro/IntroSequence';
 
 /**
  * AppInner — lives inside GameStateProvider so it can access game state.
@@ -22,7 +23,7 @@ import PostMatchScreen from './components/PostMatch/PostMatchScreen';
  *   Note: screen='waiting' now also renders MatchLobby (backward compat)
  */
 function AppInner() {
-  const [screen, setScreenRaw] = useState('lobby'); // 'lobby' | 'waiting' | 'arena' | 'town' | 'postmatch'
+  const [screen, setScreenRaw] = useState('intro'); // 'intro' | 'lobby' | 'waiting' | 'arena' | 'town' | 'postmatch'
   const screenKeyRef = useRef(0); // Increments on screen change to trigger re-mount & CSS enter animation
   const gameState = useGameState();
   const dispatch = useGameDispatch();
@@ -371,6 +372,12 @@ function AppInner() {
       <VolumeSettings />
 
       <main>
+        {screen === 'intro' && (
+          <IntroSequence
+            onComplete={() => setScreen('lobby')}
+            audioManager={audioManager}
+          />
+        )}
         {screen === 'lobby' && (
           <div key={`lobby-${screenKeyRef.current}`} className="screen-enter">
             <Lobby

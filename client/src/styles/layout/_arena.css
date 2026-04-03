@@ -10,7 +10,6 @@
   position: fixed;
   top: 0;
   left: 0;
-  overflow: hidden;
   z-index: 10;
 }
 
@@ -19,7 +18,7 @@
   grid-row: 1;
 }
 
-.arena-bottom-bar {
+.arena-action-bar {
   grid-column: 1 / -1;
   grid-row: 2;
   display: flex;
@@ -28,6 +27,8 @@
   padding: 0.25rem 0.5rem;
   background: var(--bg-panel);
   border-bottom: 1px solid var(--border-subtle);
+  overflow: visible;
+  z-index: 20;
 }
 
 /* Player & Party Vitals row — between action bar and viewport */
@@ -81,10 +82,10 @@
 }
 
 @media (max-height: 800px) {
-  .arena-bottom-bar {
+  .arena-action-bar {
     padding: 0.15rem 0.4rem;
   }
-  .bottom-bar {
+  .action-bar {
     gap: 0.25rem;
   }
   .action-slot {

@@ -218,10 +218,10 @@ class TestBalladOfMight:
         assert result.skill_id == "ballad_of_might"
 
     def test_skips_ballad_allies_out_of_radius(self):
-        """Allies beyond radius 3 don't count toward Ballad threshold."""
+        """Allies beyond radius 4 don't count toward Ballad threshold."""
         bard = _make_bard(x=5, y=5)
-        ally1 = _make_ally(player_id="ally1", x=9, y=5)  # dist 4 — out of radius 3
-        ally2 = _make_ally(player_id="ally2", x=5, y=9)  # dist 4 — out of radius 3
+        ally1 = _make_ally(player_id="ally1", x=10, y=5)  # dist 5 — out of radius 4
+        ally2 = _make_ally(player_id="ally2", x=5, y=10)  # dist 5 — out of radius 4
         enemies = [_make_enemy(x=10, y=10)]
         all_units = _build_units(bard, ally1, ally2, enemies[0])
 
@@ -353,34 +353,29 @@ class TestDirgeOfWeakness:
 
 
 # ===========================================================================
-# 4. Verse of Haste — Cooldown Reduction
+# 4. War Hymn — AoE Heal-over-Time
 # ===========================================================================
 
-class TestVerseOfHaste:
-    """Bard AI uses Verse of Haste on the ally with highest cooldown debt."""
+class TestWarHymn:
+    """Bard AI uses War Hymn when allies need healing."""
 
-    def test_uses_verse_on_ally_with_high_cd_debt(self):
-        """Verse targets the ally with the highest total cooldown debt."""
+    def test_uses_war_hymn_when_ally_injured(self):
+        """War Hymn fires when an ally in radius is below 85% HP."""
         bard = _make_bard(x=5, y=5, cooldowns={"ballad_of_might": 5, "dirge_of_weakness": 5})
-        ally1 = _make_ally(player_id="ally1", x=6, y=5,
-                           cooldowns={"shield_bash": 4, "taunt": 3})  # debt = 7
-        ally2 = _make_ally(player_id="ally2", class_id="ranger", x=5, y=6,
-                           cooldowns={"power_shot": 1})  # debt = 1 (below threshold)
+        ally1 = _make_ally(player_id="ally1", x=6, y=5, hp=80, max_hp=150)  # ~53% HP
         enemies = [_make_enemy(x=15, y=15)]
-        all_units = _build_units(bard, ally1, ally2, enemies[0])
+        all_units = _build_units(bard, ally1, enemies[0])
 
         result = _offensive_support_skill_logic(
             bard, enemies, all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         assert result is not None
-        assert result.skill_id == "verse_of_haste"
-        assert result.target_id == "ally1"
+        assert result.skill_id == "war_hymn"
 
-    def test_skips_verse_ally_low_cd_debt(self):
-        """Verse skipped when all allies have cooldown debt < 1."""
-        bard = _make_bard(x=5, y=5, cooldowns={"ballad_of_might": 5, "dirge_of_weakness": 5})
-        ally1 = _make_ally(player_id="ally1", x=6, y=5,
-                           cooldowns={})  # debt = 0 — below threshold
+    def test_skips_war_hymn_all_allies_healthy(self):
+        """War Hymn skipped when all allies are above 85% HP."""
+        bard = _make_bard(x=5, y=5, hp=110, cooldowns={"ballad_of_might": 5, "dirge_of_weakness": 5})
+        ally1 = _make_ally(player_id="ally1", x=6, y=5, hp=150, max_hp=150)  # 100% HP
         enemies = [_make_enemy(x=15, y=15)]
         all_units = _build_units(bard, ally1, enemies[0])
 
@@ -388,29 +383,14 @@ class TestVerseOfHaste:
             bard, enemies, all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         if result is not None:
-            assert result.skill_id != "verse_of_haste"
+            assert result.skill_id != "war_hymn"
 
-    def test_skips_verse_ally_out_of_range(self):
-        """Verse skipped when ally with high CD debt is out of range 3."""
-        bard = _make_bard(x=5, y=5, cooldowns={"ballad_of_might": 5, "dirge_of_weakness": 5})
-        ally1 = _make_ally(player_id="ally1", x=10, y=5,
-                           cooldowns={"shield_bash": 4, "taunt": 3})  # dist 5 — out of range
-        enemies = [_make_enemy(x=15, y=15)]
-        all_units = _build_units(bard, ally1, enemies[0])
-
-        result = _offensive_support_skill_logic(
-            bard, enemies, all_units, GRID_W, GRID_H, NO_OBSTACLES,
-        )
-        if result is not None:
-            assert result.skill_id != "verse_of_haste"
-
-    def test_verse_on_cooldown(self):
-        """Verse on cooldown → skipped."""
+    def test_war_hymn_on_cooldown(self):
+        """War Hymn on cooldown → skipped."""
         bard = _make_bard(x=5, y=5, cooldowns={
-            "ballad_of_might": 5, "dirge_of_weakness": 5, "verse_of_haste": 3,
+            "ballad_of_might": 5, "dirge_of_weakness": 5, "war_hymn": 3,
         })
-        ally1 = _make_ally(player_id="ally1", x=6, y=5,
-                           cooldowns={"shield_bash": 4, "taunt": 3})
+        ally1 = _make_ally(player_id="ally1", x=6, y=5, hp=50, max_hp=150)  # injured
         enemies = [_make_enemy(x=15, y=15)]
         all_units = _build_units(bard, ally1, enemies[0])
 
@@ -418,24 +398,19 @@ class TestVerseOfHaste:
             bard, enemies, all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         if result is not None:
-            assert result.skill_id != "verse_of_haste"
+            assert result.skill_id != "war_hymn"
 
-    def test_verse_picks_highest_debt_ally(self):
-        """When multiple allies have cooldowns, Verse targets the one with highest total debt."""
-        bard = _make_bard(x=5, y=5, cooldowns={"ballad_of_might": 5, "dirge_of_weakness": 5})
-        ally1 = _make_ally(player_id="ally1", x=6, y=5,
-                           cooldowns={"shield_bash": 2})  # debt = 2
-        ally2 = _make_ally(player_id="ally2", class_id="mage", x=5, y=6,
-                           cooldowns={"fireball": 5, "frost_nova": 3})  # debt = 8
+    def test_war_hymn_when_self_injured(self):
+        """War Hymn fires when the Bard itself is below 85% HP."""
+        bard = _make_bard(x=5, y=5, hp=75, cooldowns={"ballad_of_might": 5, "dirge_of_weakness": 5})
         enemies = [_make_enemy(x=15, y=15)]
-        all_units = _build_units(bard, ally1, ally2, enemies[0])
+        all_units = _build_units(bard, enemies[0])
 
         result = _offensive_support_skill_logic(
             bard, enemies, all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         assert result is not None
-        assert result.skill_id == "verse_of_haste"
-        assert result.target_id == "ally2"
+        assert result.skill_id == "war_hymn"
 
 
 # ===========================================================================
@@ -448,7 +423,7 @@ class TestCacophony:
     def test_uses_cacophony_with_adjacent_enemy(self):
         """Cacophony fires when an enemy is within radius 2 of the Bard."""
         bard = _make_bard(x=5, y=5, cooldowns={
-            "ballad_of_might": 5, "dirge_of_weakness": 5, "verse_of_haste": 5,
+            "ballad_of_might": 5, "dirge_of_weakness": 5, "war_hymn": 5,
         })
         enemy = _make_enemy(player_id="enemy1", x=6, y=5)  # adjacent (dist 1)
         all_units = _build_units(bard, enemy)
@@ -463,7 +438,7 @@ class TestCacophony:
     def test_skips_cacophony_no_adjacent_enemy(self):
         """Cacophony does NOT fire when no enemy is adjacent."""
         bard = _make_bard(x=5, y=5, cooldowns={
-            "ballad_of_might": 5, "dirge_of_weakness": 5, "verse_of_haste": 5,
+            "ballad_of_might": 5, "dirge_of_weakness": 5, "war_hymn": 5,
         })
         enemy = _make_enemy(player_id="enemy1", x=8, y=5)  # dist 3 — not adjacent
         all_units = _build_units(bard, enemy)
@@ -478,7 +453,7 @@ class TestCacophony:
         """Cacophony on cooldown → skipped even with adjacent enemy."""
         bard = _make_bard(x=5, y=5, cooldowns={
             "ballad_of_might": 5, "dirge_of_weakness": 5,
-            "verse_of_haste": 5, "cacophony": 3,
+            "war_hymn": 5, "cacophony": 3,
         })
         enemy = _make_enemy(player_id="enemy1", x=6, y=5)
         all_units = _build_units(bard, enemy)
@@ -500,7 +475,7 @@ class TestFallback:
         """All 4 skills on cooldown → returns None."""
         bard = _make_bard(x=5, y=5, cooldowns={
             "ballad_of_might": 3, "dirge_of_weakness": 4,
-            "verse_of_haste": 3, "cacophony": 3,
+            "war_hymn": 3, "cacophony": 3,
         })
         ally1 = _make_ally(player_id="ally1", x=6, y=5)
         ally2 = _make_ally(player_id="ally2", x=5, y=6)
@@ -565,7 +540,7 @@ class TestDispatcher:
         """Bard with all skills on CD → returns None through dispatcher."""
         bard = _make_bard(x=5, y=5, cooldowns={
             "ballad_of_might": 3, "dirge_of_weakness": 4,
-            "verse_of_haste": 3, "cacophony": 3,
+            "war_hymn": 3, "cacophony": 3,
         })
         enemy = _make_enemy(player_id="enemy1", x=10, y=10)
         all_units = _build_units(bard, enemy)
@@ -612,13 +587,13 @@ class TestPriorityOrder:
         assert result is not None
         assert result.skill_id == "dirge_of_weakness"
 
-    def test_verse_when_ballad_and_dirge_on_cd(self):
-        """Verse fires when Ballad & Dirge are on CD and ally has high cooldown debt."""
+    def test_war_hymn_when_ballad_and_dirge_on_cd(self):
+        """War Hymn fires when Ballad & Dirge are on CD and ally is injured."""
         bard = _make_bard(x=5, y=5, cooldowns={
             "ballad_of_might": 3, "dirge_of_weakness": 4,
         })
-        ally1 = _make_ally(player_id="ally1", x=6, y=5,
-                           cooldowns={"shield_bash": 4, "taunt": 3})  # debt = 7
+        ally1 = _make_ally(player_id="ally1", x=6, y=5)
+        ally1.hp = int(ally1.max_hp * 0.7)  # injured below 85%
         enemy = _make_enemy(player_id="enemy1", x=15, y=15)
         all_units = _build_units(bard, ally1, enemy)
 
@@ -626,12 +601,12 @@ class TestPriorityOrder:
             bard, [enemy], all_units, GRID_W, GRID_H, NO_OBSTACLES,
         )
         assert result is not None
-        assert result.skill_id == "verse_of_haste"
+        assert result.skill_id == "war_hymn"
 
     def test_cacophony_last_resort(self):
         """Cacophony fires only when higher-priority skills aren't usable."""
         bard = _make_bard(x=5, y=5, cooldowns={
-            "ballad_of_might": 3, "dirge_of_weakness": 4, "verse_of_haste": 3,
+            "ballad_of_might": 3, "dirge_of_weakness": 4, "war_hymn": 3,
         })
         enemy = _make_enemy(player_id="enemy1", x=6, y=5)  # adjacent
         all_units = _build_units(bard, enemy)

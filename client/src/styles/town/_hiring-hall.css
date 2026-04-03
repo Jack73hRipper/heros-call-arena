@@ -1,6 +1,6 @@
-/* ===== Hiring Hall — Phase 15 Chunk 4 ===== */
-/* Ornate tavern hero cards with grim-frame styling, */
-/* stat-block dotted leaders, and enhanced buttons.   */
+/* ===== Hiring Hall — Phase 4E-4 Overhaul ===== */
+/* Tavern hero cards with class identity (role, description, */
+/* skill preview, starting gear) and grim-frame styling.     */
 
 .hiring-hall-header {
   display: flex;
@@ -266,4 +266,182 @@
   border-color: var(--border-subtle);
   cursor: not-allowed;
   box-shadow: none;
+}
+
+/* ===== Phase 4E-4: Class Identity & Gear Sections ===== */
+
+/* --- Role Tag --- */
+.hero-role-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.2rem;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.68rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  border: 1px solid;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.03);
+  width: fit-content;
+}
+
+.hero-role-icon {
+  font-size: 0.72rem;
+}
+
+/* --- Class Description --- */
+.hero-card-description {
+  font-size: 0.72rem;
+  font-family: var(--font-flavor);
+  font-style: italic;
+  color: var(--text-dim);
+  line-height: 1.35;
+  margin: 0.3rem 0 0.2rem;
+  padding: 0 0.15rem;
+  position: relative;
+  z-index: 3;
+}
+
+/* --- Skill Badges --- */
+.hero-card-skills {
+  margin: 0.35rem 0 0.25rem;
+  position: relative;
+  z-index: 5;
+}
+
+.hero-skills-label {
+  display: block;
+  font-size: 0.62rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 0.25rem;
+}
+
+.hero-skill-badges {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.hero-skill-badge {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-deep);
+  border: 1px solid var(--border-medium);
+  border-radius: 3px;
+  cursor: default;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.hero-skill-badge:hover {
+  border-color: var(--accent-ember-dim);
+  box-shadow: 0 0 6px rgba(196, 151, 58, 0.15);
+}
+
+.skill-badge-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* --- Skill Tooltip --- */
+.skill-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  padding: 0.45rem 0.55rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: 3px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.skill-tooltip-name {
+  font-family: var(--font-heading);
+  font-size: 0.78rem;
+  color: var(--accent-ember-bright);
+  margin-bottom: 0.2rem;
+}
+
+.skill-tooltip-desc {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+  margin-bottom: 0.2rem;
+}
+
+.skill-tooltip-cd {
+  font-size: 0.65rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+}
+
+/* --- Starting Gear Section --- */
+.hero-card-gear {
+  margin: 0.35rem 0 0.15rem;
+  position: relative;
+  z-index: 3;
+}
+
+.hero-gear-label {
+  display: block;
+  font-size: 0.62rem;
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 0.25rem;
+}
+
+.hero-gear-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.hero-gear-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.2rem 0.4rem;
+  background: var(--bg-deep);
+  border-left: 2px solid;
+  border-radius: 2px;
+}
+
+.gear-item-name {
+  font-size: 0.72rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
+}
+
+.gear-item-slot {
+  font-size: 0.6rem;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+/* --- Hire Cost Block --- */
+.hero-hire-cost-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-cost-breakdown {
+  font-size: 0.6rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
 }

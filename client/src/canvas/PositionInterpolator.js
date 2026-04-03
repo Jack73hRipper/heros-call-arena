@@ -26,6 +26,9 @@ class PositionInterpolator {
   constructor() {
     /** @type {Map<string, {prevX: number, prevY: number, targetX: number, targetY: number, startTime: number, duration: number}>} */
     this._entries = new Map();
+    // P-E: Reusable result map and position objects — avoids per-frame allocation
+    this._resultMap = new Map();
+    this._posPool = new Map(); // unitId → reusable {x, y} object
   }
 
   /**
@@ -120,15 +123,31 @@ class PositionInterpolator {
   /**
    * Get interpolated float positions for all tracked units.
    * Call this every animation frame.
+   * P-E: Reuses the same Map and position objects to avoid per-frame allocations.
    *
    * @returns {Map<string, {x: number, y: number}>}
    */
   getInterpolatedPositions() {
     const now = performance.now();
-    const result = new Map();
+    const result = this._resultMap;
+    result.clear();
 
     for (const [id, entry] of this._entries) {
-      result.set(id, this._getLerpedPos(entry, now));
+      // Reuse existing position object or create one
+      let pos = this._posPool.get(id);
+      if (!pos) {
+        pos = { x: 0, y: 0 };
+        this._posPool.set(id, pos);
+      }
+      this._fillLerpedPos(entry, now, pos);
+      result.set(id, pos);
+    }
+
+    // Clean up pool for removed units
+    if (this._posPool.size > this._entries.size + 20) {
+      for (const id of this._posPool.keys()) {
+        if (!this._entries.has(id)) this._posPool.delete(id);
+      }
     }
 
     return result;
@@ -174,6 +193,24 @@ class PositionInterpolator {
       x: entry.prevX + (entry.targetX - entry.prevX) * eased,
       y: entry.prevY + (entry.targetY - entry.prevY) * eased,
     };
+  }
+
+  /**
+   * P-E: Fill an existing position object with lerped coordinates (zero-alloc).
+   * @param {Object} entry
+   * @param {number} now
+   * @param {{x: number, y: number}} out — mutated in place
+   */
+  _fillLerpedPos(entry, now, out) {
+    if (entry.duration <= 0 || (now - entry.startTime) >= entry.duration) {
+      out.x = entry.targetX;
+      out.y = entry.targetY;
+      return;
+    }
+    const t = (now - entry.startTime) / entry.duration;
+    const eased = 1 - Math.pow(1 - t, 3);
+    out.x = entry.prevX + (entry.targetX - entry.prevX) * eased;
+    out.y = entry.prevY + (entry.targetY - entry.prevY) * eased;
   }
 
   /**

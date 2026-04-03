@@ -122,6 +122,8 @@ class ClassDefinition(BaseModel):
     ranged_range: int = 5
     # Phase 16: Weapon class-lock — which weapon categories this class can equip
     allowed_weapon_categories: list[str] = Field(default_factory=list)
+    # Phase 22A: Weapon type proficiency — which specific weapon types this class can equip
+    allowed_weapon_types: list[str] = Field(default_factory=list)
     # Phase 21B: Armor affinity — preferred armor category and bonus percentage
     preferred_armor: str = ""  # "heavy", "light", "cloth", or "" for no preference
     armor_affinity_bonus: float = 0.0  # e.g. 0.15 = +15% base stats on matching armor

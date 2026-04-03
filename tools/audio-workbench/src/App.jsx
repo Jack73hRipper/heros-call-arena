@@ -7,6 +7,7 @@ import SoundBrowser from './components/SoundBrowser.jsx';
 import MappingEditor from './components/MappingEditor.jsx';
 import ComparePanel from './components/ComparePanel.jsx';
 import AssetLibrary from './components/AssetLibrary.jsx';
+import SynthPreview from './components/SynthPreview.jsx';
 import './styles/workbench.css';
 
 const API = 'http://localhost:5211';
@@ -50,7 +51,7 @@ export default function App() {
   // Web Audio context (shared)
   const audioCtxRef = useRef(null);
 
-  function getAudioCtx() {
+  const getAudioCtx = useCallback(() => {
     if (!audioCtxRef.current) {
       audioCtxRef.current = new (window.AudioContext || window.webkitAudioContext)();
     }
@@ -58,7 +59,7 @@ export default function App() {
       audioCtxRef.current.resume();
     }
     return audioCtxRef.current;
-  }
+  }, []);
 
   // ── Load data on mount ──────────────────────────────────
   const loadData = useCallback(async () => {
@@ -227,6 +228,12 @@ export default function App() {
         >
           📦 Asset Library
         </button>
+        <button
+          className={`wb-tab ${activeTab === 'synth' ? 'wb-tab--active' : ''}`}
+          onClick={() => setActiveTab('synth')}
+        >
+          🔊 Synthesizer
+        </button>
       </nav>
 
       {/* ── Panel Content ──────────────────────────── */}
@@ -260,6 +267,16 @@ export default function App() {
         )}
         {activeTab === 'library' && (
           <AssetLibrary
+            config={config}
+            diskFiles={diskFiles}
+            getAudioCtx={getAudioCtx}
+            onUpdateConfig={updateConfig}
+            onAddToCompare={addToCompare}
+            onRefreshDiskFiles={refreshDiskFiles}
+          />
+        )}
+        {activeTab === 'synth' && (
+          <SynthPreview
             config={config}
             diskFiles={diskFiles}
             getAudioCtx={getAudioCtx}

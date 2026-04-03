@@ -15,6 +15,8 @@
  *   S = spawn
  *   X = chest
  *   T = stairs
+ *   E = enemy spawn (rendered as floor; overlay handles marker)
+ *   B = boss spawn  (rendered as floor; overlay handles marker)
  */
 export const TILE_LEGEND = {
   'W': 'wall',
@@ -24,6 +26,8 @@ export const TILE_LEGEND = {
   'S': 'spawn',
   'X': 'chest',
   'T': 'stairs',
+  'E': 'floor',
+  'B': 'floor',
 };
 
 /**

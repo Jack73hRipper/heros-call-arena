@@ -27,10 +27,10 @@ A masked plague alchemist who weaponizes disease and toxins on the battlefield. 
 
 | Stat | Value | Rationale |
 |------|-------|-----------|
-| **HP** | 85 | Between Mage (70) and Bard (90). Squishy midliner — survives a hit more than Mage but not a frontliner |
+| **HP** | 95 | Between Bard (90) and Confessor (100). Survivable midliner — can take a few hits before needing support |
 | **Melee Damage** | 8 | Weak — same as Confessor/Ranger. Carrying vials, not swords |
-| **Ranged Damage** | 12 | Moderate — alchemical flask tosses. Between Bard (10) and Mage (14). Skills do the real work |
-| **Armor** | 2 | Light — plague mask and robes. Same tier as Ranger |
+| **Ranged Damage** | 14 | Moderate — alchemical flask tosses. Matches Mage (14). Skills do the real work. *(Buffed from 12 in v0.1.36 balance pass)* |
+| **Armor** | 3 | Moderate — plague mask and reinforced robes. Same tier as Confessor |
 | **Vision Range** | 7 | Standard — no reason to be a scout, no reason to be blind |
 | **Ranged Range** | 5 | Medium — needs to reach the fight from the midline but not dominate like Ranger (6) |
 | **Allowed Weapons** | `["caster", "hybrid"]` | Alchemical implements, staves, wands |
@@ -49,16 +49,16 @@ A masked plague alchemist who weaponizes disease and toxins on the battlefield. 
  Mage ..........    70       6      14      1       7      5   Caster DPS
  Bard ..........    90      10      10      3       7      4   Offensive Support
  Blood Knight ..   100      16       0      4       6      0   Sustain Melee DPS
- Plague Doctor .    85       8      12      2       7      5   Controller
+ Plague Doctor .    95       8      14      3       7      5   Controller
 ```
 
 ### Auto-Attack Damage (1.15× multiplier)
 
 ```
- Plague Doctor .. 12 × 1.15 = 14 ranged per hit (range 5)
+ Plague Doctor .. 14 × 1.15 = 16 ranged per hit (range 5)
 ```
 
-Lower than Ranger (21), Hexblade (17), Mage (16). Similar to Inquisitor auto-attack damage. This is intentional — the Plague Doctor's value comes from skill effects (DoTs, debuffs, slows), not raw auto-attack output.
+Matches Mage (16), lower than Ranger (21) and Hexblade (17). *(Buffed from 12 base / 14 effective in v0.1.36 balance pass — auto-attacks were too weak during skill cooldown windows.)*
 
 ---
 
@@ -69,9 +69,9 @@ Lower than Ranger (21), Hexblade (17), Mage (16). Similar to Inquisitor auto-att
 | Slot | Skill | Effect Type | Target | Range | Cooldown | Summary |
 |:----:|-------|------------|--------|:-----:|:--------:|---------|
 | 0 | Auto Attack (Ranged) | ranged_damage | entity | 5 | 0 | 1.15× ranged damage (14) |
-| 1 | Miasma | aoe_damage_slow (**NEW variant**: ground-targeted) | ground_aoe | 5 | 6 | AoE 10 dmg + 2-turn slow in 2-tile radius |
-| 2 | Plague Flask | dot (existing) | enemy_ranged | 5 | 5 | Single-target poison: 7/tick × 4 turns = 28 total |
-| 3 | Enfeeble | aoe_debuff (existing) | ground_aoe | 4 | 7 | AoE debuff: enemies deal 25% less damage for 3 turns |
+| 1 | Miasma | aoe_damage_slow (**NEW variant**: ground-targeted) | ground_aoe | 5 | 6 | AoE 15 dmg + 2-turn slow in 2-tile radius |
+| 2 | Plague Flask | dot (existing) | enemy_ranged | 5 | 4 | Single-target poison: 10/tick × 4 turns = 40 total |
+| 3 | Enfeeble | aoe_debuff (existing) | ground_aoe | 4 | 4 | AoE debuff: -25% damage dealt and -2 armor for 4 turns |
 | 4 | Inoculate | buff_cleanse (**NEW**: buff + DoT cleanse) | ally_or_self | 3 | 5 | +3 armor for 3 turns + cleanse all DoTs on target |
 
 ### Skill Details
@@ -85,7 +85,7 @@ Radius:        2 tiles
 Range:         5 tiles
 Cooldown:      6 turns
 LOS Required:  Yes
-Effect:        Deal 10 magic damage and slow all enemies within 2 tiles of target
+Effect:        Deal 15 magic damage and slow all enemies within 2 tiles of target
                tile for 2 turns. Slow prevents movement but allows attacks/skills.
 ```
 
@@ -93,16 +93,18 @@ Effect:        Deal 10 magic damage and slow all enemies within 2 tiles of targe
 
 **Damage/healing/effect examples:**
 ```
-vs 3 enemies clustered:         10 × 3 = 30 total damage + all slowed 2 turns
-vs Crusader (8 armor, 50% eff): max(1, 10 - 4) = 6 damage + slow
-vs Ranger (2 armor, 50% eff):   max(1, 10 - 1) = 9 damage + slow
-vs Mage (1 armor, 50% eff):     max(1, 10 - 0) = 10 damage + slow
-DPT per target (over CD cycle): 10 / 6 = 1.7 per target
+vs 3 enemies clustered:         15 × 3 = 45 total damage + all slowed 2 turns
+vs Crusader (8 armor, 50% eff): max(1, 15 - 4) = 11 damage + slow
+vs Ranger (2 armor, 50% eff):   max(1, 15 - 1) = 14 damage + slow
+vs Mage (1 armor, 50% eff):     max(1, 15 - 0) = 15 damage + slow
+DPT per target (over CD cycle): 15 / 6 = 2.5 per target
 ```
+
+*(Damage buffed from 10 in v0.1.36 balance pass — AoE burst was too weak to feel impactful.)*
 
 **Implementation:** New handler `resolve_aoe_damage_slow_targeted()` — based on the existing `resolve_aoe_damage_slow()` (Frost Nova/Cacophony) but uses `target_x`/`target_y` as the AoE center instead of the caster's position. Also add range + LOS validation to center tile (same pattern as `resolve_aoe_debuff()`). ~60 lines — mostly copy of existing handler with center-tile swap.
 
-**Balance lever:** Damage (10), radius (2), slow duration (2), cooldown (6), range (5)
+**Balance lever:** Damage (15), radius (2), slow duration (2), cooldown (6), range (5)
 
 ---
 
@@ -113,24 +115,26 @@ Effect Type:   dot (EXISTING — same handler as Wither, Venom Gaze)
 Targeting:     enemy_ranged
 Radius:        — (single target)
 Range:         5 tiles
-Cooldown:      5 turns
+Cooldown:      4 turns
 LOS Required:  Yes
-Effect:        Poison an enemy — 7 damage per turn for 4 turns (28 total).
+Effect:        Poison an enemy — 10 damage per turn for 4 turns (40 total).
                Recasting refreshes duration (same as Wither behavior).
 ```
 
-**Design:** The Plague Doctor's sustained single-target damage. Compared to Wither (8/tick × 4 = 32, CD 6), Plague Flask does slightly less total (28) on a shorter cooldown (5). This lets the Plague Doctor be a persistent DoT applier — always poisoning *something*. The shorter CD means higher uptime; the lower per-tick means it doesn't outclass the Hexblade's signature curse.
+**Design:** The Plague Doctor's sustained single-target damage. Compared to Wither (8/tick × 4 = 32, CD 6), Plague Flask does more total damage (40) on a shorter cooldown (4). This makes the Plague Doctor a persistent DoT pressure class — always poisoning *something*. The shorter CD means near-100% DoT uptime on at least one target.
 
 **Damage/healing/effect examples:**
 ```
-vs any target: 7 × 4 = 28 total (DoT ignores armor — true damage)
-DPT over cooldown cycle: 28 / 5 = 5.6 effective DPT
-Wither comparison:       32 / 6 = 5.3 effective DPT — very close, intentional parity
+vs any target: 10 × 4 = 40 total (DoT ignores armor — true damage)
+DPT over cooldown cycle: 40 / 4 = 10.0 effective DPT
+Wither comparison:       32 / 6 = 5.3 effective DPT — PD flask now notably stronger
 ```
+
+*(Damage buffed from 7/tick and cooldown reduced from 5 in v0.1.36 balance pass — DoT was not enough pressure as main damage tool.)*
 
 **Implementation:** Reuses `resolve_dot()` identically to Wither. Config-only difference — zero code changes needed for this skill.
 
-**Balance lever:** Damage per tick (7), duration (4), cooldown (5), range (5)
+**Balance lever:** Damage per tick (10), duration (4), cooldown (4), range (5)
 
 ---
 
@@ -141,29 +145,33 @@ Effect Type:   aoe_debuff (EXISTING — same handler as Dirge of Weakness)
 Targeting:     ground_aoe
 Radius:        2 tiles
 Range:         4 tiles
-Cooldown:      7 turns
+Cooldown:      4 turns
 LOS Required:  Yes
-Effect:        All enemies within 2 tiles of target deal 25% LESS damage for 3 turns.
-               Applies debuff stat "damage_dealt_multiplier" with magnitude 0.75.
+Effect:        All enemies within 2 tiles of target deal 25% LESS damage for 4 turns
+               AND have their armor reduced by 2 for 4 turns.
+               Applies debuff stats "damage_dealt_multiplier" (0.75) and "armor" (-2).
 ```
 
-**Design:** The Plague Doctor's **crown jewel** and what makes them a true Controller. The Bard's Dirge makes enemies *take more damage* (`damage_taken_multiplier = 1.25` — offensive amplifier). The Plague Doctor's Enfeeble makes enemies *deal less damage* (`damage_dealt_multiplier = 0.75` — defensive controller). Mirror images — both AoE debuffs using `resolve_aoe_debuff()`, completely different strategic purpose.
+**Design:** The Plague Doctor's **crown jewel** and what makes them a true Controller. The Bard's Dirge makes enemies *take more damage* (`damage_taken_multiplier = 1.25` — offensive amplifier). The Plague Doctor's Enfeeble makes enemies *deal less damage* (`damage_dealt_multiplier = 0.75` — defensive controller) AND shreds their armor (-2), giving the team a tangible offensive benefit. Mirror images — both AoE debuffs using `resolve_aoe_debuff()`, completely different strategic purpose. With a 4-turn cooldown and 4-turn duration, Enfeeble can now be maintained continuously.
+
+*(Cooldown reduced from 7 → 5 → 4 and armor shred added in v0.1.36 balance pass — debuff value was invisible in gameplay and uptime was too low.)*
 
 **Damage/healing/effect examples:**
 ```
-Crusader auto (23 dmg) while enfeebled: 23 × 0.75 = 17 dmg (saves 6/hit)
-Ranger auto (21 dmg) while enfeebled:   21 × 0.75 = 16 dmg (saves 5/hit)
-Hexblade auto (17 dmg) while enfeebled: 17 × 0.75 = 13 dmg (saves 4/hit)
+Crusader auto (23 dmg) while enfeebled: 23 × 0.75 = 17 dmg (saves 6/hit) + target has -2 armor
+Ranger auto (21 dmg) while enfeebled:   21 × 0.75 = 16 dmg (saves 5/hit) + target has -2 armor
+Hexblade auto (17 dmg) while enfeebled: 17 × 0.75 = 13 dmg (saves 4/hit) + target has -2 armor
 
-3 enemies enfeebled over 3 turns (avg 15 DPT each):
-  Without: party takes 45 DPT × 3 turns = 135 total
-  With:    party takes 34 DPT × 3 turns = 101 total → 34 effective HP saved
-  That's equivalent to ~1 free Heal per turn for 3 turns, applied to the whole party
+3 enemies enfeebled over 4 turns (avg 15 DPT each):
+  Without: party takes 45 DPT × 4 turns = 180 total
+  With:    party takes 34 DPT × 4 turns = 135 total → 45 effective HP saved
+  Plus armor shred enables ~24 extra team damage over 4 turns
+  Combined: ~69 effective value per Enfeeble cast
 ```
 
 **Implementation:** Reuses `resolve_aoe_debuff()` from Dirge of Weakness verbatim. **New debuff stat: `damage_dealt_multiplier`** — this needs to be checked in the combat damage pipeline (Phase 23C). The handler itself needs zero changes; only the combat pipeline needs to read the new stat from active_buffs.
 
-**Balance lever:** Magnitude (0.75 = 25% reduction), radius (2), duration (3), cooldown (7), range (4)
+**Balance lever:** Magnitude (0.75 = 25% reduction), armor shred (-2), radius (2), duration (4), cooldown (4), range (4)
 
 ---
 
@@ -203,10 +211,10 @@ DoT cleanse value:
 ### Complete Plague Doctor Kit
 
 ```
-Slot 0: Auto Attack — 14 ranged damage at range 5 (1.15× multiplier)
-Slot 1: Miasma — Lob a poison cloud at range 5: 10 AoE damage + 2-turn slow (2-tile radius, CD 6)
-Slot 2: Plague Flask — Poison a single enemy: 7 dmg/turn × 4 turns = 28 total (CD 5)
-Slot 3: Enfeeble — Weaken all enemies in 2-tile radius: deal 25% less damage for 3 turns (CD 7)
+Slot 0: Auto Attack — 16 ranged damage at range 5 (1.15× multiplier on 14 base)
+Slot 1: Miasma — Lob a poison cloud at range 5: 15 AoE damage + 2-turn slow (2-tile radius, CD 6)
+Slot 2: Plague Flask — Poison a single enemy: 10 dmg/turn × 4 turns = 40 total (CD 4)
+Slot 3: Enfeeble — Weaken all enemies in 2-tile radius: -25% damage dealt and -2 armor for 4 turns (CD 4)
 Slot 4: Inoculate — Buff ally/self +3 armor for 3 turns + cleanse all DoTs (CD 5)
 ```
 
@@ -217,17 +225,17 @@ Slot 4: Inoculate — Buff ally/self +3 armor for 3 turns + cleanse all DoTs (CD
 ### Direct DPS (Personal)
 
 ```
-Auto-attack:    14 per turn (ranged, range 5)
-Plague Flask:   28 total / 5 CD = 5.6 effective DPT (true damage, ignores armor)
-Miasma:         10 flat per target / 6 CD = 1.7 DPT per target (magic damage, 50% armor)
+Auto-attack:    16 per turn (ranged, range 5)
+Plague Flask:   40 total / 4 CD = 10.0 effective DPT (true damage, ignores armor)
+Miasma:         15 flat per target / 6 CD = 2.5 DPT per target (magic damage, 50% armor)
 
-Single-target sustained DPT: 14 + 5.6 = ~20 DPT
+Single-target sustained DPT: 16 + 10.0 = ~26 DPT
   Compare: Ranger ~26 DPT, Hexblade ~22 DPT, Mage ~25 DPT, Bard ~18 DPT
 
-3-target cluster sustained DPT: 14 + 5.6 + (1.7 × 3) = ~25 DPT total
-  But the real value is the 30 damage burst + 3-target slow from Miasma
+3-target cluster sustained DPT: 16 + 10.0 + (2.5 × 3) = ~34 DPT total
+  The real value is the 45 damage burst + 3-target slow from Miasma
 
-Total personal DPS ranking: LOWEST among ranged classes — intentional.
+Total personal DPS ranking: Now mid-pack among ranged classes (was lowest pre-v0.1.36).
 ```
 
 ### Team Impact Analysis (Enfeeble + Control)
@@ -238,22 +246,21 @@ SCENARIO: 4-person party vs 3 enemies, each dealing ~15 effective DPT
 Without Plague Doctor:
   Party takes 45 DPT → over 6 turns: 270 total damage absorbed
 
-With Plague Doctor (Enfeeble active 3 of 6 turns):
-  3 turns normal: 45 DPT × 3 = 135
-  3 turns enfeebled: 45 × 0.75 × 3 = 101
-  Total: 236 → saves 34 HP over 6 turns
+With Plague Doctor (Enfeeble active 100% uptime, CD 4 = duration 4):
+  6 turns enfeebled: 45 × 0.75 × 6 = 203 → saves 67 HP over 6 turns
+  Plus -2 armor on enemies means party deals ~6 more damage/turn (2 armor × 3 targets)
+  Net: 67 HP saved + ~36 extra team damage = 103 effective value over 6 turns
 
 With Plague Doctor (Miasma slows enabling party to kite 2 turns):
   2 turns of 0 damage from 3 slowed enemies = 90 DPT saved
   Combined with Enfeeble: ~124 effective HP saved over a 6-turn fight
 
-Plague Flask on high-DPS target: 28 true damage (ignores Crusader's 8 armor entirely)
+Plague Flask on high-DPS target: 40 true damage (ignores Crusader's 8 armor entirely)
 
 Inoculate cleansing a Wither DoT: saves up to 32 HP on an ally
 
-TOTAL TEAM IMPACT: ~150-180 effective HP per fight through debuffs/control/cleanse.
-This is comparable to the Confessor's healing output (Heal 30 + Prayer 32 = 62 per cycle,
-~2 cycles per fight = 124 HP) but delivered through a completely different mechanism.
+TOTAL TEAM IMPACT: ~200+ effective HP per fight through debuffs/control/cleanse.
+This exceeds the Confessor's healing output and is delivered through a completely different mechanism.
 ```
 
 **Design summary:** The Plague Doctor is the **anti-Bard**. Bard says "we kill faster" (+30% team damage). Plague Doctor says "we die slower" (-25% enemy damage + slows + DoT cleanse). Together they create the strongest possible team comp. Neither is good alone — both need party context to shine.
@@ -406,10 +413,10 @@ Locations that must be updated:
   "name": "Plague Doctor",
   "role": "Controller",
   "description": "Masked alchemist who weaponizes disease and toxins. Weakens groups, denies space, and makes enemies rot from the inside.",
-  "base_hp": 85,
+  "base_hp": 95,
   "base_melee_damage": 8,
-  "base_ranged_damage": 12,
-  "base_armor": 2,
+  "base_ranged_damage": 14,
+  "base_armor": 3,
   "base_vision_range": 7,
   "ranged_range": 5,
   "allowed_weapon_categories": ["caster", "hybrid"],
@@ -422,50 +429,21 @@ Locations that must be updated:
 
 ```json
 "miasma": {
-  "skill_id": "miasma",
-  "name": "Miasma",
-  "description": "Lob a toxic cloud at a target area — deal 10 magic damage and slow all enemies within 2 tiles for 2 turns.",
-  "icon": "☁️",
-  "targeting": "ground_aoe",
-  "range": 5,
-  "cooldown_turns": 6,
-  "mana_cost": 0,
-  "effects": [
-    { "type": "aoe_damage_slow_targeted", "radius": 2, "base_damage": 10, "slow_duration": 2 }
-  ],
-  "allowed_classes": ["plague_doctor"],
-  "requires_line_of_sight": true
+  ...\"base_damage\": 15, \"slow_duration\": 2
 },
 "plague_flask": {
-  "skill_id": "plague_flask",
-  "name": "Plague Flask",
-  "description": "Hurl a vial of pestilence at an enemy — deal 7 poison damage per turn for 4 turns (28 total). Recasting refreshes duration.",
-  "icon": "🧪",
-  "targeting": "enemy_ranged",
-  "range": 5,
-  "cooldown_turns": 5,
-  "mana_cost": 0,
+  ..."cooldown_turns": 4,
   "effects": [
-    { "type": "dot", "damage_per_tick": 7, "duration_turns": 4 }
-  ],
-  "allowed_classes": ["plague_doctor"],
-  "requires_line_of_sight": true
+    { "type": "dot", "damage_per_tick": 10, "duration_turns": 4 }
+  ]
 },
-"enfeeble": {
-  "skill_id": "enfeeble",
-  "name": "Enfeeble",
-  "description": "Release a cloud of enervating toxin — all enemies within 2 tiles of target deal 25% less damage for 3 turns.",
-  "icon": "💀",
-  "targeting": "ground_aoe",
-  "range": 4,
-  "cooldown_turns": 7,
-  "mana_cost": 0,
-  "effects": [
-    { "type": "aoe_debuff", "radius": 2, "stat": "damage_dealt_multiplier", "magnitude": 0.75, "duration_turns": 3 }
-  ],
-  "allowed_classes": ["plague_doctor"],
-  "requires_line_of_sight": true
-},
+  "enfeeble": {
+    "cooldown_turns": 4,
+    ...effects: [
+      { "type": "aoe_debuff", "radius": 2, "stat": "damage_dealt_multiplier", "magnitude": 0.75, "duration_turns": 4 },
+      { "type": "aoe_debuff", "radius": 2, "stat": "armor", "magnitude": -2, "duration_turns": 4 }
+    ]
+  },
 "inoculate": {
   "skill_id": "inoculate",
   "name": "Inoculate",
@@ -950,25 +928,26 @@ Phase 23G (Sprites)          ← Optional, last
 
 | Parameter | Initial Value | Reduce If... | Increase If... |
 |-----------|:------------:|--------------|----------------|
-| Plague Doctor HP | 85 | Too survivable for a controller | Dies too quickly before skills matter |
-| Plague Doctor Ranged Damage | 12 | Auto-attack DPS is too competitive | Can't contribute when skills are on CD |
-| Miasma base damage | 10 | AoE burst is too strong vs clusters | Not impactful enough to justify CD 6 |
+| Plague Doctor HP | 95 | Too survivable for a controller | Dies too quickly before skills matter |
+| Plague Doctor Ranged Damage | 14 | Auto-attack DPS is too competitive | Can't contribute when skills are on CD |
+| Miasma base damage | 15 | AoE burst is too strong vs clusters | Not impactful enough to justify CD 6 |
 | Miasma radius | 2 | Too easy to hit entire team | Hard to hit 2+ enemies consistently |
 | Miasma slow duration | 2 turns | Slow is too oppressive | Enemies recover before party capitalizes |
 | Miasma cooldown | 6 turns | Too spammable (oppressive) | Too long — class feels inactive |
-| Plague Flask damage/tick | 7 | Outclasses Wither (8) in DPT | Not enough pressure as main damage tool |
+| Plague Flask damage/tick | 10 | Outclasses Wither (8) in DPT | Not enough pressure as main damage tool |
 | Plague Flask duration | 4 turns | Total damage too high | DoT doesn't last long enough to matter |
-| Plague Flask cooldown | 5 turns | Too much DoT uptime | Can't keep at least 1 target poisoned |
+| Plague Flask cooldown | 4 turns | Too much DoT uptime | Can't keep at least 1 target poisoned |
 | Enfeeble magnitude | 0.75 (25% reduction) | Tanks become unkillable with PD support | Damage reduction not noticeable |
 | Enfeeble radius | 2 | Too easy to hit whole team | Hard to debuff meaningful targets |
-| Enfeeble duration | 3 turns | Debuff window too long | Expires before party benefits |
-| Enfeeble cooldown | 7 turns | Too much uptime for such strong effect | PD feels useless waiting for it |
+| Enfeeble duration | 4 turns | Debuff window too long | Expires before party benefits |
+| Enfeeble cooldown | 4 turns | Too much uptime for such strong effect | PD feels useless waiting for it |
+| Enfeeble armor shred | -2 | Makes targets too squishy with team focus | Armor shred not noticeable |
 | Inoculate armor bonus | 3 | Overshadows Confessor's Shield of Faith | Not worth the cooldown over other skills |
 | Inoculate cooldown | 5 turns | DoT cleanse available too often | Can't react to enemy DoTs in time |
 
 ### Known Balance Risks
 
-1. **Enfeeble + Confessor = unkillable parties:** A party with both a Confessor (healing) and Plague Doctor (damage reduction) may be extremely hard to kill. The Enfeeble magnitude (25%) is intentionally lower than Dirge's bonus (25%) to partially offset this, but the combination with healing could be oppressive. **Mitigation:** Enfeeble's 7-turn cooldown limits uptime to ~43%; increase cooldown to 8 if parties are too durable.
+1. **Enfeeble + Confessor = unkillable parties:** A party with both a Confessor (healing) and Plague Doctor (damage reduction + armor shred) may be extremely hard to kill. The Enfeeble magnitude (25%) is intentionally lower than Dirge's bonus (25%) to partially offset this, but the combination with healing could be oppressive. With the v0.1.36 buff to 100% uptime (CD 4 = duration 4), this risk is elevated. **Mitigation:** Increase cooldown to 5 if parties are too durable, which would create a 1-turn gap in coverage.
 
 2. **Enfeeble + Bard Dirge stacking:** If Enfeeble (-25% damage dealt) and Dirge (+25% damage taken) are both active, the combined effect is enemies dealing 0.75× damage that then gets amplified 1.25× on the defender... which nets to 0.9375× (only 6% reduction). This is actually fine — the danger would be if they stacked additively. Verify multiplicative stacking in tests.
 
@@ -1016,7 +995,7 @@ Phase 23G (Sprites)          ← Optional, last
 - [x] **23F** — Particle effects added (miasma cloud, flask splash, enfeeble wave, inoculate sparkle)
 - [x] **23F** — Audio triggers added (4 skills)
 - [x] **23G** — Sprite variants mapped (3 Witch_Doctor sprites → plague_doctor, plague_doctor_2, plague_doctor_3)
-- [ ] Balance pass after playtesting
+- [x] Balance pass after playtesting *(v0.1.36 — see changelog)*
 
 ---
 

@@ -443,18 +443,20 @@ for buff in player.active_buffs:
   "allowed_classes": ["bard"],
   "requires_line_of_sight": true
 },
-"verse_of_haste": {
-  "skill_id": "verse_of_haste",
-  "name": "Verse of Haste",
-  "description": "Accelerate an ally's recovery — reduce all skill cooldowns by 2 turns.",
-  "icon": "⏩",
-  "targeting": "ally_or_self",
-  "range": 3,
-  "cooldown_turns": 6,
+"war_hymn": {
+  "skill_id": "war_hymn",
+  "name": "War Hymn",
+  "description": "Sing a restorative hymn — all allies within 4 tiles heal 7 HP per turn for 3 turns.",
+  "icon": "🎶",
+  "targeting": "self",
+  "range": 0,
+  "cooldown_turns": 5,
   "mana_cost": 0,
   "effects": [{
-    "type": "cooldown_reduction",
-    "reduction": 2
+    "type": "aoe_hot",
+    "radius": 4,
+    "heal_per_turn": 7,
+    "duration_turns": 3
   }],
   "allowed_classes": ["bard"],
   "requires_line_of_sight": false
@@ -481,7 +483,7 @@ for buff in player.active_buffs:
 
 **`class_skills` mapping:**
 ```json
-"bard": ["auto_attack_ranged", "ballad_of_might", "dirge_of_weakness", "verse_of_haste", "cacophony"]
+"bard": ["auto_attack_ranged", "ballad_of_might", "dirge_of_weakness", "war_hymn", "cacophony"]
 ```
 
 **Tests (Phase 21A):**
@@ -728,10 +730,10 @@ def _offensive_support_skill_logic(ai, enemies, all_units, grid_w, grid_h, obsta
     if best_tile and best_tile.count >= 2 and can_use("dirge_of_weakness"):
         return skill_action("dirge_of_weakness", target=best_tile)
 
-    # 3. Verse of Haste — on ally with most wasted cooldown potential
-    best_ally = max(allies_in_range_3, key=total_cooldown_score)
-    if best_ally and best_ally.score > 2 and can_use("verse_of_haste"):
-        return skill_action("verse_of_haste", target=best_ally)
+    # 3. War Hymn — AoE HoT when self or ally injured
+    injured_allies = [a for a in allies_in_range_4 if a.hp < a.max_hp * 0.85]
+    if injured_allies and can_use("war_hymn"):
+        return skill_action("war_hymn", target=self)
 
     # 4. Cacophony — if enemy adjacent (self-peel)
     adjacent_enemies = [e for e in enemies if chebyshev(ai, e) <= 1]
@@ -819,7 +821,7 @@ Add to `formatBuffName`:
 ```javascript
 ballad_of_might: 'Ballad of Might',
 dirge_of_weakness: 'Dirge of Weakness',
-verse_of_haste: 'Verse of Haste',
+war_hymn: 'War Hymn',
 cacophony: 'Cacophony',
 ```
 

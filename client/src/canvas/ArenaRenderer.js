@@ -27,14 +27,15 @@ import { themeEngine, ThemeEngine } from './ThemeEngine.js';
 // --- Re-exports from extracted modules (keeps existing import sites working) ---
 export { TILE_SIZE, getPlayerColor } from './renderConstants.js';
 export { drawDungeonTiles, drawFog, drawPortal, drawChanneling } from './dungeonRenderer.js';
-export { getUnitColor, drawPlayer, drawBuffIcons, drawCrowdControlIndicators, drawStanceIndicators, drawUnderfootGlow, drawNameplateGlow, drawSelectedTargetIndicator, drawTargetReticle, drawUnitShadow } from './unitRenderer.js';
+export { getUnitColor, drawPlayer, drawBuffIcons, drawCrowdControlIndicators, drawStanceIndicators, drawUnderfootGlow, drawNameplateGlow, drawSelectedTargetIndicator, drawTargetReticle, drawUnitShadow, cleanupUnitCaches } from './unitRenderer.js';
 export { drawHighlights, drawSkillHighlights, drawQueuePreview, drawHoverPathPreviews, drawGroundItems, drawLootHighlight, drawDamageFloaters, drawSpawnMarker, drawGroundItemLabels, drawTotems, drawGroundZones, drawRootEffects, drawSoulAnchorEffects } from './overlayRenderer.js';
+export { clearWalkableCache } from './dungeonRenderer.js';
 export { themeEngine, ThemeEngine };
 
 // --- Local imports for renderFrame orchestrator ---
 import { TILE_SIZE, ENEMY_NAMES } from './renderConstants.js';
 import { drawDungeonTiles, drawFog, drawPortal, drawChanneling } from './dungeonRenderer.js';
-import { drawAmbientDarknessPass, getUnitLightBoost } from './PropLighting.js';
+import { drawAmbientDarknessPass, getUnitLightBoost, drawHeroTorchGlow } from './PropLighting.js';
 import { getUnitColor, drawPlayer, drawBuffIcons, drawCrowdControlIndicators, drawStanceIndicators, drawUnderfootGlow, drawNameplateGlow, drawSelectedTargetIndicator, drawTargetReticle, _findSkillDef, drawUnitShadow } from './unitRenderer.js';
 import { drawHighlights, drawSkillHighlights, drawQueuePreview, drawHoverPathPreviews, drawGroundItems, drawLootHighlight, drawDamageFloaters, drawGroundItemLabels, drawTotems, drawGroundZones, drawRootEffects, drawSoulAnchorEffects } from './overlayRenderer.js';
 import { drawWaterAnimation } from './WaterAnimation.js';
@@ -510,12 +511,33 @@ export function renderFrame(ctx, {
   drawSoulAnchorEffects(ctx, players, ox, oy, visibleTiles, interpolatedPositions);
 
   // Ambient darkness: darken visible tiles, let light sources carve out bright pools
+  // Hero Torch: Collect friendly hero positions for torch darkness carve + glow
+  let heroTorchPositions = null;
   if (isDungeon && dungeonRooms.length > 0 && visibleTiles && themeEngine.isReady()) {
+    heroTorchPositions = [];
+    for (const [pid, p] of Object.entries(players)) {
+      if (!p.is_alive || p.is_alive === false) continue;
+      if (p.extracted) continue;
+      if (p.unit_type === 'enemy') continue;
+      if (myTeam && p.team !== myTeam) continue;
+      if (!p.position) continue;
+      // Use interpolated position for smooth glow tracking during movement
+      const lerpPos = interpolatedPositions?.get(pid);
+      heroTorchPositions.push({
+        x: lerpPos ? lerpPos.x : p.position.x,
+        y: lerpPos ? lerpPos.y : p.position.y,
+        id: pid,
+      });
+    }
+
     const ambientDarkness = themeEngine.theme?.ambient?.ambientDarkness ?? 0.35;
-    drawAmbientDarknessPass(ctx, gridWidth, gridHeight, visibleTiles, ox, oy, dungeonRooms, themeEngine.theme, ambientDarkness);
+    drawAmbientDarknessPass(ctx, gridWidth, gridHeight, visibleTiles, ox, oy, dungeonRooms, themeEngine.theme, ambientDarkness, heroTorchPositions);
+
+    // Hero Torch Glow: warm additive glow on top of the darkened scene
+    drawHeroTorchGlow(ctx, heroTorchPositions, ox, oy);
   }
 
-  // Draw FOV fog overlay on top (pass dungeonRooms for light-modulated fog)
+  // Draw FOV fog overlay on top
   if (visibleTiles) {
     drawFog(ctx, gridWidth, gridHeight, visibleTiles, ox, oy, revealedTiles, dungeonRooms);
   }
@@ -540,8 +562,12 @@ export function renderFrame(ctx, {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  VIGNETTE — Cinematic edge darkening
+//  VIGNETTE — Cinematic edge darkening (P-E: cached gradient)
 // ═══════════════════════════════════════════════════════════
+
+// P-E: Cache vignette gradient — only recreate on canvas resize or theme change
+let _vignetteGrad = null;
+let _vignetteCacheKey = null;
 
 /**
  * Draw a radial vignette overlay — darker edges, clear center.
@@ -559,19 +585,23 @@ function _drawVignette(ctx, theme) {
 
   // Parse vignette color or default to black
   const vc = theme.ambient.vignetteColor || 'rgba(0, 0, 0, 1)';
-  // Extract RGB from the rgba string
   const match = vc.match(/rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/);
   const vr = match ? parseInt(match[1]) : 0;
   const vg = match ? parseInt(match[2]) : 0;
   const vb = match ? parseInt(match[3]) : 0;
 
-  const grad = ctx.createRadialGradient(cx, cy, maxR * 0.35, cx, cy, maxR);
-  grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-  grad.addColorStop(0.5, `rgba(${vr}, ${vg}, ${vb}, ${(strength * 0.3).toFixed(3)})`);
-  grad.addColorStop(1, `rgba(${vr}, ${vg}, ${vb}, ${(strength * 1.2).toFixed(3)})`);
+  const newKey = `${w}_${h}_${strength}_${vr}_${vg}_${vb}`;
+  if (_vignetteCacheKey !== newKey) {
+    const grad = ctx.createRadialGradient(cx, cy, maxR * 0.35, cx, cy, maxR);
+    grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    grad.addColorStop(0.5, `rgba(${vr}, ${vg}, ${vb}, ${(strength * 0.3).toFixed(3)})`);
+    grad.addColorStop(1, `rgba(${vr}, ${vg}, ${vb}, ${(strength * 1.2).toFixed(3)})`);
+    _vignetteGrad = grad;
+    _vignetteCacheKey = newKey;
+  }
 
   ctx.save();
-  ctx.fillStyle = grad;
+  ctx.fillStyle = _vignetteGrad;
   ctx.fillRect(0, 0, w, h);
   ctx.restore();
 }

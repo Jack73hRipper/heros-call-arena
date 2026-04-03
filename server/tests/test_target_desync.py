@@ -357,7 +357,7 @@ class TestSkillTargetDesync:
 
     def test_multi_hit_skill_fails_when_enemy_moves(self):
         """
-        BUG REPRODUCTION: Crusader uses Double Strike on enemy at (6,5).
+        BUG REPRODUCTION: Hexblade uses Hex Strike on enemy at (6,5).
         Enemy moves to (7,5). Skill resolves → nobody at (6,5) → FAIL.
         """
         hexblade = make_unit(
@@ -375,7 +375,7 @@ class TestSkillTargetDesync:
             PlayerAction(
                 player_id="hexblade",
                 action_type=ActionType.SKILL,
-                skill_id="double_strike",
+                skill_id="hex_strike",
                 target_x=6, target_y=5,
             ),
             PlayerAction(
@@ -727,19 +727,19 @@ class TestEntityTargetingFix:
         FIX VERIFICATION: Double Strike targets enemy at (6,5).
         Enemy moves to (6,6) (still adjacent). With target_id → SUCCESS.
         """
-        hexblade = make_unit(
-            pid="hexblade", username="Hexblade", x=5, y=5,
-            team="a", class_id="hexblade",
+        werewolf = make_unit(
+            pid="werewolf", username="Werewolf", x=5, y=5,
+            team="a", class_id="werewolf",
         )
         enemy = make_unit(
             pid="enemy", username="Enemy", x=6, y=5, team="b",
         )
-        players = {"hexblade": hexblade, "enemy": enemy}
+        players = {"werewolf": werewolf, "enemy": enemy}
         obstacles = set()
 
         actions = [
             PlayerAction(
-                player_id="hexblade",
+                player_id="werewolf",
                 action_type=ActionType.SKILL,
                 skill_id="double_strike",
                 target_x=6, target_y=5,
@@ -759,7 +759,7 @@ class TestEntityTargetingFix:
 
         skill_results = [
             r for r in result.actions
-            if r.player_id == "hexblade" and r.action_type == ActionType.SKILL
+            if r.player_id == "werewolf" and r.action_type == ActionType.SKILL
         ]
         assert len(skill_results) == 1
         assert skill_results[0].success is True, (

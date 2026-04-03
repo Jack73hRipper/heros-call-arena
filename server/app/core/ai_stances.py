@@ -609,15 +609,19 @@ def _should_retreat(
         if blood_frenzy_cd <= 0 or blood_strike_cd <= 0:
             return False  # Still has sustain available — fight on
 
-    # Phase 25 fix: retaliation_tank (Revenant) — never retreat while cheat_death
-    # buff is active. Undying Will is the safety net that emboldens aggression;
-    # retreating with cheat_death up wastes the buff and undermines the design.
+    # Phase 25R-D: retaliation_tank (Revenant) — never retreat while undying_fury
+    # buff (cheat_death) or fury_state is active.  Undying Fury is the safety net
+    # that emboldens aggression; Fury state is the all-in power spike.
+    # Retreating with either up wastes the buff and undermines the design.
     if role == "retaliation_tank":
         has_cheat_death = any(
             b.get("stat") == "cheat_death" for b in ai.active_buffs
         )
-        if has_cheat_death:
-            return False  # Cheat death active — stand and fight
+        has_fury_state = any(
+            b.get("type") == "fury_state" for b in ai.active_buffs
+        )
+        if has_cheat_death or has_fury_state:
+            return False  # Cheat death or fury active — stand and fight
 
     # Must be in active danger (enemy within 2 tiles)
     ai_pos = (ai.position.x, ai.position.y)
@@ -1125,9 +1129,9 @@ def _decide_follow_action(
         # Phase 26D: When kiting, prefer stepping toward a healing totem's radius.
         # Fix 2: Controller (Plague Doctor) kites at dist <= 3 — range 5 caster should
         # start backing off sooner than dist 2 to maintain midline positioning.
-        # Shaman only kites when adjacent (dist 1) — needs to stay close to
-        # frontline for totem placement.  Other ranged roles kite at dist 2-3.
-        _kite_threshold = 3 if role == "controller" else (1 if role == "totemic_support" else 2)
+        # Shaman kites at dist 2 like other ranged roles — totem placement
+        # range is 4, so kiting at 2 is safe and prevents melee deaths.
+        _kite_threshold = 3 if role == "controller" else 2
         if is_ranged_role and dist_to_target <= _kite_threshold:
             from app.core.ai_behavior import _find_retreat_tile
             # Phase 21E-2: Bard ally-proximity kiting — when retreating,
@@ -1266,30 +1270,25 @@ def _decide_follow_action(
                     ai_pos, next_step, move_target, match_state, ai.team,
                     ai.hp / ai.max_hp, grid_width, grid_height, obstacles, occupied,
                 )
-            # Anti-backtrack: reject move if it returns to position from
-            # last turn — prevents corridor oscillation during combat.
-            # Phase 32C: Skip rejection in corridors (≤3 walkable neighbors)
-            # where the backtrack may be the only viable path around a corner.
-            from app.core.ai_behavior import _position_history as _bh_pos
-            _fh_combat = _bh_pos.get(ai_id, [])
-            if (
-                len(_fh_combat) >= 2
-                and next_step == _fh_combat[-2]
-                and not _is_in_corridor(ai_pos, grid_width, grid_height, obstacles, occupied)
-            ):
-                # Phase 32G: Instead of WAITing, try a greedy step toward
-                # the fight — any adjacent tile that closes distance.
-                backtrack_tile = _fh_combat[-2] if len(_fh_combat) >= 2 else None
-                greedy = _greedy_combat_step(
-                    ai_pos, move_target, grid_width, grid_height,
-                    obstacles, occupied, backtrack_pos=backtrack_tile,
+            # Phase 33: Unified oscillation check — replaces inline
+            # anti-backtrack + greedy fallback with check_oscillation().
+            from app.core.ai_behavior import check_oscillation
+            _osc_disp, _osc_redir = check_oscillation(
+                ai_id=ai_id, target=next_step, ai_pos=ai_pos,
+                grid_width=grid_width, grid_height=grid_height,
+                obstacles=obstacles, occupied=occupied,
+                all_units=None, is_leader=False, move_goal=move_target,
+            )
+            if _osc_disp == "redirect":
+                door_action = _maybe_interact_door(ai, _osc_redir, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=_osc_redir[0], target_y=_osc_redir[1],
+                    reason="follow_combat_approach",
                 )
-                if greedy:
-                    return PlayerAction(
-                        player_id=ai_id, action_type=ActionType.MOVE,
-                        target_x=greedy[0], target_y=greedy[1],
-                        reason="follow_combat_approach",
-                    )
+            elif _osc_disp == "wait":
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.WAIT,
                     reason="follow_combat_wait",
@@ -1335,18 +1334,24 @@ def _decide_follow_action(
             ai_pos, trail_target, grid_width, grid_height, obstacles, occupied, door_tiles,
         )
         if next_step:
-            # Anti-backtrack: reject if move returns to the position the
-            # follower occupied last turn.  Prevents corridor oscillation
-            # when sequential pathfinding alternates tiles each tick.
-            # Phase 32C: Skip rejection in corridors where backtrack may be
-            # the only viable path around a corner toward the leader.
-            from app.core.ai_behavior import _position_history
-            _fh = _position_history.get(ai_id, [])
-            if (
-                len(_fh) >= 2
-                and next_step == _fh[-2]
-                and not _is_in_corridor(ai_pos, grid_width, grid_height, obstacles, occupied)
-            ):
+            # Phase 33: Unified oscillation check for trail-to-owner moves.
+            from app.core.ai_behavior import check_oscillation
+            _osc_disp, _osc_redir = check_oscillation(
+                ai_id=ai_id, target=next_step, ai_pos=ai_pos,
+                grid_width=grid_width, grid_height=grid_height,
+                obstacles=obstacles, occupied=occupied,
+                all_units=None, is_leader=False, move_goal=trail_target,
+            )
+            if _osc_disp == "redirect":
+                door_action = _maybe_interact_door(ai, _osc_redir, door_tiles)
+                if door_action:
+                    return door_action
+                return PlayerAction(
+                    player_id=ai_id, action_type=ActionType.MOVE,
+                    target_x=_osc_redir[0], target_y=_osc_redir[1],
+                    reason="follow_trail_owner",
+                )
+            elif _osc_disp == "wait":
                 return PlayerAction(
                     player_id=ai_id, action_type=ActionType.WAIT,
                     reason="follow_trail_wait",
@@ -1375,23 +1380,24 @@ def _decide_follow_action(
                 ai_pos, tether_target, grid_width, grid_height, obstacles, occupied, door_tiles,
             )
             if next_step and next_step != ai_pos:
-                # Anti-oscillation: reject the step if it returns to the
-                # position the follower occupied last turn (A→B→A).  When
-                # multiple followers crowd the leader in a corridor, the
-                # occupied set shifts each tick causing A* to alternate
-                # between two tiles.  Skipping the backtrack lets the
-                # follower idle for one tick, breaking the cycle.
-                # Phase 32C: Allow backtrack in corridors — it may be the
-                # only path forward around a corner.
-                follower_history = _position_history.get(ai_id, [])
-                if (
-                    len(follower_history) >= 2
-                    and next_step == follower_history[-2]
-                    and not _is_in_corridor(ai_pos, grid_width, grid_height, obstacles, occupied)
-                ):
-                    # Backtrack detected in open area — WAIT explicitly
-                    # instead of falling through to chest-seek/wander
-                    # which can cause secondary oscillation.
+                # Phase 33: Unified oscillation check for leader-tether moves.
+                from app.core.ai_behavior import check_oscillation as _check_osc
+                _osc_disp, _osc_redir = _check_osc(
+                    ai_id=ai_id, target=next_step, ai_pos=ai_pos,
+                    grid_width=grid_width, grid_height=grid_height,
+                    obstacles=obstacles, occupied=occupied,
+                    all_units=None, is_leader=False, move_goal=tether_target,
+                )
+                if _osc_disp == "redirect":
+                    door_action = _maybe_interact_door(ai, _osc_redir, door_tiles)
+                    if door_action:
+                        return door_action
+                    return PlayerAction(
+                        player_id=ai_id, action_type=ActionType.MOVE,
+                        target_x=_osc_redir[0], target_y=_osc_redir[1],
+                        reason="follow_trail_moving",
+                    )
+                elif _osc_disp == "wait":
                     return PlayerAction(
                         player_id=ai_id, action_type=ActionType.WAIT,
                         reason="follow_trail_wait",
@@ -1570,9 +1576,8 @@ def _decide_aggressive_stance_action(
         # Ranged roles step back when too close to enemy. Kiting preserves ranged advantage.
         # Phase 26D: When kiting, prefer stepping toward a healing totem's radius.
         # Fix 2: Controller (Plague Doctor) kites at dist <= 3 in aggressive stance too.
-        # Shaman only kites when adjacent (dist 1) — needs to stay close to
-        # frontline for totem placement.
-        _kite_threshold = 3 if role == "controller" else (1 if role == "totemic_support" else 2)
+        # Shaman kites at dist 2 like other ranged roles — totem range 4 is safe.
+        _kite_threshold = 3 if role == "controller" else 2
         if is_ranged_role and dist_to_target <= _kite_threshold:
             from app.core.ai_behavior import _find_retreat_tile
             # Phase S1-A: Bard ally-proximity kiting — bias retreat toward

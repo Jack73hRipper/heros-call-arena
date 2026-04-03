@@ -22,6 +22,7 @@ const PROP_CATEGORIES = {
   wall_decor:    { label: 'Wall Decor',    color: '#8a6aa0' },
   lighting:      { label: 'Lighting',      color: '#cc9940' },
   environmental: { label: 'Environmental', color: '#50907a' },
+  overlay:       { label: 'Overlay',       color: '#6a90b0' },
 };
 
 const PROP_META = {
@@ -48,6 +49,35 @@ const PROP_META = {
   puddle:            { label: 'Puddle',            category: 'environmental', desc: 'Water pool — flooded chambers' },
   mushroom_cluster:  { label: 'Mushroom Cluster',  category: 'environmental', desc: 'Bioluminescent fungi with soft glow — grottoes, drowned areas' },
   web:               { label: 'Web',               category: 'environmental', desc: 'Corner spider web — cellars, abandoned rooms' },
+  lectern:           { label: 'Lectern',           category: 'furniture',     desc: 'Open book on a wooden stand — libraries, shrines, cathedrals' },
+  desk:              { label: 'Desk',              category: 'furniture',     desc: 'Writing desk with quill and papers — libraries, vaults' },
+  crate:             { label: 'Crate',             category: 'furniture',     desc: 'Nailed wooden supply crate with X bracing — armories, loot rooms, cellars' },
+  bone_pile:         { label: 'Bone Pile',         category: 'environmental', desc: 'Scattered long bones and ribcage fragments — crypts, ossuaries, torture chambers' },
+  hanging_lantern:   { label: 'Hanging Lantern',   category: 'lighting',      desc: 'Ceiling-hung iron lantern with warm glow — cathedrals, libraries, shrines' },
+  // Overlay decorations — archetype-specific structural elements placed by room overlays
+  corner_pillar:     { label: 'Corner Pillar',     category: 'overlay',       desc: 'Boss room corner column with highlight ring — boss sanctums' },
+  floor_sigil:       { label: 'Floor Sigil',       category: 'overlay',       desc: 'Geometric circle + diamond pattern etched into floor — boss sanctums' },
+  wall_torch:        { label: 'Wall Torch',        category: 'overlay',       desc: 'Wall-mounted torch with glow halo — enemy barracks' },
+  wall_alcove:       { label: 'Wall Alcove',       category: 'overlay',       desc: 'Recessed wall niche — loot vaults' },
+  corner_ornament:   { label: 'Corner Ornament',   category: 'overlay',       desc: 'L-shaped filigree corner mark — loot vaults' },
+  arrival_circle:    { label: 'Arrival Circle',    category: 'overlay',       desc: 'Glowing floor arrival mark — spawn entry halls' },
+  archway:           { label: 'Archway',           category: 'overlay',       desc: 'Flanking column archway over doors — spawn entry halls' },
+  corner_rubble:     { label: 'Corner Rubble',     category: 'overlay',       desc: 'Debris cluster in room corners — abandoned rooms' },
+  stair_descent:     { label: 'Stair Descent',     category: 'overlay',       desc: 'Concentric depth rings suggesting descent — stairwells' },
+  wall_banner:       { label: 'Wall Banner',       category: 'overlay',       desc: 'Hanging tattered banner with rod — sacred shrines' },
+  wall_chains:       { label: 'Wall Chains',       category: 'overlay',       desc: 'Dangling chain links mounted on wall — prisons' },
+  iron_bars:         { label: 'Iron Bars',         category: 'overlay',       desc: 'Vertical iron bars across doorways — prisons' },
+  ripple_pool:       { label: 'Ripple Pool',       category: 'overlay',       desc: 'Concentric water ripple arcs — flooded chambers' },
+  nave_aisle:        { label: 'Nave Aisle',        category: 'overlay',       desc: 'Central walkway strip with border lines — grand cathedrals' },
+  rose_window:       { label: 'Rose Window',       category: 'overlay',       desc: 'Circular stained-glass motif with radial spokes — grand cathedrals' },
+  arcane_circle:     { label: 'Arcane Circle',     category: 'overlay',       desc: 'Glowing containment ring with center glow — ritual chambers' },
+  floor_rune:        { label: 'Floor Rune',        category: 'overlay',       desc: 'Small cross-shaped arcane mark on floor edge — ritual chambers' },
+  disturbed_earth:   { label: 'Disturbed Earth',   category: 'overlay',       desc: 'Irregular darker earth patches — burial grounds' },
+  weapon_peg:        { label: 'Weapon Peg',        category: 'overlay',       desc: 'Wall-mounted display pegs with rack bar — armories' },
+  wall_light:        { label: 'Wall Light',        category: 'overlay',       desc: 'Warm glow spot with fixture mark — armories' },
+  bone_wall:         { label: 'Bone Wall',         category: 'overlay',       desc: 'Horizontal bone-layer texture on wall — ossuaries' },
+  bone_alcove:       { label: 'Bone Alcove',       category: 'overlay',       desc: 'Dark inset recess with border — ossuaries' },
+  glow_pool:         { label: 'Glow Pool',         category: 'overlay',       desc: 'Bioluminescent center glow with damp highlight — fungal grottoes' },
 };
 
 const ALL_PROP_IDS = Object.keys(PROP_META);

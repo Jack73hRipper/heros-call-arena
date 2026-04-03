@@ -117,6 +117,8 @@ class Item(BaseModel):
     item_level: int = 1                # Determines affix roll ranges
     # Phase 16 — Weapon class-lock system
     weapon_category: str = ""          # "melee", "ranged", "caster", "hybrid", or "" for non-weapons
+    # Phase 22A — Weapon type proficiency system
+    weapon_type: str = ""              # "sword", "mace", "staff", "bow", etc. or "" for non-weapons/legacy
     # Phase 21A — Armor category system
     armor_category: str = ""           # "heavy", "light", "cloth", or "" for non-armor items
 

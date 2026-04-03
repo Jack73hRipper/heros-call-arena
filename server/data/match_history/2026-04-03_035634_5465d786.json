@@ -1,0 +1,5191 @@
+{
+  "match_id": "5465d786",
+  "timestamp": "2026-04-03T03:56:34.893466+00:00",
+  "duration_turns": 57,
+  "map_id": "open_arena_large",
+  "match_type": "pvp",
+  "winner": "team_a",
+  "config": {
+    "max_players": 11,
+    "tick_rate": 1.0,
+    "ai_opponents": 5,
+    "ai_allies": 5,
+    "ai_opponent_classes": [
+      "crusader",
+      "inquisitor",
+      "mage",
+      "ranger",
+      "revenant"
+    ],
+    "ai_ally_classes": [
+      "confessor",
+      "hexblade",
+      "plague_doctor",
+      "revenant",
+      "shaman"
+    ]
+  },
+  "teams": {
+    "team_a": [
+      {
+        "unit_id": "ai-2368ea",
+        "username": "Confessor",
+        "class_id": "confessor",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 150,
+        "base_melee_damage": 0,
+        "base_armor": 7,
+        "hp": 125,
+        "max_hp": 150,
+        "attack": 13,
+        "defense": 7,
+        "weapon": {
+          "name": "Rusty Sword",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Invoker's Robes",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Skull Pendant",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Rusty Sword",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Invoker's Robes",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Skull Pendant",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-edcfcb",
+        "username": "Hexblade",
+        "class_id": "hexblade",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 140,
+        "base_melee_damage": 0,
+        "base_armor": 9,
+        "hp": 0,
+        "max_hp": 140,
+        "attack": 18,
+        "defense": 9,
+        "weapon": {
+          "name": "Yew Longbow",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Leather Vest",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Sigil Ring",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Yew Longbow",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Leather Vest",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Sigil Ring",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-9b091a",
+        "username": "Plague Doctor",
+        "class_id": "plague_doctor",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 110,
+        "base_melee_damage": 0,
+        "base_armor": 5,
+        "hp": 104,
+        "max_hp": 110,
+        "attack": 11,
+        "defense": 5,
+        "weapon": {
+          "name": "Arcanist's Conduit",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Invoker's Robes",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Consecrated Relic",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Arcanist's Conduit",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Invoker's Robes",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Consecrated Relic",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-adde9d",
+        "username": "Revenant",
+        "class_id": "revenant",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 130,
+        "base_melee_damage": 0,
+        "base_armor": 9,
+        "hp": 113,
+        "max_hp": 130,
+        "attack": 28,
+        "defense": 9,
+        "weapon": {
+          "name": "Tempered Greatsword",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Bone Hauberk",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Wolf Fang Charm",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Tempered Greatsword",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Bone Hauberk",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Wolf Fang Charm",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-cefa33",
+        "username": "Shaman",
+        "class_id": "shaman",
+        "team": "a",
+        "is_ai": true,
+        "base_hp": 112,
+        "base_melee_damage": 0,
+        "base_armor": 6,
+        "hp": 112,
+        "max_hp": 112,
+        "attack": 14,
+        "defense": 6,
+        "weapon": {
+          "name": "Balanced War Axes",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Oracle's Vestments",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Venom Fetish",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Balanced War Axes",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Oracle's Vestments",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Venom Fetish",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      }
+    ],
+    "team_b": [
+      {
+        "unit_id": "ai-105214",
+        "username": "Crusader",
+        "class_id": "crusader",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 165,
+        "base_melee_damage": 0,
+        "base_armor": 9,
+        "hp": 0,
+        "max_hp": 165,
+        "attack": 20,
+        "defense": 9,
+        "weapon": {
+          "name": "Balanced War Axes",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Chainmail Shirt",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Bone Amulet",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Balanced War Axes",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Chainmail Shirt",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Bone Amulet",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-8be32e",
+        "username": "Inquisitor",
+        "class_id": "inquisitor",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 113,
+        "base_melee_damage": 0,
+        "base_armor": 10,
+        "hp": 0,
+        "max_hp": 113,
+        "attack": 12,
+        "defense": 10,
+        "weapon": {
+          "name": "Gnarled Staff",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Shadow Cloak",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Venom Fetish",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Gnarled Staff",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Shadow Cloak",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Venom Fetish",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-16969c",
+        "username": "Mage",
+        "class_id": "mage",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 80,
+        "base_melee_damage": 0,
+        "base_armor": 4,
+        "hp": 0,
+        "max_hp": 80,
+        "attack": 12,
+        "defense": 4,
+        "weapon": {
+          "name": "Balanced War Axes",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Blessed Vestments",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Wolf Fang Charm",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Balanced War Axes",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Blessed Vestments",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Wolf Fang Charm",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-3f04f2",
+        "username": "Ranger",
+        "class_id": "ranger",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 130,
+        "base_melee_damage": 0,
+        "base_armor": 8,
+        "hp": 0,
+        "max_hp": 130,
+        "attack": 8,
+        "defense": 8,
+        "weapon": {
+          "name": "Hand Crossbow",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Leather Vest",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Skull Pendant",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Hand Crossbow",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Leather Vest",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Skull Pendant",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      },
+      {
+        "unit_id": "ai-b40443",
+        "username": "Revenant 2",
+        "class_id": "revenant",
+        "team": "b",
+        "is_ai": true,
+        "base_hp": 171,
+        "base_melee_damage": 0,
+        "base_armor": 10,
+        "hp": 0,
+        "max_hp": 171,
+        "attack": 22,
+        "defense": 10,
+        "weapon": {
+          "name": "Throwing Axes",
+          "rarity": "common",
+          "equip_slot": "weapon"
+        },
+        "armor": {
+          "name": "Brigandine Coat",
+          "rarity": "common",
+          "equip_slot": "armor"
+        },
+        "accessory": {
+          "name": "Sigil Ring",
+          "rarity": "common",
+          "equip_slot": "accessory"
+        },
+        "equipment": {
+          "weapon": {
+            "name": "Throwing Axes",
+            "rarity": "common",
+            "equip_slot": "weapon"
+          },
+          "armor": {
+            "name": "Brigandine Coat",
+            "rarity": "common",
+            "equip_slot": "armor"
+          },
+          "accessory": {
+            "name": "Sigil Ring",
+            "rarity": "common",
+            "equip_slot": "accessory"
+          }
+        }
+      }
+    ]
+  },
+  "unit_stats": {
+    "ai-2368ea": {
+      "unit_id": "ai-2368ea",
+      "username": "Confessor",
+      "class_id": "confessor",
+      "team": "a",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 70,
+      "damage_taken": 171,
+      "healing_done": 210,
+      "kills": 1,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 57,
+      "items_looted": 0,
+      "highest_hit": 16,
+      "overkill_damage": 0
+    },
+    "ai-edcfcb": {
+      "unit_id": "ai-edcfcb",
+      "username": "Hexblade",
+      "class_id": "hexblade",
+      "team": "a",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 114,
+      "damage_taken": 401,
+      "healing_done": 152,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 25,
+      "items_looted": 0,
+      "highest_hit": 15,
+      "overkill_damage": 0
+    },
+    "ai-9b091a": {
+      "unit_id": "ai-9b091a",
+      "username": "Plague Doctor",
+      "class_id": "plague_doctor",
+      "team": "a",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 23,
+      "damage_taken": 34,
+      "healing_done": 0,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 57,
+      "items_looted": 0,
+      "highest_hit": 12,
+      "overkill_damage": 0
+    },
+    "ai-adde9d": {
+      "unit_id": "ai-adde9d",
+      "username": "Revenant",
+      "class_id": "revenant",
+      "team": "a",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 591,
+      "damage_taken": 581,
+      "healing_done": 242,
+      "kills": 4,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 57,
+      "items_looted": 0,
+      "highest_hit": 60,
+      "overkill_damage": 0
+    },
+    "ai-cefa33": {
+      "unit_id": "ai-cefa33",
+      "username": "Shaman",
+      "class_id": "shaman",
+      "team": "a",
+      "is_ai": true,
+      "status": "survived",
+      "damage_dealt": 122,
+      "damage_taken": 53,
+      "healing_done": 605,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 0,
+      "turns_survived": 57,
+      "items_looted": 0,
+      "highest_hit": 12,
+      "overkill_damage": 0
+    },
+    "ai-105214": {
+      "unit_id": "ai-105214",
+      "username": "Crusader",
+      "class_id": "crusader",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 35,
+      "damage_taken": 276,
+      "healing_done": 95,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 25,
+      "items_looted": 0,
+      "highest_hit": 8,
+      "overkill_damage": 0
+    },
+    "ai-8be32e": {
+      "unit_id": "ai-8be32e",
+      "username": "Inquisitor",
+      "class_id": "inquisitor",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 223,
+      "damage_taken": 185,
+      "healing_done": 84,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 39,
+      "items_looted": 0,
+      "highest_hit": 23,
+      "overkill_damage": 0
+    },
+    "ai-16969c": {
+      "unit_id": "ai-16969c",
+      "username": "Mage",
+      "class_id": "mage",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 639,
+      "damage_taken": 160,
+      "healing_done": 80,
+      "kills": 0,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 49,
+      "items_looted": 0,
+      "highest_hit": 71,
+      "overkill_damage": 0
+    },
+    "ai-3f04f2": {
+      "unit_id": "ai-3f04f2",
+      "username": "Ranger",
+      "class_id": "ranger",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 347,
+      "damage_taken": 209,
+      "healing_done": 120,
+      "kills": 1,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 56,
+      "items_looted": 0,
+      "highest_hit": 43,
+      "overkill_damage": 0
+    },
+    "ai-b40443": {
+      "unit_id": "ai-b40443",
+      "username": "Revenant 2",
+      "class_id": "revenant",
+      "team": "b",
+      "is_ai": true,
+      "status": "died",
+      "damage_dealt": 383,
+      "damage_taken": 271,
+      "healing_done": 120,
+      "kills": 1,
+      "boss_kills": 0,
+      "deaths": 1,
+      "turns_survived": 37,
+      "items_looted": 0,
+      "highest_hit": 38,
+      "overkill_damage": 0
+    }
+  },
+  "timeline": [
+    {
+      "turn": 1,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            2,
+            1
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            3,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            4,
+            1
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            15,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            16,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-16969c",
+          "to": [
+            15,
+            17
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            14,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-b40443",
+          "to": [
+            14,
+            15
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 2,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            3,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            4,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            2,
+            1
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            5,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            14,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            15,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-16969c",
+          "to": [
+            14,
+            16
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            13,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-b40443",
+          "to": [
+            13,
+            14
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 3,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            4,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-edcfcb",
+          "to": [
+            2,
+            1
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            5,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            3,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            6,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            13,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            14,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-16969c",
+          "to": [
+            13,
+            15
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            12,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-b40443",
+          "to": [
+            12,
+            13
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 4,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            5,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-edcfcb",
+          "to": [
+            3,
+            2
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            4,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            7,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            12,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            13,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-16969c",
+          "to": [
+            12,
+            14
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            11,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-b40443",
+          "to": [
+            11,
+            12
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 5,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-edcfcb",
+          "to": [
+            4,
+            3
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            5,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            8,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            11,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            12,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-16969c",
+          "to": [
+            11,
+            13
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            10,
+            12
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-b40443",
+          "to": [
+            10,
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "turn": 6,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-edcfcb",
+          "to": [
+            5,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            9,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            9,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-b40443",
+          "to": [
+            11,
+            10
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "buff": "bulwark"
+        }
+      ]
+    },
+    {
+      "turn": 7,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            10,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            8,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-16969c",
+          "to": [
+            9,
+            11
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-edcfcb",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "buff": "ward"
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-8be32e",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-edcfcb",
+          "buff": "spirit_link"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-cefa33",
+          "buff": "grasp_of_the_grave"
+        }
+      ]
+    },
+    {
+      "turn": 8,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            6,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            9,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-16969c",
+          "to": [
+            8,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-b40443",
+          "to": [
+            11,
+            9
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-9b091a",
+          "buff": "enfeeble"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-8be32e",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": null,
+          "dmg": 16,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "buff": "volley"
+        }
+      ]
+    },
+    {
+      "turn": 9,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-105214",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-8be32e",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-16969c",
+          "dmg": 3,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            8,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-b40443",
+          "to": [
+            10,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            9,
+            11
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            11,
+            9
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "earthgrasp"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-9b091a",
+          "dmg": 17,
+          "skill": "rebuke",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 10,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-105214",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-16969c",
+          "dmg": 3,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-b40443",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-edcfcb",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            7,
+            5
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-2368ea",
+          "tgt": "ai-105214",
+          "dmg": 10,
+          "skill": "exorcism",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "buff": "deaths_embrace"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-adde9d",
+          "dmg": 7,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "buff": "deaths_embrace"
+        }
+      ]
+    },
+    {
+      "turn": 11,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-105214",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-16969c",
+          "dmg": 3,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-b40443",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            5,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            6,
+            4
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            9,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            8,
+            5
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-edcfcb",
+          "tgt": "ai-b40443",
+          "buff": "wither"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-2368ea",
+          "dmg": 55,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-adde9d",
+          "dmg": 1,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "amt": 1,
+          "skill": "heal"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-8be32e",
+          "dmg": 10,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 3,
+          "skill": "heal"
+        }
+      ]
+    },
+    {
+      "turn": 12,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 4,
+          "skill": "wither"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-105214",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-16969c",
+          "dmg": 3,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-b40443",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            6,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-edcfcb",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-b40443",
+          "dmg": 38,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "healing_totem"
+        },
+        {
+          "type": "buff",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "buff": "bulwark"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8be32e",
+          "tgt": "ai-edcfcb",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-adde9d",
+          "dmg": 24,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 18,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "dmg": 10,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 3,
+          "skill": "heal"
+        }
+      ]
+    },
+    {
+      "turn": 13,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 4,
+          "skill": "wither"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-edcfcb",
+          "amt": 3,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-9b091a",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 4,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-edcfcb",
+          "to": [
+            9,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            11,
+            10
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "buff": "spirit_link"
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-9b091a",
+          "buff": "grasp_of_the_grave"
+        }
+      ]
+    },
+    {
+      "turn": 14,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-9b091a",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            11,
+            9
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "buff": "ward"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-b40443",
+          "dmg": 12,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-edcfcb",
+          "dmg": 18,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-b40443",
+          "dmg": 8,
+          "skill": "ward",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 15,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-edcfcb",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-9b091a",
+          "amt": 3,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            7,
+            9
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            8,
+            10
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-2368ea",
+          "tgt": "ai-8be32e",
+          "dmg": 6,
+          "skill": "exorcism",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-b40443",
+          "dmg": 15,
+          "skill": "hex_strike",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-8be32e",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "dmg": 19,
+          "skill": "rebuke",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": null,
+          "dmg": 71,
+          "skill": "arcane_barrage",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-16969c",
+          "tgt": "ai-16969c",
+          "buff": "arcane_barrage"
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-edcfcb",
+          "dmg": 15,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-b40443",
+          "dmg": 8,
+          "skill": "ward",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 16,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-edcfcb",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            11,
+            10
+          ]
+        },
+        {
+          "type": "heal",
+          "src": "ai-2368ea",
+          "tgt": "ai-2368ea",
+          "amt": 30,
+          "skill": "heal"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "buff": "deaths_embrace"
+        },
+        {
+          "type": "buff",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "buff": "taunt"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-edcfcb",
+          "dmg": 54,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": null,
+          "dmg": 23,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "buff": "volley"
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "buff": "undying_fury"
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-b40443",
+          "dmg": 7,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 17,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            7,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-105214",
+          "to": [
+            8,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            12,
+            9
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-edcfcb",
+          "buff": "prayer"
+        },
+        {
+          "type": "buff",
+          "src": "ai-edcfcb",
+          "tgt": "ai-105214",
+          "buff": "wither"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-edcfcb",
+          "dmg": 11,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-edcfcb",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-edcfcb",
+          "dmg": 17,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-16969c",
+          "dmg": 8,
+          "skill": "ward",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-b40443",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 18,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "damage",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 4,
+          "skill": "wither"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-edcfcb",
+          "buff": "inoculate"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-105214",
+          "dmg": 40,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "ai-105214",
+          "tgt": "ai-edcfcb",
+          "dmg": 2,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-105214",
+          "tgt": "ai-edcfcb",
+          "buff": "shield_bash"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8be32e",
+          "tgt": "ai-cefa33",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-edcfcb",
+          "dmg": 42,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-edcfcb",
+          "dmg": 23,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-edcfcb",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 19,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "damage",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 4,
+          "skill": "wither"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-105214",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-8be32e",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-b40443",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-edcfcb",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "healing_totem"
+        },
+        {
+          "type": "buff",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "buff": "bulwark"
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "buff": "deaths_embrace"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-edcfcb",
+          "dmg": 10,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-3f04f2",
+          "dmg": 8,
+          "skill": "ward",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-105214",
+          "dmg": 20,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-8be32e",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 20,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "damage",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 4,
+          "skill": "wither"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-105214",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-8be32e",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-b40443",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-edcfcb",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            5,
+            4
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-edcfcb",
+          "buff": "spirit_link"
+        },
+        {
+          "type": "heal",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "amt": 15,
+          "skill": "holy_ground"
+        },
+        {
+          "type": "buff",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "buff": "holy_ground"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-edcfcb",
+          "dmg": 9,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-2368ea",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-edcfcb",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 21,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-105214",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-8be32e",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-b40443",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-edcfcb",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 7,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            5,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            7,
+            11
+          ]
+        },
+        {
+          "type": "heal",
+          "src": "ai-2368ea",
+          "tgt": "ai-edcfcb",
+          "amt": 30,
+          "skill": "heal"
+        },
+        {
+          "type": "buff",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "buff": "ward"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "earthgrasp"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "dmg": 19,
+          "skill": "rebuke",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 54,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-105214",
+          "dmg": 20,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "dmg": 4,
+          "skill": "spirit_link",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-105214",
+          "tgt": "ai-edcfcb",
+          "dmg": 8,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-105214",
+          "dmg": 8,
+          "skill": "ward",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "dmg": 5,
+          "skill": "spirit_link",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-edcfcb",
+          "dmg": 10,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-b40443",
+          "dmg": 8,
+          "skill": "ward",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 22,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-105214",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-8be32e",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-b40443",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-edcfcb",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 9,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            6,
+            10
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-105214",
+          "dmg": 9,
+          "skill": "hex_strike",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-b40443",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-105214",
+          "dmg": 40,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-edcfcb",
+          "dmg": 37,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-edcfcb",
+          "buff": "soul_rend"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-edcfcb",
+          "dmg": 1,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "amt": 1,
+          "skill": "heal"
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-8be32e",
+          "dmg": 8,
+          "skill": "ward",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 18,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "dmg": 2,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-105214",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 23,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "dmg": 5,
+          "skill": "soul_rend_bleed",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-edcfcb",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            8,
+            5
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-edcfcb",
+          "tgt": "ai-3f04f2",
+          "buff": "wither"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "buff": "deaths_embrace"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-edcfcb",
+          "dmg": 11,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-edcfcb",
+          "buff": "crippling_shot"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "dmg": 7,
+          "skill": "spirit_link",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-edcfcb",
+          "dmg": 15,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-b40443",
+          "dmg": 8,
+          "skill": "ward",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-105214",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 24,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "dmg": 5,
+          "skill": "soul_rend_bleed",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 4,
+          "skill": "wither"
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-edcfcb",
+          "buff": "prayer"
+        },
+        {
+          "type": "buff",
+          "src": "ai-105214",
+          "tgt": "ai-105214",
+          "buff": "taunt"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": null,
+          "dmg": 10,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "buff": "volley"
+        },
+        {
+          "type": "damage",
+          "src": "ai-edcfcb",
+          "tgt": "ai-105214",
+          "dmg": 9,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-105214",
+          "dmg": 28,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-edcfcb",
+          "dmg": 15,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 25,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 4,
+          "skill": "wither"
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-edcfcb",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "damage",
+          "src": "ai-105214",
+          "tgt": "ai-edcfcb",
+          "dmg": 1,
+          "skill": "shield_bash",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-105214",
+          "tgt": "ai-edcfcb",
+          "buff": "shield_bash"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-edcfcb",
+          "dmg": 13,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-b40443",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 26,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "dmg": 8,
+          "skill": "wither",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-edcfcb",
+          "tgt": "ai-edcfcb",
+          "amt": 4,
+          "skill": "wither"
+        },
+        {
+          "type": "heal",
+          "src": "ai-2368ea",
+          "tgt": "ai-edcfcb",
+          "amt": 30,
+          "skill": "heal"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-105214",
+          "dmg": 60,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 54,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-edcfcb",
+          "dmg": 42,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-edcfcb",
+          "dmg": 37,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "ai-105214",
+          "killer": "ai-adde9d"
+        },
+        {
+          "type": "death",
+          "unit": "ai-edcfcb",
+          "killer": "ai-b40443"
+        }
+      ]
+    },
+    {
+      "turn": 27,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-9b091a",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 7,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            5,
+            11
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "buff": "spirit_link"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "dmg": 19,
+          "skill": "rebuke",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-2368ea",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "dmg": 9,
+          "skill": "spirit_link",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 18,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "dmg": 2,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-adde9d",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 28,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 9,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            5,
+            10
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-b40443",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "buff": "seal_of_judgment"
+        }
+      ]
+    },
+    {
+      "turn": 29,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            11,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-b40443",
+          "to": [
+            9,
+            7
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-2368ea",
+          "tgt": "ai-8be32e",
+          "dmg": 6,
+          "skill": "exorcism",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "buff": "deaths_embrace"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-9b091a",
+          "dmg": 17,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-9b091a",
+          "buff": "crippling_shot"
+        }
+      ]
+    },
+    {
+      "turn": 30,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-9b091a",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-16969c",
+          "dmg": 3,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            4,
+            11
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-9b091a",
+          "tgt": null,
+          "dmg": 11,
+          "skill": "miasma",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-9b091a",
+          "buff": "miasma"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "dmg": 13,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "buff": "undying_fury"
+        }
+      ]
+    },
+    {
+      "turn": 31,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-16969c",
+          "dmg": 3,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 54,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "dmg": 1,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "amt": 1,
+          "skill": "heal"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-adde9d",
+          "dmg": 14,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-3f04f2",
+          "dmg": 10,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 3,
+          "skill": "heal"
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-b40443",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 32,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-16969c",
+          "dmg": 3,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "amt": 30,
+          "skill": "heal"
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-adde9d",
+          "buff": "inoculate"
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-adde9d",
+          "dmg": 38,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-adde9d",
+          "buff": "soul_rend"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 10,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "dmg": 10,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 3,
+          "skill": "heal"
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-adde9d",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 33,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "dmg": 5,
+          "skill": "soul_rend_bleed",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-16969c",
+          "dmg": 3,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "buff": "prayer"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "buff": "undying_fury"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "healing_totem"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-b40443",
+          "buff": "deaths_embrace"
+        }
+      ]
+    },
+    {
+      "turn": 34,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "dmg": 5,
+          "skill": "soul_rend_bleed",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-9b091a",
+          "amt": 7,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            6,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            5,
+            5
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-2368ea",
+          "tgt": "ai-8be32e",
+          "dmg": 6,
+          "skill": "exorcism",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "buff": "spirit_link"
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "dmg": 23,
+          "skill": "rebuke",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-2368ea",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-adde9d",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-16969c",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 35,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            5,
+            4
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-b40443",
+          "dmg": 38,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-adde9d",
+          "dmg": 1,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "amt": 1,
+          "skill": "heal"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-8be32e",
+          "dmg": 2,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "dmg": 8,
+          "skill": "spirit_link",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-adde9d",
+          "dmg": 16,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-b40443",
+          "dmg": 2,
+          "skill": "attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 36,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 8,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            6,
+            4
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "buff": "deaths_embrace"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 54,
+          "skill": "fireball",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-adde9d",
+          "dmg": 38,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-b40443",
+          "tgt": "ai-adde9d",
+          "buff": "soul_rend"
+        }
+      ]
+    },
+    {
+      "turn": 37,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "dmg": 5,
+          "skill": "soul_rend_bleed",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-8be32e",
+          "to": [
+            10,
+            7
+          ]
+        },
+        {
+          "type": "heal",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "amt": 30,
+          "skill": "heal"
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-adde9d",
+          "buff": "inoculate"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "dmg": 7,
+          "skill": "spirit_link",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 15,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "dmg": 10,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 3,
+          "skill": "heal"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "dmg": 6,
+          "skill": "spirit_link",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-b40443",
+          "tgt": "ai-adde9d",
+          "dmg": 13,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-b40443",
+          "dmg": 10,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 3,
+          "skill": "heal"
+        }
+      ]
+    },
+    {
+      "turn": 38,
+      "events": [
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-8be32e",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "buff": "seal_of_judgment"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-b40443",
+          "dmg": 26,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "ai-b40443",
+          "killer": "ai-adde9d"
+        }
+      ]
+    },
+    {
+      "turn": 39,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            9,
+            6
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-2368ea",
+          "tgt": "ai-8be32e",
+          "dmg": 6,
+          "skill": "exorcism",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-2368ea",
+          "dmg": 13,
+          "skill": "power_shot",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 40,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-8be32e",
+          "tgt": "ai-8be32e",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "buff": "prayer"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-8be32e",
+          "dmg": 56,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "healing_totem"
+        },
+        {
+          "type": "death",
+          "unit": "ai-8be32e",
+          "killer": "ai-adde9d"
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-8be32e",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 41,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            7,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            8,
+            7
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "buff": "spirit_link"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 54,
+          "skill": "fireball",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 42,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 3,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "amt": 30,
+          "skill": "heal"
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-adde9d",
+          "buff": "inoculate"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": null,
+          "dmg": 48,
+          "skill": "arcane_barrage",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-16969c",
+          "tgt": "ai-16969c",
+          "buff": "arcane_barrage"
+        }
+      ]
+    },
+    {
+      "turn": 43,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            6,
+            7
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            7,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            4,
+            6
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "dmg": 7,
+          "skill": "spirit_link",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-adde9d",
+          "dmg": 15,
+          "skill": "ranged_attack",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "dmg": 2,
+          "skill": "ranged_attack",
+          "crit": false
+        }
+      ]
+    },
+    {
+      "turn": 44,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            5,
+            5
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            6,
+            9
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": null,
+          "dmg": 5,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "buff": "volley"
+        }
+      ]
+    },
+    {
+      "turn": 45,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-9b091a",
+          "to": [
+            4,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            5,
+            5
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-2368ea",
+          "tgt": "ai-16969c",
+          "dmg": 16,
+          "skill": "exorcism",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "buff": "deaths_embrace"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-adde9d",
+          "dmg": 7,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-adde9d",
+          "buff": "crippling_shot"
+        }
+      ]
+    },
+    {
+      "turn": 46,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            4,
+            5
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-16969c",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "buff": "undying_fury"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-adde9d",
+          "dmg": 43,
+          "skill": "power_shot",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 32,
+          "skill": "undying_fury"
+        }
+      ]
+    },
+    {
+      "turn": 47,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-16969c",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            3,
+            10
+          ]
+        },
+        {
+          "type": "heal",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "amt": 30,
+          "skill": "heal"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "buff": "grasp_of_the_grave"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "healing_totem"
+        }
+      ]
+    },
+    {
+      "turn": 48,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-16969c",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "amt": 7,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            3,
+            9
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "buff": "prayer"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "buff": "spirit_link"
+        }
+      ]
+    },
+    {
+      "turn": 49,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "damage",
+          "src": "ai-16969c",
+          "tgt": "ai-16969c",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            5,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            7,
+            10
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-9b091a",
+          "buff": "enfeeble"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-16969c",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 50,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-3f04f2",
+          "to": [
+            4,
+            8
+          ]
+        },
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-16969c",
+          "dmg": 46,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "earthgrasp"
+        },
+        {
+          "type": "death",
+          "unit": "ai-16969c",
+          "killer": "ai-adde9d"
+        }
+      ]
+    },
+    {
+      "turn": 51,
+      "events": [
+        {
+          "type": "heal",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "amt": 8,
+          "skill": "prayer"
+        },
+        {
+          "type": "heal",
+          "src": "ai-cefa33",
+          "tgt": "ai-2368ea",
+          "amt": 10,
+          "skill": "healing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            6,
+            9
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-2368ea",
+          "tgt": "ai-3f04f2",
+          "dmg": 10,
+          "skill": "exorcism",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-3f04f2",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "buff": "evasion"
+        }
+      ]
+    },
+    {
+      "turn": 52,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-9b091a",
+          "tgt": null,
+          "dmg": 12,
+          "skill": "miasma",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-9b091a",
+          "buff": "miasma"
+        },
+        {
+          "type": "buff",
+          "src": "ai-adde9d",
+          "tgt": "ai-adde9d",
+          "buff": "deaths_embrace"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": null,
+          "dmg": 10,
+          "skill": "volley",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "buff": "volley"
+        }
+      ]
+    },
+    {
+      "turn": 53,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "move",
+          "unit": "ai-adde9d",
+          "to": [
+            5,
+            8
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            3,
+            6
+          ]
+        },
+        {
+          "type": "move",
+          "unit": "ai-2368ea",
+          "to": [
+            6,
+            9
+          ]
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-3f04f2",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 54,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-9b091a",
+          "buff": "enfeeble"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-3f04f2",
+          "dmg": 38,
+          "skill": "soul_rend",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-adde9d",
+          "buff": "spirit_link"
+        },
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-2368ea",
+          "dmg": 9,
+          "skill": "crippling_shot",
+          "crit": false
+        },
+        {
+          "type": "buff",
+          "src": "ai-3f04f2",
+          "tgt": "ai-2368ea",
+          "buff": "crippling_shot"
+        }
+      ]
+    },
+    {
+      "turn": 55,
+      "events": [
+        {
+          "type": "move",
+          "unit": "ai-cefa33",
+          "to": [
+            2,
+            5
+          ]
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-3f04f2",
+          "dmg": 28,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-3f04f2",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 56,
+      "events": [
+        {
+          "type": "buff",
+          "src": "ai-2368ea",
+          "tgt": "ai-adde9d",
+          "buff": "shield_of_faith"
+        },
+        {
+          "type": "buff",
+          "src": "ai-9b091a",
+          "tgt": "ai-3f04f2",
+          "buff": "plague_flask"
+        },
+        {
+          "type": "buff",
+          "src": "ai-cefa33",
+          "tgt": "ai-cefa33",
+          "buff": "searing_totem"
+        },
+        {
+          "type": "damage",
+          "src": "ai-adde9d",
+          "tgt": "ai-3f04f2",
+          "dmg": 28,
+          "skill": "attack",
+          "crit": false
+        },
+        {
+          "type": "item_use",
+          "unit": "ai-3f04f2",
+          "item": "Health Potion",
+          "effect": {
+            "type": "heal",
+            "magnitude": 40,
+            "actual_healed": 40
+          }
+        }
+      ]
+    },
+    {
+      "turn": 57,
+      "events": [
+        {
+          "type": "damage",
+          "src": "ai-3f04f2",
+          "tgt": "ai-3f04f2",
+          "dmg": 10,
+          "skill": "plague_flask",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-cefa33",
+          "tgt": "ai-3f04f2",
+          "dmg": 1,
+          "skill": "searing_totem",
+          "crit": false
+        },
+        {
+          "type": "damage",
+          "src": "ai-2368ea",
+          "tgt": "ai-3f04f2",
+          "dmg": 10,
+          "skill": "exorcism",
+          "crit": false
+        },
+        {
+          "type": "death",
+          "unit": "ai-3f04f2",
+          "killer": "ai-2368ea"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "team_a_total_damage": 920,
+    "team_a_total_healing": 1209,
+    "team_a_kills": 5,
+    "team_a_deaths": 1,
+    "team_b_total_damage": 1627,
+    "team_b_total_healing": 499,
+    "team_b_kills": 2,
+    "team_b_deaths": 5,
+    "first_blood_turn": 26,
+    "first_blood_killer": "ai-adde9d",
+    "first_blood_victim": "ai-105214",
+    "mvp": "ai-adde9d",
+    "mvp_damage": 591,
+    "mvp_kills": 4
+  }
+}

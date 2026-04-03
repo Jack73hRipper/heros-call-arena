@@ -212,3 +212,86 @@ def resolve_soul_anchor(
         target_username=target.username,
         buff_applied={"type": "soul_anchor", "survive_hp": survive_hp, "duration": duration},
     )
+
+
+def resolve_spirit_link(
+    player: PlayerState,
+    action,
+    skill_def: dict,
+    players: dict[str, PlayerState],
+    target_id: str | None = None,
+) -> ActionResult:
+    """Link the Shaman's spirit to an ally — damage split 50/50 for the duration.
+
+    While linked, half of the damage the target takes is redirected to the
+    Shaman instead.  The link breaks if either party dies.  Only 1 Spirit
+    Link can be active per Shaman — recasting removes the previous one.
+
+    Phase 26G: Spirit Link — replaces Soul Anchor on the Shaman kit.
+    """
+    skill_id = skill_def["skill_id"]
+    effect = skill_def["effects"][0]
+    damage_share = effect.get("damage_share", 0.5)
+    duration = effect.get("duration_turns", 4)
+    skill_range = skill_def.get("range", 4)
+
+    target_x = getattr(action, "target_x", None)
+    target_y = getattr(action, "target_y", None)
+
+    # Entity-based target resolution (ally_target=True for ally_or_self targeting)
+    target = _resolve_skill_entity_target(player, target_id, target_x, target_y, players, ally_target=True)
+
+    if target is None:
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — no valid target",
+        )
+
+    # Don't allow linking to self — pointless (damage stays on self)
+    if target.player_id == player.player_id:
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — cannot link to self",
+        )
+
+    # Range check (Chebyshev)
+    dx = abs(player.position.x - target.position.x)
+    dy = abs(player.position.y - target.position.y)
+    if max(dx, dy) > skill_range:
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=False,
+            message=f"{player.username} {skill_def['name']} failed — target out of range",
+        )
+
+    # Remove any existing spirit_link buff cast by THIS Shaman on ANY target (max 1)
+    for p in players.values():
+        p.active_buffs = [
+            b for b in p.active_buffs
+            if not (b.get("stat") == "spirit_link" and b.get("caster_id") == player.player_id)
+        ]
+
+    # Apply spirit_link buff to target
+    link_entry = {
+        "buff_id": "spirit_link",
+        "type": "spirit_link",
+        "stat": "spirit_link",
+        "caster_id": player.player_id,
+        "turns_remaining": duration,
+        "magnitude": 0,
+        "damage_share": damage_share,
+    }
+    target.active_buffs.append(link_entry)
+
+    _apply_skill_cooldown(player, skill_def)
+
+    return ActionResult(
+        player_id=player.player_id, username=player.username,
+        action_type=ActionType.SKILL, skill_id=skill_id, success=True,
+        message=f"{player.username} linked spirits with {target.username} — damage split for {duration} turns",
+        target_id=target.player_id,
+        target_username=target.username,
+        buff_applied={"type": "spirit_link", "damage_share": damage_share, "duration": duration},
+    )

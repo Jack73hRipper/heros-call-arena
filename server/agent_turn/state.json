@@ -1,0 +1,394 @@
+{
+  "turn": 22,
+  "max_turns": 100,
+  "my_unit": {
+    "id": "ai-1b530e",
+    "name": "Shaman",
+    "class": "shaman",
+    "hp": 125,
+    "max_hp": 125,
+    "position": {
+      "x": 4,
+      "y": 2
+    },
+    "attack_damage": 13,
+    "ranged_damage": 13,
+    "armor": 5,
+    "vision_range": 7,
+    "ranged_range": 4,
+    "crit_chance": 0.05,
+    "dodge_chance": 0.0,
+    "skills": [
+      {
+        "skill_id": "auto_attack_ranged",
+        "name": "Auto Attack",
+        "description": "Basic ranged attack.",
+        "damage": 0,
+        "heal": 0,
+        "range": 0,
+        "cooldown": 0,
+        "cooldown_remaining": 0,
+        "ready": true,
+        "aoe_radius": 0,
+        "buff": null,
+        "dot": null,
+        "target_type": "enemy"
+      },
+      {
+        "skill_id": "healing_totem",
+        "name": "Healing Totem",
+        "description": "Place a totem that heals allies within 2 tiles for 8 HP/turn for 4 turns. Totem has 20 HP. Max 1 active.",
+        "damage": 0,
+        "heal": 0,
+        "range": 4,
+        "cooldown": 0,
+        "cooldown_remaining": 0,
+        "ready": true,
+        "aoe_radius": 0,
+        "buff": null,
+        "dot": null,
+        "target_type": "enemy"
+      },
+      {
+        "skill_id": "searing_totem",
+        "name": "Searing Totem",
+        "description": "Place a totem that deals 4 damage/turn to enemies within 2 tiles for 4 turns (reduced by armor). Totem has 20 HP. Max 1 active.",
+        "damage": 0,
+        "heal": 0,
+        "range": 4,
+        "cooldown": 0,
+        "cooldown_remaining": 0,
+        "ready": true,
+        "aoe_radius": 0,
+        "buff": null,
+        "dot": null,
+        "target_type": "enemy"
+      },
+      {
+        "skill_id": "soul_anchor",
+        "name": "Soul Anchor",
+        "description": "Mark an ally — if they would die within 4 turns, survive at 1 HP instead. One-time trigger.",
+        "damage": 0,
+        "heal": 0,
+        "range": 4,
+        "cooldown": 0,
+        "cooldown_remaining": 0,
+        "ready": true,
+        "aoe_radius": 0,
+        "buff": null,
+        "dot": null,
+        "target_type": "enemy"
+      },
+      {
+        "skill_id": "earthgrasp",
+        "name": "Earthgrasp Totem",
+        "description": "Place a totem that roots all enemies within 2 tiles each turn for 4 turns. Rooted enemies cannot move but can still attack. Totem has 20 HP.",
+        "damage": 0,
+        "heal": 0,
+        "range": 4,
+        "cooldown": 0,
+        "cooldown_remaining": 0,
+        "ready": true,
+        "aoe_radius": 0,
+        "buff": null,
+        "dot": null,
+        "target_type": "enemy"
+      }
+    ],
+    "cooldowns": {},
+    "inventory": [
+      {
+        "index": 0,
+        "name": "Health Potion",
+        "item_type": "consumable",
+        "rarity": "common",
+        "consumable_effect": {
+          "type": "heal",
+          "magnitude": 40,
+          "duration": 0
+        }
+      },
+      {
+        "index": 1,
+        "name": "Health Potion",
+        "item_type": "consumable",
+        "rarity": "common",
+        "consumable_effect": {
+          "type": "heal",
+          "magnitude": 40,
+          "duration": 0
+        }
+      },
+      {
+        "index": 2,
+        "name": "Health Potion",
+        "item_type": "consumable",
+        "rarity": "common",
+        "consumable_effect": {
+          "type": "heal",
+          "magnitude": 40,
+          "duration": 0
+        }
+      }
+    ],
+    "equipment": {
+      "weapon": {
+        "name": "Gnarled Staff",
+        "rarity": "common",
+        "slot": "weapon"
+      },
+      "armor": {
+        "name": "Blessed Vestments",
+        "rarity": "common",
+        "slot": "armor"
+      },
+      "accessory": {
+        "name": "Sigil Ring",
+        "rarity": "common",
+        "slot": "accessory"
+      }
+    },
+    "buffs": [
+      {
+        "buff_id": "shield_of_faith",
+        "stat": "armor",
+        "magnitude": 5,
+        "turns_remaining": 1
+      }
+    ]
+  },
+  "allies": [
+    {
+      "id": "ai-a7a421",
+      "name": "Hexblade",
+      "class": "hexblade",
+      "hp": 110,
+      "max_hp": 110,
+      "position": {
+        "x": 3,
+        "y": 2
+      },
+      "distance": 1,
+      "stance": "follow"
+    },
+    {
+      "id": "ai-4aed5a",
+      "name": "Revenant",
+      "class": "revenant",
+      "hp": 130,
+      "max_hp": 130,
+      "position": {
+        "x": 5,
+        "y": 2
+      },
+      "distance": 1,
+      "stance": "follow"
+    },
+    {
+      "id": "ai-ae9cc9",
+      "name": "Confessor",
+      "class": "confessor",
+      "hp": 100,
+      "max_hp": 100,
+      "position": {
+        "x": 3,
+        "y": 1
+      },
+      "distance": 2,
+      "stance": "follow"
+    },
+    {
+      "id": "ai-06d2be",
+      "name": "Crusader",
+      "class": "crusader",
+      "hp": 146,
+      "max_hp": 146,
+      "position": {
+        "x": 5,
+        "y": 1
+      },
+      "distance": 2,
+      "stance": "follow"
+    }
+  ],
+  "visible_enemies": [],
+  "hostile_heroes": [],
+  "pve_enemies": [],
+  "available_actions": {
+    "MOVE": [
+      {
+        "x": 3,
+        "y": 3
+      },
+      {
+        "x": 4,
+        "y": 1
+      },
+      {
+        "x": 4,
+        "y": 3
+      },
+      {
+        "x": 5,
+        "y": 3
+      }
+    ],
+    "ATTACK": [],
+    "RANGED_ATTACK": [],
+    "SKILL": [
+      {
+        "skill_id": "healing_totem",
+        "name": "Healing Totem",
+        "description": "Place a totem that heals allies within 2 tiles for 8 HP/turn for 4 turns. Totem has 20 HP. Max 1 active.",
+        "damage": 0,
+        "heal": 0,
+        "range": 4,
+        "cooldown": 0,
+        "cooldown_remaining": 0,
+        "ready": true,
+        "aoe_radius": 0,
+        "buff": null,
+        "dot": null,
+        "target_type": "enemy"
+      },
+      {
+        "skill_id": "searing_totem",
+        "name": "Searing Totem",
+        "description": "Place a totem that deals 4 damage/turn to enemies within 2 tiles for 4 turns (reduced by armor). Totem has 20 HP. Max 1 active.",
+        "damage": 0,
+        "heal": 0,
+        "range": 4,
+        "cooldown": 0,
+        "cooldown_remaining": 0,
+        "ready": true,
+        "aoe_radius": 0,
+        "buff": null,
+        "dot": null,
+        "target_type": "enemy"
+      },
+      {
+        "skill_id": "soul_anchor",
+        "name": "Soul Anchor",
+        "description": "Mark an ally — if they would die within 4 turns, survive at 1 HP instead. One-time trigger.",
+        "damage": 0,
+        "heal": 0,
+        "range": 4,
+        "cooldown": 0,
+        "cooldown_remaining": 0,
+        "ready": true,
+        "aoe_radius": 0,
+        "buff": null,
+        "dot": null,
+        "target_type": "enemy"
+      },
+      {
+        "skill_id": "earthgrasp",
+        "name": "Earthgrasp Totem",
+        "description": "Place a totem that roots all enemies within 2 tiles each turn for 4 turns. Rooted enemies cannot move but can still attack. Totem has 20 HP.",
+        "damage": 0,
+        "heal": 0,
+        "range": 4,
+        "cooldown": 0,
+        "cooldown_remaining": 0,
+        "ready": true,
+        "aoe_radius": 0,
+        "buff": null,
+        "dot": null,
+        "target_type": "enemy"
+      }
+    ],
+    "INTERACT": [],
+    "USE_ITEM": [
+      {
+        "index": 0,
+        "name": "Health Potion",
+        "item_type": "consumable",
+        "rarity": "common",
+        "consumable_effect": {
+          "type": "heal",
+          "magnitude": 40,
+          "duration": 0
+        }
+      },
+      {
+        "index": 1,
+        "name": "Health Potion",
+        "item_type": "consumable",
+        "rarity": "common",
+        "consumable_effect": {
+          "type": "heal",
+          "magnitude": 40,
+          "duration": 0
+        }
+      },
+      {
+        "index": 2,
+        "name": "Health Potion",
+        "item_type": "consumable",
+        "rarity": "common",
+        "consumable_effect": {
+          "type": "heal",
+          "magnitude": 40,
+          "duration": 0
+        }
+      }
+    ],
+    "LOOT": [],
+    "WAIT": true
+  },
+  "nearby_chests": [],
+  "exploration": {
+    "discovered_rooms": 2,
+    "total_rooms": 11,
+    "cleared_rooms": 1,
+    "exploration_pct": 18.2,
+    "clearance_pct": 9.1,
+    "next_target": {
+      "room_id": "room_1_0",
+      "entrance": {
+        "x": 3,
+        "y": 11
+      },
+      "distance": 10
+    }
+  },
+  "team_summary": {
+    "a": {
+      "alive": 5,
+      "total": 5,
+      "total_hp": 611
+    },
+    "b": {
+      "alive": 5,
+      "total": 5,
+      "total_hp": 589
+    },
+    "c": {
+      "alive": 5,
+      "total": 5,
+      "total_hp": 632
+    },
+    "d": {
+      "alive": 5,
+      "total": 5,
+      "total_hp": 555
+    },
+    "pve": {
+      "alive": 8,
+      "total": 15,
+      "total_hp": 1379
+    }
+  },
+  "local_map": "    0         5         10        \n  0 # # # # # # # # # # # # # # # \n  1 # . . A . A . . . . . . . . . \n  2 # . . A @ A . . . . . # . . . \n  3 # . . . . . . . . . . . . . . \n  4 # . . . . . . . . . . . . . . \n  5 # . . . . . . . . . . . . # . \n  6 # . . . . . . . . . . . . . . \n  7 # . . . . . . # # # # # # # # \n  8 # . . . . . . # # # # # # # # \n  9 # . . . . . . . . . . . . . # \n 10 # . . . . . . . . . . . . . . \n 11 # . . . . . . . . . . . . . . \n 12 # . . # . . . . . . . . . . . \n\nLegend: @=YOU  A/B/C/D=hero teams  e=enemy  #=wall  D=door(closed)  d=door(open)  C=chest  >=stairs  *=dead",
+  "briefing": "═══ TURN 22/100 ═══\nYou are Shaman (shaman) at (4,2)\nHP: 125/125 | Armor: 5 | ATK: 13 | RATK: 13\n\nALLIES (4 alive, following you):\n  Hexblade (hexblade) HP:110/110 at (3,2) dist:1\n  Revenant (revenant) HP:130/130 at (5,2) dist:1\n  Confessor (confessor) HP:100/100 at (3,1) dist:2\n  Crusader (crusader) HP:146/146 at (5,1) dist:2\n\nVISIBLE ENEMIES: None\n\nREADY SKILLS:\n  auto_attack_ranged: Auto Attack — Basic ranged attack. [READY]\n  healing_totem: Healing Totem — Place a totem that heals allies within 2 tiles for 8 HP/turn [READY]\n  searing_totem: Searing Totem — Place a totem that deals 4 damage/turn to enemies within 2 t [READY]\n  soul_anchor: Soul Anchor — Mark an ally — if they would die within 4 turns, survive at  [READY]\n  earthgrasp: Earthgrasp Totem — Place a totem that roots all enemies within 2 tiles each tur [READY]\n\nAVAILABLE ACTIONS:\n  SKILL: healing_totem, searing_totem, soul_anchor, earthgrasp\n  USE_ITEM: Health Potion, Health Potion, Health Potion\n  MOVE: 4 walkable tiles nearby\n  WAIT: always available\n\nEXPLORATION: 2/11 rooms discovered (18%)\n  Next unexplored room: room_1_0 — entrance at (3,11) dist:10\n\nSCOREBOARD:\n  Team A: 5/5 alive, 611 HP\n  Team B: 5/5 alive, 589 HP\n  Team C: 5/5 alive, 632 HP\n  Team D: 5/5 alive, 555 HP\n  PVE: 8/15 alive\n\nRECENT EVENTS:\n  T21: Revenant hit Revenant for 8 dmg\n  T21: Blood Knight 2 healed for 5\n  T21: Confessor healed for 33\n  T21: Crusader healed for 23\n  T21: Medusa-1 hit Revenant for 7 dmg\n  T21: Dark Priest-1 hit Blood Knight 2 for 1 dmg\n  T21: Dark Priest-2 hit Revenant for 1 dmg\n  T21: Revenant hit Dark Priest-2 for 12 dmg",
+  "recent_events": [
+    "T21: Revenant hit Revenant for 8 dmg",
+    "T21: Blood Knight 2 healed for 5",
+    "T21: Confessor healed for 33",
+    "T21: Crusader healed for 23",
+    "T21: Medusa-1 hit Revenant for 7 dmg",
+    "T21: Dark Priest-1 hit Blood Knight 2 for 1 dmg",
+    "T21: Dark Priest-2 hit Revenant for 1 dmg",
+    "T21: Revenant hit Dark Priest-2 for 12 dmg"
+  ]
+}

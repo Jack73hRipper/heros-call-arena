@@ -113,11 +113,12 @@
     "step_generic":         "/audio/movement/step_boots-generic.wav",
     "step_hard":            "/audio/movement/step_hard.wav",
 
-    "skill_grave_thorns":   "/audio/combat/block_sword-deflect.wav",
-    "skill_grave_chains":   "/audio/skills/cast_hollow-spell.wav",
-    "skill_undying_will":   "/audio/skills/cast_hollow-spell.wav",
-    "skill_undying_revive": "/audio/events/portal-open_flare-nova.wav",
-    "skill_soul_rend":      "/audio/skills/soul-reap_gore-pierce.wav",
+    "skill_grasp_of_the_grave": "/audio/skills/cast_strong-energy.wav",
+    "skill_deaths_embrace":     "/audio/skills/cast_hollow-spell.wav",
+    "skill_soul_rend":          "/audio/skills/soul-reap_gore-pierce.wav",
+    "skill_soul_rend_empowered":"/audio/combat/melee-crit_sword-critical.wav",
+    "skill_undying_fury":       "/audio/skills/cast_hollow-spell.wav",
+    "skill_undying_fury_trigger":"/audio/events/portal-open_flare-nova.wav",
 
     "skill_healing_totem":  "/audio/skills/cast_hollow-spell.wav",
     "skill_searing_totem":  "/audio/skills/cast_strong-energy.wav",
@@ -336,8 +337,8 @@
       "volume": 0.7,
       "pitchVariance": 0.08
     },
-    "verse_of_haste": {
-      "_comment": "Bard — quick ascending arpeggio, cooldown acceleration",
+    "war_hymn": {
+      "_comment": "Bard — warm resonant chant, AoE heal-over-time",
       "key": "buff_vigor",
       "volume": 0.6,
       "pitchVariance": 0.05
@@ -396,26 +397,26 @@
       "volume": 0.6,
       "pitchVariance": 0.05
     },
-    "grave_thorns": {
-      "_comment": "Revenant — bone shards erupting, grinding retaliation aura",
-      "key": "skill_grave_thorns",
-      "volume": 0.7,
+    "grasp_of_the_grave": {
+      "_comment": "Revenant — spectral chains erupt from hallowed ground, ranged root",
+      "key": "skill_grasp_of_the_grave",
+      "volume": 0.75,
       "pitchVariance": 0.08
     },
-    "grave_chains": {
-      "_comment": "Revenant — spectral chains erupting from hallowed ground",
-      "key": "skill_grave_chains",
+    "deaths_embrace": {
+      "_comment": "Revenant — dark bone/shard aura activation, thorns + armor + heal-on-hit",
+      "key": "skill_deaths_embrace",
       "volume": 0.7,
-      "pitchVariance": 0.1
+      "pitchVariance": 0.06
     },
-    "undying_will": {
-      "_comment": "Revenant — deep ominous hum, cheat death activation",
-      "key": "skill_undying_will",
+    "undying_fury": {
+      "_comment": "Revenant — ominous cursed hum, cheat death buff activation",
+      "key": "skill_undying_fury",
       "volume": 0.7,
       "pitchVariance": 0.05
     },
     "soul_rend": {
-      "_comment": "Revenant — ghostly cursed blade slash",
+      "_comment": "Revenant — ghostly cursed blade slash (normal mode: 1.3×)",
       "key": "skill_soul_rend",
       "volume": 0.8,
       "pitchVariance": 0.08

@@ -1,7 +1,7 @@
 /**
  * Skill utility functions — shared across components.
  *
- * Phase 13-1C: Extracted from BottomBar.jsx and HUD.jsx to eliminate duplication.
+ * Phase 13-1C: Extracted from ActionBar.jsx and HUD.jsx to eliminate duplication.
  */
 
 /**

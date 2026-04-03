@@ -6,7 +6,7 @@
  * plus equipment and inventory sections for debugging AI hero loadouts.
  * Styled to match the grimdark theme of the game.
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const RARITY_COLORS = {
   common: '#999',
@@ -41,6 +41,67 @@ function formatStatBonuses(bonuses) {
     }
   }
   return lines.length > 0 ? lines.join(', ') : null;
+}
+
+/**
+ * PerfSparkline — Mini canvas-based frame time graph for the performance overlay.
+ * Renders a 60-frame rolling history as a bar chart with a 16.6ms budget line.
+ */
+function PerfSparkline({ history }) {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || history.length === 0) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    // Background
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillRect(0, 0, w, h);
+
+    // Scale: 0–33ms range (2 frames at 60fps)
+    const maxMs = 33;
+    const barW = w / history.length;
+
+    for (let i = 0; i < history.length; i++) {
+      const ms = history[i];
+      const barH = Math.min(h, (ms / maxMs) * h);
+      // Color: green < 8ms, yellow < 16.6ms, orange < 25ms, red > 25ms
+      if (ms <= 8) ctx.fillStyle = '#2a7';
+      else if (ms <= 16.6) ctx.fillStyle = '#cc2';
+      else if (ms <= 25) ctx.fillStyle = '#e83';
+      else ctx.fillStyle = '#e33';
+      ctx.fillRect(i * barW, h - barH, Math.max(1, barW - 0.5), barH);
+    }
+
+    // 16.6ms budget line (60fps target)
+    const budgetY = h - (16.6 / maxMs) * h;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2, 2]);
+    ctx.beginPath();
+    ctx.moveTo(0, budgetY);
+    ctx.lineTo(w, budgetY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Label
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '7px monospace';
+    ctx.fillText('16ms', 1, budgetY - 1);
+  }, [history]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      width={180}
+      height={32}
+      style={{ width: '100%', height: '32px', borderRadius: '2px', display: 'block' }}
+    />
+  );
 }
 
 function EquipmentSlot({ slotName, item }) {
@@ -105,8 +166,25 @@ export default function DevOverlayPanel({
   currentTurn,
   players,
   dungeonRooms,
+  perfTracker,
 }) {
   if (!devMode) return null;
+
+  // ── Performance Overlay state ──
+  const [showPerf, setShowPerf] = useState(true);
+  const [perfStats, setPerfStats] = useState({ fps: 0, frameMs: 0, avgMs: 0, minMs: 0, maxMs: 0 });
+  const [perfHistory, setPerfHistory] = useState([]);
+  const perfIntervalRef = useRef(null);
+
+  // Poll perfTracker at ~4Hz for stats display (avoids re-render spam)
+  useEffect(() => {
+    if (!perfTracker) return;
+    perfIntervalRef.current = setInterval(() => {
+      setPerfStats(perfTracker.getStats());
+      setPerfHistory(perfTracker.getHistory(60));
+    }, 250);
+    return () => clearInterval(perfIntervalRef.current);
+  }, [perfTracker]);
 
   const allPlayers = Object.values(players || {});
   const alive = allPlayers.filter(p => p.is_alive !== false && !p.extracted);
@@ -141,6 +219,43 @@ export default function DevOverlayPanel({
           {hoveredTile && <span>Cursor: ({hoveredTile.x}, {hoveredTile.y})</span>}
           {freeCam && <span>Camera: ({Math.round(freeCamOffset.x)}, {Math.round(freeCamOffset.y)})</span>}
         </div>
+
+        {/* Performance Stats */}
+        {perfTracker && (
+          <div className="dev-perf-section">
+            <div
+              className="dev-section-header"
+              onClick={() => setShowPerf(prev => !prev)}
+              style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '2px 4px', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.08)' }}
+            >
+              <span style={{ fontSize: '10px', color: '#aaa', letterSpacing: '0.5px' }}>PERFORMANCE</span>
+              <span style={{ fontSize: '10px', color: '#666' }}>{showPerf ? '▾' : '▸'}</span>
+            </div>
+            {showPerf && (
+              <div style={{ padding: '3px 4px', fontSize: '10px', fontFamily: 'monospace' }}>
+                {/* FPS + Frame Time */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                  <span style={{ color: perfStats.fps >= 50 ? '#4f4' : perfStats.fps >= 30 ? '#ff4' : '#f44', fontWeight: 'bold', fontSize: '12px' }}>
+                    {perfStats.fps} FPS
+                  </span>
+                  <span style={{ color: '#aaa' }}>
+                    {perfStats.frameMs.toFixed(1)}ms
+                  </span>
+                </div>
+                {/* Avg / Min / Max */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', color: '#888', fontSize: '9px', marginBottom: '3px' }}>
+                  <span>avg {perfStats.avgMs.toFixed(1)}ms</span>
+                  <span>min {perfStats.minMs.toFixed(1)}</span>
+                  <span>max <span style={{ color: perfStats.maxMs > 16.6 ? '#f84' : '#888' }}>{perfStats.maxMs.toFixed(1)}</span></span>
+                </div>
+                {/* Frame time sparkline */}
+                {perfHistory.length > 0 && (
+                  <PerfSparkline history={perfHistory} />
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Toggle buttons */}
         <div className="dev-overlay-toggles">

@@ -60,37 +60,36 @@ function drawWaveform(canvas, audioBuffer, isPlaying) {
 export default function Waveform({ src, getAudioCtx, isPlaying = false, compact = false }) {
   const canvasRef = useRef(null);
   const bufferRef = useRef(null);
-  const prevSrcRef = useRef(null);
 
   const w = compact ? 140 : CANVAS_W;
   const h = compact ? 32 : CANVAS_H;
 
+  // Fetch & decode audio when src changes
   useEffect(() => {
-    if (!src || src === prevSrcRef.current) {
-      // Just redraw on isPlaying change
-      if (canvasRef.current) drawWaveform(canvasRef.current, bufferRef.current, isPlaying);
-      return;
-    }
-    prevSrcRef.current = src;
     bufferRef.current = null;
+    if (canvasRef.current) drawWaveform(canvasRef.current, null, false);
+    if (!src) return;
 
     const ctx = getAudioCtx();
     let cancelled = false;
 
     fetch(src)
-      .then(r => r.arrayBuffer())
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.arrayBuffer();
+      })
       .then(buf => ctx.decodeAudioData(buf))
       .then(decoded => {
         if (cancelled) return;
         bufferRef.current = decoded;
-        if (canvasRef.current) drawWaveform(canvasRef.current, decoded, isPlaying);
+        if (canvasRef.current) drawWaveform(canvasRef.current, decoded, false);
       })
       .catch(() => {
-        if (canvasRef.current) drawWaveform(canvasRef.current, null, false);
+        if (!cancelled && canvasRef.current) drawWaveform(canvasRef.current, null, false);
       });
 
     return () => { cancelled = true; };
-  }, [src, getAudioCtx, isPlaying]);
+  }, [src, getAudioCtx]);
 
   // Redraw when playing state changes
   useEffect(() => {

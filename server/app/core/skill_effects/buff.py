@@ -165,6 +165,66 @@ def resolve_aoe_buff(
         )
 
 
+def resolve_aoe_hot(
+    player: PlayerState,
+    skill_def: dict,
+    players: dict[str, PlayerState],
+) -> ActionResult:
+    """Resolve an AoE heal-over-time skill centered on self (e.g., War Hymn).
+
+    Targeting: self-centered. Applies a HoT buff to all alive allies (including self)
+    within Chebyshev radius. Mirrors resolve_aoe_buff pattern but applies a HoT entry.
+
+    Bard — War Hymn (7 HP/turn for 3 turns to allies within 4 tiles).
+    """
+    skill_id = skill_def["skill_id"]
+    effect = skill_def["effects"][0]
+    radius = effect.get("radius", 4)
+    heal_per_turn = effect.get("heal_per_turn", 7)
+    duration = effect["duration_turns"]
+
+    buffed_count = 0
+    buffed_names: list[str] = []
+
+    for p in players.values():
+        if not p.is_alive or p.team != player.team:
+            continue
+        dist = max(abs(p.position.x - player.position.x), abs(p.position.y - player.position.y))
+        if dist <= radius:
+            # Remove existing HoT from same skill (refresh, don't stack)
+            p.active_buffs = [b for b in p.active_buffs if b.get("buff_id") != skill_id]
+
+            hot_entry = {
+                "buff_id": skill_id,
+                "type": "hot",
+                "stat": "hot",
+                "magnitude": heal_per_turn,
+                "heal_per_tick": heal_per_turn,
+                "turns_remaining": duration,
+            }
+            p.active_buffs.append(hot_entry)
+            buffed_count += 1
+            name = "self" if p.player_id == player.player_id else p.username
+            buffed_names.append(name)
+
+    _apply_skill_cooldown(player, skill_def)
+
+    if buffed_count > 0:
+        buff_str = ", ".join(buffed_names)
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=True,
+            message=f"{player.username} used {skill_def['name']} — {buffed_count} allies gain {heal_per_turn} HP/turn for {duration} turns: {buff_str}",
+            buff_applied={"type": "aoe_hot", "heal_per_turn": heal_per_turn, "duration": duration, "buffed_count": buffed_count},
+        )
+    else:
+        return ActionResult(
+            player_id=player.player_id, username=player.username,
+            action_type=ActionType.SKILL, skill_id=skill_id, success=True,
+            message=f"{player.username} used {skill_def['name']} — no allies in range",
+        )
+
+
 def resolve_damage_absorb(
     player: PlayerState,
     skill_def: dict,
@@ -405,6 +465,117 @@ def resolve_cheat_death(
         action_type=ActionType.SKILL, skill_id=skill_id, success=True,
         message=f"{player.username} activated {skill_def['name']} (revive at {revive_pct_str}% HP if killed, {duration} turns)",
         buff_applied={"type": "cheat_death", "revive_hp_pct": revive_hp_pct, "duration": duration},
+    )
+
+
+def resolve_deaths_embrace(
+    player: PlayerState,
+    skill_def: dict,
+) -> ActionResult:
+    """Resolve the Death's Embrace self-buff (Revenant rework).
+
+    Applies a triple buff to the caster for the duration:
+      1. Thorns — attackers take flat retaliation damage per hit (ignores armor)
+      2. Armor bonus — flat armor increase
+      3. Heal-on-hit-taken — caster heals HP each time they are hit
+
+    Phase 25R-B: Revenant rework — Death's Embrace.
+    """
+    skill_id = skill_def["skill_id"]
+    effect = skill_def["effects"][0]
+    thorns_damage = effect.get("thorns_damage", 8)
+    armor_bonus = effect.get("armor_bonus", 2)
+    heal_on_hit_taken = effect.get("heal_on_hit_taken", 3)
+    duration = effect.get("duration_turns", 4)
+
+    # Remove existing Death's Embrace buffs if present (refresh, don't stack)
+    player.active_buffs = [b for b in player.active_buffs if b.get("buff_id") != skill_id]
+
+    # Apply thorns component
+    thorns_entry = {
+        "buff_id": skill_id,
+        "type": "deaths_embrace",
+        "stat": "thorns_damage",
+        "magnitude": thorns_damage,
+        "turns_remaining": duration,
+    }
+    player.active_buffs.append(thorns_entry)
+
+    # Apply armor bonus component
+    armor_entry = {
+        "buff_id": skill_id,
+        "type": "deaths_embrace",
+        "stat": "armor",
+        "magnitude": armor_bonus,
+        "turns_remaining": duration,
+    }
+    player.active_buffs.append(armor_entry)
+
+    # Apply heal-on-hit-taken component (NEW mechanic)
+    heal_entry = {
+        "buff_id": skill_id,
+        "type": "deaths_embrace",
+        "stat": "heal_on_hit_taken",
+        "magnitude": heal_on_hit_taken,
+        "turns_remaining": duration,
+    }
+    player.active_buffs.append(heal_entry)
+
+    _apply_skill_cooldown(player, skill_def)
+
+    return ActionResult(
+        player_id=player.player_id, username=player.username,
+        action_type=ActionType.SKILL, skill_id=skill_id, success=True,
+        message=f"{player.username} activated {skill_def['name']} ({thorns_damage} thorns/hit, +{armor_bonus} armor, heal {heal_on_hit_taken}/hit taken, {duration} turns)",
+        buff_applied={"type": "deaths_embrace", "thorns_damage": thorns_damage, "armor_bonus": armor_bonus, "heal_on_hit_taken": heal_on_hit_taken, "duration": duration},
+    )
+
+
+def resolve_undying_fury(
+    player: PlayerState,
+    skill_def: dict,
+) -> ActionResult:
+    """Resolve the Undying Fury self-buff (Revenant rework).
+
+    Places an activation-window buff on the caster. If the caster would die
+    while the buff is active, they instead revive at a percentage of max HP
+    and enter a Fury state with bonus damage, CC immunity, and lifesteal.
+
+    Phase 25R-B: Revenant rework — Undying Fury.
+    """
+    skill_id = skill_def["skill_id"]
+    effect = skill_def["effects"][0]
+    activation_window = effect.get("activation_window", 5)
+    revive_hp_pct = effect.get("revive_hp_pct", 0.25)
+    fury_duration = effect.get("fury_duration", 3)
+    fury_damage_multiplier = effect.get("fury_damage_multiplier", 1.5)
+    fury_cc_immune = effect.get("fury_cc_immune", True)
+    fury_lifesteal_pct = effect.get("fury_lifesteal_pct", 0.25)
+
+    # Remove existing undying fury buff if present (refresh, don't stack)
+    player.active_buffs = [b for b in player.active_buffs if b.get("buff_id") != skill_id]
+
+    undying_entry = {
+        "buff_id": skill_id,
+        "type": "undying_fury",
+        "stat": "cheat_death",
+        "revive_hp_pct": revive_hp_pct,
+        "fury_duration": fury_duration,
+        "fury_damage_multiplier": fury_damage_multiplier,
+        "fury_cc_immune": fury_cc_immune,
+        "fury_lifesteal_pct": fury_lifesteal_pct,
+        "turns_remaining": activation_window,
+        "magnitude": 0,
+    }
+    player.active_buffs.append(undying_entry)
+    _apply_skill_cooldown(player, skill_def)
+
+    revive_pct_str = int(revive_hp_pct * 100)
+    return ActionResult(
+        player_id=player.player_id, username=player.username,
+        action_type=ActionType.SKILL, skill_id=skill_id, success=True,
+        message=f"{player.username} activated {skill_def['name']} (if killed within {activation_window} turns: revive at {revive_pct_str}% HP + Fury for {fury_duration} turns)",
+        buff_applied={"type": "undying_fury", "activation_window": activation_window, "revive_hp_pct": revive_hp_pct, "fury_duration": fury_duration},
     )
 
 

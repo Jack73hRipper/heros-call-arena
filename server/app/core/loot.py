@@ -715,10 +715,13 @@ def generate_enemy_loot(
     first_item = True
     # Phase 21C: Resolve party preferred armor categories for bias
     preferred_categories = _get_party_preferred_categories(party_classes)
+    # Phase 22A: Resolve party preferred weapon types for bias
+    preferred_weapon_types = _get_party_preferred_weapon_types(party_classes)
     for _ in range(num_items):
-        # Pick base type from pools — Phase 21C: with party-aware bias
+        # Pick base type from pools — Phase 21C/22A: with party-aware bias
         base_type_id = _pick_base_type_from_pool(
             pools, rng, items_config, preferred_categories=preferred_categories,
+            preferred_weapon_types=preferred_weapon_types,
         )
         if base_type_id is None:
             continue
@@ -842,10 +845,13 @@ def generate_chest_loot(
 
     # Phase 21C: Resolve party preferred armor categories for bias
     preferred_categories = _get_party_preferred_categories(party_classes)
+    # Phase 22A: Resolve party preferred weapon types for bias
+    preferred_weapon_types = _get_party_preferred_weapon_types(party_classes)
 
     for _ in range(num_items):
         base_type_id = _pick_base_type_from_pool(
             pools, rng, items_config, preferred_categories=preferred_categories,
+            preferred_weapon_types=preferred_weapon_types,
         )
         if base_type_id is None:
             continue
@@ -887,12 +893,17 @@ def _pick_base_type_from_pool(
     rng: random.Random,
     items_config: dict[str, dict],
     preferred_categories: list[str] | None = None,
+    preferred_weapon_types: list[str] | None = None,
 ) -> str | None:
     """Pick a base type ID from weighted pools (without creating the item).
 
     Phase 21C: When preferred_categories is provided, there is a 60% chance
     to bias armor item selection toward items matching one of the preferred
     armor categories. Non-armor items are unaffected.
+
+    Phase 22A: When preferred_weapon_types is provided, there is a 60% chance
+    to bias weapon item selection toward items matching one of the preferred
+    weapon types. Non-weapon items are unaffected.
 
     Returns the item_id string, or None if pools are empty/invalid.
     """
@@ -912,6 +923,18 @@ def _pick_base_type_from_pool(
             item_id for item_id in pool_items
             if item_id in items_config
             and items_config[item_id].get("armor_category", "") in preferred_categories
+        ]
+        if matching:
+            chosen_id = rng.choice(matching)
+            return chosen_id
+
+    # Phase 22A: Party-aware weapon type bias
+    if preferred_weapon_types and rng.random() < 0.60:
+        # Try to find weapon items matching a preferred weapon type
+        matching = [
+            item_id for item_id in pool_items
+            if item_id in items_config
+            and items_config[item_id].get("weapon_type", "") in preferred_weapon_types
         ]
         if matching:
             chosen_id = rng.choice(matching)
@@ -955,3 +978,22 @@ def _get_party_preferred_categories(party_classes: list[str] | None) -> list[str
         if _CLASS_PREFERRED_ARMOR.get(cls, "")
     ))
     return categories if categories else None
+
+
+def _get_party_preferred_weapon_types(party_classes: list[str] | None) -> list[str] | None:
+    """Resolve a list of unique preferred weapon types from party class IDs.
+
+    Phase 22A: Loads allowed_weapon_types from class definitions to bias
+    weapon drops toward types the party can actually equip.
+
+    Returns None if party_classes is empty/None (no bias applied).
+    """
+    if not party_classes:
+        return None
+    from app.models.player import get_class_definition
+    weapon_types: set[str] = set()
+    for cls in party_classes:
+        class_def = get_class_definition(cls)
+        if class_def and class_def.allowed_weapon_types:
+            weapon_types.update(class_def.allowed_weapon_types)
+    return list(weapon_types) if weapon_types else None

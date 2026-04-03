@@ -130,7 +130,7 @@ function formatBuffName(buffId) {
     divine_sense: 'Divine Sense', rebuke: 'Rebuke', shield_of_faith: 'Shield of Faith',
     exorcism: 'Exorcism', prayer: 'Prayer', detected: 'Detected',
     ballad_of_might: 'Ballad of Might', dirge_of_weakness: 'Dirge of Weakness',
-    verse_of_haste: 'Verse of Haste', cacophony: 'Cacophony',
+    war_hymn: 'War Hymn', cacophony: 'Cacophony',
     crimson_veil: 'Crimson Veil', blood_frenzy: 'Blood Frenzy',
     miasma: 'Miasma', plague_flask: 'Plague Flask',
     enfeeble: 'Enfeeble', inoculate: 'Inoculate',

@@ -336,27 +336,30 @@ function drawProp_candelabra(ctx, x, y, size, seed, palette) {
 }
 
 function drawProp_ritual_circle(ctx, x, y, size, seed, palette) {
-  const cx = x + size / 2, cy = y + size / 2, h = cellHash, glowColor = palette.accent, outerR = size * 0.38;
+  const cx = x + size / 2, cy = y + size / 2, h = cellHash, glowColor = palette.accent, outerR = size * 1.2;
   const ambientGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, outerR * 1.3);
-  ambientGrad.addColorStop(0, hexAlpha(glowColor, 0.1)); ambientGrad.addColorStop(0.6, hexAlpha(glowColor, 0.04)); ambientGrad.addColorStop(1, hexAlpha(glowColor, 0));
+  ambientGrad.addColorStop(0, hexAlpha(glowColor, 0.12)); ambientGrad.addColorStop(0.5, hexAlpha(glowColor, 0.05)); ambientGrad.addColorStop(1, hexAlpha(glowColor, 0));
   ctx.fillStyle = ambientGrad; ctx.beginPath(); ctx.arc(cx, cy, outerR * 1.3, 0, Math.PI * 2); ctx.fill();
-  ctx.strokeStyle = hexAlpha(glowColor, 0.3); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, outerR, 0, Math.PI * 2); ctx.stroke();
-  const innerR = outerR * 0.65;
-  ctx.strokeStyle = hexAlpha(glowColor, 0.25); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(cx, cy, innerR, 0, Math.PI * 2); ctx.stroke();
-  ctx.strokeStyle = hexAlpha(glowColor, 0.35); ctx.lineWidth = 1; ctx.beginPath();
+  ctx.strokeStyle = hexAlpha(glowColor, 0.3); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(cx, cy, outerR, 0, Math.PI * 2); ctx.stroke();
+  const midR = outerR * 0.78;
+  ctx.strokeStyle = hexAlpha(glowColor, 0.2); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, midR, 0, Math.PI * 2); ctx.stroke();
+  const innerR = outerR * 0.55;
+  ctx.strokeStyle = hexAlpha(glowColor, 0.25); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, innerR, 0, Math.PI * 2); ctx.stroke();
+  ctx.strokeStyle = hexAlpha(glowColor, 0.35); ctx.lineWidth = 1.2; ctx.beginPath();
   for (let i = 0; i < 5; i++) { const a1 = (i * 2 % 5) / 5 * Math.PI * 2 - Math.PI / 2, a2 = ((i * 2 + 2) % 5) / 5 * Math.PI * 2 - Math.PI / 2; ctx.moveTo(cx + Math.cos(a1) * innerR, cy + Math.sin(a1) * innerR); ctx.lineTo(cx + Math.cos(a2) * innerR, cy + Math.sin(a2) * innerR); }
   ctx.stroke();
-  const runeCount = 6 + Math.floor(h(seed, 0, 220) * 3), runeR = (outerR + innerR) / 2;
+  const runeCount = 8 + Math.floor(h(seed, 0, 220) * 5), runeR = (outerR + midR) / 2;
   for (let i = 0; i < runeCount; i++) {
-    const angle = (i / runeCount) * Math.PI * 2 + h(seed, i, 221) * 0.2, rx = cx + Math.cos(angle) * runeR, ry = cy + Math.sin(angle) * runeR;
-    ctx.strokeStyle = hexAlpha(glowColor, 0.3 + h(seed, i, 222) * 0.15); ctx.lineWidth = 0.7;
+    const angle = (i / runeCount) * Math.PI * 2 + h(seed, i, 221) * 0.15, rx = cx + Math.cos(angle) * runeR, ry = cy + Math.sin(angle) * runeR;
+    ctx.strokeStyle = hexAlpha(glowColor, 0.3 + h(seed, i, 222) * 0.15); ctx.lineWidth = 0.9;
     const rt = Math.floor(h(seed, i, 223) * 3);
-    if (rt === 0) { ctx.beginPath(); ctx.moveTo(rx, ry - 2); ctx.lineTo(rx, ry + 2); ctx.moveTo(rx - 1.5, ry); ctx.lineTo(rx + 1.5, ry); ctx.stroke(); }
-    else if (rt === 1) { ctx.beginPath(); ctx.moveTo(rx, ry - 2); ctx.lineTo(rx + 1.5, ry); ctx.lineTo(rx, ry + 2); ctx.lineTo(rx - 1.5, ry); ctx.closePath(); ctx.stroke(); }
-    else { ctx.fillStyle = hexAlpha(glowColor, 0.4); ctx.beginPath(); ctx.arc(rx, ry, 1.2, 0, Math.PI * 2); ctx.fill(); }
+    if (rt === 0) { ctx.beginPath(); ctx.moveTo(rx, ry - 3.5); ctx.lineTo(rx, ry + 3.5); ctx.moveTo(rx - 2.5, ry); ctx.lineTo(rx + 2.5, ry); ctx.stroke(); }
+    else if (rt === 1) { ctx.beginPath(); ctx.moveTo(rx, ry - 3.5); ctx.lineTo(rx + 2.5, ry); ctx.lineTo(rx, ry + 3.5); ctx.lineTo(rx - 2.5, ry); ctx.closePath(); ctx.stroke(); }
+    else { ctx.fillStyle = hexAlpha(glowColor, 0.4); ctx.beginPath(); ctx.arc(rx, ry, 2, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = hexAlpha(glowColor, 0.1); ctx.beginPath(); ctx.arc(rx, ry, 5, 0, Math.PI * 2); ctx.fill(); }
   }
-  ctx.fillStyle = hexAlpha(glowColor, 0.4); ctx.beginPath(); ctx.arc(cx, cy, size * 0.03, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = hexAlpha(palette.highlight, 0.5); ctx.beginPath(); ctx.arc(cx, cy, size * 0.015, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = hexAlpha(glowColor, 0.45); ctx.beginPath(); ctx.arc(cx, cy, size * 0.06, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.6); ctx.beginPath(); ctx.arc(cx, cy, size * 0.03, 0, Math.PI * 2); ctx.fill();
+  for (let w = 0; w < 4; w++) { const wA = h(seed, w, 224) * Math.PI * 2, wR1 = innerR * 0.3, wR2 = outerR * 0.95; ctx.strokeStyle = hexAlpha(glowColor, 0.08 + h(seed, w, 225) * 0.06); ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(cx + Math.cos(wA) * wR1, cy + Math.sin(wA) * wR1); ctx.lineTo(cx + Math.cos(wA) * wR2, cy + Math.sin(wA) * wR2); ctx.stroke(); }
 }
 
 function drawProp_iron_maiden(ctx, x, y, size, seed, palette) {
@@ -401,6 +404,85 @@ function drawProp_tombstone(ctx, x, y, size, seed, palette) {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  NEW PROPS (Pass 2)
+// ═══════════════════════════════════════════════════════════
+
+function drawProp_lectern(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2, baseY = y + size * 0.82, woodColor = palette.furniture || palette.secondary;
+  ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.ellipse(cx + 1, baseY + 2, size * 0.1, size * 0.04, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = shiftColor(woodColor, 3); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(cx, baseY); ctx.lineTo(cx, baseY - size * 0.45); ctx.stroke();
+  const deskTop = baseY - size * 0.55, dw = size * 0.3, dh = size * 0.18;
+  ctx.fillStyle = shiftColor(woodColor, 5); ctx.save(); ctx.translate(cx, deskTop + dh / 2); ctx.rotate(-0.25);
+  ctx.fillRect(-dw / 2, -dh / 2, dw, dh); ctx.strokeStyle = shiftColor(woodColor, -8); ctx.lineWidth = 0.6; ctx.strokeRect(-dw / 2, -dh / 2, dw, dh);
+  ctx.fillStyle = hexAlpha(palette.highlight, 0.25); ctx.fillRect(-dw / 2 + 2, -dh / 2 + 2, dw - 4, dh * 0.4);
+  ctx.restore();
+}
+
+function drawProp_desk(ctx, x, y, size, seed, palette) {
+  const h = cellHash, woodColor = palette.furniture || palette.secondary;
+  const dx = x + size * 0.12, dy = y + size * 0.35, dw = size * 0.76, dh = size * 0.45;
+  ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(dx + 2, dy + dh + 1, dw, 3);
+  ctx.fillStyle = shiftColor(woodColor, 4); ctx.fillRect(dx, dy, dw, dh);
+  ctx.strokeStyle = shiftColor(woodColor, -10); ctx.lineWidth = 0.8; ctx.strokeRect(dx, dy, dw, dh);
+  ctx.fillStyle = shiftColor(woodColor, -3); ctx.fillRect(dx + 2, dy + dh * 0.55, dw * 0.45, dh * 0.35);
+  ctx.strokeStyle = shiftColor(woodColor, -8); ctx.lineWidth = 0.5; ctx.strokeRect(dx + 2, dy + dh * 0.55, dw * 0.45, dh * 0.35);
+  ctx.fillStyle = palette.metal || palette.secondary; ctx.beginPath(); ctx.arc(dx + dw * 0.22, dy + dh * 0.72, 1.2, 0, Math.PI * 2); ctx.fill();
+  if (h(seed, 0, 300) > 0.5) { ctx.fillStyle = hexAlpha(palette.highlight, 0.2); ctx.fillRect(dx + dw * 0.52, dy + 3, dw * 0.35, dh * 0.25); }
+}
+
+function drawProp_crate(ctx, x, y, size, seed, palette) {
+  const woodColor = palette.furniture || palette.secondary;
+  const cx = x + size * 0.22, cy = y + size * 0.3, cw = size * 0.56, ch = size * 0.48;
+  ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.fillRect(cx + 2, cy + 2, cw, ch);
+  ctx.fillStyle = lerpColor(woodColor, '#5C3310', 0.3); ctx.fillRect(cx, cy, cw, ch);
+  ctx.strokeStyle = shiftColor(woodColor, -12); ctx.lineWidth = 0.8; ctx.strokeRect(cx, cy, cw, ch);
+  const metalColor = palette.metal || palette.secondary;
+  ctx.fillStyle = shiftColor(metalColor, -5); ctx.fillRect(cx, cy + ch * 0.2, cw, 2); ctx.fillRect(cx, cy + ch * 0.7, cw, 2);
+  ctx.fillRect(cx + cw * 0.45, cy, 2, ch);
+  for (const [nx, ny] of [[cx + 2, cy + ch * 0.2], [cx + cw - 3, cy + ch * 0.2], [cx + 2, cy + ch * 0.7], [cx + cw - 3, cy + ch * 0.7]]) {
+    ctx.fillStyle = shiftColor(metalColor, 8); ctx.beginPath(); ctx.arc(nx, ny, 1.2, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function drawProp_bone_pile(ctx, x, y, size, seed, palette) {
+  const h = cellHash, cx = x + size / 2, baseY = y + size * 0.65;
+  const boneColor = lerpColor(palette.secondary, '#d8d0c0', 0.25);
+  ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.beginPath(); ctx.ellipse(cx, baseY + 3, size * 0.22, size * 0.06, 0, 0, Math.PI * 2); ctx.fill();
+  const count = 5 + Math.floor(h(seed, 0, 310) * 4);
+  for (let i = 0; i < count; i++) {
+    const bx = cx + (h(seed, i, 311) - 0.5) * size * 0.35;
+    const by = baseY - h(seed, i, 312) * size * 0.15;
+    const angle = h(seed, i, 313) * Math.PI;
+    const len = 3 + h(seed, i, 314) * 5;
+    ctx.strokeStyle = shiftColor(boneColor, Math.floor((h(seed, i, 315) - 0.5) * 10));
+    ctx.lineWidth = 1 + h(seed, i, 316) * 0.8;
+    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + Math.cos(angle) * len, by + Math.sin(angle) * len); ctx.stroke();
+  }
+  const skullCount = 1 + Math.floor(h(seed, 0, 317) * 2);
+  for (let i = 0; i < skullCount; i++) {
+    const sx = cx + (h(seed, i, 318) - 0.5) * size * 0.18, sy = baseY - size * 0.08 - i * size * 0.06;
+    const sr = size * 0.035 + h(seed, i, 319) * size * 0.015;
+    ctx.fillStyle = shiftColor(boneColor, 3); ctx.beginPath(); ctx.arc(sx, sy, sr, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.beginPath(); ctx.arc(sx - sr * 0.3, sy, sr * 0.15, 0, Math.PI * 2); ctx.arc(sx + sr * 0.3, sy, sr * 0.15, 0, Math.PI * 2); ctx.fill();
+  }
+}
+
+function drawProp_hanging_lantern(ctx, x, y, size, seed, palette) {
+  const cx = x + size / 2, chainBot = y + size * 0.35, metalColor = palette.metal || palette.secondary;
+  ctx.strokeStyle = shiftColor(metalColor, 5); ctx.lineWidth = 0.8;
+  for (let ly = y; ly < chainBot; ly += 3) { const off = ((ly / 3 | 0) % 2 === 0) ? -0.3 : 0.3; ctx.beginPath(); ctx.moveTo(cx + off, ly); ctx.lineTo(cx + off, Math.min(ly + 2, chainBot)); ctx.stroke(); }
+  const grad = ctx.createRadialGradient(cx, chainBot + size * 0.06, 1, cx, chainBot + size * 0.06, size * 0.35);
+  grad.addColorStop(0, 'rgba(255, 190, 80, 0.15)'); grad.addColorStop(0.5, 'rgba(255, 140, 40, 0.05)'); grad.addColorStop(1, 'rgba(255, 100, 20, 0)');
+  ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(cx, chainBot + size * 0.06, size * 0.35, 0, Math.PI * 2); ctx.fill();
+  const lw = size * 0.1, lh = size * 0.14;
+  ctx.fillStyle = shiftColor(metalColor, 3); ctx.beginPath();
+  ctx.moveTo(cx - lw, chainBot); ctx.lineTo(cx + lw, chainBot); ctx.lineTo(cx + lw * 0.7, chainBot + lh); ctx.lineTo(cx - lw * 0.7, chainBot + lh); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = shiftColor(metalColor, -5); ctx.lineWidth = 0.6; ctx.stroke();
+  ctx.fillStyle = 'rgba(255, 170, 50, 0.5)'; ctx.beginPath(); ctx.arc(cx, chainBot + lh * 0.45, 2.5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255, 230, 100, 0.7)'; ctx.beginPath(); ctx.arc(cx, chainBot + lh * 0.45, 1.2, 0, Math.PI * 2); ctx.fill();
+}
+
+// ═══════════════════════════════════════════════════════════
 //  DISPATCH + PLACEMENT
 // ═══════════════════════════════════════════════════════════
 
@@ -414,6 +496,8 @@ const PROP_DRAW_MAP = {
   web: drawProp_web, fountain: drawProp_fountain, candelabra: drawProp_candelabra,
   ritual_circle: drawProp_ritual_circle, iron_maiden: drawProp_iron_maiden,
   tombstone: drawProp_tombstone,
+  lectern: drawProp_lectern, desk: drawProp_desk, crate: drawProp_crate,
+  bone_pile: drawProp_bone_pile, hanging_lantern: drawProp_hanging_lantern,
 };
 
 export function drawTileProp(ctx, propName, x, y, tileSize, seed, palette) {
@@ -433,19 +517,20 @@ export const ARCHETYPE_PROP_SLOTS = {
     accents: [
       { prop: 'pillar',       position: 'corners',          chance: 1.0  },
       { prop: 'brazier',      position: 'flanking_center',  chance: 0.7  },
-      { prop: 'banner',       position: 'wall_top',         chance: 0.5  },
+      { prop: 'banner',       position: 'on_wall_top',      chance: 0.5  },
       { prop: 'statue',       position: 'wall_left',        chance: 0.4  },
       { prop: 'candelabra',   position: 'flanking_center',  chance: 0.35 },
-      { prop: 'weapon_rack',  position: 'wall_right',       chance: 0.3  },
+      { prop: 'weapon_rack',  position: 'on_wall_top',     chance: 0.3  },
     ],
   },
   // Enemy — overlay keeps: worn door path. Props own: torches, weapon racks, rubble.
   enemy: {
     maxProps: 4,
     accents: [
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.6  },
-      { prop: 'torch_sconce', position: 'wall_right',       chance: 0.6  },
-      { prop: 'weapon_rack',  position: 'wall_top',         chance: 0.5  },
+      { prop: 'torch_sconce', position: 'on_wall_left',    chance: 0.6  },
+      { prop: 'torch_sconce', position: 'on_wall_right',   chance: 0.6  },
+      { prop: 'weapon_rack',  position: 'on_wall_top',     chance: 0.5  },
+      { prop: 'crate',        position: 'corners',          chance: 0.3  },
       { prop: 'rubble',       position: 'random_floor',     chance: 0.25 },
       { prop: 'barrel',       position: 'corners',          chance: 0.2  },
     ],
@@ -455,9 +540,11 @@ export const ARCHETYPE_PROP_SLOTS = {
     maxProps: 4,
     accents: [
       { prop: 'barrel',       position: 'corners',          chance: 0.6  },
+      { prop: 'crate',        position: 'random_floor',     chance: 0.4  },
       { prop: 'barrel',       position: 'random_floor',     chance: 0.3  },
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.3  },
-      { prop: 'torch_sconce', position: 'wall_right',       chance: 0.3  },
+      { prop: 'torch_sconce', position: 'on_wall_left',    chance: 0.3  },
+      { prop: 'torch_sconce', position: 'on_wall_right',   chance: 0.3  },
+      { prop: 'hanging_lantern', position: 'on_wall_top',   chance: 0.3  },
       { prop: 'web',          position: 'corners',          chance: 0.15 },
     ],
   },
@@ -465,9 +552,9 @@ export const ARCHETYPE_PROP_SLOTS = {
   spawn: {
     maxProps: 3,
     accents: [
-      { prop: 'banner',       position: 'wall_top',         chance: 0.5  },
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.4  },
-      { prop: 'torch_sconce', position: 'wall_right',       chance: 0.4  },
+      { prop: 'banner',       position: 'on_wall_top',      chance: 0.5  },
+      { prop: 'torch_sconce', position: 'on_wall_left',    chance: 0.4  },
+      { prop: 'torch_sconce', position: 'on_wall_right',   chance: 0.4  },
     ],
   },
   // Empty — overlay keeps: dark wash, darkened wall edges. Props own: rubble, webs.
@@ -477,6 +564,7 @@ export const ARCHETYPE_PROP_SLOTS = {
       { prop: 'rubble',       position: 'corners',          chance: 0.5  },
       { prop: 'rubble',       position: 'random_floor',     chance: 0.3  },
       { prop: 'web',          position: 'corners',          chance: 0.35 },
+      { prop: 'bone_pile',    position: 'random_floor',     chance: 0.2  },
       { prop: 'skull_pile',   position: 'random_floor',     chance: 0.12 },
       { prop: 'tombstone',    position: 'random_floor',     chance: 0.12 },
     ],
@@ -487,7 +575,7 @@ export const ARCHETYPE_PROP_SLOTS = {
     accents: [
       { prop: 'pillar',       position: 'wall_left',        chance: 0.4  },
       { prop: 'pillar',       position: 'wall_right',       chance: 0.4  },
-      { prop: 'torch_sconce', position: 'wall_top',         chance: 0.5  },
+      { prop: 'torch_sconce', position: 'on_wall_top',     chance: 0.5  },
     ],
   },
   // Shrine — overlay keeps: floor shine, accent floor border. Props own: altar, braziers, banners.
@@ -496,18 +584,24 @@ export const ARCHETYPE_PROP_SLOTS = {
     accents: [
       { prop: 'altar',        position: 'center',           chance: 1.0  },
       { prop: 'brazier',      position: 'flanking_center',  chance: 0.9  },
-      { prop: 'banner',       position: 'wall_top',         chance: 0.6  },
+      { prop: 'banner',       position: 'on_wall_top',      chance: 0.6  },
+      { prop: 'hanging_lantern', position: 'on_wall_top',   chance: 0.35 },
       { prop: 'statue',       position: 'corners',          chance: 0.4  },
       { prop: 'candelabra',   position: 'wall_right',       chance: 0.45 },
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.35 },
+      { prop: 'torch_sconce', position: 'on_wall_left',    chance: 0.35 },
     ],
   },
-  // Library — overlay keeps: lighter floor, bookshelves on walls, dust motes.
+  // Library — overlay keeps: bookshelves on top/bottom walls, lighter floor, dust motes.
   library: {
-    maxProps: 2,
+    maxProps: 4,
+    focal: [
+      { prop: 'lectern',      weight: 0.55 },
+      { prop: 'desk',         weight: 0.45 },
+    ],
     accents: [
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.4  },
-      { prop: 'torch_sconce', position: 'wall_right',       chance: 0.3  },
+      { prop: 'hanging_lantern', position: 'on_wall_top',  chance: 0.35 },
+      { prop: 'torch_sconce', position: 'on_wall_left',    chance: 0.4  },
+      { prop: 'torch_sconce', position: 'on_wall_right',   chance: 0.3  },
     ],
   },
   // Prison — overlay keeps: dark wash, corner vignette, doorway iron bars. Props own: chains, focal.
@@ -518,9 +612,9 @@ export const ARCHETYPE_PROP_SLOTS = {
       { prop: 'iron_maiden',  weight: 0.45 },
     ],
     accents: [
-      { prop: 'chains',       position: 'wall_left',        chance: 0.8  },
-      { prop: 'chains',       position: 'wall_right',       chance: 0.8  },
-      { prop: 'torch_sconce', position: 'wall_top',         chance: 0.5  },
+      { prop: 'chains',       position: 'on_wall_top',      chance: 0.8  },
+      { prop: 'torch_sconce', position: 'on_wall_left',    chance: 0.4  },
+      { prop: 'torch_sconce', position: 'on_wall_right',   chance: 0.4  },
       { prop: 'skull_pile',   position: 'random_floor',     chance: 0.2  },
     ],
   },
@@ -545,8 +639,10 @@ export const ARCHETYPE_PROP_SLOTS = {
     accents: [
       { prop: 'candelabra',   position: 'wall_left',        chance: 0.4  },
       { prop: 'candelabra',   position: 'wall_right',       chance: 0.4  },
-      { prop: 'banner',       position: 'wall_top',         chance: 0.5  },
+      { prop: 'hanging_lantern', position: 'on_wall_top',  chance: 0.4  },
+      { prop: 'banner',       position: 'on_wall_top',      chance: 0.5  },
       { prop: 'statue',       position: 'corners',          chance: 0.35 },
+      { prop: 'rubble',       position: 'random_floor',     chance: 0.2  },
       { prop: 'tombstone',    position: 'random_floor',     chance: 0.15 },
     ],
   },
@@ -568,16 +664,20 @@ export const ARCHETYPE_PROP_SLOTS = {
       { prop: 'iron_maiden',  weight: 0.60 },
     ],
     accents: [
-      { prop: 'chains',       position: 'wall_top',         chance: 0.7  },
+      { prop: 'chains',       position: 'on_wall_top',      chance: 0.7  },
+      { prop: 'bone_pile',    position: 'random_floor',     chance: 0.3  },
       { prop: 'skull_pile',   position: 'corners',          chance: 0.25 },
-      { prop: 'torch_sconce', position: 'wall_left',        chance: 0.35 },
+      { prop: 'torch_sconce', position: 'on_wall_left',    chance: 0.35 },
     ],
   },
   graveyard: {
-    maxProps: 5,
+    maxProps: 6,
     accents: [
       { prop: 'tombstone',    position: 'random_floor',     chance: 0.75 },
       { prop: 'tombstone',    position: 'corners',          chance: 0.5  },
+      { prop: 'coffin',       position: 'wall_top',         chance: 0.3  },
+      { prop: 'bone_pile',    position: 'random_floor',     chance: 0.25 },
+      { prop: 'rubble',       position: 'random_floor',     chance: 0.2  },
       { prop: 'skull_pile',   position: 'random_floor',     chance: 0.15 },
       { prop: 'web',          position: 'corners',          chance: 0.2  },
     ],
@@ -585,10 +685,11 @@ export const ARCHETYPE_PROP_SLOTS = {
   armory: {
     maxProps: 5,
     accents: [
-      { prop: 'weapon_rack',  position: 'wall_top',         chance: 0.7  },
-      { prop: 'weapon_rack',  position: 'wall_left',        chance: 0.5  },
+      { prop: 'weapon_rack',  position: 'on_wall_top',     chance: 0.7  },
+      { prop: 'weapon_rack',  position: 'on_wall_top',     chance: 0.5  },
+      { prop: 'crate',        position: 'random_floor',     chance: 0.35 },
       { prop: 'barrel',       position: 'corners',          chance: 0.5  },
-      { prop: 'torch_sconce', position: 'wall_right',       chance: 0.45 },
+      { prop: 'torch_sconce', position: 'on_wall_right',   chance: 0.45 },
       { prop: 'barrel',       position: 'random_floor',     chance: 0.25 },
     ],
   },
@@ -602,6 +703,7 @@ export const ARCHETYPE_PROP_SLOTS = {
     accents: [
       { prop: 'skull_pile',   position: 'wall_left',        chance: 0.6  },
       { prop: 'skull_pile',   position: 'wall_right',       chance: 0.6  },
+      { prop: 'bone_pile',    position: 'corners',          chance: 0.4  },
       { prop: 'skull_pile',   position: 'corners',          chance: 0.4  },
       { prop: 'coffin',       position: 'wall_top',         chance: 0.4  },
       { prop: 'tombstone',    position: 'random_floor',     chance: 0.25 },
@@ -620,26 +722,56 @@ export const ARCHETYPE_PROP_SLOTS = {
   },
 };
 
-function _resolvePosition(position, bounds, seed) {
+function _resolvePosition(position, bounds, seed, walkableTiles) {
   const { x_min, y_min, x_max, y_max } = bounds;
   const floorW = x_max - x_min + 1, floorH = y_max - y_min + 1;
   const midX = Math.floor((x_min + x_max) / 2), midY = Math.floor((y_min + y_max) / 2);
+  const _isWalkable = (p) => !walkableTiles || walkableTiles.has(`${p.x},${p.y}`);
+  let candidates;
   switch (position) {
-    case 'center': return [{ x: midX, y: midY }];
-    case 'corners': return [{ x: x_min, y: y_min }, { x: x_max, y: y_min }, { x: x_min, y: y_max }, { x: x_max, y: y_max }];
-    case 'flanking_center': return [{ x: midX - 1, y: midY }, { x: midX + 1, y: midY }];
-    case 'wall_left': return [{ x: x_min, y: midY }];
-    case 'wall_right': return [{ x: x_max, y: midY }];
-    case 'wall_top': { const tiles = []; for (let tx = x_min + 1; tx < x_max; tx += 2) tiles.push({ x: tx, y: y_min }); return tiles; }
-    case 'wall_bottom': { const tiles = []; for (let tx = x_min + 1; tx < x_max; tx += 2) tiles.push({ x: tx, y: y_max }); return tiles; }
+    case 'center': candidates = [{ x: midX, y: midY }]; break;
+    case 'corners': candidates = [{ x: x_min, y: y_min }, { x: x_max, y: y_min }, { x: x_min, y: y_max }, { x: x_max, y: y_max }]; break;
+    case 'flanking_center': candidates = [{ x: midX - 1, y: midY }, { x: midX + 1, y: midY }]; break;
+    case 'wall_left': candidates = [{ x: x_min, y: midY }]; break;
+    case 'wall_right': candidates = [{ x: x_max, y: midY }]; break;
+    case 'wall_top': { candidates = []; for (let tx = x_min + 1; tx < x_max; tx += 2) candidates.push({ x: tx, y: y_min }); break; }
+    case 'wall_bottom': { candidates = []; for (let tx = x_min + 1; tx < x_max; tx += 2) candidates.push({ x: tx, y: y_max }); break; }
+    case 'on_wall_top': {
+      // Actual wall tiles above the room floor — for wall-mounted decorations
+      candidates = [];
+      for (let tx = x_min + 1; tx < x_max; tx += 2) candidates.push({ x: tx, y: y_min - 1 });
+      return candidates; // Wall tiles — bypass walkability check
+    }
+    case 'on_wall_left': {
+      const wallTilesL = [];
+      for (let ty = y_min + 1; ty < y_max; ty++) wallTilesL.push({ x: x_min - 1, y: ty });
+      if (wallTilesL.length === 0) return [{ x: x_min - 1, y: midY }];
+      return [wallTilesL[Math.floor(cellHash(seed, 0, 95) * wallTilesL.length)]];
+    }
+    case 'on_wall_right': {
+      const wallTilesR = [];
+      for (let ty = y_min + 1; ty < y_max; ty++) wallTilesR.push({ x: x_max + 1, y: ty });
+      if (wallTilesR.length === 0) return [{ x: x_max + 1, y: midY }];
+      return [wallTilesR[Math.floor(cellHash(seed, 0, 96) * wallTilesR.length)]];
+    }
     case 'random_floor': {
+      // Rejection-sample: try many candidates, keep only walkable ones
       const count = 1 + Math.floor(cellHash(seed, 0, 90) * 2);
-      const tiles = [];
-      for (let i = 0; i < count; i++) tiles.push({ x: x_min + Math.floor(cellHash(seed, i, 91) * floorW), y: y_min + Math.floor(cellHash(seed, i, 92) * floorH) });
-      return tiles;
+      candidates = [];
+      const maxAttempts = count * 10;
+      for (let i = 0; i < maxAttempts && candidates.length < count; i++) {
+        const pos = { x: x_min + Math.floor(cellHash(seed, i, 91) * floorW), y: y_min + Math.floor(cellHash(seed, i, 92) * floorH) };
+        if (_isWalkable(pos)) candidates.push(pos);
+      }
+      return candidates;
     }
     default: return [];
   }
+  // Filter all named positions to only walkable tiles
+  if (walkableTiles && candidates.length > 0) {
+    candidates = candidates.filter(_isWalkable);
+  }
+  return candidates;
 }
 
 function _pickFocal(focalOptions, seed, affinities) {
@@ -653,10 +785,10 @@ function _pickFocal(focalOptions, seed, affinities) {
   return weighted[weighted.length - 1].prop;
 }
 
-const _POSITION_PRIORITY = { center: 0, flanking_center: 1, corners: 2, wall_top: 3, wall_bottom: 3, wall_left: 4, wall_right: 4, random_floor: 5 };
+const _POSITION_PRIORITY = { center: 0, flanking_center: 1, corners: 2, on_wall_top: 3, on_wall_left: 3, on_wall_right: 3, wall_top: 3, wall_bottom: 3, wall_left: 4, wall_right: 4, random_floor: 5 };
 
 export function drawRoomProps(ctx, opts) {
-  const { archetype, theme, tileSize, roomOffsetX, roomOffsetY, bounds, seed } = opts;
+  const { archetype, theme, tileSize, roomOffsetX, roomOffsetY, bounds, seed, walkableTiles } = opts;
   const config = ARCHETYPE_PROP_SLOTS[archetype];
   if (!config) return;
   const affinities = theme.propAffinities || {};
@@ -665,15 +797,23 @@ export function drawRoomProps(ctx, opts) {
   const claimed = new Set();
 
   const _placeSlot = (propName, position, slotSeed) => {
-    const positions = _resolvePosition(position, bounds, slotSeed);
+    const positions = _resolvePosition(position, bounds, slotSeed, walkableTiles);
     let placedAny = false;
     for (const pos of positions) {
       const key = `${pos.x},${pos.y}`;
       if (claimed.has(key)) continue;
       claimed.add(key);
       placedAny = true;
-      const px = roomOffsetX + pos.x * tileSize;
-      const py = roomOffsetY + pos.y * tileSize;
+      let px = roomOffsetX + pos.x * tileSize;
+      let py = roomOffsetY + pos.y * tileSize;
+      // Visual offset for side-wall props: shift inward so the prop
+      // renders on the visible brick plate face (~20% width) instead
+      // of being centered on the full wall tile (mostly dark cap).
+      if (position === 'on_wall_left') {
+        px += Math.round(tileSize * 0.65);
+      } else if (position === 'on_wall_right') {
+        px -= Math.round(tileSize * 0.65);
+      }
       drawTileProp(ctx, propName, px, py, tileSize, cellHash(pos.x, pos.y, seed), theme.palette);
     }
     return placedAny;

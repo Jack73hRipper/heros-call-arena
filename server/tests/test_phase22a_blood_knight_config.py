@@ -182,7 +182,7 @@ class TestBloodKnightSkillsConfig:
         s = get_skill("blood_strike")
         assert s["skill_id"] == "blood_strike"
         assert s["name"] == "Blood Strike"
-        assert s["targeting"] == "entity"
+        assert s["targeting"] == "enemy_adjacent"
         assert s["range"] == 1
         assert s["cooldown_turns"] == 4
         assert s["mana_cost"] == 0
@@ -472,5 +472,5 @@ class TestRegressionExistingClasses:
         ]
         assert get_class_skills("bard") == [
             "auto_attack_ranged", "ballad_of_might", "dirge_of_weakness",
-            "verse_of_haste", "cacophony"
+            "war_hymn", "cacophony"
         ]

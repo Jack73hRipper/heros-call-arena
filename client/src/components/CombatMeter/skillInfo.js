@@ -50,11 +50,11 @@ const SKILL_INFO = {
   venom_gaze:         { name: 'Venom Gaze',        icon: '🐍', type: 'damage',  description: 'Fix your serpentine gaze on an enemy — deal 5 poison damage per turn for 3 turns (15 total).', cooldown: 5, range: 4, targeting: 'enemy_ranged' },
   soul_reap:          { name: 'Soul Reap',         icon: '💀', type: 'damage',  description: 'Rend an enemy\'s soul at range for 2.0x ranged damage. A devastating dark magic attack.', cooldown: 4, range: 4, targeting: 'enemy_ranged' },
 
-  // Revenant skills
-  grave_thorns:       { name: 'Grave Thorns',      icon: '🦴', type: 'buff',    description: 'Reflect 10 damage per hit received for 3 turns. Bone shards punish every attacker.', cooldown: 5, range: 0, targeting: 'self' },
-  grave_chains:       { name: 'Grave Chains',      icon: '⛓️', type: 'utility', description: 'Taunt an enemy for 3 turns — spectral chains force them to attack you. Range 3.', cooldown: 5, range: 3, targeting: 'enemy_ranged' },
-  undying_will:       { name: 'Undying Will',      icon: '💀', type: 'buff',    description: 'If you would die within 5 turns, revive at 30% HP instead. The signature cheat death.', cooldown: 10, range: 0, targeting: 'self' },
-  soul_rend:          { name: 'Soul Rend',         icon: '⚔️', type: 'damage',  description: '1.2× melee damage + slow for 2 turns. Cursed blade tears at the soul.', cooldown: 5, range: 1, targeting: 'enemy_adjacent' },
+  // Revenant skills (Phase 25R rework)
+  grasp_of_the_grave: { name: 'Grasp of the Grave', icon: '⛓️', type: 'utility', description: 'Root enemy for 1 turn. Below 50% HP: root for 2 turns instead. Spectral chains erupt from hallowed ground.', cooldown: 4, range: 4, targeting: 'enemy_ranged' },
+  deaths_embrace:     { name: "Death's Embrace",    icon: '🦴', type: 'buff',    description: 'Thorns aura: reflect 8 dmg/hit + gain +2 armor + heal 3 HP when hit. Lasts 4 turns.', cooldown: 5, range: 0, targeting: 'self' },
+  soul_rend:          { name: 'Soul Rend',          icon: '⚔️', type: 'damage',  description: '1.3× melee damage. Below 50% HP: 1.8× damage + bleed (5/turn for 3 turns).', cooldown: 3, range: 1, targeting: 'enemy_adjacent' },
+  undying_fury:       { name: 'Undying Fury',       icon: '💀', type: 'buff',    description: 'If you die within 5 turns: revive at 25% HP + enter Fury (3 turns: +50% damage, CC immune, autos heal 25%).', cooldown: 12, range: 0, targeting: 'self' },
 };
 
 /** Color per skill type — used for header accents and bar fills */

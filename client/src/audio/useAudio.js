@@ -250,6 +250,7 @@ export function useAmbientAudio(audioManagerRef, screen, isDungeon) {
         mgr.playAmbient(isDungeon ? 'ambient_dungeon' : 'ambient_arena');
         break;
       case 'lobby':
+      case 'intro':
       case 'postmatch':
       default:
         mgr.stopAmbient();
